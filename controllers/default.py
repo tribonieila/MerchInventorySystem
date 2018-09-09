@@ -22,23 +22,67 @@ def stock_receipt():
 def reports():
     return locals()
 
-# ---- Division Master       -----
-def div_mas():
-    form = SQLFORM(db.Division)
+# ---- Prefix Master       -----
+def pre_mas():
+    form = SQLFORM(db.Prefix_Data)
     if form.process().accepted:
         response.flash = 'form accepted'
     elif form.errors:
         response.flash = 'form has errors'
     else:
         response.flash = 'please fill out the form'
-    grid = SQLFORM.grid(db.Division)
+    grid = SQLFORM.grid(db.Prefix_Data)
+    return dict(form = form, grid = grid)
+
+# ---- Division Master       -----
+def stat_mas():
+    form = SQLFORM(db.Status)
+    if form.process().accepted:
+        response.flash = 'form accepted'
+        # db.Division.insert(Div_Code=form.vars.)
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+        response.flash = 'please fill out the form'
+    grid = SQLFORM.grid(db.Status)
+    return dict(form=form, grid=grid)
+
+# ---- Division Master       -----
+def div_mas():
+    pre = db(db.Prefix_Data.id == 1).select(db.Prefix_Data.Prefix).first()    
+    ctr = db(db.Division.id).count()
+    ctr = ctr+1
+    ctr = str(ctr).rjust(2, '0')
+    ctr_val = pre.Prefix+ctr
+    form = SQLFORM.factory(
+        Field('div_code','string',default=ctr_val, label="Division Code"),
+        Field('div_name','string',length=25, label="Division Name"),
+        Field('status_id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
+    if form.process().accepted:
+        response.flash = 'form accepted'
+        # db.Division.insert(Div_Code=form.vars.)
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+        response.flash = 'please fill out the form'
+    grid = SQLFORM.grid(db.Division, editable=False, details = True)
     return dict(form=form, grid=grid)
 
 # ---- Department Master  -----
 def dept_mas():
-    form = SQLFORM(db.Department)
+    pre = db(db.Prefix_Data.id == 2).select(db.Prefix_Data.Prefix).first()
+    ctr = db(db.Department.id).count()
+    ctr = ctr+1
+    ctr = str(ctr).rjust(2, '0')
+    ctr_val = pre.Prefix+ctr
+    form = SQLFORM.factory(
+        Field('div_code_id', 'reference Division', label='Division Code',requires = IS_IN_DB(db, db.Division.id,'%(Div_Code)s - %(Div_Name)s', zero = 'Choose Division')),
+        Field('dept_code', label = 'Department Code', default = ctr_val),
+        Field('dept_name','string', label = 'Department Name', requires = IS_UPPER()),
+        Field('status_id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
     if form.process().accepted:
         response.flash = 'form accepted'
+        db.Department.insert(Div_Code_Id = form.vars.div_code_id,Dept_Code=form.vars.dept_code, Dept_Name=form.vars.dept_name)
     elif form.errors:
         response.flash = 'form has errors'
     else:
@@ -48,6 +92,11 @@ def dept_mas():
 
 # ---- Product Master  -----
 def prod_mas():
+    pre = db(db.Prefix_Data.id == 3).select(db.Prefix_Data.Prefix).first()
+    ctr = db(db.Product.id).count()
+    ctr = ctr + 1
+    ctr = str(ctr).rjust(2,'0')
+    ctr_val = pre.Prefix+ctr
     form = SQLFORM(db.Product)
     if form.process().accepted:
         response.flash = 'form accepted'
@@ -72,9 +121,16 @@ def subprod_mas():
 
 # ---- GroupLine Master  -----
 def groupline_mas():
-    form = SQLFORM(db.GroupLine)
+    ctr = db(db.GroupLine.id).count()
+    ctr = ctr + 1
+    ctr = str(ctr).rjust(5,'0')
+    ctr_value = 'GRL'+ ctr
+    form = SQLFORM.factory(
+        Field('group_line_code', 'string', default = ctr_value),
+        Field('group_line_name', 'string', requires=IS_UPPER()))
     if form.process().accepted:
         response.flash = 'form accepted'
+        db.GroupLine.insert(Group_Line_Code = form.vars.group_line_code, Group_Line_Name = form.vars.group_line_name)
     elif form.errors:
         response.flash = 'form has errors'
     else:
@@ -84,7 +140,14 @@ def groupline_mas():
 
 # ---- Brand Line Master  -----
 def brndlne_mas():
-    form = SQLFORM(db.Brand_Line)
+    ctr = db(db.Brand_Line).count()
+    ctr = ctr + 1
+    ctr = str(ctr).rjust(5,'0')
+    ctr_value = 'BRL' + ctr
+    form = SQLFORM.factory(
+        Field('group_line_code_id', 'reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id, '%(Group_Line_Code)s', zero = 'Choose Group Line')),
+        Field('brand_line_code', 'string', default = ctr_value),
+        Field('brand_line_name', 'string', requires = IS_UPPER()))
     if form.process().accepted:
         response.flash = 'form accepted'
     elif form.errors:

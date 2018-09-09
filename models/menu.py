@@ -7,13 +7,12 @@
 
 response.menu = [
     (T('Home'), False, URL('default', 'index'), []),
-    (T('Transaction'), False, URL('default', 'transaction'), []),
-    (T('Stock Request'), False, URL('default', 'stock_request'), []),
-    (T('Stock Voucher'), False, URL('default', 'stock_voucher'), []),
-    (T('Stock Receipt'), False, URL('default', 'stock_receipt'), []),
-    (T('Master Data'), False, URL('default', 'master_data'), [
+    (T('Settings'), False, URL('default', '#'), [
+        (T('Prefix Data'), False, URL('default', 'pre_mas')),
         (T('Division'), False, URL('default', 'div_mas')),
         (T('Department'), False, URL('default', 'dept_mas')),
+    ]),
+    (T('Master Data'), False, URL('default', 'master_data'), [
         (T('Product'), False, URL('default', 'prod_mas')),
         (T('Sub-Product'), False, URL('default', 'subprod_mas')),
         (T('Group Line'), False, URL('default', 'groupline_mas')),
@@ -30,9 +29,9 @@ response.menu = [
         (T('Brand'), False, URL('default', 'brand_mas')),
         (T('Transaction'), False, URL('default', 'trans_mas')),
         (T('Voucher'), False, URL('default', 'vouc_mas')),
-        (T('Department'), False, URL('default', '#')),
         (T('Location'), False, URL('default', '#'))
     ]),
+    (T('Transaction'), False, URL('default', 'transaction'), []),    
     (T('Reports'), False, URL('default', 'reports'), []),
 ]
 

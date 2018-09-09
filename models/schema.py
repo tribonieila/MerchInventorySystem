@@ -4,33 +4,43 @@
 db = DAL('postgres://root:admin@localhost:5432/mpc_inv', pool_size=0)
 # Field('division_id', 'reference division', readable = False, writable = False, requires = IS_IN_DB(db, db.division.id, '%(division)s', zero = 'Choose division')),
 # Field('division', requires = IS_UPPER(), label = 'Division'),format = '%(division)s')
+
+db.define_table('Status',
+    Field('Status','string',length=10, requires = IS_UPPER()))
+
 db.define_table('Division',
-    Field('Div_Code','string', length = 5),
-    Field('Div_Name','string', length = 25), format = '%(Div_Code)s')
+    Field('Div_Code','string', length = 5, label = 'Division Code'),
+    Field('Div_Name','string', length = 50, label = 'Division Name'), 
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')), format = '%(Div_Code)s')
 
 db.define_table('Department',
-    Field('Div_Code_Id', 'reference Division', requires = IS_IN_DB(db, db.Division.id,'%(Div_Code)s', zero = 'Choose Division')),
-    Field('Dept_Code','string'),
-    Field('Dept_Name','string'))
+    Field('Div_Code_Id', 'reference Division', requires = IS_IN_DB(db, db.Division.id,'%(Div_Code)s - %(Div_Name)s', zero = 'Choose Division'), label='Division Code'),
+    Field('Dept_Code','string', length = 5, label ='Department Code'),
+    Field('Dept_Name','string', length = 50, label = 'Department Name'),
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
 
 db.define_table('Product',
-    Field('Dept_Code_Id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(Dept_Code)s', zero = 'Choose Department')),
+    Field('Dept_Code_Id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(Dept_Code)s - %(Dept_Name)s', zero = 'Choose Department')),
     Field('Product_Code','string'),
-    Field('Product_Name', 'string'))
+    Field('Product_Name', 'string'),
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
 
 db.define_table('SubProduct',
     Field('Product_Code_Id','reference Product', requires = IS_IN_DB(db, db.Product.id, '%(Product_Code)s', zero = 'Choose Product Code')),
     Field('Subproduct_Code','string'),
-    Field('Subproduct_Name','string'))
+    Field('Subproduct_Name','string'),
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
 
 db.define_table('GroupLine',
-    Field('Group_Line_Code','string',length=7),
-    Field('Group_Line_Name', 'string', length=50))
+    Field('Group_Line_Code','string',length=8),
+    Field('Group_Line_Name', 'string', length=50, requires=IS_UPPER()),
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
 
 db.define_table('Brand_Line',
     Field('Group_Line_Code_Id','reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id, '%(Group_Line_Code)s', zero = 'Choose Group Line')),
     Field('Brand_Line_Code','string',length=8),
-    Field('Brand_Line_Name','string',length=50))
+    Field('Brand_Line_Name','string',length=50),
+    Field('Status_Id','reference Status', label = 'Status', requires = IS_IN_DB(db, db.Status.id,'%(Status)s', zero = 'Choose status')))
 
 db.define_table('Brand_Classification',
     Field('Brand_Line_Code_Id','reference Brand_Line', requires = IS_IN_DB(db, db.Brand_Line.id, '%(Brand_Line_Code)s', zero= 'Choose Brand Line')),
@@ -65,6 +75,10 @@ db.define_table('Section',
     Field('Section_Code','string',length=5),
     Field('Section_Name','string',length=15))
 
+db.define_table('Prefix_Data',
+    Field('Prefix_Name','string', length = 30, requires = IS_UPPER()),
+    Field('Prefix', length = 10, requires = IS_UPPER()), format = '%(Prefix)s')
+    
 db.define_table('itemmas',
     Field('Item_Code', 'string', length = 10, label = 'Item Code',requires = IS_NOT_IN_DB(db, 'itemmas.Item_Code')),
     Field('Ref_No', 'string', length = 15, label = 'Reference No',requires = IS_NOT_IN_DB(db, 'itemmas.Ref_No')),
