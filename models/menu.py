@@ -7,6 +7,12 @@
 
 response.menu = [
     (T('Home'), False, URL('default', 'index'), []),
+    (T('New Item'), False, URL('default', '#'), [
+        (T('BEAUTY DIVISION'), False, URL('default', '#')),
+        (T('FMCG DIVISION'), False, URL('default', 'fmcg_form')),
+        (T('RETAIL DIVISION'), False, URL('default', '#')),
+        (T('SUPPLY AND PERFUMES DIVISION'), False, URL('default', '#')),
+    ]),
     (T('Settings'), False, URL('default', '#'), [
         (T('Prefix Data'), False, URL('default', 'pre_mas')),
         (T('Division'), False, URL('default', 'div_mas')),
@@ -26,6 +32,7 @@ response.menu = [
         (T('Made In'), False, URL('default', 'mdein_mas')),
         (T('Section'), False, URL('default', 'sec_mas')),
         (T('Item'), False, URL('default', 'item_mas')),
+        (T('Gender'), False, URL('default', 'gndr_mas')),
         (T('Brand'), False, URL('default', 'brand_mas')),
         (T('Transaction'), False, URL('default', 'trans_mas')),
         (T('Voucher'), False, URL('default', 'vouc_mas')),
