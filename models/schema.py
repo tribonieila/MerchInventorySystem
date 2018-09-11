@@ -1,7 +1,8 @@
 # auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
 # db = DAL('mssql4://username:password@localhost/test', pool_size=0)
-
-db = DAL('postgres://root:admin@localhost:5432/mpc_inv', pool_size=0)
+db = DAL('mssql://SA:M3rch@2018@localhost/master?DRIVER={FreeTDS}')
+# db = DAL('mssql4://SA:Computer2018@localhost/mpc_inv', pool_size = 0)
+# db = DAL('postgres://root:admin@localhost:5432/mpc_inv', pool_size=0)
 # Field('division_id', 'reference division', readable = False, writable = False, requires = IS_IN_DB(db, db.division.id, '%(division)s', zero = 'Choose division')),
 # Field('division', requires = IS_UPPER(), label = 'Division'),format = '%(division)s')
 
