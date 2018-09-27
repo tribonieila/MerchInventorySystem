@@ -1,0 +1,56 @@
+{{extend 'layout.html'}}
+<!-- <h1>FMCG Division Master Entry Form</h1> -->
+<div class="card">
+
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="itm_form-tab" data-toggle="tab" href="#itm_form" role="tab" aria-controls="itm_form" aria-selected="true">Items Form</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="itm_prices-tab" data-toggle="tab" href="#itm_prices" role="tab" aria-controls="itm_prices" aria-selected="false">Item Prices</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="itm_stocks-tab" data-toggle="tab" href="#itm_stocks" role="tab" aria-controls="itm_stocks" aria-selected="false">Item Stocks</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="btc_info-tab" data-toggle="tab" href="#btc_info" role="tab" aria-controls="btc_info" aria-selected="false">Batch Info</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="sls_qty-tab" data-toggle="tab" href="#sls_qty" role="tab" aria-controls="sls_qty" aria-selected="false">Sales Qty</a>
+    </li>
+</ul>
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="itm_form" role="tabpanel" aria-labelledby="itm_form-tab">
+        <br>
+        <H1>ITEM FORM</H1>{{=form}}
+        <br>
+    </div>
+    <div class="tab-pane fade" id="itm_prices" role="tabpanel" aria-labelledby="profile-tab">
+        <br>
+        <h1>ITEM PRICES</h1>{{=SQLFORM(db.Item_Prices)}}
+        <br>
+    </div>
+    <div class="tab-pane fade" id="itm_stocks" role="tabpanel" aria-labelledby="itm_stocks-tab">
+        <br>
+        <H1>ITEM STOCKS</H1>
+        <br>
+    </div>
+    <div class="tab-pane fade" id="btc_info" role="tabpanel" aria-labelledby="itm_stocks-tab">
+        <br>
+        <H1>BATCH INFO</H1>
+        <br>
+    </div>
+    <div class="tab-pane fade" id="sls_qty" role="tabpanel" aria-labelledby="sls_qty-tab">
+        <br>
+        <H1>SALES QTY</H1>
+        <br>
+    </div>
+            
+</div>
+
+
+
+
+
+</div>

@@ -35,6 +35,23 @@ routers = {
     )
 }
 
+routers = dict( 
+    BASE = dict( 
+        default_application='mtc_inv', 
+    ) 
+) 
+
+# routes_onerror = [
+#   ('mtc_inv/400', '/mtc_inv/default/user/login'),
+#   ('mtc_inv/*', '/mtc_inv/static/fail.html'),
+#   ('*/404', '/mtc_inv/static/cantfind.html'),
+#   ('*/*', '/mtc_inv/error/index')
+# ]
+# error_message = '<html><body><h1>%s</h1></body></html>'
+# error_message_ticket = '''<html><body><h1>Internal error</h1>
+#      Ticket issued: <a href="/admin/default/ticket/%(ticket)s"
+#      target="_blank">%(ticket)s</a></body></html>'''
+
 # ----------------------------------------------------------------------------------------------------------------------
 # NOTE! To change language in your application using these rules add this line in one of your models files:
 # ----------------------------------------------------------------------------------------------------------------------

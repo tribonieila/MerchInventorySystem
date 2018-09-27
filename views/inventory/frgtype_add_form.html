@@ -1,0 +1,55 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">+ ADD NEW</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('frgtype_mas')}}";>BROWSE</a></li>
+                </ul>
+                <span class="card-title">Fragrance Type</span>
+            </div>
+            <div class="card-body tab-content">
+                    {{=form.custom.begin}}					
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label for="fragrance_code" class="col-sm-2 control-label">Fragrance Code</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="fragrance_code" value="{{=ctr_val}}" readonly >
+                                <p class="help-block">autogenerate</p>                           
+                            </div>
+                        </div>                        
+                        <div class="form-group">
+                            <label for="product_code_id" class="col-sm-2 control-label">Product Code</label>
+                            <div class="col-sm-8">{{=form.custom.widget.product_code_id}}</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="fragrance_name" class="col-sm-2 control-label">Fragrance Name</label>
+                            <div class="col-sm-8">{{=form.custom.widget.fragrance_name}}</div>
+                        </div>    
+                        <div class="form-group">
+                            <label for="status_id" class="col-sm-2 control-label">Status</label>
+                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                        </div>
+    
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label"></label>
+                            <div class="col-sm-8">{{=form.custom.submit}}</div>
+                        </div>                                    
+                    </div>
+                    {{=form.custom.end}}    
+        </div>
+        
+    </div>
+</div>
+
+
+
+
+
+<script>
+    $(document).ready( function () {
+        $('table').DataTable();
+    } );
+</script>
+
+

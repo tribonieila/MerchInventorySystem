@@ -92,7 +92,7 @@ select.autocomplete {
     display: inline-block;
     margin-top: -1px;
 }
-#web2py-logo b>span {
+#web2py-logo b>span {  
     font-size: 22px;
     color: #FFF;
 }

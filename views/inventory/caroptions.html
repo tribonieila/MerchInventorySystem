@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+<form>
+
+
+<select class="browser-default" id="makers" onchange="changeMaker();">
+        <option value='select one'>--select make--</option>
+        {{for make in makers:}}
+            <option value='{{=make.Make}}'>{{=make.Make}}</option>
+        {{pass}}
+    </select>
+
+    <input type="hidden" id="maker" name="maker" value="">
+    <div id="modelsDiv">
+    models go here
+    </div>
+</form>    
+    <script language="javascript">
+        function changeMaker(){
+        var makeropts = document.getElementById("makers");
+        var maker = makeropts.options[makeropts.selectedIndex].value;
+        var x = document.getElementById("maker");
+            x.value = maker; // anyone know a better way?
+            //ajax()
+            ajax('models', ['maker'], 'modelsDiv');
+        };
+    </script>

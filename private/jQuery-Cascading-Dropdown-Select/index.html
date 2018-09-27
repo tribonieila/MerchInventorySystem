@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="http://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+  <link href="https://bootswatch.com/solar/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <style>
+  .container { margin:150px auto; }
+  .lead { margin-top:20px;}
+  </style>
+  <title>jQuery cascading select Demos</title>
+</head>
+
+  <body>
+  <div id="jquery-script-menu">
+<div class="jquery-script-center">
+<ul>
+<li><a href="http://www.jqueryscript.net/form/jQuery-Cascading-Dropdown-Select/">Download This Plugin</a></li>
+<li><a href="http://www.jqueryscript.net/">Back To jQueryScript.Net</a></li>
+</ul>
+<div class="jquery-script-ads"><script type="text/javascript"><!--
+google_ad_client = "ca-pub-2783044520727903";
+/* jQuery_demo */
+google_ad_slot = "2780937993";
+google_ad_width = 728;
+google_ad_height = 90;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script></div>
+<div class="jquery-script-clear"></div>
+</div>
+</div>
+  <div class="container">
+  <h1>jQuery cascading select Demos</h1>
+    <h2>Demo 1 - Basic</h2>
+    <form name="demo1" onsubmit="return false;">
+      <p class="lead">L1</p> <select id="s1" class="form-control"></select>
+      <p class="lead">L2</p> <select id="s2" class="form-control"></select>
+      <p class="lead">L3</p> <select id="s3" class="form-control"></select>
+    </form>
+
+    <h2>Demo 2 - Pre-selected</h2>
+    <form name="demo2" onsubmit="return false;">
+      <p class="lead">L1</p>
+      <select id="s4" class="form-control">
+        <option>3</option>
+      </select>
+
+      <p class="lead">L2</p>
+      <select id="s5" class="form-control">
+        <option>3.2</option>
+      </select>
+
+     <p class="lead"> L3</p>
+      <select id="s6" class="form-control">
+        <option>3.2.2</option>
+      </select>
+    </form>
+</div>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <script src="index.js"></script>
+
+    <script>
+     (function() {
+       var data = [{
+         text: '1',
+         value: 'v1',
+         children: [{
+           text: '1.1',
+           children: [{
+             text: '1.1.1',
+           }, {
+             text: '1.1.2',
+           }, {
+             text: '1.1.3',
+           }]
+         }, {
+           text: '1.2',
+           children: ['1.2.1', '1.2.2', '1.2.3']
+         }, {
+           text: '1.3',
+           children: ['1.3.1', '1.3.2', '1.3.3']
+         }]
+       }, {
+         text: '2',
+         children: ['2.1', '2.2', '2.3']
+       }, {
+         text: '3',
+         children: [{
+           text: '3.1',
+           children: ['3.1.1']
+         }, {
+           text: '3.2',
+           children: ['3.2.1', '3.2.2']
+         }, {
+           text: '3.3',
+           children: ['3.3.1', '3.3.2', '3.3.3']
+         }]
+       }];
+
+       $('#s1').cascadingSelect({
+         subSelects: ['#s2', '#s3'],
+         data: data
+       });
+
+       $('#s4').cascadingSelect({
+         subSelects: ['#s5', '#s6'],
+         data: data
+       });
+     })();
+    </script>
+    <script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36251023-1']);
+  _gaq.push(['_setDomainName', 'jqueryscript.net']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+  </body>
+</html>

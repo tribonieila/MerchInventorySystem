@@ -1,0 +1,21 @@
+merch4658666
+
+sudo -H pip install psycopg2
+sudo dpkg -i /path/to/deb/file followed by sudo apt-get install -f 
+sudo apt install ./name.deb
+
+python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
+
+
+routers = dict( 
+    BASE = dict( 
+        default_application='your_app_name_here', 
+    ) 
+) 
+
+<button class="btn btn-primary" onclick="menu3()">go to menu 3</button>
+</div>
+
+function menu3(){
+  $('[href="#menu3"]').tab('show');
+}

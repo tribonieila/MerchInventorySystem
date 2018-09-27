@@ -1,0 +1,113 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right data-toggle="tabs">
+                <li class="active"><a  href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">Supplier</span>
+        </div>
+        <div class="card-body tab-content">			
+            <div class="card">
+                <div class="card-head">
+                    <ul class="nav nav-tabs" data-toggle="tabs">
+                        <li class="active"><a href="#first1">SUPPLIER DATA</a></li>
+                        <li><a href="#second1">PAYMENT DETAILS</a></li>
+                        <li><a href="#third1">BANK DETAILS</a></li>
+                        <li><a href="#fourth1">OTHER ADDRESS(S)</a></li>
+                        <li><a href="#fifth1">LINK TO DEPT(S)</a></li>
+
+                    </ul>
+                </div><!--end .card-head -->
+            <div class="card-body tab-content">
+                <div class="tab-pane active" id="first1">
+                        {{=form.custom.begin}}					
+                        <div class="form-horizontal">
+        
+                            <div class="form-group floating">
+                                <label class="col-sm-2 control-label">Department Code</label>
+                                <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Code</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="supp_code" value="{{=ctr_val}}" readonly ><div class="form-control-line"></div>
+                                    <p class="help-block">autogenerate</p>                                
+                                </div>
+                            </div>    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Name</label>
+                                <div class="col-sm-8">{{=form.custom.widget.supp_name}}</div>
+                            </div>    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Type</label>
+                                <div class="col-sm-8">{{=form.custom.widget.supplier_type}}</div>
+                            </div>    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Contact Person</label>
+                                <div class="col-sm-8">{{=form.custom.widget.contact_person}}</div>
+                            </div>    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 1</label>
+                                <div class="col-sm-8">{{=form.custom.widget.address_1}}</div>
+                            </div>        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 2</label>
+                                <div class="col-sm-8">{{=form.custom.widget.address_2}}</div>
+                            </div>        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Country</label>
+                                <div class="col-sm-8">{{=form.custom.widget.country_id}}</div>
+                            </div>                           
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Contact No.</label>
+                                <div class="col-sm-8">{{=form.custom.widget.contact_no}}</div>
+                            </div>                               
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Fax No.</label>
+                                <div class="col-sm-8">{{=form.custom.widget.fax_no}}</div>
+                            </div>                           
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Email</label>
+                                <div class="col-sm-8">{{=form.custom.widget.email_address}}</div>
+                            </div>                           
+                    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-8">{{=form.custom.submit}}</div>
+                            </div>                                    
+                        </div>
+                        {{=form.custom.end}}
+                </div>
+                <div class="tab-pane" id="second1">
+                    {{=spm_form}}
+                </div>
+                <div class="tab-pane" id="third1">
+                    <H1>BANK DETAILS</H1> 
+                </div>
+                <div class="tab-pane" id="fourth1">
+                    <H1>OTHER ADDRESS(S)</H1>
+                    
+                </div>
+                <div class="tab-pane" id="fifth1">
+                    <H1>LINK TO DEPT(S)</H1>
+                    {{=LOAD('inventory','suplr_dept_form.load', ajax = True)}}
+                </div>
+            
+            </div><!--end .card-body -->
+            </div>
+        </div>        
+    </div>
+</div>
+
+
+
+
+
+    
+
+
+
+
+
