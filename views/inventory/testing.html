@@ -1,22 +1,17 @@
+
 {{extend 'layout.html'}}
-<div id="app">
-        <v-app>
-          <v-toolbar app>
-            <v-toolbar-title>My Application</v-toolbar-title>
-          </v-toolbar>
-          
-
-          
-        </v-app>
-      </div>
-
-    
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+<form id="myform">
+        <input name="stock_request_id" id="stock_request_id" />
+        <input name="item_code_id" id="item_code_id" />
+        <input name="quantity" id="quantity" />
+        <input name="pieces" id="pieces" />
+        <input type="submit" />
+</form>
+<div id="target"></div>
 <script>
-  new Vue({
-    el: '#app'
-  })
-</script>  
-
-
+        jQuery("#myform").submit(function() {
+          ajax('{{=URL('testing3')}}',
+               ['stock_request_id','item_code_id', 'quantity', 'pieces'], 'target');
+          return false;
+        });
+</script>

@@ -1,0 +1,324 @@
+{{extend 'layout.html'}}
+<script type="text/javascript" src="{{=URL('static','js/jquery.sheepItPlugin.js')}}"></script>
+
+<style type="text/css">
+
+#sheepItForm_controls div, #sheepItForm_controls div input {
+    float:left;
+    margin-right: 10px;
+}
+
+td {
+  padding:4px;
+}
+
+/* DivTable.com */
+.divTable{
+	display: table;
+	width: 100%;
+}
+.divTableRow {
+	display: table-row;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+}
+.divTableCell, .divTableHead {
+	border: 1px solid #999999;
+	display: table-cell;
+	padding: 3px 10px;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	font-weight: bold;
+}
+.divTableFoot {
+	background-color: #EEE;
+	display: table-footer-group;
+	font-weight: bold;
+}
+.divTableBody {
+	display: table-row-group;
+}
+
+</style>
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class=""><a href="#" onclick=window.location="{{=URL('itm_add_form')}}";>+ ADD NEW</a></li>
+                <li class="active"><a href="#">+ NEW BATCH</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">ITEM MASTER FORM</span>
+        </div>
+        <div class="card-body tab-content">
+                {{=form.custom.begin}}					
+                <div class="form-horizontal">   
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Division</label>
+                        <div class="col-sm-8">{{=form.custom.widget.division_id}}</div>
+                    </div>                    
+        
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Department</label>
+                        <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                    </div>                    
+
+                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Supplier</label>
+                        <div class="col-sm-8">{{=form.custom.widget.supplier_code_id}}</div>
+                    </div>                    
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Product</label>
+                        <div class="col-sm-8">{{=form.custom.widget.product_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Sub-Product</label>
+                        <div class="col-sm-8">{{=form.custom.widget.subproduct_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Group Line</label>
+                        <div class="col-sm-8">{{=form.custom.widget.group_line_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Brand Line</label>
+                        <div class="col-sm-8">{{=form.custom.widget.brand_line_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Brand Classfication</label>
+                        <div class="col-sm-8">{{=form.custom.widget.brand_cls_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Section</label>
+                        <div class="col-sm-8">{{=form.custom.widget.section_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Purchase Point</label>
+                        <div class="col-sm-8">{{=form.custom.widget.purchase_point}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Selective Tax</label>
+                        <div class="col-sm-8">{{=form.custom.widget.selective_tax}}</div>
+                    </div>                    
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Vat Percentage</label>
+                        <div class="col-sm-8">{{=form.custom.widget.vat_percentage}}</div>
+                    </div>      
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">UOM Value</label>
+                        <div class="col-sm-4">{{=form.custom.widget.uom_value}}</div><div class="col-sm-4">{{=form.custom.widget.uom_id}}</div><div class="col-sm-2"></div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Supplier UOM</label>
+                        <div class="col-sm-4">{{=form.custom.widget.supplier_uom_value}}</div><div class="col-sm-4">{{=form.custom.widget.supplier_uom_id}}</div><div class="col-sm-2"></div>
+                    </div>                    
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Size</label>
+                        <div class="col-sm-8">{{=form.custom.widget.size_code_id}}</div>
+                    </div>    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Gender</label>
+                        <div class="col-sm-8">{{=form.custom.widget.gender_code_id}}</div>
+                    </div>    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Fragrance Code</label>
+                        <div class="col-sm-8">{{=form.custom.widget.fragrance_code_id}}</div>
+                    </div>    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Color</label>
+                        <div class="col-sm-8">{{=form.custom.widget.color_code_id}}</div>
+                    </div>    
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Weight Value</label>
+                        <div class="col-sm-4">{{=form.custom.widget.weight_value}}</div><div class="col-sm-4">{{=form.custom.widget.weight_id}}</div><div class="col-sm-2"></div>
+                    </div>                               
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Collection</label>
+                        <div class="col-sm-8">{{=form.custom.widget.collection_code_id}}</div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Item Type</label>
+                        <div class="col-sm-8">{{=form.custom.widget.type_id}}</div>
+                    </div>                      
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Made In</label>
+                        <div class="col-sm-8">{{=form.custom.widget.made_in_id}}</div>
+                    </div>                                           
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Item Status</label>
+                        <div class="col-sm-8">{{=form.custom.widget.item_status_code_id}}</div>
+                    </div>      
+
+                        <table class="table">
+                            <thead>
+                                <tr>                                
+                                    <th>#</th>
+                                    <th>Description</th>
+                                    <th>Supplier Reference</th>
+                                    <th>Int.Barcode</th>
+                                    <th>Local Barcode</th>
+                                    <!-- <th>Size</th>
+                                    <th>Gender</th>
+                                    <th>Fragrance Code</th>
+                                    <th>Color</th> -->
+                                    <th>Action</th>
+                                    
+                                </tr>
+                            </thead>     
+                            <tbody id="sheepItForm">
+                                <tr id="sheepItForm_template">
+                                    <td><span id="sheepItForm_label"></span></td>
+                                    <td>{{=form.custom.widget.item_description}}</td>                                                                        
+                                    <td>{{=form.custom.widget.supplier_item_ref}}</td>
+                                    <td>{{=form.custom.widget.int_barcode}}</td>
+                                    <td>{{=form.custom.widget.loc_barcode}}</td>
+                                    <!-- <td>
+                                        <select class="form-control" id="size_code_id" name = "size_code_id">
+                                            {{for s in db(db.Item_Size).select():}}
+                                            <option value = "{{=s.id}}">{{=s.size_code}} - {{=s.size_name}}</option>
+                                            {{pass}}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-control" id="gender_code_id" name = "gender_code_id">
+                                            {{for g in db(db.Gender).select():}}
+                                            <option value = "{{=g.id}}">{{=g.gender_code}} - {{=g.gender_name}}</option>
+                                            {{pass}}
+                                        </select>
+        
+                                    </td>
+                                    <td>
+                                        <select class="form-control" id="fragrance_code_id" name = "fragrance_code_id">
+                                            {{for f in db(db.Fragrance_Type).select():}}
+                                            <option value = "{{=s.id}}">{{=f.fragrance_code}} - {{=f.fragrance_name}}</option>
+                                            {{pass}}
+                                        </select>                                        
+                                    </td>
+                                    <td>
+                                        <select class="form-control" id="color_code_id" name = "color_code_id">
+                                            {{for c in db(db.Color_Code).select():}}
+                                            <option value = "{{=c.id}}">{{=c.description}}</option>
+                                            {{pass}}
+                                        </select>                                        
+                                    </td> -->
+    
+                                    <td><input id="counter" type="hidden" name="counter"></td>
+                                    <td><button type="button" class="btn btn-danger" id="sheepItForm_remove_current" name = "sheepItForm_remove_current">Remove</button></td>
+                                </tr>
+                                <tr id = "sheepItForm_noforms_template">
+                                    <td colspan = "10" >No Entry Field</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="10">
+                                        <div id="sheepItForm_controls">
+                                            <div id="sheepItForm_add"><button type="button" class="btn btn-success">Add</button></div>
+                                            <div id="sheepItForm_remove_last"><button type="button" class="btn btn-warning">Remove</button></div>
+                                            <div id="sheepItForm_remove_all"><button type="button" class="btn btn-danger">Remove All</button></div>
+                                            <div class="col-sm-8">{{=form.custom.submit}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                </div>
+                {{=form.custom.end}} 
+        </div>
+    
+    </div>
+</div>                
+
+<script src="{{=URL('static','js/cascade.js')}}"></script> 
+
+<script type="text/javascript">
+    jQuery(document).ready(function($){
+        var data = [ 
+            { text: 'Choose Division', value: null},
+            {{for v in db(db.Division.status_id == 1).select(db.Division.ALL):}}            
+            { text: '{{=v.div_code}} - {{=v.div_name}}', value: '{{=v.id}}',
+                children: [ { text: 'Choose Product', value: null}, {{for pr in db((db.Product.status_id == 1) & (db.Product.div_code_id == v.id)).select(db.Product.ALL):}} 
+                            { text:'{{=pr.product_code}} - {{=pr.product_name}}', value:'{{=pr.id}}',
+                    children: [ { text: 'Choose Sub-Product', value: null}, {{for sp in db((db.SubProduct.status_id == 1) & (db.SubProduct.product_code_id == pr.id)).select(db.SubProduct.ALL):}}
+                                { text: '{{=sp.subproduct_code}} - {{=sp.subproduct_name}}', value: '{{=sp.id}}'}, {{pass}}
+                            ],
+                    }, {{pass}}
+                ],
+            }, {{pass}}
+        ];
+        $('#no_table_division_id').cascadingSelect({
+            subSelects: ['#no_table_product_code_id','#no_table_subproduct_code_id'],
+            data: data
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function($){
+
+        var data = [{ text: 'Choose Division', value: null},
+                    {{for v in db(db.Division.status_id == 1).select(db.Division.ALL):}}            
+                    { text:'{{=v.div_code}} - {{=v.div_name}}', value:'{{=v.id}}', 
+                        children: [ { text: 'Choose Department', value: null}, {{for d in db((db.Department.status_id == 1) & (db.Department.div_code_id == v.id)).select(db.Department.ALL):}}
+                                    { text: '{{=d.dept_code}} - {{=d.dept_name}}', value: '{{=d.id}}', 
+                            children: [ { text: 'Choose Supplier', value: null}, {{for s in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL):}}
+                                        { text: '{{=s.supp_code}} - {{=s.supp_name}}', value: '{{=s.id}}',
+                                children: [ { text: 'Choose Group Line', value: null}, {{for g in db((db.GroupLine.status_id == 1) & (db.GroupLine.supplier_id == s.id)).select(db.GroupLine.ALL):}}
+                                            { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
+                                    children: [ { text: 'Choose Brand Line', value: null}, {{for b in db((db.Brand_Line.status_id == 1) & (db.Brand_Line.group_line_id == g.id)).select(db.Brand_Line.ALL):}}
+                                                { text: '{{=b.brand_line_code}} - {{=b.brand_line_name}}', value: '{{=b.id}}',
+                                        children: [ { text: 'Choose Brand Classification', value: null}, {{for c in db((db.Brand_Classification.status_id == 1) & (db.Brand_Classification.brand_line_code_id == b.id)).select(db.Brand_Classification.ALL):}}
+                                                    { text: '{{=c.brand_cls_code}} - {{=c.brand_cls_name}}', value: '{{=c.id}}'}, {{pass}} ], }, {{pass}} ], }, {{pass}} ], }, {{pass}} ],  }, {{pass}} ], }, {{pass}}];
+        $('#no_table_division_id').cascadingSelect({
+            subSelects: ['#no_table_dept_code_id','#no_table_supplier_code_id','#no_table_group_line_id','#no_table_brand_line_code_id','#no_table_brand_cls_code_id'],
+            data: data
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    jQuery.noConflict();
+    jQuery(document).ready(function($) {
+    
+        var sheepItForm = $('#sheepItForm').sheepIt({
+            separator: '',
+            allowRemoveLast: true,
+            allowRemoveCurrent: true,
+            allowRemoveAll: true,
+            allowAdd: true,
+            allowAddN: true,
+            continuousIndex: true,  
+            // Limits
+            maxFormsCount: 5,
+            minFormsCount: 0,
+            iniFormsCount: 1,
+    
+            removeLastConfirmationMsg: 'Are your sure?',
+            removeCurrentConfirmationMsg: 'Are your sure?',
+            removeAllConfirmationMsg: 'Are your sure?',
+    
+            afterAdd: function(source, newForm) {
+    
+                // Add events for focus to the new cloned form
+                $(newForm).find('input').focus(function() {
+                    $(this).addClass("focus");
+                });
+                $(newForm).find('input').blur(function() {
+                    $(this).removeClass("focus");
+                });
+    
+            }
+        });
+    
+    });
+    
+    </script>

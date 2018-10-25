@@ -1,0 +1,18 @@
+
+
+<form id="myform">
+        <!-- <input name="stock_request_id" id="stock_request_id" /> -->
+        <input name="item_code_id" id="item_code_id" />
+        <input name="quantity" id="quantity" />
+        <input name="pieces" id="pieces" />
+        <input type="submit" />
+</form>
+target
+<div id="target"></div>
+<script>
+        jQuery("#myform").submit(function() {
+          ajax('{{=URL('testing3')}}',
+               ['item_code_id', 'quantity', 'pieces'], 'target');
+          return false;
+        });
+</script>

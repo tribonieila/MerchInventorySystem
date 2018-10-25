@@ -1,0 +1,146 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('fmcg_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">FMCG Division</span>
+        </div>
+        <div class="card-body tab-content">
+            {{=form.custom.begin}}
+            <div class="form-horizontal" role="form">
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Item Description</label>
+                    <div class="col-sm-8">{{=form.custom.widget.item_description}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Supplier Item Reference</label>
+                    <div class="col-sm-8">{{=form.custom.widget.supplier_item_ref}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">International Barcode</label>
+                    <div class="col-sm-8">{{=form.custom.widget.int_barcode}}</div>
+                </div>                
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Local Barcode</label>
+                    <div class="col-sm-8">{{=form.custom.widget.loc_barcode}}</div>
+                </div>                
+        
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">UOM</label>
+                    <div class="col-sm-8">{{=form.custom.widget.uom}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Supplier OUM</label>
+                    <div class="col-sm-8">{{=form.custom.widget.supp_oum}}</div>
+                </div>                
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Weight</label>
+                    <div class="col-sm-8">{{=form.custom.widget.weight}}</div>
+                </div>                
+                            
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Department Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                </div>                                               
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Product Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.product_code_id}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">SubProduct Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.subproduct_code_id}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Supplier Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.supplier_code_id}}</div>
+                </div>                    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Group Line</label>
+                    <div class="col-sm-8">{{=form.custom.widget.group_line_id}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Brand Line Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.brand_line_code_id}}</div>
+                </div>                
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Brand Classfication Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.brand_cls_code_id}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Section Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.section_code_id}}</div>
+                </div>                    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Size Code</label>
+                    <div class="col-sm-8">{{=form.custom.widget.size_code_id}}</div>
+                </div>                
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Made In</label>
+                    <div class="col-sm-8">{{=form.custom.widget.made_in}}</div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Status</label>
+                    <div class="col-sm-8">{{=form.custom.widget.item_status_code_id}}</div>
+                </div>                
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label>
+                    <div class="col-sm-8">{{=form.custom.submit}}</div>
+                </div>                          
+            </div>
+            {{=form.custom.end}}
+        </div>
+    
+    </div>
+</div>                
+
+<script src="{{=URL('static','js/cascade.js')}}"></script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function($){
+        var data = [ {{for pr in db((db.Product.status_id == 1) & (db.Product.div_code_id == 2)).select(db.Product.ALL):}} 
+            { text:'{{=pr.product_code}} - {{=pr.product_name}}', value:'{{=pr.id}}',
+                children: [{{for sp in db((db.SubProduct.status_id == 1) & (db.SubProduct.product_code_id == pr.id)).select(db.SubProduct.ALL):}}
+                    { text: '{{=sp.subproduct_code}} - {{=sp.subproduct_name}}', value: '{{=sp.id}}'}, {{pass}}
+                ],
+            }, {{pass}}
+        ];
+        $('#no_table_product_code_id').cascadingSelect({
+            subSelects: ['#no_table_subproduct_code_id'],
+            data: data
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function($){
+
+        var data = [ {{for s in db(db.Supplier_Master.status_id == 1).select():}}
+            { text: '{{=s.supp_code}} - {{=s.supp_name}}', value: '{{=s.id}}',
+                children: [ {{for g in db((db.GroupLine.status_id == 1) & (db.GroupLine.supplier_id == s.id)).select(db.GroupLine.ALL):}}
+                    { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
+                        children: [ {{for b in db((db.Brand_Line.status_id == 1) & (db.Brand_Line.group_line_id == g.id)).select(db.Brand_Line.ALL):}}
+                            { text: '{{=b.brand_line_code}} - {{=b.brand_line_name}}', value: '{{=b.id}}',
+                                children: [ {{for c in db((db.Brand_Classification.status_id == 1) & (db.Brand_Classification.brand_line_code_id == b.id)).select(db.Brand_Classification.ALL):}}
+                                    { text: '{{=c.brand_cls_code}} - {{=c.brand_cls_name}}', value: '{{=c.id}}'}, {{pass}}
+                                ],
+                            }, {{pass}}
+                        ], 
+                    }, {{pass}}
+                ],
+            }, {{pass}}
+        ];
+        $('#no_table_supplier_code_id').cascadingSelect({
+            subSelects: ['#no_table_group_line_id','#no_table_brand_line_code_id','#no_table_brand_cls_code_id'],
+            data: data
+        });
+    });
+</script>

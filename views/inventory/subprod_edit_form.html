@@ -19,19 +19,16 @@
                         <p class="help-block">autogenerate</p></div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">Department Code</label>
-                        <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                        <label class="col-sm-2 control-label">Division Code</label>
+                        <div class="col-sm-8">{{=form.custom.widget.div_code_id}}</div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Product Code</label>
-                        <div class="col-sm-8">
-                                {{=form.custom.widget.product_code_id}}
-                        </div>                            
+                        <div class="col-sm-8">{{=form.custom.widget.product_code_id}}</div>                            
                     </div>       
                     <div class="form-group">
                         <label for="subproduct_name" class="col-sm-2 control-label">Sub-Product Name</label>
-                        <div class="col-sm-8">{{=form.custom.widget.subproduct_name}}
-                            </div>
+                        <div class="col-sm-8">{{=form.custom.widget.subproduct_name}}</div>
                     </div>                 
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Status</label>
@@ -49,20 +46,19 @@
 </div>
 
 <script src="{{=URL('static','js/cascade.js')}}"></script>
-
 <script type="text/javascript">
-    $.noConflict();
-        jQuery(function($) { 
-          var data = [ {{for x in db(db.Department.status_id == 1).select(db.Department.id, db.Department.dept_name):}}
-            { text: '{{=x.dept_name}}', value: '{{=x.id}}', children: [ {{for y in db((db.Product.dept_code_id == x.id) & (db.Product.status_id == 1)).select(db.Product.product_code, db.Product.id  ):}}
-                { text:'{{=y.product_code}}', value:'{{=y.id}}'}, {{pass}}]}, {{pass}}   
-          ];       
-          $('#SubProduct_dept_code_id').cascadingSelect({
+    jQuery(document).ready(function($){
+        var data = [ {{for d in db(db.Division.status_id == 1).select(db.Division.ALL):}}
+            { text: '{{=d.div_code}} - {{=d.div_name}}', value:'{{=d.id}}',
+                children: [ {{for p in db((db.Product.status_id == 1) & (db.Product.div_code_id == d.id)).select(db.Product.ALL):}}
+                    { text: '{{=p.product_code}} - {{=p.product_name}}', value: '{{=p.id}}'}, {{pass}}
+                ],
+            }, {{pass}}
+        ];
+        $('#SubProduct_div_code_id').cascadingSelect({
             subSelects: ['#SubProduct_product_code_id'],
             data: data
         });
-    
-        })();
-    
-      </script>
-      
+
+    });
+</script>

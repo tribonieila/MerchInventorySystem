@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">LINK</a></li>                
+                <li class=""><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">ITEM MASTER FORM</span>
+        </div>
+        <div class="card-body tab-content">
+                <div>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#item" aria-controls="item" role="tab" data-toggle="tab">item profile</a></li>
+                            <li role="presentation"><a href="#price" aria-controls="price" role="tab" data-toggle="tab">item prices</a></li>
+                            <li role="presentation"><a href="#stocks" aria-controls="stocks" role="tab" data-toggle="tab">item stocks</a></li>
+                            <li role="presentation"><a href="#batch" aria-controls="batch" role="tab" data-toggle="tab">batch info</a></li>
+                            <li role="presentation"><a href="#sales" aria-controls="sales" role="tab" data-toggle="tab">sales quantity</a></li>
+                        </ul>
+                      
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane active" id="item">ITEM DETAILS
+                                <!-- {{=LOAD('inventory','itm_link_profile.load', ajax = True)}} -->
+                                <!-- record = db.ads_vehicle(request.args(0)) or redirect(URL('error'))
+                                form = SQLFORM(db.ads_vehicle, record, showid = False) -->
+                                {{=SQLFORM(db.Item_Master,  request.args(0))}}
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="price">PRICE DETAILS
+                                {{=SQLFORM(db.Item_Prices, request.args(0) or redirect(URL('#')), readonly = True)}}</div>
+                            <div role="tabpanel" class="tab-pane" id="stocks">SALES DETAILS
+                                {{=SQLFORM(db.Stock_File, request.args(0), readonly = True)}}                                </div>
+                            <div role="tabpanel" class="tab-pane" id="batch">STOCK DETAILS</div>
+                            <div role="tabpanel" class="tab-pane" id="sales">LOCATION DETAILS</div>
+                        </div>
+                      
+                      </div>
+                    
+        </div>    
+</div>
+</div>

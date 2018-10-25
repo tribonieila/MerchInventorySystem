@@ -1,0 +1,177 @@
+{{extend 'layout.html'}}
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right data-toggle="tabs">
+                <li class="active"><a  href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">Supplier</span>                                                
+        </div>
+        <div class="card-body tab-content">		
+                
+                        <div class="card">
+                            <div class="card-head">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a href="#first1" role="tab" data-toggle="tab">NEW SUPPLIER</a></li>
+                                    <li role="presentation"><a href="#second1" role="tab" data-toggle="tab">ADDRESSES</a></li>
+                                    <li role="presentation"><a href="#third1" role="tab" data-toggle="tab">PAYMENT DETAILS</a></li>
+                                    <li role="presentation"><a href="#fourth1" role="tab" data-toggle="tab">BANK DETAILS</a></li>
+                                    <li role="presentation"><a href="#fifth1" role="tab" data-toggle="tab">DEPARTMENT</a></li>
+                                </ul>
+                            </div><!--end .card-head -->
+                            <div class="card-body tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="first1">						                                       
+                                    {{=form.custom.begin}}					
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier Code</label>
+                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_code" id="supp_code" value="{{=ctr_val}}" readonly>
+                                            <p class="help-block">autogenerate</p></div>
+                                        </div>                                         
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier IB Account</label>
+                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_ib_acct_ctr" id="supp_ib_acct_ctr" value="{{=supp_ib_acct_ctr}}" readonly>
+                                            <p class="help-block">autogenerate</p></div>
+                                        </div>   
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier Purchase Account</label>
+                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_pu_acct_ctr" id="supp_pu_acct_ctr" value="{{=supp_pu_acct_ctr}}" readonly>
+                                            <p class="help-block">autogenerate</p></div>
+                                        </div>   
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier Sales Account</label>
+                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_sa_acct_ctr" id="supp_sa_acct_ctr" value="{{=supp_sa_acct_ctr}}" readonly>
+                                            <p class="help-block">autogenerate</p></div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Department</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier Name</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.supp_name}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Supplier Type</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.supplier_type}}</div>
+                                        </div>                                                                                                                                       
+    
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Contact Person</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.contact_person}}</div>
+                                        </div>                                                                                                                                       
+                                                
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Address Line 1</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.address_1}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Address Line 2</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.address_2}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Country</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.country_id}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Contact No</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.contact_no}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Fax No</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.fax_no}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Email Address</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.email_address}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Currency</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.currency_id}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Purchase Budget</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.purchase_budget}}</div>
+                                        </div>                                                                                                                                       
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">Status</label>
+                                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                                        </div>                                                                                                                                       
+                                                                        
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label"></label>
+                                            <div class="col-sm-8">{{=form.custom.submit}}</div>
+                                            
+                                        </div>                                         
+                                    </div>
+                                    {{=form.custom.end}}
+                                    
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="second1">						
+                                        {{=LOAD('inventory','step2.load',ajax=True)}}
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="third1">						
+                                        {{=LOAD('inventory','step3.load',ajax=True)}}
+                                        <!-- <button type="button" class="btn btn-primary">PREVIOUS</button> -->                                    
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="fourth1">
+                                        {{=LOAD('inventory','step4.load',ajax=True)}}
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="fifth1">
+                                        {{=LOAD('inventory','step5.load',ajax=True)}}
+                                </div>
+                            </div><!--end .card-body -->
+                        </div><!--end .card -->
+                        
+                    
+        </div>        
+    </div>
+</div>
+<script type="text/javascript">
+    jQuery(document).ready(function($){
+        // if(jQuery('#step1').submit())
+        // var form = document.getElementById("step1").submit();
+        // $('#second1').hide();
+        // $('#third1').hide();
+        // $('#fourth1').hide();
+        // $('#fifth1').hide();
+        // $('#second1').attr('class', 'disabled');
+        $("form").submit(function(){
+            // $('#second1').removeAttr('class', 'disabled'); 
+            // $('#second1').removeClass('disabled');
+            // activaTab('second1')
+            // $('#second1').tab('show')
+            // $('#second1').show();
+            // $('#third1').show();
+            // $('#fourth1').show();
+            // $('#fifth1').show();
+
+            // $(".nav-tabs li[role=presentation]").on("click", function(e) {
+            //     if ($(this).hasClass("enabled")) {
+            //         e.preventDefault();
+            //         return false;
+            //     }
+            // });
+            // alert('click');
+        })
+        // function activaTab(tab){
+        //     $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+        // };
+
+    });
+
+
+// var form = document.getElementById("step1").submit();
+// alert('click');
+
+// document.getElementById("_id").addEventListener("click", function () {
+//   form.submit();
+// });
+// $(document).ready(function(){
+//     $("form").submit(function(){
+//         alert("Submitted");
+//     });
+// });
+</script>

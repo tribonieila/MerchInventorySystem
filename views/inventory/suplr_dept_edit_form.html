@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline"> 
+        <div class="card-head">
+            <span class="card-title">Supplier Department: {{=supplier_id.supp_name}}</span>                                                
+        </div>
+        <div class="card-body tab-content">			
+                {{=form.custom.begin}}					
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Supplier</label>
+                        <div class="col-sm-8"><input type="text" class="form-control" id="supp_code" value="{{=supplier_id.supp_code}}" readonly ></div>
+                    </div>    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Department</label>
+                        <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                    </div>    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Status</label>
+                        <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                    </div>                        
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-8">{{=form.custom.submit}}</div>
+                    </div>                                    
+                </div>
+                {{=form.custom.end}}
+            
+        </div>        
+    </div>
+</div>
+
+<script>
+    // $(document).ready( function () {
+    //     $('table').DataTable();
+    // } );
+</script>
+
+

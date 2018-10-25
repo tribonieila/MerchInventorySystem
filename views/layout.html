@@ -21,34 +21,32 @@
     <meta name="google-site-verification" content="">
 
 	<!-- include stylesheets -->
-	<!-- <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet"> -->
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/> -->
 	<link rel="stylesheet" href="{{=URL('static','css/bootstrap.min.css')}}"/>
 	<link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap4.css')}}"/>	
-	
-	
 	<link rel="shortcut icon" href="{{=URL('static','images/merch_logo_9VV_icon.ico')}}" type="image/x-icon">
     <link rel="apple-touch-icon" href="{{=URL('static','images/merch_logo.png')}}">		
 
 	<!-- BEGIN STYLESHEETS -->
 	<link href='http://fonts.googleapis.com/css?family=Roboto:300italic,400italic,300,400,500,700,900' rel='stylesheet' type='text/css'/>
-	<link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/bootstrap.css?1422823238" />
-	
-	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/materialadmin.css?1422823243" /> -->
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/bootstrap.css?1422823238" /> -->
+	<link rel="stylesheet" href="{{=URL('static','css/bootstrap-admin.css')}}"/>
 	<link rel="stylesheet" href="{{=URL('static','css/material-admin.css')}}"/>
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/materialadmin.css?1422823243" /> -->
+	
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/font-awesome.min.css?1422823239" /> -->
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/material-design-iconic-font.min.css?1422823240" /> -->
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/libs/rickshaw/rickshaw.css?1422823372" /> -->
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/libs/morris/morris.core.css?1422823370" /> -->
 	<!-- END STYLESHEETS -->	
 	
-	<!-- <link rel="stylesheet" href="{{=URL('static','css/bootstrap-admin.css')}}"/> -->
+	
 	<!-- <link rel="stylesheet" href="{{=URL('static','css/font-awesome-admin.css')}}"/> -->
 	<!-- <link rel="stylesheet" href="{{=URL('static','fontawesome/css/fontawesome.css')}}"/> -->
 	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>	
-	<link rel="stylesheet" href="{{=URL('static','css/styles.css')}}"/>	
 	
+	<link rel="stylesheet" href="{{=URL('static','css/styles.css')}}"/>	
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
 	
 
@@ -120,12 +118,6 @@
 				
 			<section>
 				<div class="section-body">		
-						
-						<!-- <div class="flash">{{=response.flash or ''}}</div> -->
-					<!-- <div class="col-lg-12">							
-						<h3 class="text-primary">Merch & Partners Co. WLL.</h3>
-						<img class="materialboxed" width="100" src="{{=URL('static','images/merch_logo.png')}}">
-					</div> -->
 					{{block center}}
 					{{include}}
 					{{end}}
@@ -134,7 +126,7 @@
 
 		</div><!--end #content-->		
 		<!-- END CONTENT -->
-		{{if (auth.user_id != None) &  (auth.has_membership(role = 'ROOT')):}}
+		
 		<!-- BEGIN MENUBAR-->
 		<div id="menubar" class="menubar-inverse ">
 			<div class="menubar-fixed-panel">
@@ -153,29 +145,28 @@
 				<!-- BEGIN MAIN MENU -->
 				<!-- <i class="fas fa-[NAME]"></i> -->
 			
-
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ROOT')):}}
 			<ul id="main-menu" class="gui-controls">
-				<li class="active expanding">
-					<a href="#" class="active"><div class="gui-icon"><i class="md md-home"></i></div><span class="title">Dashboard</span></a>
-				</li>
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
 				
 				<li><a><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
 					<ul>
 						<li class="gui-folder expanded">
-							<a href="javascript:void(0);"><span class="title">Item Master</span></a>					
+							<a href="javascript:void(0);"><span class="title">Division Item Master</span></a>					
 							<ul>
-								<li><a href="{{=URL('inventory','prod_mas')}}"	 ><span class="title">Beauty Division</span></a></li>
-								<li><a href="{{=URL('inventory','fmcg_grid')}}" ><span class="title">FMCG Division</span></a></li>
+								<li><a href="{{=URL('inventory','itm_mas')}}"	 ><span class="title">Item Master</span></a></li>
+								<!-- <li><a href="{{=URL('inventory','fmcg_mas')}}" ><span class="title">FMCG Division</span></a></li>
 								<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Retail Division</span></a></li>
-								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Supply & Perfumes Div</span></a></li>
+								<li><a href="{{=URL('inventory','itm_mas')}}" ><span class="title">Item Master Division</span></a></li> -->
+								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Supply/Services Master</span></a></li>
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
 							<ul>
-								<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Product</span></a></li>
-								<li><a href="{{=URL('inventory','subprod_mas')}}" ><span class="title">Sub-Product</span></a></li>
 								<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Supplier</span></a></li>
+								<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Product</span></a></li>
+								<li><a href="{{=URL('inventory','subprod_mas')}}" ><span class="title">Sub-Product</span></a></li>								
 								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Group Line</span></a></li>
 								<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
 								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
@@ -186,7 +177,7 @@
 							<ul>
 								<li><a href="{{=URL('inventory', 'stk_req_form')}}" ><span class="title">Stock Request</span></a></li>
 								<li><a href="{{=URL('inventory', 'stk_tns_form')}}" ><span class="title">Stock Transfer</span></a></li>
-								<li><a href="{{=URL('inventory', 'stk_rcpt_form')}}" ><span class="title">Stock Receiept</span></a></li>
+								<li><a href="{{=URL('inventory', 'stk_rcpt_form')}}" ><span class="title">Stock Receipt</span></a></li>
 								<li><a href="{{=URL('inventory', 'stk_rcpt_form')}}" ><span class="title">Adjustment (+/-)</span></a></li>			
 							</ul>
 						</li>
@@ -200,10 +191,22 @@
 								<li><a href="{{=URL('inventory','sec_mas')}}" ><span class="title">Section</span></a></li>
 								<li><a href="{{=URL('inventory','stat_mas')}}" ><span class="title">Item Status</span></a></li>
 								<li><a href="{{=URL('inventory','recst_mas')}}" ><span class="title">Record Status</span></a></li>
+								<li><a href="{{=URL('inventory','itm_typ_mas')}}" ><span class="title">Item Type</span></a></li>
+								<li><a href="{{=URL('inventory','itmsze_mas')}}" ><span class="title">Item Size</span></a></li>								
 								<li><a href="{{=URL('inventory','gndr_mas')}}" ><span class="title">Gender</span></a></li>
+								<li><a href="{{=URL('inventory','uom_mas')}}" ><span class="title">UOM</span></a></li>
+								<li><a href="{{=URL('inventory','trans_itm_cat_mas')}}" ><span class="title">Trans Item Category</span></a></li>
+								<li><a href="{{=URL('inventory','suplr_uom_mas')}}" ><span class="title">Supplier UOM</span></a></li>
+								<li><a href="{{=URL('inventory','col_mas')}}" ><span class="title">Color</span></a></li>
+								<li><a href="{{=URL('inventory','curr_mas')}}" ><span class="title">Currrency</span></a></li>
+								<li><a href="{{=URL('inventory','mdein_mas')}}" ><span class="title">Made In</span></a></li>
 								<li><a href="{{=URL('inventory','locgrp_mas')}}" ><span class="title">Location Group</span></a></li>							
 								<li><a href="{{=URL('inventory','loc_mas')}}" ><span class="title">Location</span></a></li>							
 								<li><a href="{{=URL('inventory','frgtype_mas')}}" ><span class="title">Fragrance Type</span></a></li>
+								<li><a href="{{=URL('inventory','supp_trd_trms')}}" ><span class="title">Supplier Trade Terms</span></a></li>
+								<li><a href="{{=URL('inventory','supp_pay_mode')}}" ><span class="title">Supplier Payment Mode</span></a></li>
+								<li><a href="{{=URL('inventory','supp_pay_term')}}" ><span class="title">Supplier Payment Terms</span></a></li>
+								<li><a href="{{=URL('inventory','forw_supp')}}" ><span class="title">Forwarder Supplier</span></a></li>
 
 							</ul>
 						</li>
@@ -233,7 +236,7 @@
 
 			</ul>
 			{{pass}}
-			<!-- {{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY')):}} -->
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
 				<li><a><div class="gui-icon"><i class="md fas fa-pallet"></i></div><span class="title">ITEM MASTER</span></a>
@@ -268,7 +271,7 @@
 				</li>
 				<li><a><div class="gui-icon"><i class="md fas fa-file"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
-			<!-- {{pass}} -->
+			{{pass}}
 		<!--end .main-menu -->
 				<!-- END MAIN MENU -->
 
@@ -280,6 +283,7 @@
 			</div><!--end .menubar-scroll-panel-->
 		</div>
 		
+		
 		<!--end #menubar-->
 		<!-- END MENUBAR -->
 
@@ -289,16 +293,26 @@
 
 
 
-    <!-- The javascript =============================== -->
+	<!-- The javascript =============================== -->
+	
 	<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
 	<script src="{{=URL('static','js/bootstrap.min.js')}}"></script>
 	<script src="{{=URL('static','js/web2py-bootstrap4.js')}}"></script>
 
-    <script src="{{=URL('static','materialize/js/materialize.js')}}"></script>
+
+	<!-- The external javascript ===================== -->
 	
+	<!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> -->
+	<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
+
+	<!-- <script src="{{=URL('static','materialize/js/materialize.js')}}"></script> -->
 	
-  	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+
+	
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script> -->
 
     {{block page_js}}{{end page_js}}
     {{if response.google_analytics_id:}}
@@ -317,23 +331,26 @@
 	<!-- BEGIN JAVASCRIPT -->
 		
 	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery/jquery-1.11.2.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery/jquery-migrate-1.2.1.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/bootstrap/bootstrap.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/spin.js/spin.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/autosize/jquery.autosize.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/moment/moment.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/ec2c8835c9f9fbb7b8cd36464b491e73.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery-knob/jquery.knob.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/sparkline/jquery.sparkline.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/nanoscroller/jquery.nanoscroller.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/43ef607ee92d94826432d1d6f09372e1.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/rickshaw/rickshaw.min.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/63d0445130d69b2868a8d28c93309746.js"></script>
-	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/demo/Demo.js"></script>
-
-	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/demo/DemoDashboard.js"></script> -->
 	
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery/jquery-migrate-1.2.1.min.js"></script> -->
+	
+	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/bootstrap/bootstrap.min.js"></script> 
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/spin.js/spin.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/autosize/jquery.autosize.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/moment/moment.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/ec2c8835c9f9fbb7b8cd36464b491e73.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery-knob/jquery.knob.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/sparkline/jquery.sparkline.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/nanoscroller/jquery.nanoscroller.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/43ef607ee92d94826432d1d6f09372e1.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/rickshaw/rickshaw.min.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/cache/63d0445130d69b2868a8d28c93309746.js"></script> -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/demo/Demo.js"></script> -->
+	
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/core/demo/DemoDashboard.js"></script> -->
+	<script src="{{=URL('static','js/jquery.nanoscroller.min.js')}}"></script>
+	<script src="{{=URL('static','js/admin.js')}}"></script>
 	<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-
+	<!-- <script src="{{=URL('static','js/ace-extra.min.js')}}"></script> -->
   </body>
 </html>

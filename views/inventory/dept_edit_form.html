@@ -7,11 +7,18 @@
                         <li class="active"><a href="#tab1">EDIT</a></li>                          
                         <li><a href="#" onclick=window.location="{{=URL('dept_mas')}}";>BROWSE</a></li>
                 </ul>                                    
-                <span class="card-title">Department</span>
+                <span class="card-title">DEPARTMENT MASTER</span>
             </div>
             <div class="card-body tab-content">
                     {{=form.custom.begin}}
                     <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Division</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.div_code_id}}                                    
+                            </div>
+                        </div>
+        
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Department Code</label>
                             <div class="col-sm-8">
@@ -19,17 +26,21 @@
                                 <p class="help-block">autogenerate</p></div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">Division</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.div_code_id}}                                    
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">Department</label>
+                            <label class="col-sm-2 control-label">Department Name</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.dept_name}}                                    
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Order Qty</label>
+                            <div class="col-sm-6">
+                                {{=form.custom.widget.order_qty}}                                    
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-danger">Initiate default qty</button>    
+                            </div>
+
+                        </div>                        
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Status</label>
                             <div class="col-sm-8">
@@ -39,8 +50,9 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label"></label>
                             <div class="col-sm-8">
-                                {{=form.custom.submit}}                                    
+                                    {{=form.custom.submit}}                                    
                             </div>
+                            
                         </div>        
     
                     </div>

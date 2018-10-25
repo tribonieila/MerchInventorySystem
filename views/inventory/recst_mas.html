@@ -2,22 +2,23 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class=""><a href="#" onclick=window.location="{{=URL('recst_add_form')}}";>+ ADD NEW</a></li>
-                <li class="active"><a href="#">BROWSE</a></li>
-            </ul>
-            <span class="card-title">Record Status</span>
+            <span class="card-title">RECORD STATUS</span>
         </div>
         <div class="card-body tab-content">
-                {{=table}}
+            {{=form.custom.begin}}					
+            <div class="form-horizontal">   
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Record Status</label>
+                    <div class="col-sm-8">{{=form.custom.widget.status}}</div>    
+                </div>   
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label>
+                    <div class="col-sm-8">{{=form.custom.submit}}</div>                    
+                </div>                
+            </div>
+            {{=form.custom.end}}            
+            {{=table}}
         </div>
-    
     </div>
 </div>
 
-
-<script>
-    $(document).ready( function () {
-        $('table').DataTable();
-    } );
-</script>

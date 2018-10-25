@@ -23,21 +23,3 @@
         $('table').DataTable();
     } );
 </script>
-
-<script src="{{=URL('static','js/cascade.js')}}"></script>
-
-<script type="text/javascript">
-$.noConflict();
-    jQuery(function($) { 
-      var data = [ {{for x in db().select(db.GroupLine.id, db.GroupLine.group_line_code, db.GroupLine.group_line_name):}}
-        { text: '{{=x.group_line_code}} - {{=x.group_line_name}}', value: '{{=x.id}}', children: [ {{for y in db(db.Brand_Line.group_line_id == x.id).select(db.Brand_Line.brand_line_code, db.Brand_Line.brand_line_name, db.Brand_Line.id  ):}}
-            { text:'{{=y.brand_line_code}} - {{=y.brand_line_name}}', value:'{{=y.id}}'}, {{pass}}]}, {{pass}}   
-      ];       
-      $('#no_table_group_line_code_id').cascadingSelect({
-        subSelects: ['#no_table_brand_line_code_id'],
-        data: data
-    });
-
-    })();
-
-</script>

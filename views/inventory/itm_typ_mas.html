@@ -1,0 +1,41 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+        <span class="card-title">ITEM TYPE MASTER</span>
+        </div>
+        <div class="card-body tab-content">		
+            {{=form.custom.begin}}
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Mnemonic</label> 
+                    <div class="col-sm-8">{{=form.custom.widget.mnemonic}}</div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Description</label> 
+                    <div class="col-sm-8">{{=form.custom.widget.description}}</div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Status</label> 
+                    <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label> 
+                    <div class="col-sm-8">{{=form.custom.submit}}</div>
+                </div>            
+            </div>
+            {{=form.custom.end}}
+            			
+
+            {{=table}}
+        </div>
+    
+</div>
+</div>
+
+
+
+
+
+
+

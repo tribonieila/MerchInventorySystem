@@ -1,0 +1,77 @@
+{{extend 'layout.html'}}
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW</a></li>                
+                <li class=""><a href="#" onclick=window.location="{{=URL('fmcg_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">FMCG Division</span>
+        </div>
+        <div class="card-body tab-content">
+            
+            <div class="row">
+                <div class="col"><p class="text-right">Division</p></div>
+                <div class="col">{{=form.div_code_id.div_name}}</div>
+                <div class="col"><p class="text-right">Item Code</p></div>
+                <div class="col">{{=form.item_code}}</div>
+            </div>
+            <div class="row">
+                <div class="col"><p class="text-right">Item Description</p></div>
+                <div class="col">{{=form.item_description}}</div>
+                <div class="col"><p class="text-right">Supplier Item Reference</p></div>
+                <div class="col">{{=form.supplier_item_ref}}</div>
+            </div>            
+            <div class="row">
+                <div class="col"><p class="text-right">Iternational Barcode</p></div>
+                <div class="col">{{=form.int_barcode}}</div>
+                <div class="col"><p class="text-right">Local Barcode</p></div>
+                <div class="col">{{=form.loc_barcode}}</div>
+            </div>            
+            <div class="row">
+                <div class="col"><p class="text-right">UOM</p></div>
+                <div class="col">{{=form.uom}}</div>
+                <div class="col"><p class="text-right">Supplier UOM</p></div>
+                <div class="col">{{=form.supp_oum}}</div>
+            </div>  
+            <div class="row">
+                <div class="col"><p class="text-right">Weight</p></div>
+                <div class="col">{{=form.weight}}</div>
+                <div class="col"><p class="text-right">Department Name</p></div>
+                <div class="col">{{=form.dept_code_id.dept_name}}</div>
+            </div>              
+            <div class="row">
+                <div class="col"><p class="text-right">Supplier</p></div>
+                <div class="col">{{=form.supplier_code_id.supp_name}}</div>
+                <div class="col"><p class="text-right">Product</p></div>
+                <div class="col">{{=form.product_code_id.product_name}}</div>
+            </div>              
+            <div class="row">
+                <div class="col"><p class="text-right">SubProduct</p></div>
+                <div class="col">{{=form.subproduct_code_id.subproduct_name}}</div>
+                <div class="col"><p class="text-right">Group Line</p></div>
+                <div class="col">{{=form.group_line_id.group_line_name}}</div>
+            </div>              
+            <div class="row">
+                <div class="col"><p class="text-right">Brand Line</p></div>
+                <div class="col">{{=form.brand_line_code_id.brand_line_name}}</div>
+                <div class="col"><p class="text-right">Brand Classification</p></div>
+                <div class="col">{{=form.brand_cls_code_id.brand_cls_name}}</div>
+            </div>              
+            <div class="row">
+                <div class="col"><p class="text-right">Section</p></div>
+                <div class="col">{{=form.section_code_id.section_name}}</div>
+                <div class="col"><p class="text-right">Size</p></div>
+                <div class="col">{{=form.size_code_id.size_name}}</div>
+            </div>              
+            <div class="row">
+                <div class="col"><p class="text-right">Made-In</p></div>
+                <div class="col">{{=form.made_in}}</div>
+                <div class="col"><p class="text-right">Status</p></div>
+                <div class="col">{{=form.item_status_code_id.status}}</div>
+            </div>              
+                    
+        </div>    
+</div>
+</div>

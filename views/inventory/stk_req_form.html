@@ -1,5 +1,72 @@
 {{extend 'layout.html'}}
-<h1>Stock Request Form</h1>
+<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+
+<div id="app">    
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li>
+                    <li class="active"><a href="#">BROWSE</a></li>
+                </ul>
+                <span class="card-title">STOCK REQUEST FORM</span>
+            </div>
+            <div class="card-body tab-content">
+                <template>
+                    <el-table :data="tableData" style="width: 100%">
+                        <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
+                        <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
+                        <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
+                        <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
+                        <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
+                        <el-table-column prop="stk_tra" label="Stock Transaction No" width="200"></el-table-column>
+                        <el-table-column prop="stk_rec" label="Stock Receipt No" width="200"></el-table-column>
+                        <el-table-column prop="stat" label="Status" width="300"></el-table-column>
+                        <el-table-column fixed="right" label="Actions" width="190">
+                            <template slot-scope="scope">
+                                <el-button @click="handleClick" type="success" icon="el-icon-goods" size="mini"  ></el-button>
+                                <el-button type="warning" icon="el-icon-search" size="mini"  circle></el-button>
+                                <el-button type="primary" icon="el-icon-edit" size="mini" circle></el-button>                                                                
+                                <el-button @click="del_req" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </template>
+            </div>
+        </div>                
+    </div>
+</div>
+
+<script>
+var Main = {
+    methods: {
+      handleClick() {
+        console.log('click');
+      }
+    },
+    data() {
+      return {
+        tableData: [{{for s in db(db.Stock_Request).select():}}
+        {
+          date: '{{=s.stock_request_date}}',
+          req_no: '{{=s.stock_request_no}}',
+          stk_src: '{{=s.stock_source_id.location_name}}',
+          stk_des: '{{=s.stock_destination_id.location_name}}',
+          stat: '{{=s.srn_status_id.description}}',
+          amount: '{{=s.total_amount}}',
+          stk_tra: '{{=s.stv_no}}',
+          stk_rec: '{{=s.src_no}}',
+          tag: '{{=s.id}}',                
+        },{{pass}}]
+      }
+    }
+  }
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>
 
 
 
