@@ -1,0 +1,336 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.5
+-- Dumped by pg_dump version 10.5
+
+-- Started on 2018-10-30 12:05:57 +03
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 311 (class 1259 OID 21251)
+-- Name: Item_Master; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Item_Master" (
+    id integer NOT NULL,
+    supplier_item_ref character varying(20),
+    int_barcode character varying(20),
+    loc_barcode character varying(20),
+    purchase_point integer,
+    uom_value integer,
+    uom_id integer,
+    supplier_uom_value integer,
+    supplier_uom_id integer,
+    weight_value integer,
+    weight_id integer,
+    type_id integer,
+    division_id integer,
+    dept_code_id integer,
+    supplier_code_id integer,
+    product_code_id integer,
+    subproduct_code_id integer,
+    group_line_id integer,
+    brand_line_code_id integer,
+    brand_cls_code_id integer,
+    section_code_id integer,
+    size_code_id integer,
+    gender_code_id integer,
+    fragrance_code_id integer,
+    color_code_id integer,
+    collection_code_id integer,
+    made_in_id integer,
+    item_status_code_id integer,
+    created_on timestamp without time zone,
+    created_by integer,
+    updated_on timestamp without time zone,
+    updated_by integer,
+    item_code character varying(15),
+    item_description_ar character varying(50),
+    item_description character varying(50),
+    selective_tax character varying(25),
+    vat_percentage character varying(25)
+);
+
+
+ALTER TABLE public."Item_Master" OWNER TO postgres;
+
+--
+-- TOC entry 310 (class 1259 OID 21249)
+-- Name: Item_Master_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."Item_Master_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Item_Master_id_seq" OWNER TO postgres;
+
+--
+-- TOC entry 3233 (class 0 OID 0)
+-- Dependencies: 310
+-- Name: Item_Master_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."Item_Master_id_seq" OWNED BY public."Item_Master".id;
+
+
+--
+-- TOC entry 3081 (class 2604 OID 21254)
+-- Name: Item_Master id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master" ALTER COLUMN id SET DEFAULT nextval('public."Item_Master_id_seq"'::regclass);
+
+
+--
+-- TOC entry 3227 (class 0 OID 21251)
+-- Dependencies: 311
+-- Data for Name: Item_Master; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Item_Master" (id, supplier_item_ref, int_barcode, loc_barcode, purchase_point, uom_value, uom_id, supplier_uom_value, supplier_uom_id, weight_value, weight_id, type_id, division_id, dept_code_id, supplier_code_id, product_code_id, subproduct_code_id, group_line_id, brand_line_code_id, brand_cls_code_id, section_code_id, size_code_id, gender_code_id, fragrance_code_id, color_code_id, collection_code_id, made_in_id, item_status_code_id, created_on, created_by, updated_on, updated_by, item_code, item_description_ar, item_description, selective_tax, vat_percentage) FROM stdin;
+8	4	4	4	40	1	5	1	5	1	1	3	2	2	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-14 17:46:34	7	2018-10-14 17:46:34	7	0000100004	\N	desc 4		
+5	1	1	1	40	10	5	1	5	1	1	3	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-14 17:44:20	7	2018-10-14 17:44:20	7	0000100001	\N	desc 1		
+6	2	2	2	40	20	5	1	5	1	1	3	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-14 17:44:20	7	2018-10-14 17:44:20	7	0000100002	\N	desc 2		
+7	3	3	3	40	30	5	1	5	1	1	3	2	2	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-14 17:46:34	7	2018-10-14 17:46:34	7	0000100003	\N	desc 3		
+14				40	1	5	1	5	1	1	3	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-25 11:30:43	7	2018-10-25 11:30:43	7	0000100007	\N	desc 1		
+15	9999	987654321	1234567778	40	1	5	1	5	1	1	2	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-25 11:32:18	7	2018-10-25 11:32:18	7	0000100008	\N	desc 7		
+16	8888	8976543	1273784	40	1	5	1	5	1	1	2	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-25 11:32:18	7	2018-10-25 11:32:18	7	0000100009	\N	desc 8		
+9	5	5	5	40	1	5	1	5	1	1	3	2	3	1	4	6	1	1	5	1	2	1	1	2	2	2	1	2018-10-14 18:25:31	7	2018-10-14 18:25:31	7	0000100005	\N	DESC 5		
+13	6	6	6	40	1	5	1	5	1	1	3	2	3	1	4	6	1	1	5	1	1	1	1	2	2	2	1	2018-10-25 11:30:43	7	2018-10-25 11:30:43	7	0000100006	\N	description		
+\.
+
+
+--
+-- TOC entry 3234 (class 0 OID 0)
+-- Dependencies: 310
+-- Name: Item_Master_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Item_Master_id_seq"', 16, true);
+
+
+--
+-- TOC entry 3083 (class 2606 OID 21259)
+-- Name: Item_Master Item_Master_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_pkey" PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3094 (class 2606 OID 21310)
+-- Name: Item_Master Item_Master_brand_cls_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_brand_cls_code_id_fkey" FOREIGN KEY (brand_cls_code_id) REFERENCES public."Brand_Classification"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3093 (class 2606 OID 21305)
+-- Name: Item_Master Item_Master_brand_line_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_brand_line_code_id_fkey" FOREIGN KEY (brand_line_code_id) REFERENCES public."Brand_Line"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3100 (class 2606 OID 21340)
+-- Name: Item_Master Item_Master_collection_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_collection_code_id_fkey" FOREIGN KEY (collection_code_id) REFERENCES public."Item_Collection"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3099 (class 2606 OID 21335)
+-- Name: Item_Master Item_Master_color_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_color_code_id_fkey" FOREIGN KEY (color_code_id) REFERENCES public."Color_Code"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3103 (class 2606 OID 21355)
+-- Name: Item_Master Item_Master_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_created_by_fkey" FOREIGN KEY (created_by) REFERENCES public.auth_user(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3088 (class 2606 OID 21280)
+-- Name: Item_Master Item_Master_dept_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_dept_code_id_fkey" FOREIGN KEY (dept_code_id) REFERENCES public."Department"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3087 (class 2606 OID 21275)
+-- Name: Item_Master Item_Master_division_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_division_id_fkey" FOREIGN KEY (division_id) REFERENCES public."Division"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3098 (class 2606 OID 21330)
+-- Name: Item_Master Item_Master_fragrance_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_fragrance_code_id_fkey" FOREIGN KEY (fragrance_code_id) REFERENCES public."Fragrance_Type"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3097 (class 2606 OID 21325)
+-- Name: Item_Master Item_Master_gender_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_gender_code_id_fkey" FOREIGN KEY (gender_code_id) REFERENCES public."Gender"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3092 (class 2606 OID 21300)
+-- Name: Item_Master Item_Master_group_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_group_line_id_fkey" FOREIGN KEY (group_line_id) REFERENCES public."GroupLine"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3102 (class 2606 OID 21350)
+-- Name: Item_Master Item_Master_item_status_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_item_status_code_id_fkey" FOREIGN KEY (item_status_code_id) REFERENCES public."Status"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3101 (class 2606 OID 21345)
+-- Name: Item_Master Item_Master_made_in_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_made_in_id_fkey" FOREIGN KEY (made_in_id) REFERENCES public."Made_In"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3090 (class 2606 OID 21290)
+-- Name: Item_Master Item_Master_product_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_product_code_id_fkey" FOREIGN KEY (product_code_id) REFERENCES public."Product"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3095 (class 2606 OID 21315)
+-- Name: Item_Master Item_Master_section_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_section_code_id_fkey" FOREIGN KEY (section_code_id) REFERENCES public."Section"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3096 (class 2606 OID 21320)
+-- Name: Item_Master Item_Master_size_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_size_code_id_fkey" FOREIGN KEY (size_code_id) REFERENCES public."Item_Size"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3091 (class 2606 OID 21295)
+-- Name: Item_Master Item_Master_subproduct_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_subproduct_code_id_fkey" FOREIGN KEY (subproduct_code_id) REFERENCES public."SubProduct"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3089 (class 2606 OID 21285)
+-- Name: Item_Master Item_Master_supplier_code_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_supplier_code_id_fkey" FOREIGN KEY (supplier_code_id) REFERENCES public."Supplier_Master"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3085 (class 2606 OID 21265)
+-- Name: Item_Master Item_Master_supplier_uom_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_supplier_uom_id_fkey" FOREIGN KEY (supplier_uom_id) REFERENCES public."Supplier_UOM"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3086 (class 2606 OID 21270)
+-- Name: Item_Master Item_Master_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_type_id_fkey" FOREIGN KEY (type_id) REFERENCES public."Item_Type"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3084 (class 2606 OID 21260)
+-- Name: Item_Master Item_Master_uom_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_uom_id_fkey" FOREIGN KEY (uom_id) REFERENCES public."UOM"(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3104 (class 2606 OID 21360)
+-- Name: Item_Master Item_Master_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Item_Master"
+    ADD CONSTRAINT "Item_Master_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES public.auth_user(id) ON DELETE CASCADE;
+
+
+-- Completed on 2018-10-30 12:05:57 +03
+
+--
+-- PostgreSQL database dump complete
+--
+
