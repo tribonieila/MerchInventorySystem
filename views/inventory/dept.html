@@ -1,0 +1,151 @@
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Item Code</label>
+            <div class="col-sm-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="item_code_id" name = "item_code_id">
+                    <div class="input-group-btn">
+                        <button id="btn_itm" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"></button>
+                        <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+                    </div>            
+                </div>                                
+            </div>
+            <div class="col-sm-2">
+                <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button> -->
+                <button type="button" id="btnhelp" class="btn ink-reaction btn-floating-action btn-xs btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-search-plus"></i></button>
+            </div>
+        </div>   
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Quantity</label>
+            <div class="col-sm-8">{{=form.custom.widget.quantity}}
+            </div>
+        </div>   
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Pieces</label>
+            <div class="col-sm-8">{{=form.custom.widget.pieces}}
+            </div>
+        </div>   
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Category</label>
+            <div class="col-sm-8">{{=form.custom.widget.category_id}}
+            </div>
+        </div>   
+    </div>
+
+    <div class="col-md-2">
+        <input class="btn btn-success" id="btninsert" type="button" value="insert" onclick="insert();">
+        <!-- <input class="btn btn-warning" type="button" value="clear" onclick="clear();"> -->
+       
+    </div>            
+</div>
+<hr>
+    <div id="target"></div>   
+
+    <script src="{{=URL('static','js/cascade.js')}}"></script>
+    <script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+    <script>
+    </script>
+    <script>
+        document.getElementById('item_code_id').disabled = true;    
+        document.getElementById('item_code_id').readonly = true;    
+        document.getElementById('no_table_pieces').disabled = true;    
+        document.getElementById('btn_itm').disabled = true;
+        document.getElementById('no_table_quantity').disabled = true;
+        document.getElementById('no_table_category_id').disabled = true;
+        document.getElementById('btninsert').disabled = true;
+        document.getElementById('btnhelp').disabled =  true;
+    
+        var stock_source_id = select = document.getElementById( 'stock_source_id' );
+        var dept_id = select = document.getElementById('dept_code_id');
+        var item_code_id = document.getElementById("item_code_id");
+        
+        stock_source_id.onchange = function() {
+            console.log(this.selectedIndex);
+        }
+    
+        // jQuery('item_code_id').onfocus()
+    
+        item_code_id.onfocus = function() {
+            // var x = jQuery('item_code_id').val('{{=db((db.Item_Master.id == request.vars.item_code_id) & (db.Item_Master.uom_value == 1)).select().first()}}');
+            // if ({{if db((db.Item_Master.id == request.vars.item_code_id) & (db.Item_Master.uom_value == 1)).select().first(): }} {{pass}}) {
+            
+            if (item_code_id.value == 8) {
+                document.getElementById('no_table_pieces').disabled = true;    
+            } else {
+                document.getElementById('no_table_pieces').disabled = false;    
+            }            
+            console.log(this.value);
+        }
+    
+        dept_id.onchange = function() {
+            // var {{=dept_code_id}} = dept_id;
+            // console.log(this.selectedIndex);
+            document.getElementById('item_code_id').disabled = false;    
+            document.getElementById('item_code_id').readonly = false;    
+            document.getElementById('no_table_pieces').disabled = false;    
+            document.getElementById('btn_itm').disabled = false;
+            document.getElementById('no_table_quantity').disabled = false;
+            document.getElementById('no_table_category_id').disabled = false;
+            document.getElementById('btninsert').disabled = false;
+            document.getElementById('btnhelp').disabled =  false;        
+        }
+    
+        var testdataBsSuggest = $("#item_code_id").bsSuggest({
+            indexId: 0,  
+            indexKey: 0, 
+            autoSelect: true,
+            allowNoKeyword: true,
+            ignorecase: true,
+    
+            // filter by dept and stock source 
+            // db.Item_Master.dept_code_id == request.vars.dept_code_id
+            // db.Stock_File.location_code_id == request.vars.stock_source_id
+            data: {
+                'value':[ {{for n in dept_code_id:}}
+                    {'id':'{{=n.Item_Master.id}}',
+                    'item':'{{=n.Item_Master.item_code}}',
+                    'group':'{{=n.Item_Master.group_line_id.group_line_name}}', 
+                    'brand':'{{=n.Item_Master.brand_line_code_id.brand_line_name}}',
+                    'description':'{{=n.Item_Master.item_description.upper()}}', 
+                    'uom':'{{=n.Item_Master.uom_value}}',
+                    'retail':'{{=n.Item_Prices.retail_price}}',
+                    'on_hand':'{{=n.Stock_File.closing_stock}}',
+                    'on_transit':'{{=n.Stock_File.stock_in_transit}}',
+                    'on_balance':'{{=n.Stock_File.probational_balance}}'},
+                    {{pass}}
+                ],
+                'defaults':'0'
+            },
+        }).on('onDataRequestSuccess', function (e, result) {
+            console.log('onDataRequestSuccess: ', result);
+        }).on('onSetSelectValue', function (e, keyword, data) {
+            console.log('onSetSelectValue: ', keyword, data);
+        }).on('onUnsetSelectValue', function (e) {
+            console.log("onUnsetSelectValue");
+        });
+        
+        $("form").submit(function(e) {
+            return false;        
+        });
+        
+    </script> 
+    <script>
+        function insert(){
+            ajax('{{=URL('itm_view')}}',
+                ['item_code_id', 'quantity', 'pieces','category_id'], 'target');
+            return false;
+        }
+        function clear(){
+            ajax('{{=db.Stock_Transaction_Temp.truncate()}}', target = 'tblIC');
+            return false;
+        }
+        
+    </script>  

@@ -1,4 +1,4 @@
-
+import datetime
 # ---- Product Master  -----
 def prod_view():
 
@@ -1442,7 +1442,19 @@ def itm_edit_form():
     else:
         response.flash = 'PLEASE FILL OUT THE FORM'
     return dict(form = form, _fld = _fld)
-
+def itm_link():
+    db.Item_Master.division_id.writable = False
+    db.Item_Master.dept_code_id.writable = False
+    db.Item_Master.supplier_code_id.writable = False
+    _fld = db(db.Item_Master.id == request.args(0)).select().first()
+    form = SQLFORM(db.Item_Master, request.args(0), deletable = True)
+    if form.process().accepted:
+        response.flash = 'RECORD UPDATED'
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    else:
+        response.flash = 'PLEASE FILL OUT THE FORM'
+    return dict(form = form, _fld = _fld)    
 def itm_view_pop(x = request.args(0)):
     for x in db(db.Item_Master.id == x).select(db.Item_Master.ALL):
         t = TABLE(*[
@@ -1574,83 +1586,7 @@ def fmcg_batch_form():
     return dict(form = form)    
     
 
-def fmcg_add_form():
-    ctr = db(db.FMCG_Division.id).count()
-    ctr = ctr + 1    
-    ctr = str(ctr).rjust(5,'0')
-    form = SQLFORM.factory(
-        Field('item_description', 'string', label = 'Description'),    
-        Field('supplier_item_ref', 'string'),    
-        Field('int_barcode', 'string', length = 20),     
-        Field('loc_barcode', 'string', length = 20),
-        Field('uom', 'integer', default = 1),
-        Field('supp_oum', 'integer', default = 1),
-        Field('weight', 'integer', default = 1),
-        Field('dept_code_id','reference Department', default = 3, label = 'Dept Code',requires = IS_IN_DB(db(db.Department.id == 3), db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-        Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
-        Field('product_code_id','reference Product', label = 'Product Code',requires = IS_IN_DB(db(db.Product.div_code_id == 2), db.Product.id,'%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
-        Field('subproduct_code_id', 'reference SubProduct', label = 'SubProduct', requires = IS_IN_DB(db, db.SubProduct.id, '%(subproduct_code)s - %(subproduct_name)s', zero = 'Choose SubProduct')),
-        Field('group_line_id','reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id,'%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line Code')),
-        Field('brand_line_code_id','reference Brand_Line', requires = IS_IN_DB(db, db.Brand_Line.id,'%(brand_line_code)s - %(brand_line_name)s', zero = 'Choose Brand Line')),
-        Field('brand_cls_code_id','reference Brand_Classification', requires = IS_IN_DB(db, db.Brand_Classification.id,'%(brand_cls_code)s - %(brand_cls_name)s', zero = 'Choose Brand Classification')),
-        Field('section_code_id', 'reference Section', requires = IS_IN_DB(db, db.Section.id, '%(section_code)s - %(section_name)s', zero = 'Choose Section')),
-        Field('size_code_id','reference Item_Size', requires = IS_IN_DB(db, db.Item_Size.id, '%(size_code)s - %(size_name)s', zero = 'Choose Size')),
-        Field('made_in','string', requires = IS_IN_SET(COUNTRIES, zero = 'Choose Country')),
-        Field('item_status_code_id','reference Status', default = 1,requires = IS_IN_DB(db, db.Status.id, '%(status)s', zero = 'Choose Status')))
-    if form.process().accepted:
-        response.flash = 'NEW RECORD SAVE'
-        supl_ctr = db(db.Supplier_Master.id == form.vars.supplier_code_id).select(db.Supplier_Master.supp_code).first()
-        itm_code_ctr = supl_ctr.supp_code[-5:]+ctr
-        db.FMCG_Division.insert(div_code_id = 2,item_code = itm_code_ctr, item_description = form.vars.item_description, int_barcode = form.vars.int_barcode, loc_barcode = form.vars.loc_barcode,
-            dept_code_id = form.vars.dept_code_id, weight = form.vars.weight,supplier_code_id = form.vars.supplier_code_id, product_code_id = form.vars.product_code_id, subproduct_code_id = form.vars.subproduct_code_id,
-            group_line_id = form.vars.group_line_id, brand_line_code_id = form.vars.brand_line_code_id, brand_cls_code_id = form.vars.brand_cls_code_id,
-            section_code_id = form.vars.section_code_id, supplier_item_ref = form.vars.supplier_item_ref, uom = form.vars.uom,supp_oum = form.vars.supp_oum, size_code_id = form.vars.size_code_id, made_in = form.vars.made_in,
-            item_status_code_id = form.vars.item_status_code_id)
-    elif form.errors:
-        response.flash = 'ENTRY HAS ERRORS'
-    else:
-        response.flash = 'PLEASE FILL OUT THE FORM'
-    return dict(form = form)
 
-
-def fmcg_view_form():
-    form = db(db.Item_Master.id == request.args(0)).select().first()
-    return dict(form = form)
-
-def fmcg_mas():
-    q_dept = db(db.Department.div_code_id == 2).select()
-    row = []
-    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Product Code'),TH('Sub Product'),TH('Group Line'),
-    TH('Brand Line'),TH('Status'),TH('Actions')))
-    for n in db(db.Item_Master).select():        
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('fmcg_view_form', args = n.id))
-        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('fmcg_edit_form', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        btn_lnk = DIV(view_lnk, prin_lnk,edit_lnk, dele_lnk)
-        
-        row.append(TR(TD(n.id),TD(n.item_code),TD(n.item_description),TD(n.product_code_id.product_code),TD(n.subproduct_code_id.subproduct_code),
-        TD(n.group_line_id.group_line_code),TD(n.brand_line_code_id.brand_line_code),TD(n.item_status_code_id.status),TD(btn_lnk)))
-    tbody = TBODY(*row)
-    table = TABLE(*[thead, tbody], _class='table table-hover')
-    return dict(table = table)
-
-
-# ---- Transaction       -----
-def transaction():
-    return locals()
-# ---- Stock Request     -----
-def stock_request():
-    return locals()
-# ---- Stock Voucher     -----
-def stock_voucher():
-    return locals()
-# ---- Stock Receipt     -----
-def stock_receipt():
-    return locals()
-# ---- Reports           -----
-def reports():
-    return locals()
 
 # ------------------------------------------------------------------------------------------
 # ----------------------------  S   E   T   T   I   N   G   S  -----------------------------
@@ -1659,7 +1595,7 @@ def reports():
 # ---- Prefix Master       -----
 def pre_mas():
     row = []
-    thead = THEAD(TR(TH('ID'),TH('Prefix'),TH('Prefix Name'),TH('Action')))
+    thead = THEAD(TR(TH('ID'),TH('Prefix'),TH('Serial Key'),TH('Prefix Name'),TH('Action')))
     query = db(db.Prefix_Data).select()
     for n in query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
@@ -1667,7 +1603,7 @@ def pre_mas():
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
         edit_lnk = A('Edit', _href=URL('edit_pre_form', args=n.id ))
-        row.append(TR(TD(n.id),TD(n.prefix),TD(n.prefix_name),TD(btn_lnk)))
+        row.append(TR(TD(n.id),TD(n.prefix),TD(n.serial_key),TD(n.prefix_name),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')    
     return dict(table = table)
@@ -1692,6 +1628,42 @@ def edit_pre_form():
         response.flash = 'PLEASE FILL OUT THE FORM'    
     return dict(form = form)
 
+# ---- Transaction Prefix Master       -----
+def trns_pre_mas():
+    row = []
+    thead = THEAD(TR(TH('ID'),TH('Prefix'),TH('Serial Key'),TH('Prefix Name'),TH('Action')))
+    query = db(db.Transaction_Prefix).select()
+    for n in query:
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('trns_pre_edit_mas', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        edit_lnk = A('Edit', _href=URL('edit_pre_form', args=n.id ))
+        row.append(TR(TD(n.id),TD(n.prefix),TD(n.current_year_serial_key),TD(n.prefix_name),TD(btn_lnk)))
+    tbody = TBODY(*row)
+    table = TABLE(*[thead,tbody],_class='table table-striped')    
+    return dict(table = table)
+
+def trns_pre_add_mas():
+    form = SQLFORM(db.Transaction_Prefix)
+    if form.process().accepted:
+        response.flash = 'RECORD SAVE'
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    else:
+        response.flash = 'PLEASE FILL OUT THE FORM'
+    return dict(form = form)
+
+def trns_pre_edit_mas():
+    form = SQLFORM(db.Transaction_Prefix, request.args(0), deletable = True)
+    if form.process().accepted:
+        response.flash = 'RECORD UPDATED',
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    else:
+        response.flash = 'PLEASE FILL OUT THE FORM'    
+    return dict(form = form)
+
 # ---- Division Master       -----
 def div_err(form):
     return "jQuery('[href='#tab1']').tab('show');"
@@ -1700,31 +1672,40 @@ def div_mas():
     grid = SQLFORM.grid(db.Division)
     row = []
     thead = THEAD(TR(TH('#'),TH('Code'),TH('Name'),TH('Status'),TH('Action')))
-    for n in db(db.Division).select():
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('div_edit_form', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('div_edit_form', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('div_edit_form', args = n.id))
+    for n in db(db.Division).select(db.Division.ALL, db.Prefix_Data.ALL, left = db.Prefix_Data.on(db.Prefix_Data.id == db.Division.prefix_id)):
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('div_edit_form', args = n.Division.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('div_edit_form', args = n.Division.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('div_edit_form', args = n.Division.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.id),TD(n.div_code),TD(n.div_name),TD(n.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(n.Division.id),TD(n.Prefix_Data.prefix,n.Division.div_code_2),TD(n.Division.div_name),TD(n.Division.status_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')
     return dict(table=table)
 
+def _update_division(form):
+    pre = db(db.Prefix_Data.id == 1).select().first()
+    _skey = pre.serial_key
+    _skey += 1
+    pre.serial_key = _skey
+    pre.update_record()   
+
 def div_add_form():
-    pre = db(db.Prefix_Data.prefix == 'DIV').select(db.Prefix_Data.prefix).first()    
-    ctr = db(db.Division.id).count()
+    pre = db(db.Prefix_Data.id == 1).select().first()
+    _skey = pre.serial_key
+    _skey += 1
+    ctr = db(db.Division.id).count()    
     ctr = ctr+1
-    ctr = str(ctr).rjust(2, '0')
-    ctr_val = pre.prefix+ctr
+    ctr_val = _skey+ctr
+    _view = str(pre.prefix) + str(_skey)
     form = SQLFORM.factory(
         Field('div_name','string', length = 50, label = 'Division Name', requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Division.div_name')]), 
         Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id, '%(status)s', zero='Choose Status')))
-    if form.process().accepted:
-        db.Division.insert(div_code = ctr_val, div_name = form.vars.div_name, status_id = form.vars.status_id)
+    if form.process(onvalidation = _update_division).accepted:
+        db.Division.insert(prefix_id = pre.id, div_code_2 = _skey, div_name = form.vars.div_name, status_id = form.vars.status_id)
         response.flash = 'RECORD SAVE'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'   
-    return dict(form=form, ctr_val = ctr_val)
+    return dict(form=form, ctr_val = ctr_val, _view = _view)
 
 def div_edit_form():
     ctr_val = db(db.Division.id == request.args(0)).select(db.Division.div_code).first()
@@ -2107,55 +2088,116 @@ def vouc_mas():
     return dict(form=form)
 
 def testing():
-    _id = 0
-    db.Stock_Request.item_status_code_id.writable = False
-    db.Stock_Request.stock_request_no.writable = True
-    db.Stock_Request.total_amount.writable = False
-    db.Stock_Request.approved_by.writable = False
-    db.Stock_Request.stv_no.writable = False
-    db.Stock_Request.stv_date.writable = False
-    db.Stock_Request.stv_prepared_by.writable = False
-    db.Stock_Request.stv_status.writable = False
-    db.Stock_Request.src_no.writable = False
-    db.Stock_Request.src_date.writable = False
-    db.Stock_Request.src_prepared_by.writable = False
-    db.Stock_Request.src_status.writable = False
-    db.Stock_Transaction.remarks.writable = False
-    # form = SQLFORM.factory(db.Stock_Request, db.Stock_Transaction)
-    # if form.accepts(request.vars):
-    #     id = db.Stock_Request.insert(**db.Stock_Request._filter_fields(form.vars))
-    #     form.vars.stock_request_id=id
-    #     id = db.Stock_Transaction.insert(**db.Stock_Transaction._filter_fields(form.vars))
-    #     response.flash='Thanks for filling the form'
+    db.Stock_Request.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 2)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    form = SQLFORM(db.Stock_Request, request.args(0))
+    if form.process(formname = 'head', keepvalues = True).accepted:
+        response.flash = 'ok'
     
-    # form1 = SQLFORM.factory(db.Stock_Request)
-    # if form1.accepts(request, formname = None):
-        
-        
-    # form = SQLFORM(db.Stock_Request)
-    # if form.process().accepted:
-    form = SQLFORM(db.Stock_Transaction)
-    if form.process().accepted:
-        response.flash = 'RECORD SAVE'
-    elif form.errors:
-        response.flash = 'RECORD HAS ERROR'
-    return dict()
+    form2 = SQLFORM(db.Stock_Transaction_Temp)
+    if form2.process(formname = 'tail'):
+        response.flahs = 'ok'
 
+    return dict(form = form, form2= form2)
+import datetime
 
 def testing2():
-    row = []
-    thead = THEAD(TR(TH('#'),TH('Request Date'),TH('Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Status'),TH('Action')))
-    for n in db((db.Stock_Request.stock_request_no.startswith('SRN')) & (db.Stock_Request.requested_by == auth.user)).select():
-        tran_lnk = A(I(_class='fas fa-warehouse'), _title='Transaction Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_req_edit_form', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _onclick = "jQuery(show)", _class='btn btn-icon-toggle', _callback =URL('#', args = n.id),**{'_data-id':(n.id)} )
-        btn_lnk = DIV(tran_lnk, view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.id),TD(n.stock_request_date),TD(n.stock_request_no),TD(n.stock_source_id),TD(n.stock_destination_id.location_name),TD(n.srn_status_id.description),TD(btn_lnk)))
-    tbody = TBODY(*row)
-    table = TABLE(*[thead, tbody], _class='table')        
-    return dict(table = table)    
     
+    db(db.Stock_Transaction_Temp.created_by ==  auth.user_id).delete()
+    form2 = SQLFORM.factory(        
+        Field('stock_request_date', 'date', default = datetime.date.today()),
+        Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+        Field('stock_source_id','reference Location', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
+        Field('stock_destination_id','reference Location', label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
+        Field('stock_due_date','date', default = datetime.date.today()),
+        Field('remarks','string'))
+    # if form2.process(formname = 'head').accepted:
+    if form2.accepts(request.vars):
+        response.flash = 'save'
+        response.js =  "jQuery('target').get(0).reload();"
+    elif form2.errors:
+        response.flash = 'invalid values in form!'
+    # records = SQLTABLE(db.Stock_Transaction_Temp).select(),headers='fieldname:capitalize')
+    # print request.vars.item_code_id, ' from testing 2'
+    return dict(form2 = form2)
+
+def tail():
+    grand_total = 0
+    form = SQLFORM.factory(
+        Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
+        Field('quantity', 'integer', default = 0),
+        Field('pieces', 'integer', default = 0),
+        Field('category_id', 'reference Transaction_Item_Category', default = 4, requires = IS_IN_DB(db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')),
+        Field('srn_status_id','reference Stock_Status', default = 3, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
+    if form.process(formname = 'tail', onvalidation=dups).accepted:        
+        
+        uom = db(db.Item_Master.id == request.vars.item_code_id).select(db.Item_Master.uom_value).first()
+        rpv = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select(db.Item_Prices.retail_price).first()
+        total_pcs = int(request.vars.quantity) * int(uom.uom_value) + int(request.vars.pieces)  
+        unit_price = int(rpv.retail_price) / int(uom.uom_value)      
+        total_amount_value = int(unit_price) * int(total_pcs)
+
+        _id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select().first()        
+      
+        
+        # stk = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select(db.Stock_File.ALL).first()        
+        print request.vars.stock_source_id
+        # stk.stock_in_transit += total_pcs
+        # stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
+        # stk.update_record()
+
+        total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
+        grand_total = db().select(total).first()[total]
+        db.Stock_Transaction_Temp.insert(
+            item_code_id = form.vars.item_code_id,
+            quantity = form.vars.quantity,
+            pieces = form.vars.pieces,
+            category_id = form.vars.category_id,
+            amount = total_amount_value,
+            stock_source_id = request.vars.stock_source_id)
+        # grand_total += float(total_amount_value)
+        # form.vars.grand_total = grand_total
+        # print form.vars.grand_total, 'from grand_total'
+        # transact = (db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id) & (db.Stock_Request_Temp.requested_by == db.Stock_Transaction_Temp.created_by)
+        # records = SQLTABLE(db().select(db.Stock_Transaction_Temp.ALL),headers='fieldname:capitalize')
+
+        # if _id.category_id.mnemonic == 'P':
+        #     # print _id.category_id
+        #     # _id.amount = 0.00
+        #     # _id.update_record()
+        # else:
+
+        # _id.amount = total_amount_value
+        # _id.update_record()        
+
+        response.flash = 'item inserted!'
+    elif form.errors:
+        response.flash = 'invalid values in form!'
+
+    ctr = 0
+    row = []        
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
+    for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
+        ctr += 1            
+        # edit_lnk = A(I(_class='fas fa-pencil-alt'), _target="blank", _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', _href=URL('testing2', args = k.Stock_Transaction_Temp.id)) #**{'_data-toggle':'modal', '_data-target':'#data-toggle="modal" data-target="#editModal'})
+        # dele = A(SPAN(_class = 'fa fa-trash bigger-110 blue'), _name='btndel',_title="Delete", callback=URL( args=n.id),_class='delete', data=dict(w2p_disable_with="*"), **{'_data-id':(n.id), '_data-in':(n.invoice_number)})
+        edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', 
+        callback=URL( args = k.Stock_Transaction_Temp.id), data = dict(w2p_disable_with="*"), 
+        **{
+            '_data-id':(k.Stock_Transaction_Temp.id),
+            '_data-it':(k.Stock_Transaction_Temp.item_code_id),                
+            '_data-qt':(k.Stock_Transaction_Temp.quantity), 
+            '_data-pc':(k.Stock_Transaction_Temp.pieces)})
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', delete = 'tr', callback=URL('del_item', args = k.Stock_Transaction_Temp.id))
+        
+        btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
+        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),
+        TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),TD(locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True), _align='right'),TD(),TD(btn_lnk)))
+    body = TBODY(*row)
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
+    table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
+
+    return dict(form = form, records = table)
+
 import locale
 def testing3():    
     row = []
@@ -2178,7 +2220,7 @@ def testing3():
         # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", callback=URL( args=k.Stock_Transaction_Temp.id),_class='delete')
         # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', _onclick = "jQuery().fadeOut()", callback=URL('del_item',args = k.Stock_Transaction_Temp.id))
         btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
-        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Transaction_Temp.amount, _align='right'),TD(),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id),TD(k.Item_Master.uom_value),TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Transaction_Temp.amount, _align='right'),TD(),TD(btn_lnk)))
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
     table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
@@ -2193,118 +2235,12 @@ def itm_prcs():
 def itm_req():
     row = []
     thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Group Line'),TH('Brand Line'),TH('Description'),TH('Retail Price'),TH('UOM'),TH('Stock on Hand'),TH('Stock on Transit'),TH('Prov.Bal.')))
-    for n in db(db.Item_Master.dept_code_id == 3).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), 
+    for n in db(db.Item_Master).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), 
     db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)]):
         row.append(TR(TD(n.Item_Master.id),TD(n.Item_Master.item_code),TD(n.Item_Master.group_line_id.group_line_name),TD(n.Item_Master.brand_line_code_id.brand_line_name),TD(n.Item_Master.item_description),TD(n.Item_Prices.retail_price),TD(n.Item_Master.uom_value),TD(n.Stock_File.opening_stock),TD(n.Stock_File.stock_in_transit),TD(n.Stock_File.probational_balance)))
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table table-striped')
     return table
-
-def stk_req_trns():
-    form = SQLFORM(db.Stock_Transaction)
-    if form.accepts(request, formname = None):
-        return TABLE(*[TR(t.item_code_id) for i in db(db.Stock_Transaction).select(orderby=~db.Stock_Transaction.item_code_id)])
-    elif form.errors:
-        return TABLE(*[TR(k, v) for k, v in form.errors.items()])
-def stk_req_form():
-    row = []
-    thead = THEAD(TR(TH('#'),TH('Request Date'),TH('Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Status'),TH('Action')))
-    for n in db((db.Stock_Request.stock_request_no.startswith('SRN')) & (db.Stock_Request.requested_by == auth.user)).select():
-        tran_lnk = A(I(_class='fas fa-warehouse'), _title='Transaction Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_req_edit_form', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        btn_lnk = DIV(tran_lnk, view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.id),TD(n.stock_request_date),TD(n.stock_request_no),TD(n.stock_source_id),TD(n.stock_destination_id.location_name),TD(n.srn_status_id.description),TD(btn_lnk)))
-    tbody = TBODY(*row)
-    table = TABLE(*[thead, tbody], _class='table table-striped')        
-    return dict(table = table)
-
-def stk_req_val_form(form):
-    ctr = db(db.Stock_Request.stock_request_no).count()
-    ctr = ctr + 1
-    ctr = str(ctr).rjust(5, '0')
-    ctr_val = 'SRN' + ctr            
-    form.vars.stock_request_no = ctr_val
-
-def del_item():
-    db(db.Stock_Transaction_Temp.id == request.args(0)).delete()
-    # response.js =  "$('#tblIC').get(0).reload()" 
-
-def stk_file():
-    form = SQLFORM(db.Stock_File)
-    if form.process().accepted:
-        response.flash = 'RECORD SAVE'
-    elif form.errors:
-        response.flash = 'ERROR'
-    return dict(form = form)
-
-def dups(form):
-    # _item_code_id = db((db.Stock_Transaction_Temp.created_by == auth.user_id) & (db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id)).select().first()
-    _item_code_id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select(db.Stock_Transaction_Temp.item_code_id).first()
-    if _item_code_id:
-        form.errors.item_code_id = ' already exist!'        
-    else:
-        response.flash = 'inserted'
-
-def itm_view():
-    import locale
-    row = []
-    uom_value = 0
-    retail_price_value = 0
-    total_pcs = 0    
-    ctr = db(db.Stock_Transaction_Temp).count()        
-    form = SQLFORM(db.Stock_Transaction_Temp)
-    if form.accepts(request, formname=None, onvalidation = dups, hideerror=True):     
-        uom = db(db.Item_Master.id == request.vars.item_code_id).select(db.Item_Master.uom_value).first()
-        rpv = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select(db.Item_Prices.retail_price).first()
-        total_pcs = (int(request.vars.quantity) * int(uom.uom_value)) + int(request.vars.pieces)  
-        unit_price = int(rpv.retail_price) / int(uom.uom_value)      
-        total_amount_value = int(unit_price) * int(total_pcs)
-        _id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select().first()
-        _id.amount = total_amount_value
-        _id.update_record()        
-        
-        total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
-        grand_total = db().select(total).first()[total]
-                
-        ctr = 0
-        row = []        
-        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
-        for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
-            ctr += 1            
-            edit_lnk = A(SPAN(_class='fas fa-pencil-alt'), _title='Edit Row', callback=URL(args = k.Stock_Transaction_Temp.id), _class='edit')
-            dele_lnk = A('Delete', delete = 'tr', callback=URL('del_item', args = k.Stock_Transaction_Temp.id))
-            # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', _href=URL(args = k.Stock_Transaction_Temp.id))
-            # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", callback=URL(args=k.Stock_Transaction_Temp.id),_class='delete', data=dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id)})
-            btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
-            row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Transaction_Temp.amount, _align='right'),TD(),TD(btn_lnk)))
-        body = TBODY(*row)
-        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
-        table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
-        return table
-
-    elif form.errors:
-        # ctr = 0
-        # row = []        
-        # head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
-        # for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
-        #     ctr += 1            
-        #     edit_lnk = A(SPAN(_class='fas fa-pencil-alt'), _title='Edit Row', callback=URL(args = k.Stock_Transaction_Temp.id), _class='edit')
-        #     # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", callback=URL(args=k.Stock_Transaction_Temp.id),_class='delete', data=dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id)})
-        #     dele_lnk = A('Delete', callback=URL('del_item', args = k.Stock_Transaction_Temp.id  ), delete = 'tr')
-        #     # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", callback=URL( args=k.Stock_Transaction_Temp.id),_class='delete')
-        #     # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', _href=URL(args = k.Stock_Transaction_Temp.id))
-        #     btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
-        #     row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Transaction_Temp.amount, _align='right'),TD(),TD(btn_lnk)))
-        # body = TBODY(*row)
-        # foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
-        # table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
-        response.flash = 'item code already exist!'
-        table = TABLE(*[TR(k, v) for k, v in form.errors.items()])
-        return table
-
-        # return TABLE(*[TR(k, v) for k, v in form.errors.items()])
 
 def trans_itm_cat_mas():
     form = SQLFORM(db.Transaction_Item_Category)
@@ -2332,49 +2268,324 @@ def trans_itm_cat_edit_form():
         response.flash = 'RECORD HAS ERROR'
     return dict(form = form)
 
-def month_input():
+def json_item():
+    value = db().select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, 
+    left = [
+        db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), 
+        db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)])
+    return dict(value = value)
+
+def v_complete():
+    return dict()
+def j_complete():
+    
+    return locals()
+
+def stk_req_trns():
+    form = SQLFORM(db.Stock_Transaction)
+    if form.accepts(request, formname = None):
+        return TABLE(*[TR(t.item_code_id) for i in db(db.Stock_Transaction).select(orderby=~db.Stock_Transaction.item_code_id)])
+    elif form.errors:
+        return TABLE(*[TR(k, v) for k, v in form.errors.items()])
+def stk_tran_grid(): #STORE USERS
+
     return dict()
 
-# def month_selector():
-#     if not request.vars.month: return ''
-#     months = ['January', 'February', 'March', 'April', 'May',
-#               'June', 'July', 'August', 'September' ,'October',
-#               'November', 'December']
-#     month_start = request.vars.month.capitalize()
-#     selected = [m for m in months if m.startswith(month_start)]
-#     return DIV(*[DIV(k,
-#                      _onclick="jQuery('#month').val('%s')" % k,
-#                      _onmouseover="this.style.backgroundColor='yellow'",
-#                      _onmouseout="this.style.backgroundColor='white'"
-#                      ) for k in selected])
-def month_selector():
-    if not request.vars.month:
-        return ''
-    pattern = request.vars.month.capitalize() + '%'
-    selected = [row.name for row in db(db.month.name.like(pattern)).select()]
-    return ''.join([DIV(k,
-                 _onclick="jQuery('#month').val('%s')" % k,
-                 _onmouseover="this.style.backgroundColor='yellow'",
-                 _onmouseout="this.style.backgroundColor='white'"
-                 ).xml() for k in selected])    
+def stk_req_edit_form():
+    return dict()
 
-def itm_select():
-    if not request.vars.item_code_id:
-        return ''
-    pattern = request.vars.item_code_id.capitalize() + '%'
-    selected = [row.item for row in db(db.Item_Master.item_code.like(pattern)).select()]
-    return ''.join([DIV(k,
-                 _onclick="jQuery('#month').val('%s')" % k,
-                 _onmouseover="this.style.backgroundColor='yellow'",
-                 _onmouseout="this.style.backgroundColor='white'"
-                 ).xml() for k in selected])
-
-def stk_req_add_form():    
-    import datetime
+def stk_req_val_form(form):
     ctr = db(db.Stock_Request.stock_request_no).count()
-    ctr = ctr + 1    
+    ctr = ctr + 1
     ctr = str(ctr).rjust(5, '0')
-    ctr_val = 'SRN' + ctr                
+    ctr_val = 'SRN' + ctr            
+    form.vars.stock_request_no = ctr_val
+
+def stk_file():
+    form = SQLFORM(db.Stock_File)
+    if form.process().accepted:
+        response.flash = 'RECORD SAVE'
+    elif form.errors:
+        response.flash = 'ERROR'
+    return dict(form = form)
+    
+def dups(form):
+    # _item_code_id = db((db.Stock_Transaction_Temp.created_by == auth.user_id) & (db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id)).select().first()
+    #& (db.Item_Master.uom_value == 1) & (request.vars.pieces >= 1))
+    _id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select().first()        
+    _item_code_id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select(db.Stock_Transaction_Temp.item_code_id).first()
+    _uom = db(db.Item_Master.id == request.vars.item_code_id).select().first()    
+    _stock_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
+    _item_prices = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
+    qty = form.vars.quantity
+    pcs = form.vars.pieces
+    
+    if (_item_prices.retail_price == float(0.0) or _item_prices.wholesale_price == float(0.0)) and (_uom.type_id.mnemonic == 'SALE' or _uom.type_id.mnemonic == 'PRO'):
+        form.errors._item_prices = ' cannot request this item because retail price is zero'
+
+    if _item_code_id:
+        form.errors.item_code_id = ' already exist!'        
+        # response.flash = 'already exist'
+    else:        
+        response.flash = 'inserted'
+
+    if _uom.uom_value == 1:
+        if pcs > 0:
+            form.errors.pieces =  ' pieces value is not applicable to this item'
+            pcs = 0
+        else:
+            response.flash = 'ok'
+    elif pcs >= int(_uom.uom_value):            
+        form.errors._uom = '  pieces value should  be not more than uom value ' + str(int(_uom.uom_value))
+
+    else:
+        response.flash = 'ok'
+    
+
+    # to be modified 
+    print request.vars.category_id
+    if (form.vars.category_id == 3) and (_uom.type_id.mnemonic == 'SALE' or _uom.type_id.mnemonic == 'PRO'):            
+        form.errors.mnemonic = ' this saleable item cannot be transfered as FOC'
+
+    # if int(_stock_file.probational_balance) == 0:
+    
+    QTY = 0
+    QTY = (int(request.vars.quantity) * int(_uom.uom_value)) + int(request.vars.pieces)
+    
+    if int(QTY) > int(_stock_file.closing_stock) - int(_stock_file.stock_in_transit):            
+        strr = int(_stock_file.closing_stock) - int(_stock_file.stock_in_transit)
+        form.errors.quantity = ' quantity should not be more than probational balance ' + str(strr) 
+
+    # else: 
+    #     response.flash = 'inserted in probational balance'
+
+    # elif form.vars.quantity >= int(_stock_file.closing_stock):
+    #     form.errors.quantity = ' quantity should not be more than closing stock'
+
+def del_item():
+    # print request.vars.grand_total, 'total from del_item'
+    itm = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
+    uom = db(db.Item_Master.id == itm.item_code_id).select().first()
+    total_pcs = int(itm.quantity) * int(uom.uom_value) + int(itm.pieces)  
+
+    stk = db((db.Stock_File.item_code_id == itm.item_code_id) & (db.Stock_File.location_code_id == db.Stock_Transaction_Temp.stock_source_id)).select(db.Stock_File.ALL).first()        
+    stk.stock_in_transit -= total_pcs
+    stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
+    stk.update_record()
+    total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
+    grand_total = db().select(total).first()[total]
+    db(db.Stock_Transaction_Temp.id == request.args(0)).delete()
+
+def test_up():
+    # print 'from testing3 id', request.args(0), request.args(1), request.args(2)
+    # parent = $(this).parent("div").parent("td").parent("tr");
+    _qty = int(request.args(1))
+    _pcs = int(request.args(2))
+    _tmp = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
+    _tmp.update_record(quantity = _qty, pieces = _pcs)
+    response.flash = 'test up read'
+    # if request.vars.tblIC:
+    response.js =  "jQuery('#tblIC').get(0).reload()" 
+    # return locals()
+    
+    # response.js = 'jQuery( "#target" ).append( "<p>Test</p>" );'
+    # var statement = 'jQuery("#' + target + '").get(0).reload();';
+    # response.js = "$('#target').load(document.URL +  ' #target');"
+    # response.js = '$.web2py.component("%s", target="#target");' % URL('inventory', 'stk_req_add_form')
+    
+    # db(db.Stock_Transaction_Temp.id == request.args(1)).delete()
+
+        
+import locale
+def itm_view():    
+    row = []
+    uom_value = 0
+    retail_price_value = 0
+    total_pcs = 0    
+    grand_total = 0
+    form = SQLFORM(db.Stock_Transaction_Temp)
+    if form.accepts(request, formname=None, onvalidation = dups):     
+        uom = db(db.Item_Master.id == request.vars.item_code_id).select(db.Item_Master.uom_value).first()
+        rpv = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select(db.Item_Prices.retail_price).first()
+        total_pcs = int(request.vars.quantity) * int(uom.uom_value) + int(request.vars.pieces)  
+        unit_price = int(rpv.retail_price) / int(uom.uom_value)      
+        total_amount_value = int(unit_price) * int(total_pcs)
+
+        _id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select().first()        
+      
+        # if _id.category_id.mnemonic == 'P':
+        #     # print _id.category_id
+        #     # _id.amount = 0.00
+        #     # _id.update_record()
+        # else:
+
+        _id.amount = total_amount_value
+        _id.update_record()        
+
+        stk = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select(db.Stock_File.ALL).first()        
+        stk.stock_in_transit += total_pcs
+        stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
+        stk.update_record()
+
+        total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
+        grand_total = db().select(total).first()[total]
+
+        # grand_total += float(total_amount_value)
+        # form.vars.grand_total = grand_total
+        # print form.vars.grand_total, 'from grand_total'
+        ctr = 0
+        row = []        
+        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
+        for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = ~db.Stock_Transaction_Temp.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
+            ctr += 1            
+            # edit_lnk = A(I(_class='fas fa-pencil-alt'), _target="blank", _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', _href=URL('testing2', args = k.Stock_Transaction_Temp.id)) #**{'_data-toggle':'modal', '_data-target':'#data-toggle="modal" data-target="#editModal'})
+            # dele = A(SPAN(_class = 'fa fa-trash bigger-110 blue'), _name='btndel',_title="Delete", callback=URL( args=n.id),_class='delete', data=dict(w2p_disable_with="*"), **{'_data-id':(n.id), '_data-in':(n.invoice_number)})
+            edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', 
+            callback=URL( args = k.Stock_Transaction_Temp.id), data = dict(w2p_disable_with="*"), 
+            **{
+                '_data-id':(k.Stock_Transaction_Temp.id),                           
+                '_data-qt':(k.Stock_Transaction_Temp.quantity), 
+                '_data-pc':(k.Stock_Transaction_Temp.pieces)})
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', delete = 'tr', callback=URL('del_item', args = k.Stock_Transaction_Temp.id))
+            
+            btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
+            row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),
+            TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),TD(locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True), _align='right'),TD(),TD(btn_lnk)))
+        body = TBODY(*row)
+        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
+        table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
+        return table
+    elif form.errors:
+
+        ctr = 0
+        row = []        
+        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
+        for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = ~db.Stock_Transaction_Temp.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
+            ctr += 1            
+            edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', 
+            callback=URL( args = k.Stock_Transaction_Temp.id), data = dict(w2p_disable_with="*"), 
+            **{
+                '_data-id':(k.Stock_Transaction_Temp.id),                           
+                '_data-qt':(k.Stock_Transaction_Temp.quantity), 
+                '_data-pc':(k.Stock_Transaction_Temp.pieces)})
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', delete = 'tr', callback=URL('del_item', args = k.Stock_Transaction_Temp.id))
+            
+            btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
+            row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),
+            TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),TD(locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True), _align='right'),TD(),TD(btn_lnk)))
+        body = TBODY(*row)
+        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))        
+        table = TABLE(*[TR(k, v) for k, v in form.errors.items()])
+        table += TABLE(*[head, body, foot], _id='tblIC',_class='table')
+        return table        
+        
+
+        # return TABLE(*[TR(k, v) for k, v in form.errors.items()])
+
+
+# STORE KEEPER
+
+def str_kpr_grid_gen_stk_trn():
+    print request.args(0)
+
+    _stk_req = db(db.Stock_Request.id == request.args(0)).select().first()
+    _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _stk_req.dept_code_id) & (db.Transaction_Prefix.prefix == 'STV')).select().first()
+
+    _skey = _trns_pfx.current_year_serial_key
+    _skey += 1
+    
+    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
+    _stk_req.update_record(srn_status_id = 5,stock_transfer_no_id = _trns_pfx.id, stock_transfer_no = _skey, stock_transfer_date_approved = request.now, stock_transfer_approved_by = auth.user_id)
+    response.flash = 'SAVING STOCK REQUEST NO STV' +str(_skey) + '.'       
+    
+    return dict()
+
+def str_kpr_grid():    
+    return dict()
+
+def str_kpr_grid_details():
+    db.Stock_Request.stock_request_no.writable = False    
+    db.Stock_Request.stock_request_date.writable = False    
+    db.Stock_Request.dept_code_id.writable = False    
+    db.Stock_Request.stock_due_date.writable = False    
+    db.Stock_Request.stock_source_id.writable = False  
+    db.Stock_Request.stock_destination_id.writable = False
+    db.Stock_Request.total_amount.writable = False
+
+    # db.Stock_Request.src_status.writable = False
+    # db.Stock_Request.item_status_code_id.writable = False
+    db.Stock_Request.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    form = SQLFORM(db.Stock_Request, request.args(0))
+    if form.process().accepted:
+        response.flash = 'APPROVED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    row = []
+    total = db.Stock_Request_Transaction.amount.sum().coalesce_zero()
+    grand_total = db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select(total).first()[total]
+            
+    ctr = 0
+    row = []        
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price', _style = 'text-align: right'),TH('Total Amount',_style = 'text-align: right'),TH('Remarks')))
+    for k in db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select(db.Item_Master.ALL, db.Stock_Request_Transaction.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
+        ctr += 1            
+        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Request_Transaction.category_id.mnemonic),TD(k.Item_Master.uom_value),TD(k.Stock_Request_Transaction.quantity),TD(k.Stock_Request_Transaction.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Request_Transaction.amount, _align='right'),TD()))
+    body = TBODY(*row)
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
+    table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
+    return dict(form = form, table = table)
+
+# MANAGER 
+@auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER'))
+def mngr_req_grid():
+
+    return dict()
+@auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER'))
+def mngr_aprvd(form):
+    form.vars.stock_request_date_approved = request.now
+    form.vars.stock_request_approved_by = auth.user_id
+
+@auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER'))
+def mngr_req_details():
+    db.Stock_Request.stock_request_no.writable = False    
+    db.Stock_Request.stock_request_date.writable = False    
+    db.Stock_Request.dept_code_id.writable = False    
+    db.Stock_Request.stock_due_date.writable = False    
+    db.Stock_Request.stock_source_id.writable = False  
+    db.Stock_Request.stock_destination_id.writable = False
+    db.Stock_Request.total_amount.writable = False
+    db.Stock_Request.stock_transfer_date_approved.writable = False
+    db.Stock_Request.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 2) | (db.Stock_Status.id == 3)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    form = SQLFORM(db.Stock_Request, request.args(0))
+    if form.process(onvalidation = mngr_aprvd).accepted:
+        response.flash = 'APPROVED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    row = []
+    total = db.Stock_Request_Transaction.amount.sum().coalesce_zero()
+    grand_total = db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select(total).first()[total]
+            
+    ctr = 0
+    row = []        
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price', _style = 'text-align: right'),TH('Total Amount',_style = 'text-align: right'),TH('Remarks')))
+    for k in db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select(db.Item_Master.ALL, db.Stock_Request_Transaction.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
+        ctr += 1            
+        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Request_Transaction.category_id.mnemonic),TD(k.Item_Master.uom_value),TD(k.Stock_Request_Transaction.quantity),TD(k.Stock_Request_Transaction.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Request_Transaction.amount, _align='right'),TD()))
+    body = TBODY(*row)
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
+    table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
+    return dict(form = form, table = table)
+
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+def stk_req_form():       
+    return dict()
+
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+def stk_req_add_form():        
+    ctr = db(db.Transaction_Prefix.prefix == 'SRN').select().first()
+    _skey = ctr.current_year_serial_key 
+    _skey += 1    
+    ctr_val = str(ctr.prefix)+str(1800000)
     form = SQLFORM.factory(        
         Field('stock_request_date', 'date', default = datetime.date.today()),
         Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
@@ -2382,46 +2593,57 @@ def stk_req_add_form():
         Field('stock_destination_id','reference Location', label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
         Field('stock_due_date','date', default = datetime.date.today()),
         Field('remarks','string'),
+        Field('srn_status_id','reference Stock_Status', default = 3, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),
         Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
         Field('quantity', 'integer', default = 0),
         Field('pieces', 'integer', default = 0),
-        Field('category_id', 'reference Transaction_Item_Category', default = 4, requires = IS_IN_DB(db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')),
-        Field('srn_status_id','reference Stock_Status', default = 3, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
+        Field('category_id', 'reference Transaction_Item_Category', default = 4, requires = IS_IN_DB(db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')))
+    if form.process().accepted:          
+        ctr = db((db.Transaction_Prefix.prefix == 'SRN')&(db.Transaction_Prefix.dept_code_id == form.vars.dept_code_id)).select().first()
+        _skey = ctr.current_year_serial_key 
+        _skey += 1
+        ctr.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)
+        response.flash = 'SAVING STOCK REQUEST NO SRN' +str(_skey) + '.'       
+        db.Stock_Request.insert(
+            stock_request_no_id = ctr.id,
+            stock_request_no = ctr.current_year_serial_key ,
+            stock_request_date = datetime.date.today(),
+            stock_due_date = form.vars.stock_due_date,
+            dept_code_id = form.vars.dept_code_id,
+            stock_source_id = form.vars.stock_source_id,
+            stock_destination_id = form.vars.stock_destination_id,
+            srn_status_id = form.vars.srn_status_id,
+            requested_by = auth.user_id,
+            remarks = form.vars.remarks)
+        _id = db(db.Stock_Request.stock_request_no == ctr.current_year_serial_key ).select().first()
+        _src = db(db.Stock_Transaction_Temp.created_by == auth.user_id).select()
+        for s in _src:
+            db.Stock_Request_Transaction.insert(
+                stock_request_id = _id.id,
+                item_code_id = s.item_code_id,
+                stock_source_id = s.stock_source_id,
+                quantity = s.quantity,
+                pieces = s.pieces,
+                category_id = s.category_id,
+                amount = s.amount,
+                remarks = s.remarks,
+                created_by = s.created_by
+                )
 
-    if form.process().accepted:  
-        response.flash = 'RECORD SAVE'       
-        # db.Stock_Request.insert(
-        #     stock_request_no = ctr_val,
-        #     stock_request_date = datetime.date.today(),
-        #     stock_due_date = form.vars.stock_due_date,
-        #     dept_code_id = form.vars.dept_code_id,
-        #     stock_source_id = form.vars.stock_source_id,
-        #     stock_destination_id = form.vars.stock_destination_id,
-        #     srn_status_id = form.vars.srn_status_id,
-        #     requested_by = auth.user_id,
-        #     remarks = form.vars.remarks)
+        total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
+        grand_total = db(db.Stock_Transaction_Temp.created_by == auth.user_id).select(total).first()[total]
+        _id.update_record(total_amount = grand_total)
+
+
         # _id = db(db.Stock_Request).select().last()
-
     elif form.errors:
         response.flash = 'ENTRY HAS ERROR'
-    return dict(form = form,  ctr_val = ctr_val)
+    if form.vars.dept_code_id:
+        dept_code_id = db((db.Item_Master.dept_code_id == form.vars.dept_code_id)& (db.Stock_File.location_code_id == form.vars.location_code_id)).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)])
+    else:
+        dept_code_id = db((db.Item_Master.dept_code_id == 3)& (db.Stock_File.location_code_id == 1)).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)])    
+    return dict(form = form,  ctr_val = ctr_val, dept_code_id = dept_code_id)
 
-
-def data():
-    
-
-    # if not session.m or len(session.m)==10: session.m=[]
-    if request.vars.q: session.m.append(request.vars.q)
-    session.m.sort()
-    return TABLE(*[TR(v) for v in session.m]).xml()
-
-
-
-def validate_tail(form):
-    response.flash = 'SAVE FIRST HEAD'
-def dept_code_id_json():
-    dept = db(db.Department).select()
-    return dict(dept = dept)
 
 def stk_req_edit_form():
     db.Stock_Request.stv_no.writable = False
@@ -2444,20 +2666,20 @@ def stk_req_edit_form():
     db.Stock_Request.src_prepared_by.readable = False
     db.Stock_Request.src_status.readable = False    
 
-    form = SQLFORM(db.Stock_Request, request.args(0), deletable = True)
+    form = SQLFORM(db.Stock_Request, request.args(0), writable = False)
     if form.process().accepted:
-        response.flash = 'RECORD UPDATED'
-    elif form.errors:
+        response.flash = 'RECORDS UPDATED'
+    if form.errors:
         response.flash = 'FORM HAS ERRORS'
     return dict(form = form)
 # ---- Stock Transaction Master   -----
 def stk_trn_add_form():
     return dict()
+
 def stk_tns_form():
     row = []
     thead = THEAD(TR(TH('#'),TH('Transaction No'),TH('Transaction Date'),TH('Prepared By'),TH('Status'),TH('Action')))
-    for n in db((db.Stock_Request.stv_no.startswith('STN')) & (db.Stock_Request.requested_by == db.auth_user)).select(db.Stock_Request.ALL):
-   
+    for n in db((db.Stock_Request.stv_no.startswith('STN')) & (db.Stock_Request.requested_by == db.auth_user)).select(db.Stock_Request.ALL):   
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_tns_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
@@ -2567,3 +2789,18 @@ def buy():
     # now get a list of all purchases
     records = SQLTABLE(db(purchased).select(),headers='fieldname:capitalize')
     return dict(form=form, records=records)
+# ---- Transaction       -----
+def transaction():
+    return locals()
+# ---- Stock Request     -----
+def stock_request():
+    return locals()
+# ---- Stock Voucher     -----
+def stock_voucher():
+    return locals()
+# ---- Stock Receipt     -----
+def stock_receipt():
+    return locals()
+# ---- Reports           -----
+def reports():
+    return locals() 

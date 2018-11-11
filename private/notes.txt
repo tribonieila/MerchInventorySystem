@@ -8,14 +8,92 @@ sudo apt install ./name.deb
 
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
 
+def _update_division(form):
+    pre = db(db.Prefix_Data.id == 1).select().first()
+    _skey = pre.serial_key
+    _skey += 1
+    pre.serial_key = _skey
+    pre.update_record()   
 
+def div_add_form():
+    pre = db(db.Prefix_Data.id == 1).select().first()
+    _skey = pre.serial_key
+    _skey += 1
+    ctr = db(db.Division.id).count()    
+    ctr = ctr+1
+    ctr_val = _skey+ctr
+    _view = str(pre.prefix) + str(_skey)
+    form = SQLFORM.factory(
+        Field('div_name','string', length = 50, label = 'Division Name', requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Division.div_name')]), 
+        Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id, '%(status)s', zero='Choose Status')))
+    if form.process(onvalidation = _update_division).accepted:
+        db.Division.insert(prefix_id = pre.id, div_code_2 = _skey, div_name = form.vars.div_name, status_id = form.vars.status_id)
+        response.flash = 'RECORD SAVE'
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'   
+    return dict(form=form, ctr_val = ctr_val, _view = _view)
+
+<div class="form_edit" style="display:none;">
+    <form class="form" role="form">
+      <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input type="numbers" class="form-control" id="quantity" name="quantity" value="0">
+      </div>
+      <div class="form-group">
+        <label for="pieces">Pieces</label>
+        <input type="numbers" class="form-control" id="pieces" name="pieces" value="0">
+      </div>
+    </form>
+</div>
+  <script>
+  $(document).ready(function() {
+  $("#bootbox").on("click", function(event) {
+    var modal = bootbox.dialog({
+        message: $(".form_edit").html(),
+        title: "Your awesome modal",
+        buttons: [
+          {
+            label: "Save",
+            className: "btn btn-primary pull-left",
+            callback: function() {
+
+              alert($('success').val());
+             
+              return false;
+            }
+          },
+          {
+            label: "Close",
+            className: "btn btn-default pull-left",
+            callback: function() {
+              console.log("just do something on close");
+            }
+          }
+        ],
+        show: false,
+        onEscape: function() {
+          modal.modal("hide");
+        }
+    });
+    
+    modal.modal("show");
+  });
+  
+
+});</script>
 routers = dict( 
     BASE = dict( 
         default_application='your_app_name_here', 
     ) 
 ) 
 
-
+        if _id.category_id.mnemonic == 'P'
+            print _id.category_id
+            _id.amount = 0.00
+            _id.update_record()
+        else:
+            _id.amount = total_amount_value
+            _id.update_record() 
 <script>ELEMENT.locale(ELEMENT.lang.en)</script>
 
 <script>

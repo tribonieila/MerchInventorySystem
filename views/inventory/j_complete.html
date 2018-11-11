@@ -1,0 +1,45 @@
+{{extend 'layout.html'}}
+<h3>From local data</h3>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="input-group">
+            <input type="text" class="form-control" id="item_code_id">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <!-- <span class="caret"></span> -->
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                </ul>
+            </div>            
+        </div>
+    </div>
+</div>
+<script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+
+<script>
+    var testdataBsSuggest = $("#item_code_id").bsSuggest({
+        indexId: 2,  
+        indexKey: 1, 
+        data: {
+            'value':[ {{for n in db(db.Item_Master.dept_code_id == 3).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)]):}}
+                {'id':'{{=n.Item_Master.id}}',
+                'item':'{{=n.Item_Master.item_code}}',
+                'description':'{{=n.Item_Master.item_description}}', 
+                'group':'{{=n.Item_Master.group_line_id.group_line_name}}', 
+                'brand':'{{=n.Item_Master.brand_line_code_id.brand_line_name}}',
+                'uom':'{{=n.Item_Master.uom_value}}',
+                'retail':'{{=n.Item_Prices.retail_price}}',
+                'on_hand':'{{=n.Stock_File.closing_stock}}',
+                'on_transit':'{{=n.Stock_File.stock_in_transit}}',
+                'on_balance':'{{=n.Stock_File.probational_balance}}'},
+                {{pass}}
+            ],
+            'defaults':'0'
+            
+        }
+        
+    });
+
+</script>
+
+

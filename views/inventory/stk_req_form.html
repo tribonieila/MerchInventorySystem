@@ -3,7 +3,7 @@
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div id="app">    
     <div class="col-md-12">
         <div class="card card-underline">
@@ -18,19 +18,42 @@
                 <template>
                     <el-table :data="tableData" style="width: 100%">
                         <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
-                        <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
+                        <el-table-column fixed prop="stk_req" label="Stock Request No" width="150">
+                            <template slot-scope="scope">
+                                <el-popover trigger="hover" placement="top">
+                                  <p>Date Approved: {% scope.row.date_aprv %} </p>
+                                  <p>Approved By: {% scope.row.aprv_by %} </p>
+                                  <div slot="reference" class="name-wrapper">
+                                    <el-tag size="small"> {% scope.row.stk_req %} </el-tag>
+                                  </div>
+                                </el-popover>
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed prop="stk_tra" label="Stock Transfer No" width="150">
+                            <template slot-scope="scope">
+                                <el-popover trigger="hover" placement="top">
+                                  <p>Date Approved: {% scope.row.date_aprv %} </p>
+                                  <p>Approved By: {% scope.row.aprv_by %} </p>
+                                  <div slot="reference" class="name-wrapper">
+                                    <el-tag size="small"> {% scope.row.stk_tra %} </el-tag>
+                                  </div>
+                                </el-popover>
+                            </template>                            
+                        </el-table-column>
+                        <el-table-column fixed prop="stk_rec" label="Stock Receipt No" width="150"></el-table-column>
                         <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
                         <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
                         <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
-                        <el-table-column prop="stk_tra" label="Stock Transaction No" width="200"></el-table-column>
-                        <el-table-column prop="stk_rec" label="Stock Receipt No" width="200"></el-table-column>
-                        <el-table-column prop="stat" label="Status" width="300"></el-table-column>
-                        <el-table-column fixed="right" label="Actions" width="190">
+                        <el-table-column prop="stat" label="Status" width="150"></el-table-column>
+                        <el-table-column prop="req" label="Required Action" width="250"></el-table-column>
+                        <!-- <el-table-column prop="aprv_by" label="Approved By" width="150"></el-table-column>
+                        <el-table-column prop="date_aprv" label="Date Approved" width="150"></el-table-column> -->
+                        <el-table-column fixed="right" label="Actions" width="90">
                             <template slot-scope="scope">
-                                <el-button @click="handleClick" type="success" icon="el-icon-goods" size="mini"  ></el-button>
-                                <el-button type="warning" icon="el-icon-search" size="mini"  circle></el-button>
-                                <el-button type="primary" icon="el-icon-edit" size="mini" circle></el-button>                                                                
-                                <el-button @click="del_req" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                                <el-button @click="linksClick(scope.row.tag)" type="primary" size="mini" plain>Details</el-button>
+                                <!-- <el-button @click="viewClick" type="warning" icon="el-icon-search" size="mini"  circle></el-button>
+                                <el-button @click="editClick" type="primary" icon="el-icon-edit" size="mini" circle></el-button>                                                                
+                                <el-button @click="deleteClick" type="danger" icon="el-icon-delete" size="mini" circle></el-button> -->
                             </template>
                         </el-table-column>
                     </el-table>
@@ -42,24 +65,49 @@
 
 <script>
 var Main = {
+    delimiters: ["{%","%}"],
     methods: {
-      handleClick() {
-        console.log('click');
+      linksClick() {
+        window.open("{{=URL('inventory','stk_req_edit_form')}}" + "/" + row);
+      },
+      viewClick() {
+          console.log('view');
+      },
+      editClick() {
+          console.log(tag);
+      },
+      deleteClick() {
+          console.log('delete');
       }
     },
     data() {
       return {
-        tableData: [{{for s in db(db.Stock_Request).select():}}
+        delimiters: ["%","%"],
+        {{import locale}}
+        tableData: [{{for s in db(db.Stock_Request.created_by == auth.user_id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
+        left = db.Transaction_Prefix.on(
+            (db.Transaction_Prefix.dept_code_id == db.Stock_Request.dept_code_id) &
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id) &
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id) &
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_receipt_no_id))): }}
         {
-          date: '{{=s.stock_request_date}}',
-          req_no: '{{=s.stock_request_no}}',
-          stk_src: '{{=s.stock_source_id.location_name}}',
-          stk_des: '{{=s.stock_destination_id.location_name}}',
-          stat: '{{=s.srn_status_id.description}}',
-          amount: '{{=s.total_amount}}',
-          stk_tra: '{{=s.stv_no}}',
-          stk_rec: '{{=s.src_no}}',
-          tag: '{{=s.id}}',                
+          date: '{{=s.Stock_Request.stock_request_date}}',
+
+          stk_req: 'SRN{{=s.Stock_Request.stock_request_no}}',
+          stk_tra: 'STV{{=s.Stock_Request.stock_transfer_no}}',
+          stk_rec: '{{=s.Stock_Request.stock_receipt_no}}',
+
+          stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
+          stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
+          stat: '{{=s.Stock_Request.srn_status_id.description}}',
+          amount: '{{=locale.format('%.2F',s.Stock_Request.total_amount or 0, grouping = True)}}',
+          req: '{{=s.Stock_Request.srn_status_id.required_action}}',
+          tag: '{{=s.Stock_Request.id}}',                
+          aprv_by: '{{=s.Stock_Request.stock_request_approved_by}} {{=s.Stock_Request.stock_request_approved_by}}',
+          date_aprv: '{{=s.Stock_Request.stock_request_date_approved}}',
+
+          str_dte_aprv: '{{=s.Stock_Request.stock_transfer_date_approved}}',
+          str_aprv_by:'{{=s.Stock_Request.stock_transfer_approved_by}} {{=s.Stock_Request.stock_transfer_approved_by}}',
         },{{pass}}]
       }
     }

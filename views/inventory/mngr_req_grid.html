@@ -2,8 +2,9 @@
 <style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
+<!-- <script scr="https://cdnjs.cloudflare.com/ajax/libs/vue-i18n/8.3.1/vue-i18n.min.js"></script> -->
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div id="app">    
     <div class="col-md-12">
         <div class="card card-underline">
@@ -12,35 +13,27 @@
                     <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
                     <!-- <li class="active"><a href="#" >BROWSE</a></li>mngr_req_grid -->
                 </ul>
-                <span class="card-title">STOCK TRANSFER RECEIPT</span>
+                <span class="card-title">STOCK TRANSACTIONS FOR APPROVAL</span>
             </div>
             <div class="card-body tab-content">
                 <template>                         
                     <el-tabs :tab-position="tabPosition" style="height: 100%;">
-                        <el-tab-pane label="Stock Transfer">                            
+                        <el-tab-pane label="Stock Request">                            
                             <div style="margin-top: 20px" >
-                                <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Receipt</el-button>
+                                <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Approved</el-button>
                                 <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
                             </div>
                             
                             <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
                                 <el-table-column type="selection" width="55"></el-table-column>
                                 <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
-                                <el-table-column fixed prop="stk_req_no" label="Stock Request No" width="150"></el-table-column>
-                                <el-table-column fixed prop="stk_trn_no" label="Stock Transfer No" width="150"></el-table-column>
+                                <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
                                 <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
-                                <el-table-column prop="stk_des" label="Stock Destination" width="300"
-                                    :filters="[ {{for l in db(db.Location).select(db.Location.ALL):}}
-                                    { text: '{{=l.location_name}}', value: '{{=l.id}}' }, {{pass}} ]" 
-                                    :filter-method="filterTag" filter-placement="bottom-end">
-                                    <template slot-scope="scope">
-                                        <el-tag :type="scope.row.tag === 'Home' ? 'primary' : 'success'" disable-transitions> {% scope.row.stk_des  %} </el-tag>
-                                    </template>
-                                </el-table-column>
+                                <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
                                 <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>
                                 <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
                                 <el-table-column prop="stat" label="Status" width="150"></el-table-column>
-                                <el-table-column prop="req" label="Required Action" width="200"></el-table-column>
+                                <el-table-column prop="req" label="Required Action" width="140"></el-table-column>
                                 <el-table-column fixed="right" label="Actions" width="100">
                                     <template slot-scope="scope">
                                         <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
@@ -50,8 +43,8 @@
                             </el-table>
                                                     
                         </el-tab-pane>
-                        <el-tab-pane label="Adjustment (+/-)">Adjustment</el-tab-pane>
-                        
+                        <el-tab-pane label="Sales Order">Sales Order</el-tab-pane>
+                        <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                        
                     </el-tabs>
                     <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
                             <el-table :data="gridData">
@@ -68,15 +61,7 @@
 
 <script>
 var Main = {
-    delimiters: ["{%","%}"],
     methods: {     
-        filterTag(value, row) {
-        return row.tag === value;
-      },
-      filterHandler(value, row, column) {
-        const property = column['property'];
-        return row[property] === value;
-      },        
       linksClick(row) {
         window.open("{{=URL('inventory','mngr_req_details')}}" + "/" + row);        
       },
@@ -98,7 +83,6 @@ var Main = {
     data() {
       return {
         
-        
         {{import locale}}
         gridData: [ 
             {
@@ -109,17 +93,16 @@ var Main = {
         ],          
         dialogTableVisible: false,
         tabPosition: 'top',
-        tableData: [{{for s in db(db.Stock_Request.srn_status_id == 5 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
-        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id)):}}
+        tableData: [{{for s in db(db.Stock_Request.srn_status_id == 3 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
+        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
         {
             tag: '{{=s.Stock_Request.id}}',                
             date: '{{=s.Stock_Request.stock_request_date}}',
-            stk_trn_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_transfer_no}}',
-            stk_req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
+            req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
             stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
             stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
             stat: '{{=s.Stock_Request.srn_status_id.description}}',
-            // req_by: '{{=s.Stock_Request.created_on.first_name.upper()}} {{=s.Stock_Request.created_on.last_name.upper()}}',
+            req_by: '{{=s.Stock_Request.created_by.first_name.upper()}} {{=s.Stock_Request.created_by.last_name.upper()}}',
             amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
             req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
         },{{pass}}],

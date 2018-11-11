@@ -24,10 +24,10 @@
                         <!-- Tab panes -->
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="item">ITEM DETAILS
-                                <!-- {{=LOAD('inventory','itm_link_profile.load', ajax = True)}} -->
+                                {{=LOAD('inventory','itm_edit_form.load', request.args(0), ajax = True)}}
                                 <!-- record = db.ads_vehicle(request.args(0)) or redirect(URL('error'))
                                 form = SQLFORM(db.ads_vehicle, record, showid = False) -->
-                                {{=SQLFORM(db.Item_Master,  request.args(0))}}
+                                <!-- {{=SQLFORM(db.Item_Master,  request.args(0))}} -->
                             </div>
                             <div role="tabpanel" class="tab-pane" id="price">PRICE DETAILS
                                 {{=SQLFORM(db.Item_Prices, request.args(0) or redirect(URL('#')), readonly = True)}}</div>

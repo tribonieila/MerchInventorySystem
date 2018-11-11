@@ -1,17 +1,21 @@
 {{extend 'layout.html'}}
+<style>
+@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
 
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                <li class="active"><a href="#"> DETAILS</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('mngr_req_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">STOCK REQUEST FORM</span>
+            <span class="card-title">STOCK REQUEST</span>
         </div>
         <div class="card-body tab-content">            
-            			
-            <!-- <el-form ref="form" :model="form" label-width="120px"> -->
             <div class="form-horizontal">   
                 {{=form.custom.begin}}	
                 <div class="row">
@@ -19,7 +23,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Request No</label>
                             <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="ctr_val" readonly >
+                                <input type="text" class="form-control" value="SRN{{=form.custom.widget.stock_request_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
                             </div>                           
                         </div>                        
@@ -57,7 +61,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Due Date</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_due_date}}
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_due_date}}" readonly >
+                                
                                 <!-- <el-date-picker
                                 :id = "stock_due_date"
                                 :name = "stock_due_date"
@@ -75,8 +80,15 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Department</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.dept_code_id}}
+                            <div class="col-sm-8">                                
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.dept_code_id}}</option>
+                                </select>
+                                
+                                
+                                <!-- <input type="text" class="form-control" value="{{=form.custom.widget.dept_code_id}}" readonly > -->
+                                <!-- <p class="help-block">readonly</p>   -->
+                                
 
                                     <!-- <select class="form-control" id="dept_code_id" name="dept_code_id" >
                                         <option value=null>Choose Department</option>
@@ -94,14 +106,10 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Source</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.stock_source_id}}
-                                <!-- <select class="form-control" id="stock_source_id" name="stock_source_id">
-                                    <option value=null>Choose Location Code</option>
-                                    {{for d in db(db.Location).select(db.Location.ALL, orderby = db.Location.location_code):}}
-                                    <option value='{{=d.id}}'>{{=d.location_code}} - {{=d.location_name}}</option>
-                                    {{pass}}
-                                </select> -->
+                            <div class="col-sm-8">                                
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.stock_source_id}}</option>
+                                </select>
 
                                 <!-- <el-select v-model="stock_source_id" placeholder="Select" id="stock_source_id" name="stock_source_id">
                                     <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
@@ -130,11 +138,14 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Destination</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_destination_id}}
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.stock_destination_id}}</option>
+                                </select>                                
+                                
                                 <!-- <el-select v-model="stock_destination_id" placeholder="Select" id="stock_destination_id">
                                     <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
                                     </el-option>
-                                </el-select>                             -->
+                                </el-select> -->
     
                             </div>
                         </div>                                               
@@ -152,23 +163,19 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{=form.custom.submit}}
-                                <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
+                                {{=form.custom.submit}}                                
+                                <input class="btn btn-success" type="button" value="CREATE STOCK TRANSFER" onclick="ajax('{{=URL('inventory','str_kpr_grid_gen_stk_trn', args = request.args(0))}}')">                                                                
+                                <input class="btn btn-warning" type="button" value="print">                                
                             </div>                            
                         </div>                    
                     </div>
                 </div>  
-                
-            </div>  
-                <hr>
-
                 {{=form.custom.end}}
+            </div> 
+            <hr>
+            {{=table}}
         </div>
     </div>
 </div>
-
-
-
-
 
 

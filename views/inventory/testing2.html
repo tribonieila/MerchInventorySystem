@@ -1,9 +1,6 @@
 {{extend 'layout.html'}}
-<div class="row">
-        {{=table}}
-</div>
-<script>
-    function show() {
-        alert($(this).data("data-id"));
-    }
-</script>
+{{=form2}}
+<div id="target"></div> 
+
+
+{{=LOAD('inventory', 'tail.load', ajax = True)}}

@@ -1,0 +1,23 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class=""><a href="#" onclick=window.location="{{=URL('trns_pre_add_mas')}}";>+ ADD NEW</a></li>
+                <li class="active"><a href="#tab2">BROWSE</a></li>
+            </ul>
+            <span class="card-title">Transaction Prefix Data</span>
+        </div>
+        <div class="card-body tab-content">					
+            {{=table}}
+        </div>        
+    </div>
+</div>
+
+<script>
+    $(document).ready( function () {
+        $('table').DataTable();
+    } );
+</script>
+
+

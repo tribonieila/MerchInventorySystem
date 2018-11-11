@@ -16,9 +16,10 @@
             <span class="card-title">STOCK REQUEST FORM</span>
         </div>
         <div class="card-body tab-content">            
-            {{=form.custom.begin}}				
+            			
             <!-- <el-form ref="form" :model="form" label-width="120px"> -->
             <div class="form-horizontal">   
+                {{=form.custom.begin}}	
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -83,6 +84,13 @@
                             <div class="col-sm-8">
                                 {{=form.custom.widget.dept_code_id}}
 
+                                    <!-- <select class="form-control" id="dept_code_id" name="dept_code_id" >
+                                        <option value=null>Choose Department</option>
+                                        {{for d in db(db.Department).select(db.Department.ALL, orderby = db.Department.dept_code):}}
+                                        <option value='{{=d.id}}'>{{=d.dept_code}} - {{=d.dept_name}}</option>
+                                        {{pass}}
+                                    </select> -->
+
                                 <!-- <el-select v-model="dept_id" placeholder="Select" name ="dept_code_id" id="dept_code_id" >
                                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                                 </el-select>                             -->                
@@ -94,6 +102,13 @@
                             <label class="col-sm-4 control-label">Stock Source</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.stock_source_id}}
+                                <!-- <select class="form-control" id="stock_source_id" name="stock_source_id">
+                                    <option value=null>Choose Location Code</option>
+                                    {{for d in db(db.Location).select(db.Location.ALL, orderby = db.Location.location_code):}}
+                                    <option value='{{=d.id}}'>{{=d.location_code}} - {{=d.location_name}}</option>
+                                    {{pass}}
+                                </select> -->
+
                                 <!-- <el-select v-model="stock_source_id" placeholder="Select" id="stock_source_id" name="stock_source_id">
                                     <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
                                     </el-option>
@@ -144,71 +159,204 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 {{=form.custom.submit}}
-                                <input class="btn btn-danger" type="button" value="cancel">
-                            </div>
-                                
+                                <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
+                            </div>                            
                         </div>                    
                     </div>
-                </div>    
+                </div>  
+                
+            </div>  
                 <hr>
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Item Code</label>
-                            <div class="col-sm-6">{{=form.custom.widget.item_code_id}}</div>
+                            <div class="col-sm-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="item_code_id" name = "item_code_id">
+                                    <div class="input-group-btn">
+                                        <!-- <button id="btn_itm" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"></button> -->
+                                        <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+                                    </div>            
+                                </div>                                
+                            </div>
                             <div class="col-sm-2">
                                 <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button> -->
-                                <button type="button" class="btn ink-reaction btn-floating-action btn-xs btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-search-plus"></i></button>
+                                <button type="button" id="btnhelp" class="btn ink-reaction btn-floating-action btn-xs btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-search-plus"></i></button>
                             </div>
                         </div>   
                     </div>
                     <div class="col-md-2">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Quantity</label>
-                            <div class="col-sm-8">{{=form.custom.widget.quantity}}
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.quantity}}
+                                <!-- <input type="text" class="form-control" id="quantity_id" name="quantity_id" value="0"> -->
                             </div>
                         </div>   
                     </div>
                     <div class="col-md-2">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Pieces</label>
-                            <div class="col-sm-8">{{=form.custom.widget.pieces}}
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.pieces}}
+                                <!-- <input type="text" class="form-control" id="pieces" name="pieces" value="0"> -->
                             </div>
                         </div>   
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Category</label>
-                            <div class="col-sm-8">{{=form.custom.widget.category_id}}
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.category_id}}
+                                <!-- <select class="generic-widget form-control" id="category_id" name="category_id">
+                                    {{for c in db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')).select():}}
+                                    <option value="{{=c.id}}">{{=c.mnemonic}} - {{=c.description}}</option>
+                                    {{pass}}
+                                </select> -->
                             </div>
                         </div>   
                     </div>
     
                     <div class="col-md-2">
-                        <input class="btn btn-success" type="button" value="insert" onclick="insert();">
+                        <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();">
                         <!-- <input class="btn btn-warning" type="button" value="clear" onclick="clear();"> -->
-                        {{=form.custom.end}}   
+                        
                     </div>            
                 </div>
                 <hr>
-                    <div id="target"></div>                                        
-            </div>
+                {{=form.custom.end}}
+                <div id="target"></div>            
         </div>
     </div>
 </div>
+
+    
+<script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+<script>
+</script>
+<script>
+    // document.getElementById('item_code_id').disabled = true;    
+    // document.getElementById('item_code_id').readonly = true;    
+    // document.getElementById('no_table_pieces').disabled = true;    
+    // document.getElementById('btn_itm').disabled = true;
+    // document.getElementById('no_table_quantity').disabled = true;
+    // document.getElementById('no_table_category_id').disabled = true;
+    // document.getElementById('btninsert').disabled = true;
+    // document.getElementById('btnhelp').disabled =  true;
+
+    var stock_source_id = select = document.getElementById( 'stock_source_id' );
+    var dept_id = select = document.getElementById('dept_code_id');
+    var item_code_id = document.getElementById("item_code_id");
+    
+    // jQuery('item_code_id').onfocus()
+
+    item_code_id.onfocus = function() {
+        // var x = jQuery('item_code_id').val('{{=db((db.Item_Master.id == request.vars.item_code_id) & (db.Item_Master.uom_value == 1)).select().first()}}');
+        // if ({{if db((db.Item_Master.id == request.vars.item_code_id) & (db.Item_Master.uom_value == 1)).select().first(): }} {{pass}}) {
+        
+        if (item_code_id.value == 8) {
+            // document.getElementById('no_table_pieces').disabled = true;    
+        // } else {
+        //     document.getElementById('no_table_pieces').disabled = false;    
+        }            
+        console.log(this.value);
+    }
+
+    // no_table_stock_source_id.onchange = function() {
+    //     var s = document.getElementById('no_table_stock_source_id').selectedIndex;
+    //     console.log(s);
+    // }
+
+    no_table_dept_code_id.onchange = function() {
+        // var {{=dept_code_id}} = dept_id;
+        console.log(this.selectedIndex);
+        document.getElementById('item_code_id').disabled = false;    
+        document.getElementById('item_code_id').readonly = false;    
+        document.getElementById('no_table_pieces').disabled = false;    
+        // document.getElementById('btn_itm').disabled = false;
+        document.getElementById('no_table_quantity').disabled = false;
+        document.getElementById('no_table_category_id').disabled = false;
+        document.getElementById('btninsert').disabled = false;
+        document.getElementById('btnhelp').disabled =  false;        
+    }
+
+    var testdataBsSuggest = $("#item_code_id").bsSuggest({
+        indexId: 0,  
+        indexKey: 0, 
+        ignorecase: true,
+        autoDropup: false,
+        showHeader: true,
+        // filter by dept and stock source 
+        // db.Item_Master.dept_code_id == request.vars.dept_code_id
+        // db.Stock_File.location_code_id == request.vars.stock_source_id
+        data: {
+            'value':[ {{for n in dept_code_id:}}
+                {'id':'{{=n.Item_Master.id}}',
+                'item':'{{=n.Item_Master.item_code}}',
+                'group':'{{=n.Item_Master.group_line_id.group_line_name}}', 
+                'brand':'{{=n.Item_Master.brand_line_code_id.brand_line_name}}',
+                'description':'{{=n.Item_Master.item_description.upper()}}', 
+                'uom':'{{=n.Item_Master.uom_value}}',
+                'retail':'{{=n.Item_Prices.retail_price}}',
+                'on_hand':'{{=n.Stock_File.closing_stock}}',
+                'location':'{{=n.Stock_File.location_code_id}}',
+                'on_transit':'{{=n.Stock_File.stock_in_transit}}',
+                'on_balance':'{{=n.Stock_File.probational_balance}}'},
+                {{pass}}
+            ],
+            'defaults':'0'
+        },
+    })
+    
+    // $("form").submit(function(e) {
+    //     return false;        
+    // });
+    
+</script> 
 <script>
     function insert(){
         ajax('{{=URL('itm_view')}}',
-            ['item_code_id', 'quantity', 'pieces','category_id'], 'target');
+            ['item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id'], 'target');
         return false;
     }
-    function clear(){
-        ajax('{{=db.Stock_Transaction_Temp.truncate()}}', target = 'tblIC');
-        return false;
-    }
+    // function clear(){
+    //     ajax('{{=db.Stock_Transaction_Temp.truncate()}}', target = 'tblIC');
+    //     return false;
+    // }
     
 </script>                
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    var _id = $(this).attr('data-id');        
+    var _qt = $(this).attr('data-qt');
+    var _pc = $(this).attr('data-pc');
+    var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
+    $(document).on("click", ".edit", function() {
+        
+        var _id = $(this).attr('data-id');        
+        var _qt = $(this).attr('data-qt');
+        var _pc = $(this).attr('data-pc');        
+        var parent = $(this).parent("div").parent("td").parent("tr");
+        // console.log(_id, _qt, _pc);
+        bootbox.alert({
+            message: form,
+            callback: function() {
+                var qty = form.find('input[name=quantity]').val();
+                var pcs = form.find('input[name=pieces]').val();
+                // console.log(qty, pcs);
+                parent.fadeOut('slow');   
+                ajax("{{=URL('inventory','test_up')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+                
+                // {{response.js =  "jQuery('#simple').get(0).reload()" }}
+                parent.fadeIn('slow');   
+                
+                // parent.fadeou
+            }
+                        
+        });
+    });
+</script>
 
 <script>
     function preventDupes( select, index ) {
@@ -224,59 +372,23 @@
         }
     }
 
-    var stock_source_id = select = document.getElementById( 'no_table_stock_source_id' );
+    var no_table_stock_source_id = select = document.getElementById( 'no_table_stock_source_id' );
     var stock_destination_id = select = document.getElementById( 'no_table_stock_destination_id' );
 
-    stock_source_id.onchange = function() {
+    no_table_stock_source_id.onchange = function() {
         preventDupes.call(this, stock_destination_id, this.selectedIndex );
+        console.log(this.selectedIndex);
     };
 
     stock_destination_id.onchange = function() {
-        preventDupes.call(this, stock_source_id, this.selectedIndex );
+        preventDupes.call(this, no_table_stock_source_id, this.selectedIndex );
     };
-</script>
-<script>
-    jQuery(function($) {
-        $(".edit").on(onclick, function() {
-            bootbox.prompt({
-            title: "This is a prompt with a number input!",
-            inputType: 'number',
-            callback: function (result) {
-                console.log(result);
-            }
-        });
-        });
-    });
+
+
 </script>
 
-<script type="text/javascript">
-jQuery(function($) {          
-  $(".delete").on(onclick, function() {
-    var _id = $(this).attr('data-id');
-    var _in = $(this).attr('data-in');
-    var parent = $(this).parent("div").parent("td").parent("tr");
-    bootbox.confirm({
-        title: "Delete Confirmation: ",
-        message: "You are about to delete this invoice no. <b>"+ _in +"</b>. It cannot be restored at a later time! </br></br>Are you sure you want to delete this record?",
-        buttons: {
-            cancel: {
-                label: '<i class="fa fa-times"></i> Cancel'
-            },
-            confirm: { 
-                label: '<i class="fa fa-check"></i> Confirm',
-            }
-        },
-        callback: function (result) {
-          if(result === true) {
-            ajax("{{=URL('del_item/', )}}" + _id);
-            parent.fadeOut('slow');                       
-          }
-        }
-    });
-  });
-});
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+
 <!-- Button trigger modal -->
 
       
@@ -295,8 +407,14 @@ jQuery(function($) {
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
     </div>
     </div>
 </div>
-</div>
+</div> 
+
+
+<script>
+$(document).ready( function () {
+    $('table').DataTable();
+} );
+</script> 

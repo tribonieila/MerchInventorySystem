@@ -1,25 +1,30 @@
 {{extend 'layout.html'}}
+<style>
+@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
 
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                <li class="active"><a href="#"> DETAILS</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('mngr_req_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">STOCK REQUEST FORM</span>
+            <span class="card-title">PENDING FOR STOCK REQUEST APPROVAL</span>
         </div>
-        <div class="card-body tab-content">            
-            			
-            <!-- <el-form ref="form" :model="form" label-width="120px"> -->
+        <div class="card-body tab-content">                            
             <div class="form-horizontal">   
-                {{=form.custom.begin}}	
+                
+                {{=form.custom.begin}}	{{import datetime}}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Request No</label>
                             <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="ctr_val" readonly >
+                                <input type="text" class="form-control" value="SRN{{=form.custom.widget.stock_request_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
                             </div>                           
                         </div>                        
@@ -27,17 +32,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Request Date</label>
-                            <div class="col-sm-8"> {{import datetime}}
+                            <div class="col-sm-8"> 
                                 <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                 <p class="help-block">readonly</p>                            
-        
-                                <!-- <el-date-picker 
-                                v-model="stock_request_date" 
-                                type="date" 
-                                id="stock_request_date" 
-                                name="stock_request_date" 
-                                :readonly = true>
-                                </el-date-picker> -->
                             </div>
                         </div>                    
                     </div>
@@ -49,7 +46,6 @@
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
                                         <p class="help-block">readonly</p>                            
-                                                    <!-- <el-input v-model="requested_by" suffix-icon="el-icon-view" :readonly = true></el-input> -->
                                     </div>
                                 </div>            
                     </div>
@@ -57,14 +53,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Due Date</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_due_date}}
-                                <!-- <el-date-picker
-                                :id = "stock_due_date"
-                                :name = "stock_due_date"
-                                v-model="stock_due_date"
-                                type="date"
-                                placeholder="Pick a day">
-                                </el-date-picker> -->
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_due_date}}" readonly >
                             </div>
                         </div>                                           
                     </div>
@@ -75,54 +64,31 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Department</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.dept_code_id}}
-
-                                    <!-- <select class="form-control" id="dept_code_id" name="dept_code_id" >
-                                        <option value=null>Choose Department</option>
-                                        {{for d in db(db.Department).select(db.Department.ALL, orderby = db.Department.dept_code):}}
-                                        <option value='{{=d.id}}'>{{=d.dept_code}} - {{=d.dept_name}}</option>
-                                        {{pass}}
-                                    </select> -->
-
-                                <!-- <el-select v-model="dept_id" placeholder="Select" name ="dept_code_id" id="dept_code_id" >
-                                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                                </el-select>                             -->                
+                            <div class="col-sm-8">                                
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.dept_code_id}}</option>
+                                </select>
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Source</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.stock_source_id}}
-                                <!-- <select class="form-control" id="stock_source_id" name="stock_source_id">
-                                    <option value=null>Choose Location Code</option>
-                                    {{for d in db(db.Location).select(db.Location.ALL, orderby = db.Location.location_code):}}
-                                    <option value='{{=d.id}}'>{{=d.location_code}} - {{=d.location_name}}</option>
-                                    {{pass}}
-                                </select> -->
-
-                                <!-- <el-select v-model="stock_source_id" placeholder="Select" id="stock_source_id" name="stock_source_id">
-                                    <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                             -->
-    
+                            <div class="col-sm-8">                                
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.stock_source_id}}</option>
+                                </select>
                             </div>
                         </div>                 
                     </div>
                 </div>
-    
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.srn_status_id}}
-                                <!-- <el-select v-model="srn_status_id" placeholder="Select" id="srn_status_id" :name="srn_status_id">
-                                    <el-option v-for="item in status_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                                       -->
                             </div>
                         </div>                    
                     </div>
@@ -130,16 +96,14 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Destination</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_destination_id}}
-                                <!-- <el-select v-model="stock_destination_id" placeholder="Select" id="stock_destination_id">
-                                    <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                             -->
-    
+                                <select class="form-control" readonly>
+                                    <option>{{=form.custom.widget.stock_destination_id}}</option>
+                                </select>                                
                             </div>
                         </div>                                               
                     </div>
                 </div>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -153,22 +117,14 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 {{=form.custom.submit}}
-                                <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
                             </div>                            
                         </div>                    
                     </div>
                 </div>  
-                
-            </div>  
-                <hr>
-
                 {{=form.custom.end}}
+            </div> 
+            <hr>
+            {{=table}}
         </div>
     </div>
 </div>
-
-
-
-
-
-

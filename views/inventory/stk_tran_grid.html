@@ -1,0 +1,120 @@
+{{extend 'layout.html'}}
+<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+
+<div id="app">    
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
+                    <!-- <li class="active"><a href="#">BROWSE</a></li> -->
+                </ul>
+                <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
+            </div>
+            <div class="card-body tab-content">
+                    <template>                         
+                            <el-tabs :tab-position="tabPosition" style="height: 100%;">
+                                <el-tab-pane label="Stock Request">                            
+                                    <div style="margin-top: 20px" >
+                                        <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Transfer</el-button>
+                                        <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Print</el-button>
+                                        <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
+                                    </div>
+                                    
+                                    <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+                                        <el-table-column type="selection" width="55"></el-table-column>
+                                        <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
+                                        <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
+                                        <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
+                                        <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
+                                        <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>
+                                        <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
+                                        <el-table-column prop="stat" label="Status" width="150"></el-table-column>
+                                        <el-table-column prop="req" label="Required Action" width="300"></el-table-column>
+                                        <el-table-column fixed="right" label="Actions" width="100">
+                                            <template slot-scope="scope">
+                                                <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
+                                                <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
+        
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                                            
+                                </el-tab-pane>
+                                <el-tab-pane label="Sales Order">Sales Order</el-tab-pane>
+                                <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                        
+                            </el-tabs>
+                            <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
+                                    <el-table :data="gridData">
+                                        <el-table-column property="date" label="Date" width="150"></el-table-column>
+                                        <el-table-column property="name" label="Name" width="200"></el-table-column>
+                                        <el-table-column property="address" label="Address"></el-table-column>
+                                    </el-table>
+                                </el-dialog>                    
+                        </template>
+                    </div>
+                </div>                
+            </div>
+        </div>
+        
+        <script>
+        var Main = {
+            methods: {     
+              linksClick(row) {
+                window.open("{{=URL('inventory','str_kpr_grid')}}" + "/" + row);        
+              },
+              toggleSelection(rows) {
+                if (rows) {
+                  rows.forEach(row => {
+                    this.$refs.multipleTable.toggleRowSelection(row);
+                  });
+                } else {
+                  this.$refs.multipleTable.clearSelection();    
+                }
+              },
+              handleSelectionChange(val) {
+                this.multipleSelection = val;
+                // console.log(val);
+              },
+        
+            },
+            data() {
+              return {
+                {{import locale}}
+                gridData: [ 
+                    {
+                        date: '2016-05-02',
+                        name: 'John Smith',
+                        address: 'No.1518,  Jinshajiang Road, Putuo District'
+                    },
+                ],          
+                dialogTableVisible: false,
+                tabPosition: 'top',
+                tableData: [{{for s in db(db.Stock_Request.srn_status_id == 1 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
+                orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
+                {
+                    tag: '{{=s.Stock_Request.id}}',                
+                    date: '{{=s.Stock_Request.stock_request_date}}',
+                    req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
+                    stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
+                    stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
+                    stat: '{{=s.Stock_Request.srn_status_id.description}}',
+                    req_by: '{{=s.Stock_Request.requested_by.first_name.upper()}} {{=s.Stock_Request.requested_by.last_name.upper()}}',
+                    amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
+                    req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
+                },{{pass}}],
+                multipleSelection: []
+              }
+            }
+          }
+        var Ctor = Vue.extend(Main)
+        new Ctor().$mount('#app')
+        </script>
+        
+        
+        
+        
+        

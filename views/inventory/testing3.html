@@ -1,60 +1,51 @@
 {{extend 'layout.html'}}
-<style>
-    #suggestions { position: relative; }
-    .suggestions { background: white; border: solid 1px #55A6C8; }
-    .suggestions DIV { padding: 2px 4px 2px 4px; }
-</style>
-    
-    <form>
-        <input type="text" id="item_code" name="item_code" style="width: 250px" /><br />
-        <div style="position: absolute;" id="suggestions" class="suggestions"></div>
-    </form>
+<form>
+        <INPUT type="text" id="item_code_id" name = "item_code_id"/>
+        <INPUT type="text" id="quantity" name = "quantity"/>
+        <INPUT type="text" id="pieces" name = "pieces"/>
+        <INPUT type="text" id="category_id" name = "category_id"/>
+        <INPUT type="text" id="dept_code_id" name = "dept_code_id"/>
+        <INPUT type="text" id="stock_source_id" name = "stock_source_id"/>
+        <INPUT type="button" value="submit"
+               onclick="ajax('{{=URL('itm_view')}}',['item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id'],'target');"/>
+        </form>
+        <br/>
+        <div id="target"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+        <script>
+            var form = $('<div id="form_edit" style="display:none:"><form><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value=""></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value=""></div></form></div>');
+            $(document).on("click", ".edit", function() {
+                var _id = $(this).attr('data-id');
+                var _it = $(this).attr('data-it');
+                var _qt = $(this).attr('data-qt');
+                var _pc = $(this).attr('data-pc');
+                
+                // var _qt = $(this).attr('data-qt');
+                
+                console.log(_id, _it, _qt, _pc);
+                var parent = $(this).parent("div").parent("td").parent("tr");
+                bootbox.alert({
+                    message: form,  
 
-<script>
-    jQuery("#item_code").keyup(function(){
-          ajax('{{=URL('inventory', 'itm_select')}}', ['item_code'], 'suggestions')});
-</script>
-
-        {{=table}}
-
-<script>
-
-    jQuery("#item_code").onchange(function(){
-        console.log()
-    })
-
-    function show() {
-        // alert($(this).data("data-id"));
-        var _id = $(this).data("id")
-        console.log(_id);
-    }
-
-</script>
-<script type="text/javascript">
-          
-      function del() {
-        var _id = $(this).attr('data-id');
-        var _in = $(this).attr('data-in');
-        var parent = $(this).parent("div").parent("td").parent("tr");
-        bootbox.confirm({
-            title: "Delete Confirmation: ",
-            message: "You are about to delete this Item Code# <b>"+ _in +"</b>. It cannot be restored at a later time! </br></br>Are you sure you want to delete this row?",
-            buttons: {
-                cancel: {
-                    label: '<i class="fa fa-times"></i> Cancel'
-                },
-                confirm: { 
-                    label: '<i class="fa fa-check"></i> Confirm',
-                }
-            },
-            callback: function (result) {
-              if(result === true) {
-                ajax("{{=URL('del_item/', )}}" + _id);
-                parent.fadeOut('slow');                       
-              }
-            }
-        });
-      };
- 
-    </script>
-    
+                    callback: function() {
+                        var qty = form.find('input[name=quantity]').val();
+                        var pcs = form.find('input[name=pieces]').val();
+                        
+                        console.log(_id, _it, qty, pcs);                      
+                        // ajax('{{=URL('itm_view')}}',['item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id'], 'target');                
+                        // ajax('{{=URL('default', 'my_action')}}'' + '?value=' + value, [], ':eval');
+                        // ajax('{{=URL('default', 'my_action')}}' + '?div_size_value=' + div_size_value, ...)                        
+                        // ajax("{{=URL('inventory','test_up/',)}}" + _id);
+                        // ajax('{{=URL('default', 'showfilters')}}' + '?result=' + result, [], ':eval');
+                        // ajax('{{=URL('default','other')}}?key='+val,[],'target')"/>;
+                        // myvars = {'myvar1': 'A', 'myvar2': 'B'} 
+                        // ajax("{{=URL('inventory','test_up/')}}" + '&qty=' + qty, + '&pcs=' + pcs, []);
+                        ajax("{{=URL('inventory','test_up')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+                        
+                        
+                        
+                        // parent.fadeOut('slow');  
+                    }                               
+                });
+            });
+        </script>
