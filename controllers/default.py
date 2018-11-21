@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # ---- index page        ----
+# @auth.requires(lambda: auth.has_membership('ROOT'))
 @auth.requires_login()
+# @auth.requires_membership('ROOT')
 def index():
     response.flash = T("Hello User",language="ar-ar"  )
     return dict(message=T('Welcome to the jungle!'))

@@ -18,8 +18,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Request No</label>
-                            <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="ctr_val" readonly >
+                            <div class="col-sm-8">                                                  
+                                    
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_no_id}}{{=form.custom.widget.stock_request_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
                             </div>                           
                         </div>                        
@@ -28,16 +29,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Request Date</label>
                             <div class="col-sm-8"> {{import datetime}}
-                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.stock_request_date}}" readonly >
                                 <p class="help-block">readonly</p>                            
-        
-                                <!-- <el-date-picker 
-                                v-model="stock_request_date" 
-                                type="date" 
-                                id="stock_request_date" 
-                                name="stock_request_date" 
-                                :readonly = true>
-                                </el-date-picker> -->
                             </div>
                         </div>                    
                     </div>
@@ -48,8 +41,7 @@
                                     <label class="col-sm-4 control-label">Requested By</label>
                                     <div class="col-sm-8">
                                         <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
-                                        <p class="help-block">readonly</p>                            
-                                                    <!-- <el-input v-model="requested_by" suffix-icon="el-icon-view" :readonly = true></el-input> -->
+                                        <p class="help-block">readonly</p>                                                                                
                                     </div>
                                 </div>            
                     </div>
@@ -57,14 +49,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Due Date</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_due_date}}
-                                <!-- <el-date-picker
-                                :id = "stock_due_date"
-                                :name = "stock_due_date"
-                                v-model="stock_due_date"
-                                type="date"
-                                placeholder="Pick a day">
-                                </el-date-picker> -->
+                                <input type="text" class="form-control" value="{{=_id.stock_due_date}}" readonly >
+                                <p class="help-block">readonly</p>                            
                             </div>
                         </div>                                           
                     </div>
@@ -76,18 +62,9 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Department</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.dept_code_id}}
-
-                                    <!-- <select class="form-control" id="dept_code_id" name="dept_code_id" >
-                                        <option value=null>Choose Department</option>
-                                        {{for d in db(db.Department).select(db.Department.ALL, orderby = db.Department.dept_code):}}
-                                        <option value='{{=d.id}}'>{{=d.dept_code}} - {{=d.dept_name}}</option>
-                                        {{pass}}
-                                    </select> -->
-
-                                <!-- <el-select v-model="dept_id" placeholder="Select" name ="dept_code_id" id="dept_code_id" >
-                                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                                </el-select>                             -->                
+                                <input type="text" class="form-control" value="{{=_id.dept_code_id.dept_code}} - {{=_id.dept_code_id.dept_name}}" readonly >
+                                <p class="help-block">readonly</p>
+    
                             </div>
                         </div>                    
                     </div>
@@ -95,19 +72,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Source</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_source_id}}
-                                <!-- <select class="form-control" id="stock_source_id" name="stock_source_id">
-                                    <option value=null>Choose Location Code</option>
-                                    {{for d in db(db.Location).select(db.Location.ALL, orderby = db.Location.location_code):}}
-                                    <option value='{{=d.id}}'>{{=d.location_code}} - {{=d.location_name}}</option>
-                                    {{pass}}
-                                </select> -->
-
-                                <!-- <el-select v-model="stock_source_id" placeholder="Select" id="stock_source_id" name="stock_source_id">
-                                    <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                             -->
-    
+                                <input type="text" class="form-control" value="{{=_id.stock_source_id.location_code}} - {{=_id.stock_source_id.location_name}}" readonly >
+                                <p class="help-block">readonly</p>    
                             </div>
                         </div>                 
                     </div>
@@ -119,23 +85,15 @@
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.srn_status_id}}
-                                <!-- <el-select v-model="srn_status_id" placeholder="Select" id="srn_status_id" :name="srn_status_id">
-                                    <el-option v-for="item in status_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                                       -->
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Destination</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.stock_destination_id}}
-                                <!-- <el-select v-model="stock_destination_id" placeholder="Select" id="stock_destination_id">
-                                    <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                             -->
-    
+                            <div class="col-sm-8">                                
+                                <input type="text" class="form-control" value="{{=_id.stock_destination_id.location_code}} - {{=_id.stock_destination_id.location_name}}" readonly >
+                                <p class="help-block">readonly</p>    
                             </div>
                         </div>                                               
                     </div>
@@ -144,7 +102,11 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.remarks}}
+                                <!-- <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
+                                <p class="help-block">readonly</p>     -->
+    
                             </div>
                         </div>                  
                     </div>
@@ -153,7 +115,6 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 {{=form.custom.submit}}
-                                <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
                             </div>                            
                         </div>                    
                     </div>
@@ -163,6 +124,7 @@
                 <hr>
 
                 {{=form.custom.end}}
+                {{=table}}
         </div>
     </div>
 </div>

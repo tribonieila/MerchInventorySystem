@@ -3,7 +3,7 @@
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div id="app">    
     <div class="col-md-12">
         <div class="card card-underline">
@@ -15,48 +15,47 @@
                 <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
             </div>
             <div class="card-body tab-content">
-                <el-select v-model="value" placeholder="Select">
-                    <el-option
-                        v-for="item in options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                    </el-option>
-                </el-select>
+                
                 <template>                                               
-                    <div style="margin-top: 20px" >
-                        <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Transfer</el-button>
-                        <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Print</el-button>
-                        <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
-                    </div>
-                    
-                    <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
-                        <el-table-column type="selection" width="55"></el-table-column>
-                        <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
-                        <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
-                        <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
-                        <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
-                        <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>
-                        <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
-                        <el-table-column prop="stat" label="Status" width="150"></el-table-column>
-                        <el-table-column prop="req" label="Required Action" width="300"></el-table-column>
-                        <el-table-column fixed="right" label="Actions" width="100">
-                            <template slot-scope="scope">
-                                <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
-                                <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
+                <el-tabs :tab-position="tabPosition" style="height: 100%;">
+                        <el-tab-pane label="Stock Request"> 
 
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                                                        
+                            <div style="margin-top: 20px" >
+                                <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Transfer & Print</el-button>
+                                <el-button type="danger" icon="el-icon-printer" @click="toggleSelection()">Print Stock Request</el-button>
+                                <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
+                            </div>
+                            
+                            <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+                                <el-table-column type="selection" width="55"></el-table-column>
+                                <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
+                                <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
+                                <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
+                                <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
+                                <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>
+                                <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
+                                <el-table-column prop="stat" label="Status" width="150"></el-table-column>
+                                <el-table-column prop="req" label="Required Action" width="300"></el-table-column>
+                                <el-table-column fixed="right" label="Actions" width="100">
+                                    <template slot-scope="scope">
+                                        <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
+                                        <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
 
-                    <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
-                        <el-table :data="gridData">
-                            <el-table-column property="date" label="Date" width="150"></el-table-column>
-                            <el-table-column property="name" label="Name" width="200"></el-table-column>
-                            <el-table-column property="address" label="Address"></el-table-column>
-                        </el-table>
-                    </el-dialog>                    
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                                                                
+
+                            <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
+                                <el-table :data="gridData">
+                                    <el-table-column property="date" label="Date" width="150"></el-table-column>
+                                    <el-table-column property="name" label="Name" width="200"></el-table-column>
+                                    <el-table-column property="address" label="Address"></el-table-column>
+                                </el-table>
+                            </el-dialog>       
+                        </el-tab-pane>
+                        <el-tab-pane label="Sales Order">Sales Order</el-tab-pane>
+                        <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                                             
                 </template>
             </div>
         </div>                

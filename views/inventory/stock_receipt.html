@@ -3,7 +3,7 @@
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div id="app">    
     <div class="col-md-12">
         <div class="card card-underline">
@@ -78,7 +78,8 @@ var Main = {
         return row[property] === value;
       },        
       linksClick(row) {
-        window.open("{{=URL('inventory','mngr_req_details')}}" + "/" + row);        
+        window.open("{{=URL('inventory','stock_receipt_details')}}" + "/" + row, '_top');        
+
       },
       toggleSelection(rows) {
         if (rows) {
@@ -110,18 +111,21 @@ var Main = {
         dialogTableVisible: false,
         tabPosition: 'top',
         tableData: [{{for s in db(db.Stock_Request.srn_status_id == 5 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
-        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id)):}}
+        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id) &
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id) &
+            (db.Transaction_Prefix.id == db.Stock_Request.stock_receipt_no_id))): }}
         {
             tag: '{{=s.Stock_Request.id}}',                
             date: '{{=s.Stock_Request.stock_request_date}}',
-            stk_trn_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_transfer_no}}',
-            stk_req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
+            stk_trn_no: '{{=s.Stock_Request.stock_transfer_no_id.prefix}}{{=s.Stock_Request.stock_transfer_no}}',
+            stk_req_no: '{{=s.Stock_Request.stock_request_no_id.prefix}}{{=s.Stock_Request.stock_request_no}}',
             stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
             stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
             stat: '{{=s.Stock_Request.srn_status_id.description}}',
-            // req_by: '{{=s.Stock_Request.created_on.first_name.upper()}} {{=s.Stock_Request.created_on.last_name.upper()}}',
             amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
             req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
+            req_by: '{{=s.Stock_Request.created_by.first_name.upper()}} {{=s.Stock_Request.created_by.last_name.upper()}}'
         },{{pass}}],
         multipleSelection: []
       }

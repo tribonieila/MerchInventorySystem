@@ -37,6 +37,8 @@ db.define_table(
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
     Field('registration_id', length=512, writable=False, readable=False, default=''))# required
 
+
+# db.auth_user.id.represent = lambda auth_id, row: row.first_name + ' ' + row.last_name
 ## do not forget validators
 custom_auth_table = db[auth.settings.table_user_name] # get the custom_auth_table
 custom_auth_table.first_name.requires =   IS_NOT_EMPTY(error_message=auth.messages.is_empty)
@@ -510,90 +512,63 @@ db.define_table('Stock_Required_Action',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
-db.define_table('Stock_Request',   
-    Field('stock_request_no_id', 'reference Transaction_Prefix', writable = False),
-    Field('stock_request_no', 'integer'),
+db.define_table('Stock_Request',       
+    Field('stock_request_no_id', 'reference Transaction_Prefix', writable = False, represent = lambda row: row.prefix),   
+    Field('stock_request_no', 'integer', default = 0, writable = False),
     Field('stock_request_date', 'date', default = request.now),
     Field('stock_due_date', 'date', default = request.now),
     Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('stock_source_id','reference Location', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
     Field('stock_destination_id','reference Location', label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),    
     Field('total_amount','decimal(10,2)', default = 0),
-    # Field('requested_by', 'reference auth_user', writable = False),        
     Field('srn_status_id','reference Stock_Status', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('stock_request_date_approved','date'),
     Field('stock_request_approved_by','reference auth_user', writable = False), #requires = IS_IN_DB(db, 'auth_user.id', '%(first_name)s %(last_name)s')),            
     Field('remarks', 'string'),
 
     Field('stock_transfer_no_id', 'reference Transaction_Prefix', writable = False),    
-    Field('stock_transfer_no', 'integer', label = 'Stock Transfer No', writable = False),
-    Field('stock_transfer_date_approved', 'date'),
+    Field('stock_transfer_no', 'integer', writable = False),
+    Field('stock_transfer_date_approved', 'date', writable = False),
     Field('stock_transfer_approved_by','reference auth_user', writable = False),
     
-    Field('stock_receipt_no_id', 'reference Transaction_Prefix'),
-    Field('stock_receipt_no', 'integer'),    
-    Field('stock_receipt_date_approved', 'date'),
+    Field('stock_receipt_no_id', 'reference Transaction_Prefix', writable = False),
+    Field('stock_receipt_no', 'integer', writable = False),    
+    Field('stock_receipt_date_approved', 'date', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user', writable = False),
+
+    Field('ticket_no', 'string', length = 10, writable = False, requires = [IS_LENGTH(10),IS_UPPER(), IS_NOT_IN_DB(db, 'Stock_Request.ticket_no')]),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False), format = 'stock_request_no')
 
-db.define_table('Stock_Request_Transaction',
-    Field('stock_request_id', 'reference Stock_Request'), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
+db.define_table('Stock_Request_Transaction',    
+    Field('stock_request_id', 'reference Stock_Request', readable = False), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
     Field('item_code_id', 'reference Item_Master'), #requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
     Field('category_id', 'reference Transaction_Item_Category'), 
-    Field('quantity','integer', default = 0),
-    Field('uom','integer', default = 0),
-    Field('price_cost', 'decimal(10,2)',default = 0),
+    Field('quantity', 'integer', default = 0),
+    Field('uom','integer', default = 0), 
+    Field('average_cost','decimal(10,4)', default =0),
+    Field('price_cost', 'decimal(10,4)', default = 0 ),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
-    Field('pieces','integer', default = 0),
-    Field('remarks','text'),
-    Field('amount','decimal(10,2)'),
+    Field('vansale_price', 'decimal(10,2)',default =0),
+
+    Field('remarks','string'),
+    Field('delete', 'boolean', default = False),
+    Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', writable = False, readable = False),
     Field('updated_by', db.auth_user, writable = False, readable = False))
 
-db.define_table('Stock_Transaction_Temp',
-    # Field('stock_request_id', 'reference Stock_Request'),
-    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
-    Field('stock_source_id', 'reference Location'),
-    Field('quantity','integer', default = 0),
-    Field('pieces','integer', default =0),
-    # Field('uom','integer', default =0),
-    # Field('price_cost', 'decimal(10,2)',default = 0),
-    # Field('wholesale_price', 'decimal(10,2)', default = 0),
-    # Field('retail_price', 'decimal(10,2)',default = 0),    
-    Field('category_id', 'reference Transaction_Item_Category'), 
-    Field('amount','decimal(10,2)', default =0),
-    Field('remarks','string'),
-    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False))
-
-db.define_table('Stock_File',
-    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
-    Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s', zero = 'Choose Location Code')),    
-    Field('opening_stock', 'integer', default = 0),
-    Field('closing_stock', 'integer', default = 0),
-    Field('stock_in_transit', 'integer', default = 0),
-    Field('free_stock_qty', 'integer', default = 0),
-    Field('reorder_qty', 'integer', default = 0), 
-    Field('last_transfer_date', 'datetime'),
-    Field('last_transfer_qty', 'integer'),
-    Field('probational_balance','integer', compute = lambda p: p['closing_stock'] - p['stock_in_transit']),
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
-    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
-
 db.define_table('Item_Prices',
     Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
-    Field('most_recent_cost', 'decimal(10,2)', default = 0),
-    Field('average_cost', 'decimal(10,2)', default = 0),
-    Field('most_recent_landed_cost', 'decimal(10,2)', default =0),
+    Field('most_recent_cost', 'decimal(10,4)', default = 0),
+    Field('average_cost', 'decimal(10,4)', default = 0),
+    Field('most_recent_landed_cost', 'decimal(10,4)', default =0),
     Field('currency_id', 'reference Currency', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-    Field('opening_average_cost', 'decimal(10,2)', default = 0),
+    Field('opening_average_cost', 'decimal(10,4)', default = 0),
     Field('last_issued_date', 'date', default = request.now),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
@@ -604,8 +579,42 @@ db.define_table('Item_Prices',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
 
-db.define_table('person', Field('name'),Field('age','integer'))
-db.define_table('house',Field('address'),Field('person', db.person))
+db.define_table('Stock_Transaction_Temp',    
+    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('stock_source_id', 'reference Location'),
+    Field('stock_destination_id', 'reference Location'),
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default =0),
+    Field('qty', 'integer', default =0),
+    Field('price_cost', 'decimal(10, 4)', default = 0),
+    Field('category_id', 'reference Transaction_Item_Category'), 
+    Field('amount','decimal(10,2)', default =0),
+    Field('remarks','string'),
+    Field('ticket_no_id', 'string', length = 10),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False))
+
+    # Field('uom','integer', default =0),
+    # Field('price_cost', 'decimal(10,2)',default = 0),
+    # Field('wholesale_price', 'decimal(10,2)', default = 0),
+    # Field('retail_price', 'decimal(10,2)',default = 0),    
+
+db.define_table('Stock_File',
+    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s', zero = 'Choose Location Code')),    
+    Field('opening_stock', 'integer', default = 0),
+    Field('closing_stock', 'integer', default = 0),
+    Field('stock_in_transit', 'integer', default = 0),
+    Field('free_stock_qty', 'integer', default = 0),
+    Field('reorder_qty', 'integer', default = 0), 
+    Field('last_transfer_date', 'datetime', default = request.now),
+    Field('last_transfer_qty', 'integer', default = 0),
+    Field('probational_balance','integer', default = 0),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
+
 
 ### PROCUREMENT SYSTEMS
   
@@ -675,3 +684,13 @@ db.define_table('Batch_Order_Transaction',
     Field('landed_cost','decimal(10,2)'),
     Field('qty','integer'),
     Field('date_ordered','date'))
+
+# if auth.has_membership(role = 'INVENTORY POS'):
+#     redirect(URL(r=request,c='inventory',f='stock_receipt'))
+
+
+# auth.settings.login_next = URL(r=request,c='default',f='apage')
+
+			# <!-- {{if auth.is_logged_in():
+			# 	redirect(URL('inventory','stock_receipt'))
+			# }} -->

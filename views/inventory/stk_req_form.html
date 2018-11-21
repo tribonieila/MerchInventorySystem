@@ -26,11 +26,11 @@
                                   <div slot="reference" class="name-wrapper">
                                     <el-tag size="small"> {% scope.row.stk_req %} </el-tag>
                                   </div>
-                                </el-popover>
+                                </el-popover> 
                             </template>
                         </el-table-column>
                         <el-table-column fixed prop="stk_tra" label="Stock Transfer No" width="150">
-                            <template slot-scope="scope">
+                            <!-- <template slot-scope="scope">
                                 <el-popover trigger="hover" placement="top">
                                   <p>Date Approved: {% scope.row.date_aprv %} </p>
                                   <p>Approved By: {% scope.row.aprv_by %} </p>
@@ -38,7 +38,7 @@
                                     <el-tag size="small"> {% scope.row.stk_tra %} </el-tag>
                                   </div>
                                 </el-popover>
-                            </template>                            
+                            </template>                             -->
                         </el-table-column>
                         <el-table-column fixed prop="stk_rec" label="Stock Receipt No" width="150"></el-table-column>
                         <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
@@ -67,8 +67,8 @@
 var Main = {
     delimiters: ["{%","%}"],
     methods: {
-      linksClick() {
-        window.open("{{=URL('inventory','stk_req_edit_form')}}" + "/" + row);
+      linksClick(row) {
+        window.open("{{=URL('inventory','stk_req_edit_form')}}" + "/" + row, '_top');
       },
       viewClick() {
           console.log('view');
@@ -82,19 +82,18 @@ var Main = {
     },
     data() {
       return {
-        delimiters: ["%","%"],
+        
         {{import locale}}
         tableData: [{{for s in db(db.Stock_Request.created_by == auth.user_id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
-        left = db.Transaction_Prefix.on(
-            (db.Transaction_Prefix.dept_code_id == db.Stock_Request.dept_code_id) &
+        left = db.Transaction_Prefix.on(            
             (db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id) &
             (db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id) &
             (db.Transaction_Prefix.id == db.Stock_Request.stock_receipt_no_id))): }}
         {
           date: '{{=s.Stock_Request.stock_request_date}}',
-
-          stk_req: 'SRN{{=s.Stock_Request.stock_request_no}}',
-          stk_tra: 'STV{{=s.Stock_Request.stock_transfer_no}}',
+            
+          stk_req: '{{=s.Stock_Request.stock_request_no_id.prefix}}{{=s.Stock_Request.stock_request_no}}',        
+          stk_tra: '{{=s.Stock_Request.stock_transfer_no}}',
           stk_rec: '{{=s.Stock_Request.stock_receipt_no}}',
 
           stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
@@ -102,12 +101,9 @@ var Main = {
           stat: '{{=s.Stock_Request.srn_status_id.description}}',
           amount: '{{=locale.format('%.2F',s.Stock_Request.total_amount or 0, grouping = True)}}',
           req: '{{=s.Stock_Request.srn_status_id.required_action}}',
-          tag: '{{=s.Stock_Request.id}}',                
-          aprv_by: '{{=s.Stock_Request.stock_request_approved_by}} {{=s.Stock_Request.stock_request_approved_by}}',
+          tag: '{{=s.Stock_Request.id}}',            
           date_aprv: '{{=s.Stock_Request.stock_request_date_approved}}',
-
-          str_dte_aprv: '{{=s.Stock_Request.stock_transfer_date_approved}}',
-          str_aprv_by:'{{=s.Stock_Request.stock_transfer_approved_by}} {{=s.Stock_Request.stock_transfer_approved_by}}',
+          aprv_by: '{{=s.Stock_Request.stock_request_approved_by}}',
         },{{pass}}]
       }
     }

@@ -62,3 +62,7 @@ def _header_footer(canvas, doc):
 
     # Release the canvas
     canvas.restoreState()
+
+def str_kpr_rpt():
+    print x
+    return dict()

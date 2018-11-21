@@ -47,12 +47,12 @@
                         <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                        
                     </el-tabs>
                     <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
-                            <el-table :data="gridData">
-                                <el-table-column property="date" label="Date" width="150"></el-table-column>
-                                <el-table-column property="name" label="Name" width="200"></el-table-column>
-                                <el-table-column property="address" label="Address"></el-table-column>
-                            </el-table>
-                        </el-dialog>                    
+                        <el-table :data="gridData">
+                            <el-table-column property="date" label="Date" width="150"></el-table-column>
+                            <el-table-column property="name" label="Name" width="200"></el-table-column>
+                            <el-table-column property="address" label="Address"></el-table-column>
+                        </el-table>
+                    </el-dialog>                    
                 </template>
             </div>
         </div>                
@@ -61,9 +61,10 @@
 
 <script>
 var Main = {
+    delimiters: ["{%","%}"],
     methods: {     
       linksClick(row) {
-        window.open("{{=URL('inventory','mngr_req_details')}}" + "/" + row);        
+        window.open("{{=URL('inventory','mngr_req_details')}}" + "/" + row, '_top');        
       },
       toggleSelection(rows) {
         if (rows) {
