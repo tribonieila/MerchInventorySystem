@@ -2498,7 +2498,7 @@ import string
 import random
 def id_generator():    
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-
+from datetime import date
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
 def stk_req_add_form():          
     ctr = db(db.Transaction_Prefix.prefix == 'SRN').select().first()
@@ -2508,11 +2508,11 @@ def stk_req_add_form():
     _ticket_no = id_generator()
     form = SQLFORM.factory(       
         Field('ticket_no_id', 'string', default = _ticket_no),
-        Field('stock_request_date', 'date', default = datetime.date.today()),
+        Field('stock_request_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message = 'Choose Department')),
         Field('stock_source_id','reference Location', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code', error_message = 'Choose Stock Location')),
         Field('stock_destination_id','reference Location', label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code', error_message = 'Choose Stock Destination')),    
-        Field('stock_due_date','date', default = datetime.date.today()),
+        Field('stock_due_date','date', default = request.now),
         Field('remarks','string'),
         Field('srn_status_id','reference Stock_Status', default = 3, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
         # Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
@@ -2817,7 +2817,6 @@ def stk_tns_form():
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_tns_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-
         row.append(TR(TD(n.id),TD(n.stv_no),TD(n.stv_date),TD(n.stv_prepared_by),TD(n.stv_status),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table table-striped')        
@@ -2864,7 +2863,59 @@ def stk_tns_add_form():
 def stk_rcpt_form():
     
     return locals()
+def adjustment_type():
+    form = SQLFORM(db.Adjustment_Type)
+    if form.process().accepted:
+        response.flash = 'save'
+    elif form.errors:
+        response.flash = 'error'
+    row = []
+    thead = THEAD(TR(TH('#'),TH('Mnemomic'),TH('Description'),TH('Action')))
+    for n in db(db.Adjustment_Type).select():
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('itm_type_edit_form', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(n.id),TD(n.mnemonic),TD(n.description),TD(btn_lnk)))
+    tbody = TBODY(*row)
+    table = TABLE(*[thead,tbody],_class='table table-striped')        
+    return dict(form=form, table = table)        
 
+def stock_adjustment():
+    return dict()
+
+def stock_adjustment_form():
+    # ctr = db((db.Transaction_Prefix.prefix == 'SRN')&(db.Transaction_Prefix.dept_code_id == form.vars.dept_code_id)).select().first()
+    # _skey = ctr.current_year_serial_key 
+    # _skey += 1
+    form = SQLFORM(db.Stock_Adjustment)
+    if form.process().accepted:
+        response.flash = 'ok'
+    elif form.errors:
+        response.flash = 'error'
+    return dict(form = form)
+
+def stock_adjustment_validation(form):
+    
+    form.vars.stock_adjustment_date = request.now
+    itm_price = db(db.Item_Prices.item_code_id == form.vars.item_code_id).select().first()
+    form.vars.average_cost = itm_price.average_cost
+
+def stock_adjustment_table():
+    form = SQLFORM(db.Stock_Adjustment_Transaction_Temp)
+    if form.process(onvalidation = stock_adjustment_validation).accepted:
+        response.flash = 'OK'
+    elif form.errors:
+        response.flash = 'error'
+    row = []
+    ctr = 0
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Date'),TH('Category'),TH('Quantity'),TH('Average Cost')))
+    for i in db(db.Stock_Adjustment_Transaction_Temp).select():
+        ctr += 1
+        row.append(TR(TD(ctr),TD(i.item_code_id.item_code),TD(i.stock_adjustment_date),TD(i.category_item.description),TD(i.quantity),TD(i.average_cost)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(form = form, table = table)
 def stk_rpt():
     return locals()
 
@@ -3096,6 +3147,7 @@ def master_item_view():
         _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
         _stk_file = db(db.Stock_File.item_code_id == request.vars.item_code_id).select().first()
         _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
+
         _outer = int(_stk_file.probational_balance) / int(_itm_code.uom_value)        
         _pcs = int(_stk_file.probational_balance) - int(_outer * _itm_code.uom_value)    
         _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
@@ -3121,7 +3173,6 @@ def master_item_view():
         i_table = TABLE(*[i_head, i_body], _class = 'table')
 
         head = THEAD(TR(TD('#'),TD('Location Code'),TD('Opening Stock'),TD('Closing Stock'),TD('Stock In Transit'),TD('Available Balanced')))
-
         
         for i in db().select(db.Stock_File.ALL, db.Location.ALL, orderby = ~db.Location.location_name, left = db.Stock_File.on((db.Stock_File.location_code_id == db.Location.id) & (db.Stock_File.item_code_id == request.vars.item_code_id))):
             ctr += 1
@@ -3130,23 +3181,22 @@ def master_item_view():
             TD(i.Stock_File.opening_stock or 0, grouping = True),
             TD(i.Stock_File.closing_stock or 0, grouping = True),
             TD(i.Stock_File.stock_in_transit or 0, grouping = True),
-            TD(_avl_bal or 0, grouping = True))) 
-        
-
+            TD(_avl_bal or 0, grouping = True)))         
         body = TBODY(*row)
         table = TABLE(*[head, body], _class = 'table')
         return dict(form = form, i_table = i_table, table = table)
     else:
         return dict(form = form, table = 'table', i_table = 'i_table')
-from datetime import timedelta
+
+from datetime import datetime
 def stock_card_movement():
     form = SQLFORM.factory(
         Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
         Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
-        Field('start_date','date', default = request.now),
-        Field('end_date','date', default = request.now))
+        Field('start_date','date', default= request.now, requires = IS_DATE()),
+        Field('end_date','date', default = request.now, requires = IS_DATE()))
     if form.accepts(request):
-        response.flash = 'ok'
+        # response.flash = 'ok'
         _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
         _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()
         _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
@@ -3169,20 +3219,45 @@ def stock_card_movement():
         
         _query = db.Stock_Request.srn_status_id == 6
         _query &= db.Stock_Request_Transaction.item_code_id == request.vars.item_code_id     
-        _query &= db.Stock_Request.stock_receipt_date_approved >= request.vars.start_date
-        _query &= db.Stock_Request.stock_receipt_date_approved <= request.vars.end_date
+        _query &= db.Stock_Request.stock_transfer_date_approved >= request.vars.start_date
+        _query &= db.Stock_Request.stock_transfer_date_approved <= request.vars.end_date
         query = db(_query).select(db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, left = db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id)) 
         _bal = 0
+        _bal = _stk_file.opening_stock
+        
         for i in query: 
-            
+
+        # _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
+        
+        # _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
+        
+        # _outer = int(_stk_file.probational_balance) / int(_itm_code.uom_value)        
+        # _pcs = int(_stk_file.probational_balance) - int(_outer * _itm_code.uom_value)    
+        # _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
+        
+            # TD( # validate if uom = 1, present whole number
+            # str(int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom)) + " - " +
+            # str(int(k.Stock_Request_Transaction.quantity) - (int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom) * int(k.Stock_Request_Transaction.uom))) + "/" +
+            # str(k.Item_Master.uom_value)), 
+            # TD(k.Item_Prices.retail_price, _align='right'),TD(locale.format('%.2F', int(k.Stock_Request_Transaction.quantity) * float(k.Stock_Request_Transaction.price_cost) or 0, grouping = True),_align = 'right'),TD(k.Stock_Request_Transaction.remarks),TD(btn_lnk)))
+
+
             # print _stk_file.location_code_id , i.Stock_Request.stock_source_id
             if _stk_file.location_code_id == i.Stock_Request.stock_source_id:
-                _out = i.Stock_Request_Transaction.quantity
+                _outer  = i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom
+                _pcs    = i.Stock_Request_Transaction.quantity - i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom * i.Stock_Request_Transaction.uom
+
+                _bal = _bal - i.Stock_Request_Transaction.quantity
+                _out = str(_outer) + ' - ' + str(_pcs) + '/' + str(_itm_code.uom_value)
+                # _out = i.Stock_Request_Transaction.quantity
                 _in = 0
                 # print i.Stock_Request_Transaction.id, ' out'
-            else:
-                _in = i.Stock_Request_Transaction.quantity 
-                _bal = _stk_file.opening_stock + _in 
+            else:               
+                _outer  = i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom
+                _pcs    = i.Stock_Request_Transaction.quantity - i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom * i.Stock_Request_Transaction.uom
+
+                _bal = _bal + i.Stock_Request_Transaction.quantity 
+                _in = str(_outer) + ' - ' + str(_pcs) + '/' + str(_itm_code.uom_value)
                 _out = 0
                 # print 'in ', i.Stock_Request_Transaction.id
                 
@@ -3193,8 +3268,7 @@ def stock_card_movement():
             TD(i.Stock_Request.stock_transfer_date_approved),
             TD(i.Stock_Request_Transaction.category_id.mnemonic),
             TD(_in),
-            TD(_out),                                
-            # TD(_stk_file.opening_stock - i.Stock_Request_Transaction.quantity )))
+            TD(_out),                                        
             TD(_bal)))
 
         body = TBODY(*row)

@@ -1,0 +1,76 @@
+{{=form.custom.begin}}	
+<div class="form-horizontal">   
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Stock Adjustment No</label>
+                <div class="col-sm-8">                                
+                    {{=form.custom.widget.stock_adjustment_no}}                  
+                </div>                           
+            </div>                        
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Date</label>
+                <div class="col-sm-8"> {{import datetime}}
+                    {{=form.custom.widget.stock_adjustment_date}}
+                </div>
+            </div>                    
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Department</label>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.dept_code_id}}
+                </div>
+            </div>            
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Location</label>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.location_code_id}}
+                </div>
+            </div>                                           
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Type</label>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.adjustment_type}}
+                </div>
+            </div>                    
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Total Amount</label>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.total_amount}}   
+                </div>
+            </div>                 
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Status</label>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.srn_status_id}}
+                </div>
+            </div>                    
+        </div>
+        <div class="col-md-6">  
+            <div class="form-group">
+                <label class="col-sm-4 control-label"></label>
+                <div class="col-sm-8">
+                    {{=form.custom.submit}}                
+                </div>                            
+            </div>                    
+        </div>
+    </div>
+</div>   
+{{=form.custom.end}}

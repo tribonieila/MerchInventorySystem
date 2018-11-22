@@ -1,0 +1,19 @@
+{{extend 'layout.html'}}
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Stock Adjustment (+/-)</span>
+        </div>
+        <div class="card-body tab-content">         
+
+            {{=LOAD('inventory','stock_adjustment_form.load', ajax = True)}}
+            <hr>
+            {{=LOAD('inventory','stock_adjustment_table.load', ajax = True)}}
+        </div>
+    </div>
+</div>
+
+<script>
+    // return false
+</script>
