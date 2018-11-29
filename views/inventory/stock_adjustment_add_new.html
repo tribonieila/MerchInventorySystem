@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+
+<input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=_ticket_no_id}}" hidden>
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
+        </div>
+        <div class="card-body tab-content" data-id="{{=_ticket_no_id}}">         
+            {{=LOAD('inventory','stock_adjustment_form.load', args = [_ticket_no_id], ajax = True)}}
+            <hr>
+            {{=LOAD('inventory','stock_adjustment_table.load', args = [_ticket_no_id], ajax = True)}}
+        </div>
+    </div>
+</div>

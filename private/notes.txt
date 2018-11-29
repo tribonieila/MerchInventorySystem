@@ -7,6 +7,10 @@ sudo dpkg -i /path/to/deb/file followed by sudo apt-get install -f
 sudo apt install ./name.deb
 
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
+
+redirect(URL('index', args=(1,2,3), vars=dict(a='b')))
+
+
 <script>
 jQuery('#myform').submit(function() {
   ajax('{{=URL("new_post")}}',
@@ -14,34 +18,7 @@ jQuery('#myform').submit(function() {
   return false;
 });
 </script>
-var testdataBsSuggest = $("#item_code_id").bsSuggest({
-        indexId: 0,  
-        indexKey: 0, 
-        ignorecase: true,
-        autoDropup: false,
-        showHeader: true,
-        // filter by dept and stock source 
-        // db.Item_Master.dept_code_id == request.vars.dept_code_id
-        // db.Stock_File.location_code_id == request.vars.stock_source_id
-        data: {
-            
-            'value':[ {{for n in dept_code_id:}}
-                {'id':'{{=n.Item_Master.id}}',
-                'item':'{{=n.Item_Master.item_code}}',
-                'group':'{{=n.Item_Master.group_line_id.group_line_name}}', 
-                'brand':'{{=n.Item_Master.brand_line_code_id.brand_line_name}}',
-                'description':'{{=n.Item_Master.item_description.upper()}}', 
-                'uom':'{{=n.Item_Master.uom_value}}',
-                'retail':'{{=n.Item_Prices.retail_price}}',
-                'on_hand':'{{=n.Stock_File.closing_stock}}',
-                'location':'{{=n.Stock_File.location_code_id.location_name}}',
-                'on_transit':'{{=n.Stock_File.stock_in_transit}}',
-                'on_balance':'{{=n.Stock_File.probational_balance}}'},
-                {{pass}}
-            ],
-            'defaults':'0'
-        },
-    })
+
 <div class="form_edit" style="display:none;">
     <form class="form" role="form">
       <div class="form-group">

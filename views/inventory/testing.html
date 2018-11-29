@@ -1,2 +1,165 @@
 {{extend 'layout.html'}}
-{{=form}}
+<style>
+    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+    .el-select .el-input {
+    width: 110px;
+  }
+  .input-with-select .el-input-group__prepend {
+    background-color: #fff;
+  }
+</style>
+
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#"onclick=window.location="{{=URL('itm_add_batch_form')}}";>+ NEW BATCH</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">ITEM MASTER FORM</span>
+        </div>
+        <div class="card-body tab-content">
+            <div id="app">
+                
+                <el-form :inline="true" :model="formInline" class="demo-form-inline" label-width="150px">
+                  <el-form-item label="Division">
+                      <el-cascader
+                        expand-trigger="hover"
+                        :options="optDiv"
+                        v-model="selectedOptions2"
+                        @change="handleChange">
+                      </el-cascader>
+                  </el-form-item>
+                  <el-form-item label="Description En">
+                    <el-input v-model="formInline.user" placeholder="Description English"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Description Ar">
+                    <el-input v-model="formInline.user" placeholder="Description Arabic"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Reference">
+                    <el-input v-model="formInline.user" placeholder="Supplier Item Reference"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Barcode">
+                    <el-input v-model="formInline.user" placeholder="International Barcode"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Barcode">
+                    <el-input v-model="formInline.user" placeholder="Local Barcode"></el-input>
+                  </el-form-item>
+  
+                  <el-form-item label="Purchase">
+                    <el-input v-model="formInline.user" placeholder="Purchase Point"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Tax">
+                    <el-input v-model="formInline.user" placeholder="Selective Tax"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="Vat">
+                    <el-input v-model="formInline.user" placeholder="Vat Percentage"></el-input>
+                  </el-form-item>
+
+                  <el-form-item label="UOM">
+                    <el-input placeholder="UOM Value" v-model="input5" class="input-with-select">
+                      <el-select v-model="select" slot="prepend" placeholder="Select">
+                        {{for u in db(db.UOM).select():}}
+                        <el-option label="{{=u.description}}" value="{{=u.id}}"></el-option>
+                        {{pass}}
+                      </el-select>                      
+                    </el-input>                  
+      
+                  </el-form-item>
+                  
+                  <el-form-item label="Supplier UOM">
+                      <el-input placeholder="Supplier Value" v-model="input5" class="input-with-select">
+                          <el-select v-model="select" slot="prepend" placeholder="Select">
+                            {{for s in db(db.Supplier_UOM).select():}}
+                            <el-option label="{{=s.description}}" value="{{=s.id}}"></el-option>
+                            {{pass}}
+                          </el-select>                      
+                        </el-input>                      
+                  </el-form-item>
+                    
+                  <el-form-item label="Weight">
+                      <el-input placeholder="Weight Value" v-model="input5" class="input-with-select">
+                          <el-select v-model="select" slot="prepend" placeholder="Select">
+                            {{for w in db(db.Weight).select():}}
+                            <el-option label="{{=w.description}}" value="{{=w.id}}"></el-option>
+                            {{pass}}
+                          </el-select>                      
+                        </el-input>                        
+                  </el-form-item>
+
+                  <el-form-item label="Item Type">
+                      <el-select v-model="value" placeholder="Select">
+                          <el-option
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                          </el-option>
+                        </el-select>
+  
+                  </el-form-item>
+
+  
+                  <el-form-item>
+                    <el-button type="primary" @click="onSubmit">Save</el-button>
+                  </el-form-item>
+                </el-form>
+
+                
+                </div>
+        </div>
+    
+    </div>
+</div>                
+<script>
+var Main = {
+    data() {
+      return {
+        formInline: {
+          user: '',
+          region: ''
+        },
+        options: [ {{for i in db(db.Item_Type).select():}}
+          { 
+          value: '{{=i.id}}',
+          label: '{{=i.description}}'
+        }, {{pass}} ],
+        optDiv: [ {{for d in db(db.Division).select():}}
+          {
+          value: '{{=d.id}}',
+          label: '{{=d.div_name}}',
+          children: [ {{ for p in db(db.Department.div_code_id == d.id).select():}}
+            {
+              value: '{{=p.id}}',
+              label: '{{=p.dept_name}}',
+              children: [ {{ for s in db(db.Supplier_Master.dept_code_id == p.id).select():}}
+                {
+                  value: '{{=s.id}}',
+                  label: '{{=s.supp_name}}',
+                }, {{pass}} ], 
+            }, {{pass}} ],
+          }, {{pass}} ],
+        selectedOptions2: [],        
+        value: ''        
+      }
+    },
+    methods: {
+      onSubmit() {
+        console.log('submit!');
+      }
+    }
+  }
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>

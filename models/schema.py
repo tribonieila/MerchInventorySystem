@@ -35,7 +35,7 @@ db.define_table(
     Field('password', 'password', length=512,readable=False, label='Password'), # required
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
-    Field('registration_id', length=512, writable=False, readable=False, default=''))# required
+    Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s')# required
 
 
 # db.auth_user.id.represent = lambda auth_id, row: row.first_name + ' ' + row.last_name
@@ -514,7 +514,7 @@ db.define_table('Stock_Required_Action',
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
 db.define_table('Stock_Request',       
-    Field('stock_request_no_id', 'reference Transaction_Prefix', writable = False, represent = lambda row: row.prefix),   
+    Field('stock_request_no_id', 'reference Transaction_Prefix', writable = False),   
     Field('stock_request_no', 'integer', default = 0, writable = False),
     Field('stock_request_date', 'date', default = request.now),
     Field('stock_due_date', 'date', default = request.now),
@@ -524,9 +524,10 @@ db.define_table('Stock_Request',
     Field('total_amount','decimal(10,2)', default = 0),
     Field('srn_status_id','reference Stock_Status', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('stock_request_date_approved','date'),
-    Field('stock_request_approved_by','reference auth_user', writable = False), #requires = IS_IN_DB(db, 'auth_user.id', '%(first_name)s %(last_name)s')),            
+    Field('stock_request_approved_by','reference auth_user', writable = False),
     Field('remarks', 'string'),
 
+    # represent = lambda id, r: db.department(id).name if id else '',
     Field('stock_transfer_no_id', 'reference Transaction_Prefix', writable = False),    
     Field('stock_transfer_no', 'integer', writable = False),
     Field('stock_transfer_date_approved', 'date', writable = False),
@@ -543,6 +544,25 @@ db.define_table('Stock_Request',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False), format = 'stock_request_no')
 
+db.define_table('Stock_Request_Transaction',    
+    Field('stock_request_id', 'reference Stock_Request', readable = False), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
+    Field('item_code_id', 'reference Item_Master'), #requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
+    Field('category_id', 'reference Transaction_Item_Category'), 
+    Field('quantity', 'integer', default = 0),
+    Field('uom','integer', default = 0),
+    Field('average_cost','decimal(10,4)', default =0),
+    Field('price_cost', 'decimal(10,4)', default = 0 ),
+    Field('wholesale_price', 'decimal(10,2)', default = 0),
+    Field('retail_price', 'decimal(10,2)',default = 0),
+    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('remarks','string'),
+    Field('delete', 'boolean', default = False),
+    Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', writable = False, readable = False),
+    Field('updated_by', db.auth_user, writable = False, readable = False))
+
 db.define_table('Adjustment_Type',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]),     
@@ -552,63 +572,80 @@ db.define_table('Adjustment_Type',
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
 db.define_table('Stock_Adjustment',
+    Field('stock_adjustment_no_id', 'reference Transaction_Prefix', writable = False),
     Field('stock_adjustment_no','integer'),
     Field('stock_adjustment_date', 'date', default = request.now),
+    Field('stock_adjustment_code','string', length = 10),
     Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-    
-    Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s - %(stock_adjustment_code)s', zero = 'Choose Location Code')),    
+    Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
     Field('adjustment_type', 'reference Adjustment_Type', requires = IS_IN_DB(db, db.Adjustment_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
-    Field('total_amount','decimal(10,2)', default = 0),
+    Field('total_amount','decimal(10,4)', default = 0),    
     Field('srn_status_id','reference Stock_Status', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('approved_by', 'reference auth_user', writable = False),
+    Field('date_approved', 'datetime'),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
+
+
+db.define_table('Merch_Stock_Transaction',
+    Field('voucher_no','string', length = 15), # 10 length
+    Field('location_code', 'string', length = 10),   # from location master
+    Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
+    Field('transaction_date', 'date'), # from date of transaction
+    Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
+    Field('item_code', 'string', length = 15), # item master
+    Field('uom', 'integer'), # from transaction
+    Field('quantity', 'integer'), # from transaction
+    Field('average_cost','decimal(10,6)', default = 0), # average cost
+    Field('price_cost', 'decimal(10,6)', default = 0), # pieces
+    Field('sale_cost','decimal(10,6)', default = 0), # after discount
+    Field('discount', 'integer', default = 0), # normal discount from pos
+    Field('wholesale_price', 'decimal(10,2)', default = 0), # from item prices
+    Field('retail_price', 'decimal(10,2)', default = 0), # from item prices
+    Field('vansale_price', 'decimal(10,2)', default = 0), # from item prices
+    Field('tax_amount', 'decimal(10,2)', default = 0), # in sales
+    Field('selected_tax','integer'), # in sales
+    Field('sales_lady_code', 'string',length = 10), # sales, pos
+    Field('supplier_code','string', length = 10), # from item code
+    Field('dept_code','string', length = 20)) # from item master
 
 db.define_table('Stock_Adjustment_Transaction',
     Field('stock_adjustment_no_id','reference Stock_Adjustment',writable = False, requires = IS_IN_DB(db, db.Stock_Adjustment.id, '%(stock_adjustment_no)s', zero = 'Choose Adjustment No')),
     Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
     Field('stock_adjustment_date', 'date', default = request.now),
-    Field('category_item','reference Transaction_Item_Category', requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('category_id','reference Transaction_Item_Category', requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(10,6)', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
-    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
-       
-db.define_table('Stock_Adjustment_Transaction_Temp',
-    Field('stock_adjustment_no_id','reference Stock_Adjustment',writable = False, requires = IS_IN_DB(db, db.Stock_Adjustment.id, '%(stock_adjustment_no)s', zero = 'Choose Adjustment No')),
-    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('stock_adjustment_date', 'date', default = request.now),
-    Field('category_item','reference Transaction_Item_Category', requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
-    Field('quantity','integer', default = 0),
-    Field('average_cost','decimal(10,4)', default = 0),
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
-    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
-
-db.define_table('Stock_Request_Transaction',    
-    Field('stock_request_id', 'reference Stock_Request', readable = False), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
-    Field('item_code_id', 'reference Item_Master'), #requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('category_id', 'reference Transaction_Item_Category'), 
-    Field('quantity', 'integer', default = 0),
-    Field('uom','integer', default = 0), 
-    Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost', 'decimal(10,4)', default = 0 ),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),
-
-    Field('remarks','string'),
     Field('delete', 'boolean', default = False),
-    Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
+    # Field('total_cost','decimal(10,4)', default = 0, compute = lambda p: (p['average_cost'] / p['uom']) * p['quantity']), # remove 
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', writable = False, readable = False),
-    Field('updated_by', db.auth_user, writable = False, readable = False))
+    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
+       
+db.define_table('Stock_Adjustment_Transaction_Temp',
+    Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
+    Field('stock_adjustment_date', 'date', default = request.now),
+    Field('category_id','reference Transaction_Item_Category', requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default = 0),
+    Field('uom', 'integer', default = 0),
+    Field('average_cost','decimal(10,4)', default = 0),
+    Field('total_cost','decimal(10,4)', default = 0),
+    Field('ticket_no_id', 'string', length = 10),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user, update=auth.user_id, writable = False, readable = False))
+
+
 
 db.define_table('Item_Prices',
     Field('item_code_id', 'reference Item_Master', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
@@ -733,6 +770,8 @@ db.define_table('Batch_Order_Transaction',
     Field('qty','integer'),
     Field('date_ordered','date'))
 
+
+
 # if auth.has_membership(role = 'INVENTORY POS'):
 #     redirect(URL(r=request,c='inventory',f='stock_receipt'))
 
@@ -742,3 +781,4 @@ db.define_table('Batch_Order_Transaction',
 			# <!-- {{if auth.is_logged_in():
 			# 	redirect(URL('inventory','stock_receipt'))
 			# }} -->
+

@@ -1,5 +1,9 @@
 {{extend 'layout.html'}}
-
+<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
@@ -10,6 +14,21 @@
             <span class="card-title">ITEM MASTER FORM</span>
         </div>
         <div class="card-body tab-content">
+
+
+                <div id="app">
+                <template>                
+                  <el-tabs :tab-position="tabPosition" style="height: 200px;">
+                    <el-tab-pane label="ITEM PROFILE">Profile</el-tab-pane>
+                    <el-tab-pane label="ITEM PRICES">Prices</el-tab-pane>
+                    <el-tab-pane label="ITEM STOCKS">Stocks</el-tab-pane>
+                    <el-tab-pane label="BATCH INFO">Info</el-tab-pane>
+                    <el-tab-pane label="SALES QUANTITY">Sales</el-tab-pane>
+                  </el-tabs>
+                </template>
+                </div>
+                
+                
                 <div>
 
                         <!-- Nav tabs -->
@@ -42,3 +61,15 @@
         </div>    
 </div>
 </div>
+
+<script>
+var Main = {
+    data() {
+      return {
+        tabPosition: 'right'
+      };
+    }
+  };
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>
