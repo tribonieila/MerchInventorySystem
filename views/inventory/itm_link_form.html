@@ -14,54 +14,26 @@
             <span class="card-title">ITEM MASTER FORM</span>
         </div>
         <div class="card-body tab-content">
-
-
-                <div id="app">
+            <div id="app">
                 <template>                
-                  <el-tabs :tab-position="tabPosition" style="height: 200px;">
-                    <el-tab-pane label="ITEM PROFILE">Profile</el-tab-pane>
-                    <el-tab-pane label="ITEM PRICES">Prices</el-tab-pane>
-                    <el-tab-pane label="ITEM STOCKS">Stocks</el-tab-pane>
-                    <el-tab-pane label="BATCH INFO">Info</el-tab-pane>
-                    <el-tab-pane label="SALES QUANTITY">Sales</el-tab-pane>
-                  </el-tabs>
+                    <el-tabs :tab-position="tabPosition">
+                        <el-tab-pane label="ITEM PROFILE">                        
+                            {{=SQLFORM(db.Item_Master, request.args(0), readonly = True)}}
+                        </el-tab-pane>
+                        <el-tab-pane label="ITEM PRICES">
+                            <!-- {{=SQLFORM(db.Item_Prices, request.args(0) or redirect(URL('#')), readonly = True)}} -->
+                        </el-tab-pane>
+                        <el-tab-pane label="ITEM STOCKS">
+                            <!-- {{=SQLFORM(db.Stock_File, request.args(0) or redirect(URL('#')), readonly = True)}} -->
+                        </el-tab-pane>
+                        <el-tab-pane label="BATCH INFO">Info</el-tab-pane>
+                        <el-tab-pane label="SALES QUANTITY">Sales</el-tab-pane>
+                    </el-tabs>
                 </template>
-                </div>
-                
-                
-                <div>
-
-                        <!-- Nav tabs -->
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#item" aria-controls="item" role="tab" data-toggle="tab">item profile</a></li>
-                            <li role="presentation"><a href="#price" aria-controls="price" role="tab" data-toggle="tab">item prices</a></li>
-                            <li role="presentation"><a href="#stocks" aria-controls="stocks" role="tab" data-toggle="tab">item stocks</a></li>
-                            <li role="presentation"><a href="#batch" aria-controls="batch" role="tab" data-toggle="tab">batch info</a></li>
-                            <li role="presentation"><a href="#sales" aria-controls="sales" role="tab" data-toggle="tab">sales quantity</a></li>
-                        </ul>
-                      
-                        <!-- Tab panes -->
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane active" id="item">ITEM DETAILS
-                                {{=LOAD('inventory','itm_edit_form.load', request.args(0), ajax = True)}}
-                                <!-- record = db.ads_vehicle(request.args(0)) or redirect(URL('error'))
-                                form = SQLFORM(db.ads_vehicle, record, showid = False) -->
-                                <!-- {{=SQLFORM(db.Item_Master,  request.args(0))}} -->
-                            </div>
-                            <div role="tabpanel" class="tab-pane" id="price">PRICE DETAILS
-                                {{=SQLFORM(db.Item_Prices, request.args(0) or redirect(URL('#')), readonly = True)}}</div>
-                            <div role="tabpanel" class="tab-pane" id="stocks">SALES DETAILS
-                                {{=SQLFORM(db.Stock_File, request.args(0), readonly = True)}}                                </div>
-                            <div role="tabpanel" class="tab-pane" id="batch">STOCK DETAILS</div>
-                            <div role="tabpanel" class="tab-pane" id="sales">LOCATION DETAILS</div>
-                        </div>
-                      
-                      </div>
-                    
-        </div>    
+            </div>
+        </div>
+    </div>
 </div>
-</div>
-
 <script>
 var Main = {
     data() {

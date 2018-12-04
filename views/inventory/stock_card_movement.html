@@ -12,14 +12,18 @@
             <span class="card-title">Stock Card Movement</span>
         </div>
         <div class="card-body tab-content">
-                <div id="app">
-                        <el-form ref="form" :model="form" label-width="120px">
+                <!-- <div id="app">
+                        <el-form ref="form" :model="form" label-width="120px">                       
                           <el-form-item label="Item Code">
-                            <el-input v-model="form.name"></el-input>
-                          </el-form-item>                          
-                          <!-- <el-form-item label="Item Code">
-                            <el-autocomplete class="inline-input" v-model="state2" :fetch-suggestions="querySearch" placeholder="Please Input" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
-                          </el-form-item> -->
+                            <el-autocomplete 
+                            class="inline-input" 
+                            v-model="state2" 
+                            :fetch-suggestions="querySearch" 
+                            placeholder="Please Input" 
+                            :trigger-on-focus="false" 
+                            @select="handleSelect">
+                          </el-autocomplete>
+                          </el-form-item>
                           <el-form-item label="Location">
                             <el-select v-model="form.region" placeholder="please select your location">
                               {{for l in db(db.Location).select():}}
@@ -36,10 +40,10 @@
                           
                           <el-form-item>
                             <el-button type="primary" @click="onSubmit">submit</el-button>
-                            <!-- <el-button>Cancel</el-button> -->
+                            <el-button>Cancel</el-button>
                           </el-form-item>
                         </el-form>
-                        </div>
+                        </div> -->
 
             {{=form}}
             {{=i_table}}
@@ -85,13 +89,37 @@ var Main = {
           }]
         },
         value6: '',
-        value7: ''        
+        value7: '',
+        state2:'',
+        links: []
       }
     },
     methods: {
       onSubmit() {
         console.log('submit!');
+      },
+      querySearch(queryString, cb) {
+        var links = this.links;
+        var results = queryString ? links.filter(this.createFilter(queryString)) : links;
+        // call callback function to return suggestions
+        cb(results);
+      },
+      createFilter(queryString) {
+        return (value) => {
+          return (value.label.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      loadAll() {
+        return [ {{ for i in db(db.Item_Master).select(db.Item_Master.ALL):}}
+          { "value": "{{=i.id}}", "label": "{{=i.item_code}}" }, {{pass}}
+         ];
+      },
+      handleSelect(item) {
+        console.log(item);
       }
+    },
+    mounted() {
+      this.links = this.loadAll();
     }
   }
 var Ctor = Vue.extend(Main)

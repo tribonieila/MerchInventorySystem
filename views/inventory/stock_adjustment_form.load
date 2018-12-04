@@ -43,7 +43,8 @@
             <div class="form-group">
                 <label class="col-sm-4 control-label">Adjustment Type</label>
                 <div class="col-sm-8">
-                    {{=form.custom.widget.adjustment_type}}
+                    {{=form.custom.widget.adjustment_type}}                         
+
                 </div>
             </div>                    
         </div>
@@ -51,7 +52,9 @@
             <div class="form-group">
                 <label class="col-sm-4 control-label">Stock Adjustment Code</label>
                 <div class="col-sm-8">
-                    {{=form.custom.widget.stock_adjustment_code}}
+                    <input type="text" class="form-control" id="Stock_Adjustment_stock_adjustment_code" value ='28-00' readonly >
+                    <p class="help-block">readonly</p>   
+                    
                 </div>
             </div>                    
         </div>        
@@ -77,3 +80,17 @@
 </div>   
 {{=form.custom.end}}
 
+
+<script>
+    
+    
+    Stock_Adjustment_location_code_id.onchange = function() {                 
+        ajax('{{=URL('inventory','stock_adjustment_table')}}' + '/' + this.selectedIndex)
+        console.log(this.selectedIndex);
+        
+        return false;        
+    
+    }
+
+
+</script>

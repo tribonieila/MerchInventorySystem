@@ -8,9 +8,40 @@ sudo apt install ./name.deb
 
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
 
+web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
+
+
+_total_amount += int(i.Stock_Adjustment_Transaction.quantity) * float(i.Stock_Adjustment_Transaction.average_cost) / int(i.Stock_Adjustment_Transaction.uom)
 redirect(URL('index', args=(1,2,3), vars=dict(a='b')))
 
+        for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == str(request.args(0))).select(db.Stock_Adjustment_Transaction_Temp.ALL):
+            
+            _itm_code = db(db.Item_Master.id == i.item_code_id).select().first()
+            
+            _itm_price = db(db.Item_Prices.item_code_id == i.item_code_id).select().first()
+            
+            _qty = i.quantity * _itm_code.uom_value + i.pieces            
+            
+            _price_cost = i.average_cost /_itm_code.uom_value # price_cost per pcs.
 
+            _total_cost += _price_cost * _qty # total cost per line
+
+<script>
+    $(function() {
+        $('#Stock_Adjustment_location_code_id').click(function() {
+            var locOpt = $('#Stock_Adjustment_location_code_id').find(":selected").val();
+            console.log(locOpt)
+            
+            $('#_loc_cod_id').val(locOpt);
+            {{for c in db(db.Location.id == 1).select(): }}
+            $('#Stock_Adjustment_stock_adjustment_code').val('{{=c.stock_adjustment_code}}');
+            {{ pass }}
+
+            ajax('{{=URL('stock_adjustment_add_new')}}' + '/' + locOpt);
+            
+        });
+    });
+</script>
 <script>
 jQuery('#myform').submit(function() {
   ajax('{{=URL("new_post")}}',
@@ -18,7 +49,67 @@ jQuery('#myform').submit(function() {
   return false;
 });
 </script>
+new Vue({
+	el: "#app",
+	data: () => ({
+		items: [
+			{
+				id: "id1",
+				name: "John Doe",
+				email: "email@example.com"
+			},
+			{
+				id: "id2",
+				name: "Jone Doe",
+				email: "email2@example.com"
+			}
+		],
+		selected: [],
+		selectAll: false
+	}),
+	methods: {
+		select() {
+			this.selected = [];
+			if (!this.selectAll) {
+				for (let i in this.items) {
+					this.selected.push(this.items[i].id);
+				}
+			}
+		}
+	}
+});
 
+<div id="app">
+	<div class="text-uppercase text-bold">id selected: {{selected}}</div>
+	<table class="table table-striped table-hover">
+		<thead>
+			<tr>
+				<th>
+					<label class="form-checkbox">
+    <input type="checkbox" v-model="selectAll" @click="select">
+    <i class="form-icon"></i>
+  </label>
+				</th>
+				<th>id</th>
+				<th>name</th>
+				<th>email</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-for="i in items">
+				<td>
+					<label class="form-checkbox">
+    					<input type="checkbox" :value="i.id" v-model="selected">
+						<i class="form-icon"></i>
+  					</label>
+				</td>
+				<td>{{i.id}}</td>
+				<td>{{i.name}}</td>
+				<td>{{i.email}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
 <div class="form_edit" style="display:none;">
     <form class="form" role="form">
       <div class="form-group">

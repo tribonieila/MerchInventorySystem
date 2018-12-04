@@ -8,196 +8,198 @@
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 
-<div class="col-md-12">
-    <div class="card card-underline">
-        <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
-            </ul>
-            <span class="card-title">STOCK REQUEST FORM</span>
-        </div>
-        <div class="card-body tab-content">            
-            			
-            <!-- <el-form ref="form" :model="form" label-width="120px"> -->
-            <div class="form-horizontal">   
-                {{=form.custom.begin}}	
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Request No</label>
-                            <div class="col-sm-8">                                
-                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>                          
-                                <input type="text" class="form-control" value="{{=ctr_val}}" readonly >
-                                <p class="help-block">temporary, autogenerate, readonly</p>  
-                                
-                            </div>                           
-                        </div>                        
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Request Date</label>
-                            <div class="col-sm-8"> {{import datetime}}
-                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>
-                        </div>                    
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">+ ADD NEW</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                </ul>
+                <span class="card-title">STOCK REQUEST FORM</span>
+            </div>
+            <div class="card-body tab-content">            
+                            
+                <!-- <el-form ref="form" :model="form" label-width="120px"> -->
+                <div class="form-horizontal">   
+                    {{=form.custom.begin}}	
+                    
+                    <div class="row">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                    <label class="col-sm-4 control-label">Requested By</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
-                                        <p class="help-block">readonly</p>                                                        
-                                    </div>
-                                </div>            
+                                <label class="col-sm-4 control-label">Stock Request No</label>
+                                <div class="col-sm-8">                                
+                                    <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>                          
+                                    <input type="text" class="form-control" value="{{=ctr_val}}" readonly >
+                                    <p class="help-block">temporary, autogenerate, readonly</p>  
+                                    
+                                </div>                           
+                            </div>                        
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Request Date</label>
+                                <div class="col-sm-8"> {{import datetime}}
+                                    <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
+                                    <p class="help-block">readonly</p>                            
+                                </div>
+                            </div>                    
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Due Date</label>
-                            <div class="col-sm-8">{{=form.custom.widget.stock_due_date}}</div>
-                        </div>                                           
-                    </div>
-    
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Department</label>
-                            <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
-                        </div>                    
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Source</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.stock_source_id}}   
-                            </div>
-                        </div>                 
-                    </div>
-                </div>
-    
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Status</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.srn_status_id}}
-                                <!-- <el-select v-model="srn_status_id" placeholder="Select" id="srn_status_id" :name="srn_status_id">
-                                    <el-option v-for="item in status_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                                       -->
-                            </div>
-                        </div>                    
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Destination</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.stock_destination_id}}
-                                <!-- <el-select v-model="stock_destination_id" placeholder="Select" id="stock_destination_id">
-                                    <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
-                                    </el-option>
-                                </el-select>                             -->
-    
-                            </div>
-                        </div>                                               
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}
-                            </div>
-                        </div>                  
-                    </div>
-                    <div class="col-md-6">  
-                      <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">
-                                {{=form.custom.submit}}{{=form.custom.end}}
-                                <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
-                            </div>                            
-                        </div>                    
-                    </div>
-                </div>  
-                
-            </div>  
-                <hr>
-
-                <div class="bg-success" id ="desc" ></div>
-                <hr>
-                <div class="row">{{=form2.custom.begin}}
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Item Code</label>
-
-                            <div class="col-sm-8">{{=form2.custom.widget.item_code_id}}
-                                <!-- <div class="input-group">                                        
-                                    <input type="text" class="form-control" id="item_code_id" name = "item_code_id">
-                                    <div class="input-group-btn">
-                                        <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                                <div class="form-group">
+                                        <label class="col-sm-4 control-label">Requested By</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
+                                            <p class="help-block">readonly</p>                                                        
+                                        </div>
                                     </div>            
-                                </div>                                 -->
-                            </div>
-                            <!-- <div class="col-sm-2">                                
-                                <button type="button" id="btnhelp" class="btn ink-reaction btn-floating-action btn-xs btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-search-plus"></i></button>
-                            </div> -->
-                        </div>   
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Due Date</label>
+                                <div class="col-sm-8">{{=form.custom.widget.stock_due_date}}</div>
+                            </div>                                           
+                        </div>
+        
                     </div>
-                    <div class="col-md-2">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Department</label>
+                                <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Source</label>
+                                <div class="col-sm-8">
+                                    {{=form.custom.widget.stock_source_id}}   
+                                </div>
+                            </div>                 
+                        </div>
+                    </div>
+        
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Status</label>
+                                <div class="col-sm-8">
+                                    {{=form.custom.widget.srn_status_id}}
+                                    <!-- <el-select v-model="srn_status_id" placeholder="Select" id="srn_status_id" :name="srn_status_id">
+                                        <el-option v-for="item in status_id" :key="item.value" :label="item.label" :value="item.value">
+                                        </el-option>
+                                    </el-select>                                       -->
+                                </div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Destination</label>
+                                <div class="col-sm-8">
+                                    {{=form.custom.widget.stock_destination_id}}
+                                    <!-- <el-select v-model="stock_destination_id" placeholder="Select" id="stock_destination_id">
+                                        <el-option v-for="item in stock_id" :key="item.value" :label="item.label" :value="item.value">
+                                        </el-option>
+                                    </el-select>                             -->
+        
+                                </div>
+                            </div>                                               
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Remarks</label>
+                                <div class="col-sm-8">{{=form.custom.widget.remarks}}
+                                </div>
+                            </div>                  
+                        </div>
+                        <div class="col-md-6">  
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Quantity</label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.quantity}}
-                                <!-- <input type="text" class="form-control" id="quantity_id" name="quantity_id" value="0"> -->
-                            </div>
-                        </div>   
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-8">
+                                    {{=form.custom.submit}}{{=form.custom.end}}
+                                    <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
+                                </div>                            
+                            </div>                    
+                        </div>
+                    </div>  
+                    
+                </div>  
+                    <hr>
+
+                    <div class="bg-success" id ="desc" >
                     </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Pieces</label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.pieces}}
-                                <!-- <input type="text" class="form-control" id="pieces" name="pieces" value="0"> -->
-                            </div>
-                        </div>   
+                    <hr>
+                    <div class="row">{{=form2.custom.begin}}
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Item Code</label>
+
+                                <div class="col-sm-8">{{=form2.custom.widget.item_code_id}}
+                                    <!-- <div class="input-group">                                        
+                                        <input type="text" class="form-control" id="item_code_id" name = "item_code_id">
+                                        <div class="input-group-btn">
+                                            <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+                                        </div>            
+                                    </div>                                 -->
+                                </div>
+                                <!-- <div class="col-sm-2">                                
+                                    <button type="button" id="btnhelp" class="btn ink-reaction btn-floating-action btn-xs btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-search-plus"></i></button>
+                                </div> -->
+                            </div>   
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Quantity</label>
+                                <div class="col-sm-8">
+                                    {{=form2.custom.widget.quantity}}
+                                    <!-- <input type="text" class="form-control" id="quantity_id" name="quantity_id" value="0"> -->
+                                </div>
+                            </div>   
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Pieces</label>
+                                <div class="col-sm-8">
+                                    {{=form2.custom.widget.pieces}}
+                                    <!-- <input type="text" class="form-control" id="pieces" name="pieces" value="0"> -->
+                                </div>
+                            </div>   
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Category</label>
+                                <div class="col-sm-8">
+                                    {{=form2.custom.widget.category_id}}
+                                    <!-- <select class="generic-widget form-control" id="category_id" name="category_id">
+                                        {{for c in db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')).select():}}
+                                        <option value="{{=c.id}}">{{=c.mnemonic}} - {{=c.description}}</option>
+                                        {{pass}}
+                                    </select> -->
+                                </div>
+                            </div>   
+                        </div>
+        
+                        <div class="col-md-2">
+                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();">
+                            <!-- <input class="btn btn-warning" type="button" value="refresh" onclick="refresh();"> -->
+                            
+                        </div>            
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Category</label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.category_id}}
-                                <!-- <select class="generic-widget form-control" id="category_id" name="category_id">
-                                    {{for c in db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')).select():}}
-                                    <option value="{{=c.id}}">{{=c.mnemonic}} - {{=c.description}}</option>
-                                    {{pass}}
-                                </select> -->
-                            </div>
-                        </div>   
-                    </div>
-    
-                    <div class="col-md-2">
-                        <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();">
-                        <input class="btn btn-warning" type="button" value="refresh" onclick="refresh();">
-                        
-                    </div>            
-                </div>
-                <hr>
-                {{=form2.custom.end}}
-                <div id="target"></div>            
+                    <hr>
+                    {{=form2.custom.end}}
+                    <div id="target"></div>            
+            </div>
         </div>
     </div>
-</div>
 
-    
 <script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+
 <script>
     $(document).ready(function() {
         $(window).keydown(function(event){
@@ -209,39 +211,16 @@
     });
 </script>
 <script>
-    // document.getElementById('item_code_id').disabled = true;    
-    // document.getElementById('item_code_id').readonly = true;    
-    // document.getElementById('no_table_pieces').disabled = true;    
-    // document.getElementById('btn_itm').disabled = true;
-    // document.getElementById('no_table_quantity').disabled = true;
-    // document.getElementById('no_table_category_id').disabled = true;
-    // document.getElementById('btninsert').disabled = true;
-    // document.getElementById('btnhelp').disabled =  true;
 
     var stock_source_id = select = document.getElementById( 'stock_source_id' );
     var dept_id = select = document.getElementById('dept_code_id');
-    var item_code_id = document.getElementById("item_code_id");
-    
+    var item_code_id = document.getElementById("item_code_id"); 
 
-
-    no_table_item_code_id.onchange = function() {
-        // var item_code_id = document.getElementById("no_table_item_code_id")[0].value;
-        // var item = document.getElementById('no_table_item_code_id').innerHTML = item_code_id;
-        
-        // var item_code_id = $('input[name=quantity]').val();
-        ajax('{{=URL('itm_description')}}',['item_code_id', 'stock_source_id'], 'desc');
-        
-        return false;
-        
-        // console.log($('[name=item_code_id]').val());
+    no_table_quantity.onselect = function() {
+        ajax('{{=URL('itm_description')}}',['item_code_id', 'stock_source_id'], 'desc');        
+        return false;      
+        $('#desc').show().fadeIn( 1000 );;
     }
-
-    // no_table_stock_source_id.focusout = function() {
-    //     var s = document.getElementById('no_table_stock_source_id').selectedIndex;
-    //     ajax('{{=URL('stk_req_add_form')}}', ['stock_source_id']);
-    //     // ajax('{{=URL('stk_req_add_form')}}' + '?stock_source_id=' + stock_source_id, [], ':eval');
-    //     console.log(s);
-    // }
 
     no_table_dept_code_id.onchange = function() {
         // var {{=dept_code_id}} = dept_id;
@@ -269,6 +248,7 @@
 </script> 
 <script>
     function insert(){
+        
         ajax('{{=URL('itm_view')}}',
             ['ticket_no_id','item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
             document.getElementById('no_table_item_code_id').value = ''
@@ -377,3 +357,4 @@ $(document).ready( function () {
     $('table').DataTable();
 } );
 </script> 
+

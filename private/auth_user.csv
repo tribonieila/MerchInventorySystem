@@ -1,0 +1,8 @@
+"id","first_name","last_name","username","email","password","registration_key","reset_password_key","registration_id"
+7,"ADMIN","ADMIN","admin","admin@admin.com","pbkdf2(1000,20,sha512)$86b54b72a7928b1d$da3dd55830920bf6557f4fc98fe3ed4b973febdb","","",""
+8,"ALEXIS","ALEXIS","alexis","john@john.com","pbkdf2(1000,20,sha512)$b057752578ff1268$6378dd4563b0934868f3f36d0c9e4a81f408e2ba","","",""
+9,"WAEL","WAEL","wael","clint@gmail.com","pbkdf2(1000,20,sha512)$ad510db4fa19db6d$880eaa80a1045f27e5debf7d0174386531bf157f","","",""
+10,"HAKIM","HAKIM","hakim","jack@gmail.com","pbkdf2(1000,20,sha512)$a7a310be030b4a3a$2c0904819ca1c420a1228ea705990cce925d2489","","",""
+11,"POS","POS","pos","charles@gmail.com","pbkdf2(1000,20,sha512)$ba4022ff564f18e6$89bf8b290ab92fb89993ce5695b5be92d8ca1076","","",""
+12,"MUNZER","MUNZER","munzer","munzer@mail.com","pbkdf2(1000,20,sha512)$a8709ae89884eb38$aa0c7bb9324efd6b4b6da0b369f4a9482737b98a","","",""
+13,"manoj","manoj","manoj","manoj@gmail.com","pbkdf2(1000,20,sha512)$a56f1d93a4672a26$a4887896b1e511ff481012dcf7f81ab1b5e1acb4","","",""

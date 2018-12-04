@@ -58,7 +58,7 @@
         data() {
             return {
                 tableData: [
-                    {{ for s in db(db.Stock_Adjustment.srn_status_id != 1).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on((db.Transaction_Prefix.id == db.Stock_Adjustment.dept_code_id) & (db.Transaction_Prefix.prefix == 'ADJ'))): }}                
+                    {{ for s in db(db.Stock_Adjustment).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on((db.Transaction_Prefix.id == db.Stock_Adjustment.dept_code_id) & (db.Transaction_Prefix.prefix == 'ADJ'))): }}                
                         {   {{import locale}}
                             stk_adj_id  :  '{{=s.Stock_Adjustment.id}}',
                             stk_adj_date: '{{=s.Stock_Adjustment.stock_adjustment_date}}',

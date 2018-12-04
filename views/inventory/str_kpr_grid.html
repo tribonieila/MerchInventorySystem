@@ -22,7 +22,7 @@
 
                             <div style="margin-top: 20px" >
                                 <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Transfer & Print</el-button>
-                                <el-button type="danger" icon="el-icon-printer" @click="toggleSelection()">Print Stock Request</el-button>
+                                <el-button type="warning" icon="el-icon-printer" @click="printstockrequest()">Print Stock Request</el-button>
                                 <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
                             </div>
                             
@@ -40,19 +40,9 @@
                                     <template slot-scope="scope">
                                         <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
                                         <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
-
                                     </template>
                                 </el-table-column>
                             </el-table>
-                                                                
-
-                            <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
-                                <el-table :data="gridData">
-                                    <el-table-column property="date" label="Date" width="150"></el-table-column>
-                                    <el-table-column property="name" label="Name" width="200"></el-table-column>
-                                    <el-table-column property="address" label="Address"></el-table-column>
-                                </el-table>
-                            </el-dialog>       
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">Sales Order</el-tab-pane>
                         <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                                             
@@ -62,67 +52,64 @@
     </div>
 </div>
     
-        <script>
-        var Main = {
-            methods: {     
-              linksClick(row) {
-                window.open("{{=URL('inventory','str_kpr_grid_details')}}" + "/" + row);        
-              },
-              toggleSelection(rows) {
-                if (rows) {
-                  rows.forEach(row => {
-                    this.$refs.multipleTable.toggleRowSelection(row);
-                  });
-                } else {
-                  this.$refs.multipleTable.clearSelection();    
+<script>
+var Main = {
+    methods: {
+        printstockrequest() {
+            this.multipleSelection = [];
+            if (!this.multipleSelection) {
+                for (let i in this.tableData) {
+                    this.multipleSelection.push(this.tableData[i].id);
+                    console.log(this.multipleSelection.push(this.tableData[i].id));
                 }
-              },
-              handleSelectionChange(val) {
-                this.multipleSelection = val;
-                // console.log(val);
-              },
-        
-            },
-            data() {
-              return {
-                {{import locale}}
-                options: [ {{for l in db(db.Location).select():}}
-                    {
-                    value: '{{=l.id}}',
-                    label: '{{=l.location_code}} - {{=l.location_name}}'
-                    }, {{pass}}],
-                value: '',                
-                gridData: [ 
-                    {
-                        date: '2016-05-02',
-                        name: 'John Smith',
-                        address: 'No.1518,  Jinshajiang Road, Putuo District'
-                    },
-                ],          
-                dialogTableVisible: false,
-                tabPosition: 'top',
-                tableData: [{{for s in db((db.Stock_Request.srn_status_id == 1) | (db.Stock_Request.srn_status_id == 5)).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
-                orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
-                {
-                    tag: '{{=s.Stock_Request.id}}',                
-                    date: '{{=s.Stock_Request.stock_request_date}}',
-                    req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
-                    stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
-                    stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
-                    stat: '{{=s.Stock_Request.srn_status_id.description}}',
-                    req_by: '{{=s.Stock_Request.created_by.first_name.upper()}} {{=s.Stock_Request.created_by.last_name.upper()}}',
-                    amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
-                    req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
-                },{{pass}}],
-                multipleSelection: []
-              }
             }
-          }
-        var Ctor = Vue.extend(Main)
-        new Ctor().$mount('#app')
-        </script>
-        
-        
-        
-        
-        
+        },
+        linksClick(row) {
+        window.open("{{=URL('inventory','str_kpr_grid_details')}}" + "/" + row, '_top');        
+        },
+        toggleSelection(rows) {
+        if (rows) {
+            rows.forEach(row => {
+            this.$refs.multipleTable.toggleRowSelection(row);
+            });
+        } else {
+            this.$refs.multipleTable.clearSelection();    
+        }
+        },
+        handleSelectionChange(val) {
+        this.multipleSelection = val;
+        console.log(val);
+        },
+
+    },
+    data() {
+        return {
+        {{import locale}}
+        options: [ {{for l in db(db.Location).select():}}
+            {
+            value: '{{=l.id}}',
+            label: '{{=l.location_code}} - {{=l.location_name}}'
+            }, {{pass}}],
+        value: '',                         
+        dialogTableVisible: false,
+        tabPosition: 'top',
+        tableData: [{{for s in db((db.Stock_Request.srn_status_id == 1) | (db.Stock_Request.srn_status_id == 5)).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
+        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
+        {
+            tag: '{{=s.Stock_Request.id}}',                
+            date: '{{=s.Stock_Request.stock_request_date}}',
+            req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
+            stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
+            stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
+            stat: '{{=s.Stock_Request.srn_status_id.description}}',
+            req_by: '{{=s.Stock_Request.created_by.first_name.upper()}} {{=s.Stock_Request.created_by.last_name.upper()}}',
+            amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
+            req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
+        },{{pass}}],
+        multipleSelection: []
+        }
+    }
+    }
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>

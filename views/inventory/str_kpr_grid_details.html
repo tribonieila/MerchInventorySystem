@@ -5,7 +5,7 @@
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
@@ -114,7 +114,7 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{=form.custom.submit}}                                
+                                {{=_btnsmt}}                          
                                 {{=_btn}}
                                 <!-- <input class="btn btn-success" type="button" value="create stock transfer & print" onclick="ajax('{{=URL('inventory','str_kpr_grid_gen_stk_trn', args = request.args(0))}}')">                                                                     -->
                                 <!-- <input class="btn btn-warning" type="button" value="print" onclick="window.open('{{=URL('inventory','str_kpr_rpt', args = request.args(0))}}')">                                 -->
