@@ -78,7 +78,7 @@ var Main = {
     delimiters: ["{%","%}"],
     methods: {
       linksClick(row) {
-        window.open("{{=URL('inventory','stk_req_edit_form')}}" + "/" + row, '_top');
+        window.open("{{=URL('inventory','stk_req_details_form')}}" + "/" + row, '_top');
       },
       viewClick() {
           console.log('view');
@@ -94,7 +94,7 @@ var Main = {
       return {
         
         {{import locale}}
-        tableData: [{{for s in db(db.Stock_Request.created_by == auth.user_id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, orderby = db.Stock_Request.stock_request_date,
+        tableData: [{{for s in db(db.Stock_Request.created_by == auth.user_id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, orderby = db.Stock_Request.stock_request_no,
         left = db.Transaction_Prefix.on(            
             (db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id) &
             (db.Transaction_Prefix.id == db.Stock_Request.stock_transfer_no_id) &

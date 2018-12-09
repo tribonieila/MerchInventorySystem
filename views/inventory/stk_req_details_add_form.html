@@ -1,0 +1,170 @@
+{{extend 'layout.html'}}
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">+ ADD NEW</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                </ul>
+                <span class="card-title">STOCK REQUEST FORM</span>
+            </div>
+            <div class="card-body tab-content">            
+                            
+                
+                <div class="form-horizontal">   
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Request No</label>
+                                <div class="col-sm-8">                                
+                                    <input type="text" class="form-control" id="stock_transfer_no" name = "stock_transfer_no" value="{{=_stk_req_no.stock_transfer_no}}">
+                                </div>                           
+                            </div>                        
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Request Date</label>
+                                <div class="col-sm-8"> 
+                                    <input type="text" class="form-control" id="stock_request_date" name = "stock_request_date" value="{{=_stk_req_no.stock_request_date}}">
+                                    <p class="help-block">readonly</p>                            
+                                </div>
+                            </div>                    
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Requested By</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="requested_by" name = "requested_by" value="{{=_stk_req_no.created_by}}">
+                                    <p class="help-block">readonly</p>                                                        
+                                </div>
+                            </div>            
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Due Date</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="stock_due_date" name = "stock_due_date" value="{{=_stk_req_no.stock_due_date}}">
+                                    <p class="help-block">readonly</p>                                                        
+                                </div>
+                            </div>                                           
+                        </div>
+        
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Department</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="dept_code_id" name = "dept_code_id" value="{{=_stk_req_no.dept_code_id}}">
+                                </div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Source</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="stock_source_id" name = "stock_source_id" value="{{=_stk_req_no.stock_source_id}}">
+                                </div>
+                            </div>                 
+                        </div>
+                    </div>
+        
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Status</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="srn_status_id" name = "srn_status_id" value="{{=_stk_req_no.srn_status_id}}">
+                                </div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Stock Destination</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="stock_destination_id" name = "stock_destination_id" value="{{=_stk_req_no.stock_destination_id}}">
+                                </div>
+                            </div>                                               
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Remarks</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="remarks" name = "remarks" value="{{=_stk_req_no.remarks}}">
+                                </div>
+                            </div>                  
+                        </div>
+                        <div class="col-md-6">  
+                        <div class="form-group">
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-8">
+                                    
+                                    <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
+                                </div>                            
+                            </div>                    
+                        </div>
+                    </div>  
+                    
+                </div>  
+                    <hr>
+
+                    <div id ="desc" >
+                    </div>
+                    <hr>
+                    <div id="target"></div>            
+            </div>
+        </div>
+    </div>
+
+<script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+
+<script>    
+    
+    $('#no_table_dept_code_id').change(function() {
+        ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
+        $('#_stk_req_no_div').fadeIn();      
+        document.getElementById('no_table_pieces').disabled = false;    
+        document.getElementById('no_table_quantity').disabled = false;
+        document.getElementById('no_table_category_id').disabled = false;
+        document.getElementById('btninsert').disabled = false;
+        return false;
+    })
+    $('#no_table_item_code_id').change(function(){
+        ajax('{{=URL('itm_description')}}',['item_code_id', 'stock_source_id'], 'desc');        
+        return false;      
+    })
+    var stock_source_id = select = document.getElementById( 'stock_source_id' );
+    var dept_id = select = document.getElementById('dept_code_id');
+    var item_code_id = document.getElementById("item_code_id"); 
+
+    
+</script> 
+<script>
+    function insert(){
+        
+        ajax('{{=URL('itm_view')}}',
+            ['ticket_no_id','item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
+            document.getElementById('no_table_item_code_id').value = ''
+            document.getElementById('no_table_quantity').value = '0'
+            document.getElementById('no_table_pieces').value = '0'
+        return false;
+        
+
+    }
+
+    function refresh() {
+        console.log('refresh');
+        // $( "#tblIC" ).load(window.location.href + " #tblIC" );
+        $( "#tblIC" ).load(" #tblIC" );
+    }
+
+
+    
+</script>                
+

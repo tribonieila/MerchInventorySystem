@@ -15,17 +15,18 @@
                 <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
             </div>
             <div class="card-body tab-content" >         
-
                 {{=form.custom.begin}}	
                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                <input type="text" id="dept_code_id_hid" hidden>
+                <input type="text" id="locatio_code_id_hid" hidden>
+                <input type="text" id="adjustment_type_hid" hidden>
                 <div class="form-horizontal">   
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Stock Adjustment No</label>
                                 <div class="col-sm-8">      
-                                    <input type="text" class="form-control" value="{{=ctr_val}}"readonly >
-                                    <p class="help-block">temporary autogenerate</p>                            
+                                    <div id="_stk_adj_no"></div>
                                 </div>                           
                             </div>                        
                         </div>
@@ -70,8 +71,9 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Stock Adjustment Code</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="Stock_Adjustment_stock_adjustment_code" value ='28-00' readonly >
-                                    <p class="help-block">readonly</p>   
+                                    <div id="adjustment_code"></div>
+                                    <!-- <input type="text" class="form-control" id="Stock_Adjustment_stock_adjustment_code" value ='28-00' readonly >  -->
+                                    <!-- <p class="help-block">readonly</p>     -->
                                     
                                 </div>
                             </div>                    
@@ -98,8 +100,10 @@
                 </div>   
                 {{=form.custom.end}}
                 <hr>
-
-                {{=form2.custom.begin}}
+                <div id = "_stk_adj_desc"></div>
+                
+                <hr>
+                {{=form2.custom.begin}}                   
                 <div class="row">
                     <div class="col-md-2">
                         <div class="form-group">
@@ -146,7 +150,9 @@
                             <label class="col-sm-4 control-label">Average Cost</label>
                             <div class="col-sm-8">
                                 <!-- <el-input placeholder="Average Cost" v-model="input"></el-input> -->
-                                {{=form2.custom.widget.average_cost}}
+                                <div id="average_cost"></div>
+                                
+                                
                             </div>
                         </div>   
                     </div>    
@@ -177,8 +183,11 @@
                     </div>            
                 </div>
                 <hr>
+                
                 {{=form2.custom.end}}
-                <div id = "_stk_adj_tbl"></div>            
+                
+                <div id = "_stk_adj_tbl"></div>          
+                       
             </div>
         </div>
     </div>
@@ -237,14 +246,46 @@
 
 <script>
     
+    $("input[type=submit]").click(function(){
+        $("#Stock_Adjustment_dept_code_id").prop('disabled',false);
+        $("#Stock_Adjustment_location_code_id").prop('disabled',false);
+        $("#Stock_Adjustment_adjustment_type").prop('disabled',false);
+    });    
+
     function btnsubmit(){
-    ajax('{{=URL('stock_adjustment_table')}}', ['item_code_id', 'quantity', 'pieces', 'average_cost','category_id', 'ticket_no_id', 'location_code_id'], '_stk_adj_tbl');
-    return false;
+        $("#Stock_Adjustment_location_code_id").prop('disabled',false);
+        ajax('{{=URL('stock_adjustment_table')}}', ['item_code_id', 'quantity', 'pieces', 'average_cost','category_id', 'ticket_no_id', 'location_code_id'], '_stk_adj_tbl');        
+        // $("#Stock_Adjustment_location_code_id").prop('disabled', true);
+        return false;
     }
 
     $('#Stock_Adjustment_dept_code_id').change(function(){
-        console.log(this.selectedIndex);
+        ajax('{{=URL('stock_adjustment_no')}}',['dept_code_id'], '_stk_adj_no');
+        return false;  
     })
 
+    $('#Stock_Adjustment_Transaction_Temp_item_code_id').click(function(){
+        $("#Stock_Adjustment_location_code_id").prop('enabled',true);
+    }) 
+
+    $('#Stock_Adjustment_Transaction_Temp_item_code_id').change(function(){
+        // $("#Stock_Adjustment_dept_code_id").attr('disabled','false');
+        // $("#Stock_Adjustment_adjustment_type").attr('disabled','false');
+        // $("#Stock_Adjustment_location_code_id").prop('disabled',false);        
+        ajax('{{=URL('stock_adjustment_description')}}',['item_code_id', 'location_code_id'], '_stk_adj_desc');        
+        ajax('{{=URL('stock_adjustment_average_cost')}}',['item_code_id'], 'average_cost');
+        // $("#Stock_Adjustment_dept_code_id").prop('disabled',true);
+        // $("#Stock_Adjustment_location_code_id").prop('disabled',true);
+        // $("#Stock_Adjustment_adjustment_type").prop('disabled',true);
+
+        return false;          
+    })
+
+    $('#Stock_Adjustment_location_code_id').change(function(){
+        ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
+        return false;
+    })
+    
+    
 
 </script>

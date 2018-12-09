@@ -1,27 +1,42 @@
 {{extend 'layout.html'}}
+<style>
+    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div class="col-md-12">
-        <div class="card card-underline">
-            <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class=""><a href="#tab1">+ ADD NEW</a></li>
-                    <li class="active"><a href="#tab2">BROWSE</a></li>
-                </ul>
-                <header>User's</header>
-            </div>
-            <div class="card-body tab-content">
-                <div class="tab-pane" id="tab1">						
-                    {{=form}}
-                </div>
-                <div class="tab-pane active" id="tab2">						
-                    {{=table}}
-                </div>
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">ADMINISTRATOR (IT DEPT.)</span>
         </div>
-        
+        <div class="card-body tab-content">
+            <div id="app">
+                <template>
+                    <el-tabs :tab-position="tabPosition" style="height: 100%;">
+                        <el-tab-pane label="User">{{=form}}{{=table}}</el-tab-pane>
+                        <el-tab-pane label="Member">Member</el-tab-pane>
+                        <el-tab-pane label="Group">Group</el-tab-pane>                        
+                    </el-tabs>
+                </template>
+            </div>
+        </div>        
     </div>
 </div>
 
 
-
+<script>
+var Main = {
+    data() {
+      return {
+        tabPosition: 'left'
+      };
+    }
+  };
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>
 
 
 <script>

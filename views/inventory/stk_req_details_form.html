@@ -1,10 +1,9 @@
 {{extend 'layout.html'}}
-
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
+                <li class="active"><a href="#">DETAILS</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">STOCK REQUEST FORM</span>
@@ -114,7 +113,8 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{=form.custom.submit}}
+                                {{=form.custom.submit}}                                
+                                <input class="btn btn-success" type="button" value="add new" onclick="newReq();">   
                             </div>                            
                         </div>                    
                     </div>
@@ -129,8 +129,9 @@
     </div>
 </div>
 
-
-
-
-
+<script>
+    function newReq() {
+        console.log('new');
+    }
+</script>
 

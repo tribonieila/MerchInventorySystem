@@ -10,8 +10,114 @@ python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
 
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
 
+<script>
+    $(document).ready(function() {
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+            return false;
+            }
+        });
+    });
+</script>
+
+Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
 
 _total_amount += int(i.Stock_Adjustment_Transaction.quantity) * float(i.Stock_Adjustment_Transaction.average_cost) / int(i.Stock_Adjustment_Transaction.uom)
+
+<select disabled="disabled" id="sel_test">
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    <option value="3">Three</option>
+</select>
+
+<input type="hidden" id="hdn_test" />
+<div id="output"></div>
+
+$(function(){
+    var select_val = $('#sel_test option:selected').val();
+    $('#hdn_test').val(select_val);
+    $('#output').text('Selected value is: ' + select_val);
+});
+                
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Item Code</label>
+                            <!-- <el-autocomplete
+                            class="inline-input"
+                            v-model="state2"
+                            :fetch-suggestions="querySearch"
+                            placeholder="Item Code"
+                            :trigger-on-focus="false"
+                            @select="handleSelect"
+                          ></el-autocomplete> -->
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.item_code_id}}
+                            </div>
+                        </div>   
+                    </div>
+                
+                
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">
+                                Quantity
+                            </label>
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.quantity}}
+                                <!-- <el-input-number v-model="num1" controls-position="right" @change="handleChange" :min="0" :max="10"></el-input-number> -->
+                            </div>
+                        </div>   
+                    </div>
+                
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Pieces</label>
+                            <div class="col-sm-8">
+                                <!-- <el-input-number v-model="num2" controls-position="right" @change="handleChange" :min="0" :max="10"></el-input-number> -->
+                                
+                                {{=form2.custom.widget.pieces}}
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Average Cost</label>
+                            <div class="col-sm-8">
+                                <!-- <el-input placeholder="Average Cost" v-model="input"></el-input> -->
+                                <div id="average_cost"></div>
+                                
+                                
+                            </div>
+                        </div>   
+                    </div>    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Category</label>                            
+                            <div class="col-sm-8">
+                                    <!-- <el-select v-model="value" placeholder="Select">
+                                        <el-option
+                                            v-for="item in options"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                        </el-option>
+                                        </el-select> -->
+                                {{=form2.custom.widget.category_id}}
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">            
+                                    <!-- <el-button type="success">Add</el-button> -->
+                            <input class="btn btn-success" type="button" onclick="btnsubmit();" value="Add">
+                            </div>
+                        </div>        
+                    </div>            
+                </div>
 redirect(URL('index', args=(1,2,3), vars=dict(a='b')))
 
         for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == str(request.args(0))).select(db.Stock_Adjustment_Transaction_Temp.ALL):

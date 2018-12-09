@@ -1,81 +1,68 @@
 {{extend 'layout.html'}}
-<div class="col-md-12">
-    <div class="card card-underline">
-        <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
-                <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
-            </ul>
-            <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
-        </div>
-        <div class="card-body tab-content" >
-            {{=form.custom.begin}}
-            <div class="form-horizontal"> 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Item Code</label>
-                            <div class="col-sm-8">      
-                                <input type="text" class="form-control" value="{{=_stk_adj_tran.item_code_id.item_code}}"readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>                           
-                        </div>                        
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-underline">
+                <div class="card-head">
+                    <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
+                </div>
+                <div class="card-body tab-content" >
+                    {{=form.custom.begin}}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Item Code</label>
+                        <div class="col-sm-8">      
+                            <input type="text" class="form-control" value="{{=_stk_adj_tran.item_code_id.item_code}}"readonly >
+                            <p class="help-block">readonly</p>                            
+                        </div>                           
+                    </div>                        
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Description</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" value="{{=_itm_cod.item_description}}"readonly >
+                            <p class="help-block">readonly</p>                            
+                        </div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Category</label>
+                        <div class="col-sm-8">      
+                            <input type="text" class="form-control" value="{{=_stk_adj_tran.category_id.mnemonic}} - {{=_stk_adj_tran.category_id.description}}"readonly >
+                            <p class="help-block">readonly</p>                            
+                        </div>                           
+                    </div>                        
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">UOM</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" value="{{=_stk_adj_tran.uom}}"readonly >
+                            <p class="help-block">readonly</p>                            
+                        </div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Price Cost</label>
+                        <div class="col-sm-8">{{import locale}}
+                            <input type="text" class="form-control" value="{{=locale.format('%.6F',_stk_adj_tran.price_cost or 0, grouping = True)}}"readonly >
+                            <p class="help-block">readonly</p>                                
+                        </div>                           
+
+                    </div>                        
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Average Cost</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" value="{{=_stk_adj_tran.average_cost}}"readonly >
+                            <p class="help-block">readonly</p>                                
+                        </div>
+
+                    </div>                    
+                </div>
+        </div>        
+    </div>
+    <div class="col-md-6">
+            <div class="card card-underline">
+                    <div class="card-head">
+                        <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                            <li class="active"><a href="#">EDIT</a></li>
+                            <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
+                        </ul>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Description</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_itm_cod.item_description}}"readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>
-                        </div>                    
-                    </div>
-                </div>                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Category</label>
-                            <div class="col-sm-8">      
-                                <input type="text" class="form-control" value="{{=_stk_adj_tran.category_id.mnemonic}} - {{=_stk_adj_tran.category_id.description}}"readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>                           
-                        </div>                        
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">UOM</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_stk_adj_tran.uom}}"readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>
-                        </div>                    
-                    </div>
-                </div>      
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Price Cost</label>
-                            <div class="col-sm-8">{{import locale}}
-                                <input type="text" class="form-control" value="{{=locale.format('%.6F',_stk_adj_tran.price_cost or 0, grouping = True)}}"readonly >
-                                <p class="help-block">readonly</p>                                
-                            </div>                           
-    
-                        </div>                        
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Average Cost</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_stk_adj_tran.average_cost}}"readonly >
-                                <p class="help-block">readonly</p>                                
-                            </div>
-    
-                        </div>                    
-                    </div>
-                </div>                 
-                <hr>
-                <div class="row">
-                    <div class="col-md-6">
+                    <div class="card-body tab-content" >
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Quantity</label>
                             <div class="col-sm-8">      
@@ -83,8 +70,6 @@
                             </div>                           
         
                         </div>                        
-                    </div>
-                    <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Pieces</label>
                             <div class="col-sm-8">
@@ -92,26 +77,18 @@
                             </div>
             
                         </div>                    
-                    </div>
-                </div>                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-    
-                        </div>                        
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">      
+                
+                        
+                           
+                              
                                 {{=form.custom.submit}}
-                            </div>                           
+                                                      
         
-                        </div>                    
+                                            
+                        {{=form.custom.end}}         
                     </div>
-                </div>     
-            </div>   
-            {{=form.custom.end}}         
-        </div>
+            </div>        
+    
     </div>
 </div>
+

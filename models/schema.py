@@ -49,7 +49,7 @@ db.define_table('Record_Status',
 db.define_table('Prefix_Data',    
     Field('prefix', length = 10, requires = [IS_UPPER(), IS_NOT_EMPTY()]), 
     Field('prefix_name','string', length = 30, requires = [IS_UPPER(), IS_NOT_EMPTY()]),
-    Field('serial_key', 'integer'),
+    Field('serial_key', 'integer', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -59,7 +59,6 @@ db.define_table('Prefix_Data',
 db.define_table('Division',
     Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('div_code','string', length = 5, label = 'Division Code', writable = False, requires = IS_NOT_IN_DB(db, 'Division.div_code')),
-    Field('div_code_2', 'integer'),
     Field('div_name','string', length = 50, label = 'Division Name', requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Division.div_name')]), 
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION', label = 'Status', requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -68,6 +67,7 @@ db.define_table('Division',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format = '%(div_code)s')
 
 db.define_table('Department',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('div_code_id', 'reference Division', ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Division.status_id == 1), db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
     Field('dept_code','string', length = 5, label ='Department Code', writable = False, requires = IS_NOT_IN_DB(db, 'Department.dept_code')),
     Field('dept_name','string', length = 50, label = 'Department Name', requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Department.dept_name')]),
@@ -92,6 +92,7 @@ db.define_table('Transaction_Prefix',
 
 
 db.define_table('Product',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     # Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
     Field('div_code_id', 'reference Division', ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Division.status_id == 1), db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
     Field('product_code','string', length = 10, writable = False, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Product.product_code')]), # Field 
@@ -103,6 +104,7 @@ db.define_table('Product',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format = '%(product_code)s')
 
 db.define_table('SubProduct',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('div_code_id', 'reference Division', ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Division.status_id == 1), db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
     Field('product_code_id','reference Product', ondelete = 'NO ACTION', label = 'Product Code',requires = IS_IN_DB(db(db.Product.status_id == 1), db.Product.id, '%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
     Field('subproduct_code','string', length = 10, writable = False, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'SubProduct.subproduct_code')]),
@@ -133,6 +135,7 @@ db.define_table('Currency',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
 db.define_table('Supplier_Master',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='value not in department')),
     Field('supp_code','string', length=10, writable = False),
     Field('supp_sub_code','string', length=10, writable = False),
@@ -257,6 +260,7 @@ db.define_table('Supplier_Bank_Details',
 
 # db.define_table('Supplier_Bank_')
 db.define_table('GroupLine',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('supplier_id', 'reference Supplier_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero =  'Choose Supplier')),
     Field('group_line_code','string',length=8, writable = False),
     Field('group_line_name', 'string', length=50, requires=[IS_UPPER(), IS_NOT_IN_DB(db, 'GroupLine.group_line_name')]),
@@ -267,6 +271,7 @@ db.define_table('GroupLine',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False),format = '%(group_line_code)s')
 
 db.define_table('Brand_Line',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('group_line_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line')),
     Field('brand_line_code','string',length=8, writable = False),
     Field('brand_line_name','string',length=50, requires = [IS_LENGTH(50),IS_UPPER(), IS_NOT_IN_DB(db, 'Brand_Line.brand_line_name')]),
@@ -288,6 +293,7 @@ db.define_table('Sub_Group_Line',
 
 # msg.flash = Incomplete Informatin
 db.define_table('Brand_Classification',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('group_line_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line')), #ERROR - * Field should not be empty
     Field('brand_line_code_id','reference Brand_Line', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Brand_Line.id, '%(brand_line_code)s - %(brand_line_name)s', zero= 'Choose Brand Line')),
     Field('brand_cls_code','string', length=8, writable = False),
@@ -300,6 +306,7 @@ db.define_table('Brand_Classification',
 
 
 db.define_table('Fragrance_Type',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('product_code_id','reference Product', ondelete = 'NO ACTION',requires = IS_IN_DB(db(db.Product.product_name.startswith('FRAG')), db.Product.id, '%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
     Field('fragrance_code','string',length=6, writable = False),
     Field('fragrance_name','string',length=35, requires = [IS_LENGTH(35),IS_UPPER(), IS_NOT_IN_DB(db, 'Fragrance_Type.fragrance_name')]),
@@ -310,6 +317,7 @@ db.define_table('Fragrance_Type',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Item_Color',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('color_code','string',length=5, writable = False),
     Field('color_name','string',length=25),
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
@@ -319,6 +327,7 @@ db.define_table('Item_Color',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Item_Size',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('size_code','string',length=10, writable = False),
     Field('size_name','string',length=25, requires = [IS_LENGTH(25),IS_UPPER(),IS_NOT_IN_DB(db, 'Item_Size.size_name')]),
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
@@ -328,6 +337,7 @@ db.define_table('Item_Size',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Item_Collection',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('collection_code','string',length=5, writable = False),
     Field('collection_name','string',length=25, requires = [IS_LENGTH(25),IS_UPPER()]),
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
@@ -337,6 +347,7 @@ db.define_table('Item_Collection',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Section',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('section_code','string',length=5, writable = False),
     Field('section_name','string',length=25, requires = [IS_UPPER(), IS_LENGTH(25), IS_NOT_IN_DB(db, 'Section.section_name')]),
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
@@ -346,6 +357,7 @@ db.define_table('Section',
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Location_Group',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('location_group_code', 'string', length=10,writable = False),
     Field('location_group_name','string',length=50, requires = [IS_LENGTH(50),IS_UPPER(), IS_NOT_IN_DB(db, 'Location_Group.location_group_name')]),
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
@@ -365,6 +377,7 @@ db.define_table('Location_Sub_Group',
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
 
 db.define_table('Location',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('location_group_code_id','reference Location_Group', ondelete = 'NO ACTION',label = 'Location Group Code', requires = IS_IN_DB(db, db.Location_Group.id, '%(location_group_code)s - %(location_group_name)s', zero = 'Choose Location Group')),
     Field('location_code','string',length=10, writable =False),
     Field('location_name','string',length=50, requires = [IS_LENGTH(50),IS_UPPER(), IS_NOT_IN_DB(db, 'Location.location_name')]),
@@ -377,6 +390,7 @@ db.define_table('Location',
     
 
 db.define_table('Gender',
+    Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION'),
     Field('gender_code','string',length=10, writable = False),
     Field('gender_name', 'string', length = 10,requires = [IS_UPPER(), IS_LENGTH(10), IS_NOT_IN_DB(db, 'Gender.gender_name')]),
     Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
