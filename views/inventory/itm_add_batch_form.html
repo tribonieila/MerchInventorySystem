@@ -180,36 +180,7 @@ td {
                                     <td>{{=form.custom.widget.item_description}}</td>                                                                        
                                     <td>{{=form.custom.widget.supplier_item_ref}}</td>
                                     <td>{{=form.custom.widget.int_barcode}}</td>
-                                    <td>{{=form.custom.widget.loc_barcode}}</td>
-                                    <!-- <td>
-                                        <select class="form-control" id="size_code_id" name = "size_code_id">
-                                            {{for s in db(db.Item_Size).select():}}
-                                            <option value = "{{=s.id}}">{{=s.size_code}} - {{=s.size_name}}</option>
-                                            {{pass}}
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select class="form-control" id="gender_code_id" name = "gender_code_id">
-                                            {{for g in db(db.Gender).select():}}
-                                            <option value = "{{=g.id}}">{{=g.gender_code}} - {{=g.gender_name}}</option>
-                                            {{pass}}
-                                        </select>
-        
-                                    </td>
-                                    <td>
-                                        <select class="form-control" id="fragrance_code_id" name = "fragrance_code_id">
-                                            {{for f in db(db.Fragrance_Type).select():}}
-                                            <option value = "{{=s.id}}">{{=f.fragrance_code}} - {{=f.fragrance_name}}</option>
-                                            {{pass}}
-                                        </select>                                        
-                                    </td>
-                                    <td>
-                                        <select class="form-control" id="color_code_id" name = "color_code_id">
-                                            {{for c in db(db.Color_Code).select():}}
-                                            <option value = "{{=c.id}}">{{=c.description}}</option>
-                                            {{pass}}
-                                        </select>                                        
-                                    </td> -->
+                                    <td>{{=form.custom.widget.loc_barcode}}</td>                                    
     
                                     <td><input id="counter" type="hidden" name="counter"></td>
                                     <td><button type="button" class="btn btn-danger" id="sheepItForm_remove_current" name = "sheepItForm_remove_current">Remove</button></td>

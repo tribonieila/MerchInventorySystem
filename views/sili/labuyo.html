@@ -15,7 +15,21 @@
             <div id="app">
                 <template>
                     <el-tabs :tab-position="tabPosition" style="height: 100%;">
-                        <el-tab-pane label="User">{{=form}}{{=table}}</el-tab-pane>
+                        <el-tab-pane label="User">
+                            <table>
+                                <tbody>
+                                    {{=form.custom.begin}}
+                                    <tr><td colspan="3">USER'S INFO</td></tr>
+                                    <tr><td>FIRST NAME</td><td>LAST NAME</td><td>EMAIL</td></tr>
+                                    <tr><td>{{=form.custom.widget.first_name}}</td><td>{{=form.custom.widget.last_name}}</td><td>{{=form.custom.widget.email}}</td></tr>
+                                    <tr><td>USER NAME </td><td>PASSWORD</td><td></td></tr>
+                                    <tr><td>{{=form.custom.widget.username}}</td><td>{{=form.custom.widget.password}}</td><td>{{=form.custom.submit}}</td></tr>
+                                    {{=form.custom.end}}
+                                </tbody>
+                            </table>
+                            <hr>
+                            {{=table}}
+                        </el-tab-pane>
                         <el-tab-pane label="Member">Member</el-tab-pane>
                         <el-tab-pane label="Group">Group</el-tab-pane>                        
                     </el-tabs>

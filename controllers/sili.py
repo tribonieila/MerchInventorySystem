@@ -1,11 +1,9 @@
 def labuyo():
     form = SQLFORM(db.auth_user, request.args(0))
     if form.process().accepted:
-        response.flash = 'form accepted'
+        response.flash = 'RECORD SAVE'
     elif form.errors:
-        response.flash = 'form has errors'
-    else:
-        response.flash = 'please fill out the form'
+        response.flash = 'FORM HAS ERRORS'
 
     row = []
     head = THEAD(TR(TH('#'),TH('First Name'),TH('Last Name'),TH('Email'),TH('Action',_class='sorting_disabled')))

@@ -94,8 +94,7 @@
 					<li class="dropdown">
 						<a href="javascript:void(0);" class="dropdown-toggle ink-reaction" data-toggle="dropdown">				
 							<span class="profile-info">		
-								{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}
-								
+								{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}								
 								<small>{{=auth.user_groups.values()}}</small>
 							</span>
 						</a>
@@ -167,6 +166,7 @@
 								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Group Line</span></a></li>
 								<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
 								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
+								
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
@@ -184,6 +184,7 @@
 							<ul>
 								<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
 								<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+								<li><a href="{{=URL('inventory', 'price_list_support')}}" ><span class="title">Price List Support</span></a></li>
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
@@ -196,22 +197,24 @@
 								<li><a href="{{=URL('inventory','sec_mas')}}" ><span class="title">Section</span></a></li>
 								<li><a href="{{=URL('inventory','stat_mas')}}" ><span class="title">Item Status</span></a></li>
 								<li><a href="{{=URL('inventory','recst_mas')}}" ><span class="title">Record Status</span></a></li>
+								<li><a href="{{=URL('inventory','itmcoll_mas')}}" ><span class="title">Item Collection</span></a></li>
 								<li><a href="{{=URL('inventory','itm_typ_mas')}}" ><span class="title">Item Type</span></a></li>
 								<li><a href="{{=URL('inventory','itmsze_mas')}}" ><span class="title">Item Size</span></a></li>								
 								<li><a href="{{=URL('inventory','gndr_mas')}}" ><span class="title">Gender</span></a></li>
 								<li><a href="{{=URL('inventory','uom_mas')}}" ><span class="title">UOM</span></a></li>
 								<li><a href="{{=URL('inventory','trans_itm_cat_mas')}}" ><span class="title">Trans Item Category</span></a></li>
-								<li><a href="{{=URL('inventory','suplr_uom_mas')}}" ><span class="title">Supplier UOM</span></a></li>
+								<li><a href="{{=URL('inventory','itm_weight')}}" ><span class="title">Weight</span></a></li>
 								<li><a href="{{=URL('inventory','col_mas')}}" ><span class="title">Color</span></a></li>
 								<li><a href="{{=URL('inventory','curr_mas')}}" ><span class="title">Currrency</span></a></li>
 								<li><a href="{{=URL('inventory','mdein_mas')}}" ><span class="title">Made In</span></a></li>
 								<li><a href="{{=URL('inventory','locgrp_mas')}}" ><span class="title">Location Group</span></a></li>							
-								<li><a href="{{=URL('inventory','loc_mas')}}" ><span class="title">Location</span></a></li>							
+								<li><a href="{{=URL('inventory','loc_mas')}}" ><span class="title">Location</span></a></li>				
+								<li><a href="{{=URL('inventory','locsubgrp_mas')}}" ><span class="title">Location Sub-Group</span></a></li>				
 								<li><a href="{{=URL('inventory','frgtype_mas')}}" ><span class="title">Fragrance Type</span></a></li>
 								<li><a href="{{=URL('inventory','supp_trd_trms')}}" ><span class="title">Supplier Trade Terms</span></a></li>
 								<li><a href="{{=URL('inventory','supp_pay_mode')}}" ><span class="title">Supplier Payment Mode</span></a></li>
 								<li><a href="{{=URL('inventory','supp_pay_term')}}" ><span class="title">Supplier Payment Terms</span></a></li>
-								<li><a href="{{=URL('inventory','forw_supp')}}" ><span class="title">Forwarder Supplier</span></a></li>
+								<li><a href="{{=URL('inventory','forw_supp')}}" ><span class="title">Freight Forwarder</span></a></li>
 
 							</ul>
 						</li>
@@ -370,8 +373,8 @@
 	<!-- <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
 
 	<!-- The external javascript ===================== -->
-	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>	
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>	 -->
 	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery/jquery-1.11.2.min.js"></script>
 	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/bootstrap/bootstrap.min.js"></script>  -->
 	<script src="{{=URL('static','js/jquery.nanoscroller.min.js')}}"></script>

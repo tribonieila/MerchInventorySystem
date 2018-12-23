@@ -1,0 +1,35 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">PRICE LIST SUPPORT</span>
+        </div>
+        <div class="card-body tab-content">		
+            {{=form.custom.begin}}
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Supplier</label>
+                    <div class="col-sm-8">{{=form.custom.widget.supplier_code_id}}</div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label>
+                    <div class="col-sm-8">{{=form.custom.submit}}</div>
+                </div>                    
+            </div>
+            {{=form.custom.end}}
+            <div id="price_list"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $('#no_table_supplier_code_id').change(function(){
+        ajax('{{=URL('price_list_support_option')}}',['supplier_code_id'], 'price_list');
+        return false;
+    });
+</script>
+
+
+
+

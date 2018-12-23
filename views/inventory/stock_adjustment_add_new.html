@@ -246,14 +246,14 @@
 
 <script>
     
-    $("input[type=submit]").click(function(){
-        $("#Stock_Adjustment_dept_code_id").prop('disabled',false);
-        $("#Stock_Adjustment_location_code_id").prop('disabled',false);
-        $("#Stock_Adjustment_adjustment_type").prop('disabled',false);
-    });    
+    // $("input[type=submit]").click(function(){
+    //     $("#Stock_Adjustment_dept_code_id").prop('disabled',false);
+    //     $("#Stock_Adjustment_location_code_id").prop('disabled',false);
+    //     $("#Stock_Adjustment_adjustment_type").prop('disabled',false);
+    // });    
 
     function btnsubmit(){
-        $("#Stock_Adjustment_location_code_id").prop('disabled',false);
+        // $("#Stock_Adjustment_location_code_id").prop('disabled',false);
         ajax('{{=URL('stock_adjustment_table')}}', ['item_code_id', 'quantity', 'pieces', 'average_cost','category_id', 'ticket_no_id', 'location_code_id'], '_stk_adj_tbl');        
         // $("#Stock_Adjustment_location_code_id").prop('disabled', true);
         return false;
@@ -264,9 +264,9 @@
         return false;  
     })
 
-    $('#Stock_Adjustment_Transaction_Temp_item_code_id').click(function(){
-        $("#Stock_Adjustment_location_code_id").prop('enabled',true);
-    }) 
+    // $('#Stock_Adjustment_Transaction_Temp_item_code_id').click(function(){
+    //     // $("#Stock_Adjustment_location_code_id").prop('enabled',true);
+    // }) 
 
     $('#Stock_Adjustment_Transaction_Temp_item_code_id').change(function(){
         // $("#Stock_Adjustment_dept_code_id").attr('disabled','false');

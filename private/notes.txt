@@ -9,7 +9,70 @@ sudo apt install ./name.deb
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
 
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
+# Create a database named 'person' with 'last_name' and 'first_name' fields.
+# web2py also creates a field named 'id' automatically.
+db.define_table('person',Field('last_name'), Field('first_name'))
+ 
+# If no database exists, generate a database of 101 unique records
+# with names in the form John1 Smith1, John43 Smith43, etc.
+if db(db.person).isempty():
+    for eachName in range(101):
+        nextNumber=str(eachName)
+        db.person.update_or_insert(last_name='Smith'+nextNumber,first_name='John'+nextNumber)
+    jQuery(function($) { 
+      var data = [ {{for x in db(db.GroupLine).select():}}
+        { text: '{{=x.group_line_code}} - {{=x.group_line_name}}', value: '{{=x.id}}', children: [ {{for y in db(db.Brand_Line.group_line_id == x.id).select(db.Brand_Line.brand_line_code, db.Brand_Line.brand_line_name, db.Brand_Line.id  ):}}
+            { text:'{{=y.brand_line_code}} - {{=y.brand_line_name}}', value:'{{=y.id}}'}, {{pass}} ] }, {{pass}}   
+      ];       
+      $('#no_table_group_line_code_id').cascadingSelect({
+        subSelects: ['#no_table_brand_line_code_id'],
+        data: data
+    });
 
+def index():
+    import json
+    # Select all the records, to show how
+    # datatables.net paginates.
+    # Rows can't be serialized because they contain a reference to
+    # an open database connection. Use as_list()
+    # to serialize the query result.
+    people = json.dumps(db(db.person).select().as_list())
+    # Convert to XML for DataTable
+    return dict(results=XML(people))
+
+{{extend 'layout.html'}}
+{{if 'message' in globals():}}
+<h3>{{=message}}</h3>
+{{pass}}
+<script
+  src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js">
+  src="https://cdn.datatables.net/1.10.10/js/dataTables.bootstrap.min.js">
+</script>
+<link rel="stylesheet"
+  media="screen"
+  href="https://cdn.datatables.net/1.10.10/css/dataTables.bootstrap.min.css">
+   <table id="person-table" class="table table-bordered table-striped" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>First name</th>
+                <th>Last name</th>
+            </tr>
+        </thead>
+    </table>
+ 
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#person-table").DataTable({
+        data:  {{=results}},
+        columns: [
+            { data: 'first_name' },
+            { data: 'last_name' }
+            // 'id' omitted to show that you can
+            // use only the fields you choose
+        ]
+    })
+});
+</script>
 <script>
     $(document).ready(function() {
         $(window).keydown(function(event){

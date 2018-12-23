@@ -8,26 +8,30 @@
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">LINK</a></li>                
+                <li class="active"><a href="#">INFO</a></li>                
                 <li class=""><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">ITEM MASTER FORM</span>
+            <span class="card-title">ITEM MASTER INFORMATION</span>
         </div>
         <div class="card-body tab-content">
             <div id="app">
                 <template>                
                     <el-tabs :tab-position="tabPosition">
-                        <el-tab-pane label="ITEM PROFILE">                        
-                            {{=SQLFORM(db.Item_Master, request.args(0), readonly = True)}}
+                        <el-tab-pane label="ITEM PROFILE">                                                    
+                            {{=LOAD('inventory','item_master_profile', args = request.args(0))}}
                         </el-tab-pane>
-                        <el-tab-pane label="ITEM PRICES">
-                            <!-- {{=SQLFORM(db.Item_Prices, request.args(0) or redirect(URL('#')), readonly = True)}} -->
+                        <el-tab-pane label="ITEM PRICES">                            
+                            {{=LOAD('inventory','item_master_prices', args = request.args(0))}}
                         </el-tab-pane>
                         <el-tab-pane label="ITEM STOCKS">
-                            <!-- {{=SQLFORM(db.Stock_File, request.args(0) or redirect(URL('#')), readonly = True)}} -->
+                            {{=LOAD('inventory','item_master_stocks', args = request.args(0))}}
                         </el-tab-pane>
-                        <el-tab-pane label="BATCH INFO">Info</el-tab-pane>
-                        <el-tab-pane label="SALES QUANTITY">Sales</el-tab-pane>
+                        <el-tab-pane label="BATCH INFO">
+                            {{=LOAD('inventory','item_master_batch_info', args = request.args(0))}}
+                        </el-tab-pane>
+                        <el-tab-pane label="SALES QUANTITY">
+                            {{=LOAD('inventory','item_master_sales_quantity', args = request.args(0))}}
+                        </el-tab-pane>
                     </el-tabs>
                 </template>
             </div>

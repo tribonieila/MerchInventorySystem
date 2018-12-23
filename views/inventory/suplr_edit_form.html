@@ -3,10 +3,10 @@
         <div class="card card-underline">
             <div class="card-head">
                     <ul class="nav nav-tabs pull-right data-toggle="tabs">
-                            <li class="active"><a  href="#" >EDIT</a></li>
+                            <li class="active"><a  href="#" >UPDATE</a></li>
                             <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
                         </ul>
-                        <span class="card-title">Supplier</span>    
+                        <span class="card-title">SUPPLIER MASTER</span>    
             </div>
             <div class="card-body tab-content">                    
                     {{=form.custom.begin}}					
@@ -14,7 +14,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Supplier Code</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" id="supp_code" value="{{=supplier_id.supp_code}}" readonly ><div class="form-control-line"></div>
+                                <input type="text" class="form-control" id="supp_code" value="{{=supplier_id.prefix_id.prefix}}{{=supplier_id.supp_code}}" readonly ><div class="form-control-line"></div>
                                 <p class="help-block">autogenerate</p>                                
                             </div>
                         </div>    

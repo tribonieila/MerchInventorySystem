@@ -7,334 +7,330 @@
                 <li class="active"><a  href="#">+ ADD NEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">Supplier</span>                                                
+            <span class="card-title">SUPPLIER MASTER</span>                                                
         </div>
         <div class="card-body tab-content">		
+            <div class="card">
+                <div class="card-head">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="nav-item"><a href="#step1" class="nav-link active" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">SUPPLIER DATA</a></li>
+                        <li role="presentation" class="nav-item"><a href="#step2" class="nav-link" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">OTHER ADDRESS(S)</a></li>
+                        <li role="presentation" class="nav-item"><a href="#step3" class="nav-link" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">PAYMENT DETAILS</a></li>
+                        <li role="presentation" class="nav-item"><a href="#step4" class="nav-link" data-toggle="tab" aria-controls="step4" role="tab" title="Step 4">BANK DETAILS</a></li>
+                        <li role="presentation" class="nav-item"><a href="#step5" class="nav-link" data-toggle="tab" aria-controls="step5" role="tab" title="Step 5">FORWARDERS</a></li>
+                    </ul>
+                </div><!--end .card-head -->
                 
-                        <div class="card">
-                            <div class="card-head">
-                                <ul class="nav nav-tabs" role="tablist">
-                                    <li role="presentation" class="nav-item"><a href="#step1" class="nav-link active" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">SUPPLIER DATA</a></li>
-                                    <li role="presentation" class="nav-item"><a href="#step2" class="nav-link" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">OTHER ADDRESS(S)</a></li>
-                                    <li role="presentation" class="nav-item"><a href="#step3" class="nav-link" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">PAYMENT DETAILS</a></li>
-                                    <li role="presentation" class="nav-item"><a href="#step4" class="nav-link" data-toggle="tab" aria-controls="step4" role="tab" title="Step 4">BANK DETAILS</a></li>
-                                    <!-- <li role="presentation" class="nav-item"><a href="#step5" class="nav-link" data-toggle="tab" aria-controls="step5" role="tab" title="Step 5">LINK TO DEPT(S)</a></li> -->
-                                </ul>
-                            </div><!--end .card-head -->
-                            {{=form.custom.begin}}	
-                            <div class="card-body tab-content">
-                               				
-                                <div role="tabpanel" class="tab-pane active" id="step1">						                                       
+                <div class="card-body tab-content">        
+                    {{if form.errors:}}
+                    Your submitted form contains the following errors:
+                    <ul>
+                    {{for fieldname in form.errors:}}
+                        <li>{{=fieldname}} error: {{=form.errors[fieldname]}}</li>
+                    {{pass}}
+                    </ul>
+                    
+                    {{pass}}
+                    <input type="text" class="form-control" name="_ckey" id="_ckey" value="{{=_ckey}}">
+                    <div role="tabpanel" class="tab-pane active" id="step1">						                                                                           
+                        {{=form.custom.begin}}	
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Code</label>
+                                <div class="col-sm-8">                                                
+                                    <input type="text" class="form-control" name="supp_code" id="supp_code" value="{{=ctr_val}}" readonly>
+                                <p class="help-block">autogenerate</p></div>
+                            </div>                                         
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier IB Account</label>
+                                <div class="col-sm-8"><input type="text" class="form-control" name="supp_ib_acct_ctr" id="supp_ib_acct_ctr" value="{{=supp_ib_acct_ctr}}" readonly>
+                                <p class="help-block">autogenerate</p></div>
+                            </div>   
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Purchase Account</label>
+                                <div class="col-sm-8"><input type="text" class="form-control" name="supp_pu_acct_ctr" id="supp_pu_acct_ctr" value="{{=supp_pu_acct_ctr}}" readonly>
+                                <p class="help-block">autogenerate</p></div>
+                            </div>   
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Sales Account</label>
+                                <div class="col-sm-8"><input type="text" class="form-control" name="supp_sa_acct_ctr" id="supp_sa_acct_ctr" value="{{=supp_sa_acct_ctr}}" readonly>
+                                <p class="help-block">autogenerate</p></div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Department</label>
+                                <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Name</label>
+                                <div class="col-sm-8">{{=form.custom.widget.supp_name}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Supplier Type</label>
+                                <div class="col-sm-8">{{=form.custom.widget.supplier_type}}</div>
+                            </div>                                                                                                                                       
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Contact Person</label>
+                                <div class="col-sm-8">{{=form.custom.widget.contact_person}}</div>
+                            </div>                                                                                                                                       
                                     
-                                    <div class="form-horizontal">
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier Code</label>
-                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_code" id="supp_code" value="{{=ctr_val}}" readonly>
-                                            <p class="help-block">autogenerate</p></div>
-                                        </div>                                         
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier IB Account</label>
-                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_ib_acct_ctr" id="supp_ib_acct_ctr" value="{{=supp_ib_acct_ctr}}" readonly>
-                                            <p class="help-block">autogenerate</p></div>
-                                        </div>   
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier Purchase Account</label>
-                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_pu_acct_ctr" id="supp_pu_acct_ctr" value="{{=supp_pu_acct_ctr}}" readonly>
-                                            <p class="help-block">autogenerate</p></div>
-                                        </div>   
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier Sales Account</label>
-                                            <div class="col-sm-8"><input type="text" class="form-control" name="supp_sa_acct_ctr" id="supp_sa_acct_ctr" value="{{=supp_sa_acct_ctr}}" readonly>
-                                            <p class="help-block">autogenerate</p></div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Department</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier Name</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.supp_name}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Supplier Type</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.supplier_type}}</div>
-                                        </div>                                                                                                                                       
-    
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Contact Person</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.contact_person}}</div>
-                                        </div>                                                                                                                                       
-                                                
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Address Line 1</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.address_1}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Address Line 2</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.address_2}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Country</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.country_id}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Contact No</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.contact_no}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Fax No</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.fax_no}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Email Address</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.email_address}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Currency</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.currency_id}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Purchase Budget</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.purchase_budget}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Status</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
-                                        </div>                                                          
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label"></label>
-                                            <div class="col-sm-8">
-                                                <button type="button" class="btn btn-primary btn-lg btn-block next-step">Continue >></button>
-                                                <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
-                                            </div>
-                                        </div>                                                                             
-                                                                                                               
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 1</label>
+                                <div class="col-sm-8">{{=form.custom.widget.address_1}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 2</label>
+                                <div class="col-sm-8">{{=form.custom.widget.address_2}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Country</label>
+                                <div class="col-sm-8">{{=form.custom.widget.country_id}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Contact No</label>
+                                <div class="col-sm-8">{{=form.custom.widget.contact_no}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Fax No</label>
+                                <div class="col-sm-8">{{=form.custom.widget.fax_no}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Email Address</label>
+                                <div class="col-sm-8">{{=form.custom.widget.email_address}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Currency</label>
+                                <div class="col-sm-8">{{=form.custom.widget.currency_id}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Purchase Budget</label>
+                                <div class="col-sm-8">{{=form.custom.widget.purchase_budget}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Status</label>
+                                <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                            </div>                                                          
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-8">
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block" > << Save >> </button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-warning btn-lg btn-block next-step">skip >></button>
+                                    </div>
+                                        
+                                    <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
+                                </div>
+                            </div>                                                                             
+                                                                                                    
+                        </div>
+                        {{=form.custom.end}}
+
+                    
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="step2">		
+                        {{=form2.custom.begin}}
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Other Supplier Name</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.other_supplier_name}}</div>
+                            </div>                                                                                                                                       
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Contact Person</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.scp_contact_person}}</div>
+                            </div>             
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 1</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.scp_address_1}}</div>
+                            </div>             
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Address Line 2</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.scp_address_2}}</div>
+                            </div>             
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Country</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.scp_country_id}}</div>
+                            </div>             
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Status</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.scp_status_id}}</div>
+                            </div>   
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-8">
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-danger btn-lg btn-block prev-step"><< Back</button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="save" class="btn btn-primary btn-lg btn-block" ><< Save >></button>    
                                     </div>
 
-                                
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-warning btn-lg btn-block next-step">skip >></button>
+                                    </div>    
+                                    <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
                                 </div>
-                                <div role="tabpanel" class="tab-pane" id="step2">		
-                                    <div class="form-horizontal">
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Other Supplier Name</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.other_supplier_name}}</div>
-                                        </div>                                                                                                                                       
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Contact Person</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.scp_contact_person}}</div>
-                                        </div>             
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Address Line 1</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.scp_address_1}}</div>
-                                        </div>             
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Address Line 2</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.scp_address_2}}</div>
-                                        </div>             
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Country</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.scp_country_id}}</div>
-                                        </div>             
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label">Status</label>
-                                            <div class="col-sm-8">{{=form.custom.widget.scp_status_id}}</div>
-                                        </div>   
-                                        <div class="form-group">
-                                            <label class="col-sm-2 control-label"></label>
-                                            <div class="col-sm-8">
-                                                <div class="col-sm-4">
-                                                        <button type="button" class="btn btn-primary btn-lg btn-block prev-step"><< Back</button>
-                                                </div>
-                                                <div class="col-sm-4">
-                                                        <button type="button" class="btn btn-primary btn-lg btn-block next-step">Continue >></button>    
-                                                </div>
-                                                <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
-                                            </div>
-                                        </div>                                                                                           
-                                    </div>				
-                                    <!-- <ul class="pull-xs-right"> -->
+                            </div>                                                                                           
+                        </div>		
+                        {{=form2.custom.end}}		
+                        <!-- <ul class="pull-xs-right"> -->
 
-                                        <!-- <li class="list-inline-item">
-                                            <button type="button" class="btn btn-default prev-step">Previous</button>
-                                        </li> -->
-                                        <!-- <li class="list-inline-item">
-                                            <button type="button" class="btn btn-primary next-step">Save and continue</button>
-                                        </li>
-                                    </ul>                                         -->
-                                </div>
-                                <div role="tabpanel" class="tab-pane" id="step3">		
-                                        				
-                                        <div class="form-horizontal">
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Trade Terms  </label>
-                                                <div class="col-sm-8">{{=form.custom.widget.trade_terms_id}}</div>
-                                            </div>    
-                            
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Payment Mode  </label>
-                                                <div class="col-sm-8">{{=form.custom.widget.payment_mode_id}}</div>
-                                            </div>    
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Payment Terms</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.payment_terms_id}}</div>
-                                            </div>                        
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Currency</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.spm_currency_id}}</div>
-                                            </div>                        
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Forwarder</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.forwarder_id}}</div>
-                                            </div>                        
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Commodity</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.commodity_code}}</div>
-                                            </div>                        
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Custom Duty Percentage</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.custom_duty_percentage}}</div>
-                                            </div>                        
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Discount Percentage</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.discount_percentage}}</div>
-                                            </div>                        
-                                                
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label">Status</label>
-                                                <div class="col-sm-8">{{=form.custom.widget.spm_status_id}}</div>
-                                            </div>           
-                                            <div class="form-group">
-                                                <label class="col-sm-2 control-label"></label>
-                                                <div class="col-sm-8">
-                                                        <div class="col-sm-4">
-                                                                <button type="button" class="btn btn-primary btn-lg btn-block prev-step"><< Back</button>
-                                                        </div>
-                                                        <div class="col-sm-4">
-                                                                <button type="button" class="btn btn-primary btn-lg btn-block next-step">Continue >></button>    
-                                                        </div>
-                                                        <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
-                                                    </div>
-                                            </div>                                                                                            
-                                        </div>
-                                        
-                                    <!-- <ul class="list-inline pull-xs-right"> -->
-                                        <!-- <li class="list-inline-item">
-                                            <button type="button" class="btn btn-default prev-step">Previous</button>
-                                        </li>
-                                        <li class="list-inline-item">
-                                            <button type="button" class="btn btn-default next-step">Skip</button>
-                                        </li> -->
-                                        <!-- <li class="list-inline-item">
-                                                <button type="button" class="btn btn-primary next-step">Save and continue</button>
-                                        </li>
-                                    </ul> -->
-                                </div>
-                                <div role="tabpanel" class="tab-pane" id="step4">
-                                        <div class="form-horizontal">
-                                                <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Bank Account</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.account_no}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Bank Name</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.bank_name}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Beneficiary Name</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.beneficiary_name}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">IBAN Code</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.iban_code}}</div>
-                                                    </div>
-                                    
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Swift Code</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.swift_code}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Bank Address</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.bank_address}}</div>
-                                                    </div>
-                                        
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">City</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.city}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Country</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.sb_country_id}}</div>
-                                                    </div>
-                                        
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label">Status</label>
-                                                        <div class="col-sm-8">{{=form.custom.widget.sb_status_id}}</div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="col-sm-2 control-label"></label>
-                                                        <div class="col-sm-8">
-                                                                <div class="col-sm-4">
-                                                                        <button type="button" class="btn btn-primary btn-lg btn-block prev-step"><< Back</button>
-                                                                </div>
-                                                                <div class="col-sm-4">
-                                                                    <input class="btn btn-primary btn-block" type="submit" value="Submit">    
-                                                                </div>
-                                                                <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
-                                                            </div>
-                                                    </div>                                                     
-                                        </div>                                    
-                                        <!-- <ul class="list-inline pull-xs-right"> -->
-                                                <!-- <li class="list-inline-item">
-                                                    <button type="button" class="btn btn-default prev-step">Previous</button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <button type="button" class="btn btn-default next-step">Skip</button>
-                                                </li> -->
-                                                <!-- <li class="list-inline-item">
-                                                    <button type="button" class="btn btn-primary btn-info-full next-step">Save and continue</button>
-                                                </li>
-                                            </ul> -->
-                                </div>
-                                <div role="tabpanel" class="tab-pane" id="step5">
-                                        <div class="form-horizontal">
-  
-                                                <div class="form-group">
-                                                    <label class="col-sm-2 control-label">Department</label>
-                                                    <div class="col-sm-8">{{=form.custom.widget.smd_dept_code_id}}</div>
-                                                </div>    
-                                                <div class="form-group">
-                                                    <label class="col-sm-2 control-label"></label>
-                                                    <div class="col-sm-8">
-                                                            <div class="col-sm-4">
-                                                                    <button type="button" class="btn btn-primary btn-block prev-step"><< Back</button>
-                                                            </div>
-                                                            <div class="col-sm-4"><input class="btn btn-primary btn-block" type="submit" value="Submit">
-                                                                    <!-- {{=form.custom.submit}}     -->
-                                                            </div>
-                                                            <!-- <button type="button" class="btn btn-primary next-step">continue</button> -->
-                                                        </div>                                                    
-                                                    <!-- <div class="col-sm-8">{{=form.custom.submit}}</div> -->
-                                                </div>    
-                                            
-                                            </div>
-                                        <!-- <ul class="list-inline pull-xs-right"> -->
-                                                <!-- <li class="list-inline-item">
-                                                    <button type="button" class="btn btn-default prev-step">Previous</button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <button type="button" class="btn btn-default next-step">Skip</button>
-                                                </li> -->
-                                                <!-- <li class="list-inline-item"> -->
-                                                        
-                                                    
-                                                <!-- </li>
-                                            </ul> -->
-                                </div>
+                            <!-- <li class="list-inline-item">
+                                <button type="button" class="btn btn-default prev-step">Previous</button>
+                            </li> -->
+                            <!-- <li class="list-inline-item">
+                                <button type="button" class="btn btn-primary next-step">Save and continue</button>
+                            </li>
+                        </ul>                                         -->
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="step3">		
+                        {{=form3.custom.begin}}                                        				
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Trade Terms  </label>
+                                <div class="col-sm-8">{{=form3.custom.widget.trade_terms_id}}</div>
+                            </div>    
+            
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Payment Mode  </label>
+                                <div class="col-sm-8">{{=form3.custom.widget.payment_mode_id}}</div>
+                            </div>    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Payment Terms</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.payment_terms_id}}</div>
+                            </div>                        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Currency</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.spm_currency_id}}</div>
+                            </div>                        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Forwarder</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.forwarder_id}}</div>
+                            </div>                        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Commodity</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.commodity_code}}</div>
+                            </div>                        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Custom Duty Percentage</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.custom_duty_percentage}}</div>
+                            </div>                        
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Discount Percentage</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.discount_percentage}}</div>
+                            </div>                        
                                 
-                            </div><!--end .card-body -->{{=form.custom.end}}
-                        </div><!--end .card -->
-                        
-                    
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Status</label>
+                                <div class="col-sm-8">{{=form3.custom.widget.spm_status_id}}</div>
+                            </div>           
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-8">
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-danger btn-lg btn-block prev-step"><< Back</button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block" ><< Save >></button>    
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-warning btn-lg btn-block next-step">skip >></button>
+                                    </div>    
+                                </div>
+                            </div>                                                                                            
+                        </div>
+                        {{=form3.custom.end}}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="step4">
+                        {{=form4.custom.begin}}
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Bank Account</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.account_no}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Bank Name</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.bank_name}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Beneficiary Name</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.beneficiary_name}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">IBAN Code</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.iban_code}}</div>
+                            </div>
+            
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Swift Code</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.swift_code}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Bank Address</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.bank_address}}</div>
+                            </div>
+                
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">City</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.city}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Country</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.sb_country_id}}</div>
+                            </div>
+                
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Status</label>
+                                <div class="col-sm-8">{{=form4.custom.widget.sb_status_id}}</div>
+                            </div>
+                            <div class="form-group">
+                                <!-- <label class="col-sm-2 control-label"></label> -->
+                                <div class="col-sm-2"></div>
+                                <div class="col-sm-8">
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-danger btn-lg btn-block prev-step"><< Back</button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block" ><< Save >></button>    
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-warning btn-lg btn-block next-step">skip >></button>
+                                    </div>    
+                                </div>
+                            </div>                                                     
+                        </div>      
+                        {{=form4.custom.end}}                              
+                    </div>                                
+                    <div role="tabpanel" class="tab-pane" id="step5">
+                        {{=form5.custom.begin}}
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Forwarder</label>
+                                <div class="col-sm-8">{{=form5.custom.widget.forwarder_code_id}}</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Status</label>
+                                <div class="col-sm-8">{{=form5.custom.widget.status_id}}</div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-2"></div>
+                                <div class="col-sm-8">
+                                    <div class="col-sm-4">
+                                        <button type="button" class="btn btn-danger btn-lg btn-block prev-step"><< Back</button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block" > << save >></button>
+                                        
+                                    </div>
+                                </div>
+                            </div>                                                     
+                        </div>
+                        {{=form5.custom.end}}
+                    </div>
+                </div><!--end .card-body -->
+            </div><!--end .card -->                                           
         </div>        
     </div>
 </div>
@@ -374,5 +370,5 @@
     }
     function prevTab(elem) {
         $(elem).parent().prev().find('a[data-toggle="tab"]').click();
-    }
-    </script>
+    }  
+</script>

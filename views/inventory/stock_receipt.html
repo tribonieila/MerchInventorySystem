@@ -34,7 +34,7 @@
                                     { text: '{{=l.location_name}}', value: '{{=l.id}}' }, {{pass}} ]" 
                                     :filter-method="filterTag" filter-placement="bottom-end">
                                     <template slot-scope="scope">
-                                        <el-tag :type="scope.row.tag === 'Home' ? 'primary' : 'success'" disable-transitions> {% scope.row.stk_des  %} </el-tag>
+                                        <el-tag :type="scope.row.stk_des === 'Home' ? 'primary' : 'success'" disable-transitions> {% scope.row.stk_des  %} </el-tag>
                                     </template>
                                 </el-table-column>
                                 <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>

@@ -1,0 +1,102 @@
+{{extend 'layout.html'}}
+<style>
+    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+</style>
+<script src="//unpkg.com/vue"></script>
+<script src="//unpkg.com/element-ui"></script>
+<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script>
+
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class=""><a href="#"onclick=window.location="{{=URL('itm_add_form')}}";>+ ADD NEW</a></li>
+                    <li class=""><a href="#"onclick=window.location="{{=URL('itm_add_batch_form')}}";>+ NEW BATCH</a></li>
+                    <li class="active"><a href="#">BROWSE</a></li>
+                </ul>            
+                <span class="card-title">ITEM MASTER</span>
+            </div>
+            <div class="card-body tab-content">
+            <div id="app">
+                <template>
+                    <el-table :data="tableData.filter(data => !search || data._item_code.toLowerCase().includes(search.toLowerCase()))" stripe style="width: 100%" fit>
+                        <el-table-column type="index" :index="indexMethod"></el-table-column>
+                        <el-table-column prop="_itim_code" label="Item Code" ></el-table-column>
+                        <el-table-column prop="_item_descrition" label="Item Description" ></el-table-column>
+                        <el-table-column prop="_int_barcode" label="Int Barcode" ></el-table-column>
+                        <el-table-column prop="_loc_barcode" label="Loc Barcode" ></el-table-column>
+                        <el-table-column prop="_group_line" label="Group Line" ></el-table-column>
+                        <el-table-column prop="_brand_line_name" label="Brand Line" ></el-table-column>
+                        <el-table-column prop="_status" label="Status" ></el-table-column>
+                        <el-table-column align = "right" >
+                                <template slot="header" slot-scope="scope">
+                                        <el-input
+                                          v-model="search"
+                                          size="mini"
+                                          placeholder="Type to search"/>
+                                      </template>
+                                <template slot-scope="scope">
+                                    <el-button
+                                        size="mini"
+                                        type="info"
+                                        @click="handleEdit(scope.$index, scope.row)">Edit</el-button>
+                                    <el-button
+                                        size="mini"
+                                        type="success"
+                                        @click="handleDelete(scope.$index, scope.row)">Info</el-button>
+                                </template>
+        
+                        </el-table-column>
+                    </el-table>
+                </template>
+            </div>   
+            
+            </div>
+        
+        </div>
+    </div>        
+     
+<script>
+var Main = {    
+    delimeters: ["{%","%}"],
+    methods: {
+      indexMethod(index) {
+        return index + 1;
+      },
+      handleEdit(index, row) {
+        console.log(index, row);
+      },
+      handleDelete(index, row) {
+        console.log(index, row);
+      }
+    },    
+    data() {
+      return {
+        search: '',
+        tableData: [ {{for i in db(db.Item_Master).select(orderby = db.Item_Master.item_code):}}
+            {
+                _itim_code: '{{=i.item_code}}',
+                _item_descrition: '{{=i.item_description.upper()}}',
+                _int_barcode: '{{=i.int_barcode}}',
+                _loc_barcode: '{{=i.loc_barcode}}',
+                _group_line: '{{=i.group_line_id.group_line_name.upper()}}',
+                _brand_line_name: '{{=i.brand_line_code_id.brand_line_name}}',
+                _status: '{{=i.item_status_code_id.status}}',
+            },  {{pass}}
+        ]
+      }
+    }
+  }
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>        
+
+        
+<script>
+    $(document).ready(function(){
+        $('.popover-dismiss').popover({
+          trigger: 'focus'
+        })
+    });
+</script>

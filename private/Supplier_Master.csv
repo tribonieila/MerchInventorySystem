@@ -1,0 +1,18 @@
+dept_code_id,supp_code,supp_sub_code,supp_name,supplier_type,contact_person,address_1,address_2,country_id,contact_no,fax_no,email_address,currency_id,purchase_budget,supplier_ib_account,supplier_purchase_account,supplier_sales_account,status_id,created_on,created_by,updated_on,updated_by,prefix_id
+,16-108,,AGIO SIGARENFABRIEKEN NV,,,,,,,,,,,,,,1,,,,,11
+,16-395,,CAMPBELL FOODS,,,,,,,,,,,,,,1,,,,,11
+,16-400,,CHOCOLATES VALOR S.A,,,,,,,,,,,,,,1,,,,,11
+,16-287,,FERRERO TRADING,,,,,,,,,,,,,,1,,,,,11
+,16-213,,IMPERIAL TOBACCO,,,,,,,,,,,,,,1,,,,,11
+,16-388,,ITC LIMITED,,,,,,,,,,,,,,1,,,,,11
+,16-119,,KIWI FRANCE SA,,,,,,,,,,,,,,1,,,,,11
+,16-3001,,NATIONAL FOOD CO.-AMERICANA,,,,,,,,,,,,,,1,,,,,11
+,16-398,,NATIONAL REFRESHMENTS CO.L.L.C,,,,,,,,,,,,,,1,,,,,11
+,16-118,,NICHOLAS KIWI INTERNATIONAL,,,,,,,,,,,,,,1,,,,,11
+,16-370,,NTAC,,,,,,,,,,,,,,1,,,,,11
+,16-3011,,PALC,,,,,,,,,,,,,,1,,,,,11
+,16-3002,,PEETERS PRODUKTEN B.V,,,,,,,,,,,,,,1,,,,,11
+,16-384,,TCHIBO,,,,,,,,,,,,,,1,,,,,11
+,16-3008,,VIDAL GOLOSINAS S.A,,,,,,,,,,,,,,1,,,,,11
+,16-366,,VILLIGER SOHNE AG,,,,,,,,,,,,,,1,,,,,11
+,16-399,,VON EICKEN,,,,,,,,,,,,,,1,,,,,11

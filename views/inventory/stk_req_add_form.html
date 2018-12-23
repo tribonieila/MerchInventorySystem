@@ -1,11 +1,11 @@
 {{extend 'layout.html'}}
-<style>
+<!-- <style>
     @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
 </style>
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
 <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
+<script>ELEMENT.locale(ELEMENT.lang.en)</script> -->
 
     <div class="col-md-12">
         <div class="card card-underline">
@@ -97,7 +97,7 @@
                                 <label class="col-sm-4 control-label">Remarks</label>
                                 <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
                             </div>                  
-                        </div>
+                        </div> 
                         <div class="col-md-6">  
                         <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
@@ -119,7 +119,10 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Item Code</label>
-                                <div class="col-sm-8">{{=form2.custom.widget.item_code_id}}</div>
+                                <div id="_dept_code_id"></div>
+                                <div class="col-sm-8">
+                                    {{=form2.custom.widget.item_code}}
+                                </div>
                             </div>   
                         </div>
                         <div class="col-md-2">
@@ -160,6 +163,7 @@
     
     $('#no_table_dept_code_id').change(function() {
         ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
+        // ajax('{{=URL('stock_request_dept_code_id')}}', ['dept_code_id'], '_dept_code_id');                
         $('#_stk_req_no_div').fadeIn();      
         document.getElementById('no_table_pieces').disabled = false;    
         document.getElementById('no_table_quantity').disabled = false;
@@ -167,13 +171,19 @@
         document.getElementById('btninsert').disabled = false;
         return false;
     })
-    $('#no_table_item_code_id').change(function(){
-        ajax('{{=URL('itm_description')}}',['item_code_id', 'stock_source_id'], 'desc');        
+
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        return false;      
+    })
+
+    $('#stk_item_code_id').change(function(){
+        console.log('ajax success!!!');       
         return false;      
     })
     var stock_source_id = select = document.getElementById( 'stock_source_id' );
     var dept_id = select = document.getElementById('dept_code_id');
-    var item_code_id = document.getElementById("item_code_id"); 
+    // var item_code_id = document.getElementById("item_code_id"); 
 
     
 </script> 
@@ -181,8 +191,8 @@
     function insert(){
         
         ajax('{{=URL('itm_view')}}',
-            ['ticket_no_id','item_code_id', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
-            document.getElementById('no_table_item_code_id').value = ''
+            ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
+            document.getElementById('no_table_item_code').value = ''
             document.getElementById('no_table_quantity').value = '0'
             document.getElementById('no_table_pieces').value = '0'
         return false;

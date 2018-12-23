@@ -5,7 +5,7 @@
 @auth.requires_login()
 # @auth.requires_membership('ROOT')
 def index():
-    response.flash = T("Hello User",language="ar-ar"  )
+    response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
     return dict(message=T('Welcome to the jungle!'))
 
 

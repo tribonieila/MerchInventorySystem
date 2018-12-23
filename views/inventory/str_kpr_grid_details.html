@@ -115,11 +115,14 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{=_btnsmt}}                          
-                                {{=_btn}}
-                                <!-- <input class="btn btn-success" type="button" value="create stock transfer & print" onclick="ajax('{{=URL('inventory','str_kpr_grid_gen_stk_trn', args = request.args(0))}}')">                                                                     -->
-                                <!-- <input class="btn btn-warning" type="button" value="print" onclick="window.open('{{=URL('inventory','str_kpr_rpt', args = request.args(0))}}')">                                 -->
-                                <!-- <input class="btn btn-warning" type="button" value="test" onclick="window.open('{{=URL('inventory','test')}}')">                                 -->
+                                {{ if _id.srn_status_id == 5:  }}
+                                    <input type="submit" value="submit", class="btn btn-primary disabled">
+                                    <input type="button" value="create stock transfer & print", class="btn btn-success disabled">
+                                {{ else: }}
+                                    <input type="text" class="form-control" id="_id" name = "_id" value="{{=_id.id}}" hidden >
+                                    <input type="submit" value="submit", class="btn btn-primary">                            
+                                    <input class="btn btn-warning" id="btnPrint" type="button" value="create stock transfer & print" onclick="window.open('{{=URL('inventory','str_kpr_rpt', args = request.args(0))}}')">
+                                {{pass}}
                             </div>                            
                         </div>                    
                     </div>
@@ -135,7 +138,7 @@
 
 <script>
     $('#btnPrint').click(function() {
-        ajax('{{=URL('str_kpr_grid_gen_stk_trn')}}' + '/' + request.args(0));
-        console.log('print');
+        ajax('{{=URL('str_kpr_grid_gen_stk_trn')}}',['_id']);
+        
     });
 </script>

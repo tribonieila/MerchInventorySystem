@@ -41,6 +41,7 @@
                         
                 </div> 
                 {{=form.custom.end}}    
+                <div id="product_list"></div>
         </div>
     </div>
 </div>
@@ -61,5 +62,11 @@
             data: data 
         });
 
+
     });
+
+    $('#no_table_product_code_id').change(function(){            
+        ajax('{{=URL('show_products')}}',['product_code_id'], 'product_list');                
+    });
+
 </script>

@@ -6,7 +6,7 @@
                 <li class="active"><a  href="#">VIEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">Supplier</span>
+            <span class="card-title">SUPPLIER MASTER</span> 
         </div>
         <div class="card-body tab-content">			
             <div class="card">
@@ -17,27 +17,83 @@
                         <li><a href="#third1">BANK DETAILS</a></li>
                         <li><a href="#fourth1">OTHER ADDRESS(S)</a></li>
                         <li><a href="#fifth1">LINK TO DEPT(S)</a></li>
+                        <li><a href="#sixth1">FORWARDERS</a></li>
                     </ul>
                 </div><!--end .card-head -->
             <div class="card-body tab-content">
                 <div class="tab-pane active" id="first1">
-                    <H1>SUPPLIER DATA</H1>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr class="active">
+                                <td>Department</td>
+                                <td>Supplier Code</td>
+                                <td>Supplier Sub Code</td>
+                                <td>Supplier Name</td>
+                                <td>Supplier Type</td>
+                            </tr>
+                            <tr>
+                                <td>{{=_sm.dept_code_id.dept_name}}</td>
+                                <td>{{=_sm.prefix_id.prefix}}{{=_sm.supp_code}}</td>
+                                <td>{{=_sm.supp_sub_code}}</td>
+                                <td>{{=_sm.supp_name}}</td>
+                                <td>{{=_sm.supplier_type}}</td>
+                            </tr>
+                        </tbody>
+                    </table >
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr class="active">
+                                <td>Contact Person</td><td>Address 1</td><td>Address 2</td><td>Country</td>
+                            </tr>
+                            <tr>
+                                <td>{{=_sm.contact_person}}</td><td>{{=_sm.address_1}}</td><td>{{=_sm.address_2}}</td><td>{{=_sm.country_id.description}}</td>
+                            </tr>
+                            <tr class="active">
+                                <td>Contact No</td><td>Fax No</td><td colspan="2">Email Address</td>                            
+                            </tr>
+                            <tr>
+                                <td>{{=_sm.contact_no}}</td><td>{{=_sm.fax_no}}</td><td colspan="2">{{=_sm.email_address}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr class="active">
+                                <td>Currency</td>
+                                <td>Purchase Budget</td>
+                                <td>IB Account</td>
+                                <td>Purchase Account</td>
+                                <td>Sales Account</td>
+                                <td>Status</td>
+                            </tr>
+                            <tr>
+                                <td>{{=_sm.currency_id.description}}</td>
+                                <td>{{=_sm.purchase_budget}}</td>
+                                <td>{{=_sm.supplier_ib_account}}</td>
+                                <td>{{=_sm.supplier_purchase_account}}</td>
+                                <td>{{=_sm.supplier_sales_account}}</td>
+                                <td>{{=_sm.status_id.status}}</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="tab-pane" id="second1">
-                        <H1>BANK DETAILS</H1>
+                <div class="tab-pane" id="second1">                    
+                    {{=LOAD('inventory','suplr_paym_view', ajax = True, args = request.args(0))}}                    
                 </div>
-                <div class="tab-pane" id="third1">
-                    <H1>BANK DETAILS</H1>
+                <div class="tab-pane" id="third1">                    
+                    {{=LOAD('inventory','suplr_bank_view', ajax = True, args = request.args(0))}}
                 </div>
                 <div class="tab-pane" id="fourth1">
-                    <H1>OTHER ADDRESS(S)</H1>
-                    <!-- {{=LOAD('inventory','suplr_addr_form.load', args=request.args(0), ajax = True)}} -->
+                    {{=LOAD('inventory','suplr_othr_view', ajax = True, args = request.args(0))}}                    
                 </div>
                 <div class="tab-pane" id="fifth1">
-                    <H1>LINK TO DEPT(S)</H1>
-                    <!-- {{=LOAD('inventory','suplr_dept_form.load', args=request.args(0), ajax = True)}} -->
+                    {{=LOAD('inventory','suplr_dept_view', ajax = True, args = request.args(0))}}                    
                 </div>
-            
+
+                <div class="tab-pane" id="sixth1">
+                    {{=LOAD('inventory','suplr_ship_view', ajax = True, args = request.args(0))}}                    
+                </div>
             </div><!--end .card-body -->
             </div>
         </div>        
