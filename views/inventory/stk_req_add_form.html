@@ -24,7 +24,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Stock Request No</label>
+                                <label class="col-sm-4 control-label">Sales Order No</label>
                                 <div class="col-sm-8">                                
                                     <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                     <div id="_stk_req_no_div"></div>
@@ -33,7 +33,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Request Date</label>
+                                <label class="col-sm-4 control-label">Sales Order Date</label>
                                 <div class="col-sm-8"> {{import datetime}}
                                     <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                     <p class="help-block">readonly</p>                            

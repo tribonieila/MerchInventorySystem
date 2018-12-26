@@ -11,11 +11,11 @@
             <div class="card-body tab-content">
                 {{=form.custom.begin}} 
                 <div class="form-horizontal" role="form">                        
-                        <div class="form-group">
+                    <div class="form-group">
                         <label class="col-sm-2 control-label">Brand Class Code</label>
                         <div class="col-sm-8"><input type="text" class="form-control" value="{{=ctr_val.prefix_id.prefix}}{{=ctr_val.brand_cls_code}}" readonly>
                         <p class="help-block">autogenerate</p>                            
-                    </div>
+                        </div> 
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Group Line Code</label>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Department</label>
-                        <div class="col-sm-10">
+                        <div class="col-sm-8">
                             {{=form.custom.widget.dept_code_id}}
                         </div>
                     </div>
@@ -46,9 +46,30 @@
                         <label class="col-sm-2 control-label"></label>               
                         <div class="col-sm-8">{{=form.custom.submit}}</div>
                     </div>                      
-                </div>
+                
                 {{=form.custom.end}}  
-                </div>            
+                <hr>
+                {{=bform.custom.begin}}
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Department</label>
+                        <div class="col-sm-8">
+                            {{=bform.custom.widget.dept_code_id}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Status</label>
+                        <div class="col-sm-8">
+                            {{=bform.custom.widget.status_id}}
+                        </div>
+                    </div>    
+                    <div class="form-group">         
+                        <label class="col-sm-2 control-label"></label>               
+                        <div class="col-sm-8">{{=form.custom.submit}}</div>
+                    </div>                                       
+                {{=bform.custom.end}}
+                </div>
+                {{=table}}
+            </div>            
         </div>        
 </div>
 

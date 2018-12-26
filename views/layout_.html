@@ -38,57 +38,53 @@
   </head>
   <body>
 
-    <div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
+
     <!-- Navbar ======================================= -->
-    <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <a class="navbar-brand" href="#">Inventory</a>
-      <div class="collapse navbar-collapse">       
-        <ul class="navbar-nav">
-          {{for _item in response.menu or []:}}
-          {{if len(_item)<4 or not _item[3]:}}
-          <li class="nav-item {{if _item[1]:}}active{{pass}}">
-            <a class="nav-link" href="{{=_item[2]}}">{{=_item[0]}}</a>
-          </li>
-          {{else:}}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="{{=_item[2]}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{=_item[0]}}</a>
-            <div class="dropdown-menu">
-              {{for _subitem in _item[3]:}}
-              <a class="dropdown-item" href="{{=_subitem[2]}}">{{=_subitem[0]}}</a>
-              {{pass}}
-            </div>
-          </li>
-          {{pass}}
-          {{pass}}
-        </ul>
+    <div id="app">
+      <v-app id="inspire">
+        <v-toolbar>
+          <v-toolbar-side-icon></v-toolbar-side-icon>
+          <v-toolbar-title>Title</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items class="hidden-sm-and-down">
+            <v-btn flat>Link One</v-btn>
+            <v-btn flat>Link Two</v-btn>
+            <v-btn flat>Link Three</v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-navigation-drawer permanent>
+            <v-toolbar flat>
+              <v-list>
+                <v-list-tile>
+                  <v-list-tile-title class="title">
+                    Application
+                  </v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-toolbar>
+        
+            <v-divider></v-divider>
+        
+            <v-list dense class="pt-0">
+              <v-list-tile
+                v-for="item in items"
+                :key="item.title"
+                @click=""
+              >
+                <v-list-tile-action>
+                  <v-icon>{% item.icon %}</v-icon>
+                </v-list-tile-action>
+        
+                <v-list-tile-content>
+                  <v-list-tile-title>{% item.title %}</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
+            </v-list>
+          </v-navigation-drawer>        
+      </v-app>
+    </div>
 
-        {{if 'auth' in globals():}}
-        <ul class="navbar-nav navbar-right">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{if auth.user:}}{{=auth.user.first_name}}{{else:}}LOGIN{{pass}}
-            </a>
-            <div class="dropdown-menu">
-              {{if auth.user:}}
-              <a class="dropdown-item" href="{{=URL('default','user/profile')}}">{{=T('Profile')}}</a>
-              <a class="dropdown-item" href="{{=URL('default','user/logout')}}">{{=T('Logout')}}</a>
-              {{else:}}
-              <a class="dropdown-item" href="{{=URL('default','user/login')}}">{{=T('Login')}}</a>
-              {{pass}}
-            </div>
-          </li>
-        </ul>        
-        {{pass}}
-      </div>
-    </nav>
 
-
-    <!-- Masthead ===================================== -->    
-    {{block header}}
-    {{end}}
     <!-- Main ========================================= -->
     <!-- Begin page content -->
     <div class="container-fluid main-container">
@@ -125,7 +121,22 @@
     {{pass}}
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-
+    <script>
+    new Vue({
+      el: '#app',
+      delimeters: ['{%', '%}'],
+  data () {
+    return {
+      items: [
+        { title: 'Home', icon: 'dashboard' },
+        { title: 'About', icon: 'question_answer' }
+      ],
+      right: null
+    }
+  }
+  
+})
+    </script>
     <!-- Share ============================y============ -->
     <!-- <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
   </body>

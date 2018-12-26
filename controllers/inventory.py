@@ -900,7 +900,7 @@ def brndlne_mas():
     row = []
     ctr = 0
     thead = THEAD(TR(TH('#'),TH('Brand Line Code'),TH('Brand Line Name'),TH('Group Line Code'),TH('Group Line Name'),TH('Department'),TH('Status'),TH('Action')))
-    query = db(db.Brand_Line).select(db.Brand_Line.ALL, db.GroupLine.ALL, left = db.GroupLine.on(db.Brand_Line.group_line_id == db.GroupLine.id))
+    query = db(db.Brand_Line).select(db.Brand_Line.ALL, db.GroupLine.ALL, orderby = db.Brand_Line.brand_line_code, left = db.GroupLine.on(db.Brand_Line.group_line_id == db.GroupLine.id))
     for n in query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Brand_Line.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('brndlne_edit_form', args = n.Brand_Line.id))
@@ -939,7 +939,12 @@ def brndlne_add_form():
             Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
             response.flash = 'RECORD SAVE'
-            db.Brand_Line.insert(prefix_id = pre.id,group_line_id = form.vars.group_line_id,brand_line_code = _ckey,brand_line_name = form.vars.brand_line_name,status_id = form.vars.status_id)
+            db.Brand_Line.insert(prefix_id = pre.id,
+            group_line_id = form.vars.group_line_id,
+            dept_code_id = form.vars.dept_code_id,
+            brand_line_code = _ckey,
+            brand_line_name = form.vars.brand_line_name,
+            status_id = form.vars.status_id)
             pre.update_record(serial_key = _skey)
         elif form.errors:
             response.flash = 'ENTRY HAS ERRORS'
@@ -950,13 +955,37 @@ def brndlne_add_form():
 
 @auth.requires_login()
 def brndlne_edit_form():
+    db.Brand_Line_Department.brand_line_code_id.writable = False
     ctr_val = db(db.Brand_Line.id == request.args(0)).select().first()
     form = SQLFORM(db.Brand_Line, request.args(0), deletable = True)
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
-    return dict(form = form, ctr_val = ctr_val.prefix_id.prefix+ctr_val.brand_line_code)
+    
+    dform = SQLFORM(db.Brand_Line_Department)
+    if dform.process(onvalidation = validate_brand_line_department).accepted:
+        response.flash = 'RECORD  SAVE'
+    elif dform.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+
+    ctr = 0
+    row = []
+    head = THEAD(TR(TH('#'),TH('Brand Line'),TH('Department'),TH('Status'),TH('Action')))
+    for n in db(db.Brand_Line_Department.brand_line_code_id == request.args(0)).select():
+        ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+
+        row.append(TR(TD(ctr),TD(n.brand_line_code_id.brand_line_name),TD(n.dept_code_id.dept_name),TD(n.status_id.status),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class= 'table')        
+    return dict(form = form, ctr_val = ctr_val, dform = dform, table = table)
+
+def validate_brand_line_department(form):
+    form.vars.brand_line_code_id = request.args(0)
 
 # ---- Brand Classification Master  -----
 @auth.requires_login()
@@ -964,7 +993,7 @@ def brndclss_mas():
     row = []
     ctr = 0
     thead = THEAD(TR(TH('#'),TH('Brand Classficaion Code'),TH('Brand Classification Name'),TH('Group Line Name'),TH('Department'),TH('Brand Line Name'),TH('Status'),TH('Action')))
-    for n in db(db.Brand_Classification).select(db.Brand_Classification.ALL, db.Brand_Line.ALL, db.GroupLine.ALL, left = [db.Brand_Line.on(db.Brand_Line.id == db.Brand_Classification.brand_line_code_id), db.GroupLine.on(db.Brand_Line.group_line_id == db.GroupLine.id)]):
+    for n in db(db.Brand_Classification).select(db.Brand_Classification.ALL, db.Brand_Line.ALL, db.GroupLine.ALL, orderby = db.Brand_Classification.brand_cls_code, left = [db.Brand_Line.on(db.Brand_Line.id == db.Brand_Classification.brand_line_code_id), db.GroupLine.on(db.Brand_Line.group_line_id == db.GroupLine.id)]):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Brand_Classification.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('brndclss_edit_form', args = n.Brand_Classification.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Brand_Classification.id))
@@ -1010,6 +1039,7 @@ def brndclss_add_form():
             response.flash = 'RECORD SAVE'
             db.Brand_Classification.insert(prefix_id = pre.id, 
             	group_line_id = form.vars.group_line_id,
+                dept_code_id = form.vars.dept_code_id,
             	brand_line_code_id = form.vars.brand_line_code_id,
             	brand_cls_code = _ckey,
             	brand_cls_name = form.vars.brand_cls_name,
@@ -1026,16 +1056,37 @@ def brndclss_add_form():
 @auth.requires_login()
 def brndclss_edit_form():
     db.Brand_Classification.group_line_id.writable = False
+    db.Brand_Classificatin_Department.brand_cls_code_id.writable = False
     ctr_val = db(db.Brand_Classification.id == request.args(0)).select().first()
     form = SQLFORM(db.Brand_Classification, request.args(0), deletable = True)
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
-    else:
-        response.flash = 'PLEASE FILL OUT THE FORM'
-    return dict(form = form, ctr_val = ctr_val)
 
+    bform = SQLFORM(db.Brand_Classificatin_Department)
+    if bform.process(onvalidation = validate_brand_classification_department).accepted:
+        response.flash = 'RECORD SAVE'
+    elif bform.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+
+    ctr = 0
+    row = []
+    head = THEAD(TR(TH('#'),TH('Brand Classification'),TH('Department'),TH('Status'),TH('Action')))
+    for n in db(db.Brand_Classificatin_Department.brand_cls_code_id == request.args(0)).select():
+        ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+
+        row.append(TR(TD(ctr),TD(n.brand_cls_code_id.brand_cls_name),TD(n.dept_code_id.dept_name),TD(n.status_id.status),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(form = form, ctr_val = ctr_val, bform = bform, table = table)
+
+def validate_brand_classification_department(form):
+    form.vars.brand_cls_code_id = request.args(0)
 
 # ---- Item Color Master  -----
 @auth.requires_login()
@@ -1516,8 +1567,8 @@ def itm_add_form():
         Field('weight_value', 'integer'),
         Field('weight_id', 'integer', 'reference Weight', requires = IS_IN_DB(db, db.Weight.id, '%(description)s', zero = 'Choose Weight')),
         Field('type_id', 'reference Item_Type', requires = IS_IN_DB(db, db.Item_Type.id, '%(description)s', zero = 'Choose Type')), # saleable/non-saleable
-        Field('selective_tax','string'),
-        Field('vat_percentage','string'),        
+        Field('selectivetax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
+        Field('vatpercentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),    
         Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
         Field('product_code_id','reference Product', label = 'Product Code',requires = IS_IN_DB(db, db.Product.id,'%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
         Field('subproduct_code_id', 'reference SubProduct', label = 'SubProduct', requires = IS_IN_DB(db, db.SubProduct.id, '%(subproduct_code)s - %(subproduct_name)s', zero = 'Choose SubProduct')),
@@ -1574,8 +1625,11 @@ def itm_add_form():
         response.flash = 'ENTRY HAS ERRORS'        
     return dict(form = form, itm = itm)
 
+
 @auth.requires_login()
 def itm_edit_form():
+    db.Item_Master.uom_value.writable = False
+    db.Item_Master.uom_id.writable = False
     db.Item_Master.division_id.writable = False
     db.Item_Master.dept_code_id.writable = False
     db.Item_Master.supplier_code_id.writable = False
@@ -1650,7 +1704,7 @@ def item_master_profile():
         table1 = TABLE(*[tbody1],_class = 'table table-bordered')
         tbody2 = TBODY(
             TR(TD('IB'),TD('UOM'),TD('Supplier UOM'),TD('Weight'),TD('Type'),TD('Selective Tax'), _class='active'),
-            TR(TD(_query.ib),TD(_query.uom_value, ' ', _query.uom_id.description),TD(_query.supplier_uom_value, ' ', _query.supplier_uom_id.description),TD(_query.weight_value, ' ', _query.weight_id),TD(_query.type_id.description),TD(_query.selective_tax)))
+            TR(TD(_query.ib),TD(_query.uom_value, ' ', _query.uom_id.description),TD(_query.supplier_uom_value, ' ', _query.supplier_uom_id.description),TD(_query.weight_value, ' ', _query.weight_id),TD(_query.type_id.description),TD(_query.selectivetax)))
         table2 = TABLE(*[tbody2], _class = 'table table-bordered')
         tbody3 = TBODY(
             TR(TD('Division'),TD('Department'),TD('Supplier'),TD('Product'),TD('Subproduct'),_class='active'),
@@ -1745,15 +1799,15 @@ def edit_pre_form():
 @auth.requires_login()
 def trns_pre_mas():
     row = []
-    thead = THEAD(TR(TH('ID'),TH('Prefix'),TH('Serial Key'),TH('Prefix Name'),TH('Action')))
+    thead = THEAD(TR(TH('ID'),TH('Prefix'),TH('Prefix Name'),TH('Prefix Key'),TH('Department'),TH('Current Year Serial'),TH('Previous Year Serial'),TH('Action')))
     query = db(db.Transaction_Prefix).select()
     for n in query:
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('trns_pre_edit_mas', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
         edit_lnk = A('Edit', _href=URL('edit_pre_form', args=n.id ))
-        row.append(TR(TD(n.id),TD(n.prefix),TD(n.current_year_serial_key),TD(n.prefix_name),TD(btn_lnk)))
+        row.append(TR(TD(n.id),TD(n.prefix),TD(n.prefix_name),TD(n.prefix_key),TD(n.dept_code_id.dept_name),TD(n.current_year_serial_key),TD(n.previous_year_serial_key),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')    
     return dict(table = table)
@@ -1928,6 +1982,36 @@ def stat_edit_form():
     form = SQLFORM(db.Status, request.args(0), deletable = True)
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'    
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    return dict(form = form)
+# ---- Stock/Sales Master  -----
+@auth.requires_login()
+def stock_n_sale_status():
+    form = SQLFORM(db.Stock_Status)
+    if form.process().accepted:
+        response.flash = 'RECORD SAVE'
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    ctr = 0
+    row = []
+    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action')))
+    for n in db(db.Stock_Status).select():
+        ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stock_n_sale_status_edit_form', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.mnemonic),TD(n.description),TD(n.required_action),TD(btn_lnk)))
+    tbody = TBODY(*row)
+    table = TABLE(*[thead, tbody], _class = 'table table-hover')
+    return dict(form = form, table = table)
+
+@auth.requires_login()
+def stock_n_sale_status_edit_form():
+    form = SQLFORM(db.Stock_Status, request.args(0))
+    if form.process().accepted:
+        response.flash = 'RECORD SAVE'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
     return dict(form = form)
@@ -2774,7 +2858,7 @@ def stock_request_no_prefix():
     
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
 def stk_req_add_form():          
-    ctr = db(db.Transaction_Prefix.prefix == 'SRN').select().first()
+    ctr = db(db.Transaction_Prefix.prefix_key == 'SRN').select().first()
     _skey = ctr.current_year_serial_key 
     _skey += 1        
     _ticket_no = id_generator()
@@ -2788,7 +2872,7 @@ def stk_req_add_form():
         Field('remarks','string'),
         Field('srn_status_id','reference Stock_Status', default = 3, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
     if form.process().accepted:          
-        ctr = db((db.Transaction_Prefix.prefix == 'SRN')&(db.Transaction_Prefix.dept_code_id == form.vars.dept_code_id)).select().first()
+        ctr = db((db.Transaction_Prefix.prefix_key == 'SRN')&(db.Transaction_Prefix.dept_code_id == form.vars.dept_code_id)).select().first()
         _skey = ctr.current_year_serial_key 
         _skey += 1
         ctr.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)
@@ -3809,40 +3893,70 @@ from num2words import num2words
 
 import time
 from datetime import date
-
+from time import gmtime, strftime
 MaxWidth_Content = 530
 styles = getSampleStyleSheet()
-styleN = styles['Normal']
+styleN = styles["BodyText"]
+# styleN = styles['Normal']
 styleH = styles['Heading1']
+_style = ParagraphStyle(
+    name='BodyText',
+    fontSize=7,
+)
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.8*inch, leftMargin=10, rightMargin=10)#, showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
 img = Image(logo_path)
-img.drawHeight = 3.55*inch * img.drawHeight / img.drawWidth
-img.drawWidth = 4.25 * inch
+img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
+img.drawWidth = 3.25 * inch
 img.hAlign = 'CENTER'
 
+_limage = Image(logo_path)
+_limage.drawHeight = 2.55*inch * _limage.drawHeight / _limage.drawWidth
+_limage.drawWidth = 2.25 * inch
+_limage.hAlign = 'CENTER'
+
+
 merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="gray">|</font></font> <font size=7 color="gray"> Merch ERP</font>''',styles["BodyText"])
+
+def _landscape_header(canvas, doc):
+    canvas.saveState()
+    header = Table([[_limage],['PRICE LIST REPORT']], colWidths='*')
+    header.setStyle(TableStyle([
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (0,0), (0,-1), 'CENTER')]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .1 * cm)
+
+    # Footer
+    today = date.today()
+    footer = Table([[merch],[today.strftime("%A %d. %B %Y")]], colWidths=[None])
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('TEXTCOLOR',(0,0),(0,0), colors.gray),
+        ('FONTSIZE',(0,1),(0,1),8),
+        ('ALIGN',(0,1),(0,1),'RIGHT'),
+        ('LINEABOVE',(0,1),(0,1),0.25, colors.gray)
+        ]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
+
+    # Release the canvas
+    canvas.restoreState()
 
 def _transfer_header_footer(canvas, doc):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
 
-    # Header 'Stock Transfer Report'
-    header = Table([[img]], colWidths='*')
-    header.setStyle(TableStyle([('ALIGN', (0,0), (0,0), 'CENTER')]))
-    header.wrapOn(canvas, doc.width, doc.topMargin)
-    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .7 * inch)
-
     # Footer
     today = date.today()
     _trn = db(db.Stock_Request.id == request.args(0)).select().first()
     footer = Table([
-        [str(_trn.stock_request_approved_by.first_name + ' ' + _trn.stock_request_approved_by.last_name),str(_trn.stock_transfer_approved_by.first_name + ' ' + _trn.stock_transfer_approved_by.last_name),''],
+        [str(_trn.stock_transfer_approved_by.first_name + ' ' + _trn.stock_transfer_approved_by.last_name),'',''],
         ['Issued by','Receive by', 'Delivered by'],
-        ['','',''],
+        ['','','Printed by: ' + str(auth.user.first_name.upper()) + ' ' + str(auth.user.last_name.upper()) + ' ' + str(strftime("%X"))],
         [merch,'',''],['','',today.strftime("%A %d. %B %Y")]], colWidths=[None])
     footer.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
@@ -3851,8 +3965,10 @@ def _transfer_header_footer(canvas, doc):
         ('ALIGN',(0,0),(2,1),'CENTER'),
         ('FONTSIZE',(0,0),(2,1),8),
         ('FONTSIZE',(0,4),(2,4),8),
+        ('FONTSIZE',(0,2),(2,2),7),
+        ('ALIGN',(0,2),(2,2),'RIGHT'),
         ('ALIGN',(0,4),(2,4),'RIGHT'),
-        ('LINEABOVE',(0,4),(2,4),1, colors.Color(0, 0, 0, 0.25))
+        ('LINEABOVE',(0,4),(2,4),1, colors.Color(0, 0, 0, 0.55))
         ]))
     footer.wrap(doc.width, doc.bottomMargin)
     footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
@@ -3893,6 +4009,9 @@ def _header_footer(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
+import inflect 
+from decimal import Decimal
+w=inflect.engine()
 def stock_transaction_report():
     _id = request.args(0)
     _grand_total = 0
@@ -3909,55 +4028,67 @@ def stock_transaction_report():
             ['Remarks',':  '+ s.Stock_Request.remarks,'','']]
         
     
-    stk_trn = [['#', 'Item Code', 'Item Description','Cat.', 'UOM','Qty.','Unit Price','Total']]
+    stk_trn = [['#', 'ITEM CODE', 'ITEM DESCRIPTION','UNIT','CAT.', 'UOM','QTY.','UNIT PRICE','TOTAL']]
     for i in db(db.Stock_Request_Transaction.stock_request_id == _id).select(db.Stock_Request_Transaction.ALL, db.Item_Master.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
         ctr += 1
         _total = i.Stock_Request_Transaction.quantity * i.Stock_Request_Transaction.price_cost
-        _grand_total += _total
+        _grand_total += _total        
         stk_trn.append([ctr,
         i.Stock_Request_Transaction.item_code_id.item_code,
-        i.Item_Master.item_description.upper(),
+        str(i.Item_Master.brand_line_code_id.brand_line_name)+str('\n')+str(i.Item_Master.item_description.upper()),
+        i.Item_Master.uom_id.mnemonic,
         i.Stock_Request_Transaction.category_id.mnemonic,
         i.Stock_Request_Transaction.uom,
         card(i.Item_Master.id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),
         # i.Stock_Request_Transaction.quantity,
         i.Item_Prices.retail_price,        
         locale.format('%.2F',_total or 0, grouping = True)])
-
-    stk_trn.append(['', '', '','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    
+    stk_trn.append(['','', '', '','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
 
     stk_tbl = Table(stk_req_no, colWidths=[150, 130,150,130 ], rowHeights=20)
     stk_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (0,2), (-1,2), 1, colors.Color(0, 0, 0, 0.25)),
+        # ('LINEBELOW', (0,2), (-1,2), 1, colors.black),
+        ('BACKGROUND',(0,2),(-1,2),colors.gray),
         ('SPAN',(0,0),(3,0)),
         ('ALIGN', (0,0), (0,0), 'CENTER'),
         ('TOPPADDING',(0,0),(0,0),12),
         ('BOTTOMPADDING',(0,0),(0,0),12),
-        ('FONTSIZE',(0,0),(0,0),15),
-        ('FONTSIZE',(0,2),(-1,2),10),        
-        ('FONTSIZE',(0,3),(3,-1),9)
+        ('FONTSIZE',(0,0),(0,0),12),
+        ('FONTSIZE',(0,2),(-1,2),9),        
+        ('FONTSIZE',(0,3),(3,-1),8)
         ]))
     
-    trn_tbl = Table(stk_trn, colWidths = [20,55,250,30,30,50,60,60])
+    trn_tbl = Table(stk_trn, colWidths = [20,55,200,50,30,30,50,60,60])
     trn_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.25)),
-        ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.25)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('LINEABOVE', (0,-1), (-1,-1), 1, colors.Color(0, 0, 0, 0.35)),
+        # ('LINEBELOW', (0,0), (-1,0), 1, colors.black),
+        ('BACKGROUND',(0,0),(-1,0),colors.gray),
+        # ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.25)), #background
         ('ALIGN',(6,0),(6,-1),'RIGHT'),
         ('ALIGN',(6,1),(6,-1),'RIGHT'),
-        ('ALIGN',(7,0),(7,-1),'RIGHT'),
+        ('ALIGN',(7,0),(8,-1),'RIGHT'),
+        ('VALIGN',(0,1),(-1,-1),'TOP'),
         ('FONTSIZE',(0,0),(-1,-1),8)]))    
     row.append(stk_tbl)
     row.append(Spacer(1,.5*cm))
     row.append(trn_tbl)
 
-    wrds_trnls = [['QR ' + string.capwords(num2words(_grand_total,  lang='en')) + ' Dirhams' ]]
+    # wrds_trnls = [['QR ' + string.capwords(amt2words(123.25)) ]] # num2words str(number-int(number)).split('.')[1:]
+    # _grand_total = 3408.72
+    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    
+    x =locale.format('%.2f',_grand_total or 0, grouping = True)
+    
+    wrds_trnls = [['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
     wrds_tbld = Table(wrds_trnls, colWidths='*')
     wrds_tbld.setStyle(TableStyle([
-        ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.25)),
-        ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.25)),
-        ('FONTSIZE',(0,0),(-1,-1),7)
+        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.35)),
+        ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.35)),
+        ('FONTSIZE',(0,0),(-1,-1),8)
     ]))
     row.append(Spacer(1,.7*cm))
     row.append(wrds_tbld)
@@ -3990,8 +4121,8 @@ def str_kpr_rpt():
         _total = i.Stock_Request_Transaction.quantity * i.Stock_Request_Transaction.price_cost
         _grand_total += _total
         stk_trn.append([ctr,
-        i.Stock_Request_Transaction.item_code_id.item_code,
-        i.Item_Master.item_description.upper(),
+        i.Stock_Request_Transaction.item_code_id.item_code,        
+        Paragraph(i.Item_Master.item_description.upper(), style = _style),
         i.Stock_Request_Transaction.category_id.mnemonic,
         i.Stock_Request_Transaction.uom,
         card(i.Item_Master.id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),
@@ -4015,7 +4146,7 @@ def str_kpr_rpt():
         ('FONTSIZE',(0,3),(3,-1),9)
         ]))
     
-    trn_tbl = Table(stk_trn, colWidths = [20,55,140,30,30,30,70,120,70])
+    trn_tbl = Table(stk_trn, colWidths = [20,55,140,30,30,40,60,150,50])
     trn_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
@@ -4023,12 +4154,13 @@ def str_kpr_rpt():
         ('ALIGN',(6,0),(6,-1),'RIGHT'),
         ('ALIGN',(7,1),(7,-1),'RIGHT'),
         ('ALIGN',(8,0),(8,-1),'RIGHT'),
+        ('VALIGN',(0,1),(-1,-1),'TOP'),
         ('FONTSIZE',(0,0),(-1,-1),8)]))
     row.append(stk_tbl)
     row.append(Spacer(1,.10*cm))
     row.append(trn_tbl)
 
-    wrds_trnls = [[string.capwords(num2words(_grand_total,   lang='en')) + ' QR']]
+    wrds_trnls = [['QR ' + string.capwords(num2words(_grand_total,   lang='en')) ]]
     wrds_tbld = Table(wrds_trnls, colWidths='*')
     wrds_tbld.setStyle(TableStyle([
         ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
@@ -4045,30 +4177,6 @@ def str_kpr_rpt():
     response.headers['Content-Type']='application/pdf'
     
     return pdf_data   
-
-    # _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
-    
-    # _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
-    
-    # _outer = int(_stk_file.probational_balance) / int(_itm_code.uom_value)        
-    # _pcs = int(_stk_file.probational_balance) - int(_outer * _itm_code.uom_value)    
-    # _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
-
-
-    # _outer_transit = int(_stk_file.stock_in_transit) / int(_itm_code.uom_value)   
-    # _pcs_transit = int(_stk_file.stock_in_transit) - int(_outer * _itm_code.uom_value)
-    # _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_itm_code.uom_value)
-
-    # _outer_on_hand = int(_stk_file.closing_stock) / int(_itm_code.uom_value)
-    # _pcs_on_hand = int(_stk_file.closing_stock) / int(_outer_on_hand * _itm_code.uom_value) 
-    # _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_itm_code.uom_value)
-
-    # if request.vars.item_code_id:
-    #     return XML("<b>ITEM CODE:</b> " + _item_code.item_code + ' - ' + str(_item_code.item_description.upper())+ ' - ' + 
-    # str(_item_code.group_line_id.group_line_name) + ' ' + 
-    # str(_item_code.brand_line_code_id.brand_line_name) + ' - <B>UOM:</B> ' + 
-    # str(_item_code.uom_value) + ' - <B>Retail Price: QR </B>' + 
-    # str(_item_price.retail_price) + ' -  <B>On-Hand: </B>'+ _on_hand + ' -  <B>On-Transit: </B>' + _on_transit +' -  <B>On-Balance: </B> ' + _on_hand )
 
 def master_item_view():
     form = SQLFORM.factory(
@@ -4211,99 +4319,75 @@ def stock_card_movement():
     else:
         return dict(form = form, table = 'table', i_table = 'i_table')
 
-def group():
-    
-    _query = db(db.Item_Master.supplier_code_id == int(7)).select()
-    for p in _query:        
-        for s in db(db.Item_Master.subproduct_code_id == p.subproduct_code_id).select():
-            print p.product_code_id.product_name, s.subproduct_code_id.subproduct_name
-
-    return locals()
-def price_list_support_option_print():
+def price_list_report_print():
     ctr = 0
-    _rep = [['#','Product','Subproduct','Group Line','Brand Line','Brand Classification','Item Code','Supplier Ref.','UOM','Whole Price','Retail Price']]
-    for n in db(db.Item_Master.supplier_code_id == request.args(0)).select(db.Item_Master.ALL, db.Item_Prices.ALL, left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):
+    _rep = [['#','Item Code','Supplier Ref.', 'Product','Subproduct','Group Line','Brand Line','Brand Classification','Description','UOM','Unit','Whole Price','Retail Price']]
+    for n in db(db.Item_Master.supplier_code_id == request.args(0)).select(db.Item_Master.ALL, db.Item_Prices.ALL, orderby = db.Item_Master.product_code_id | db.Item_Master.subproduct_code_id | db.Item_Master.group_line_id | db.Item_Master.brand_line_code_id | db.Item_Master.brand_cls_code_id ,  left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):
         ctr += 1
         _rep.append([ctr,
-        n.Item_Master.product_code_id.product_name,
+        n.Item_Master.item_code,
+        n.Item_Master.supplier_item_ref,
+        n.Item_Master.product_code_id.product_name,    
         n.Item_Master.subproduct_code_id.subproduct_name,
         n.Item_Master.group_line_id.group_line_name,
         n.Item_Master.brand_line_code_id.brand_line_name,
-        n.Item_Master.brand_cls_code_id.brand_cls_name,
-        n.Item_Master.item_code,
-        n.Item_Master.supplier_item_ref,
+        Paragraph(n.Item_Master.brand_cls_code_id.brand_cls_name, style = _style),            
+        Paragraph(n.Item_Master.item_description, style = _style),            
         n.Item_Master.uom_value,
-        n.Item_Prices.wholesale_price,
-        n.Item_Prices.retail_price])
-    _rep_tbl = Table(_rep, colWidths=['*'], rowHeights=20)
+        n.Item_Master.uom_id.mnemonic,
+        locale.format('%.2F',n.Item_Prices.wholesale_price or 0, grouping = True),
+        locale.format('%.2F',n.Item_Prices.retail_price or 0, grouping = True)])
+    _rep_tbl = Table(_rep, colWidths=[20,55,80,90,65,65,65,110,110,30,30,50,50], rowHeights=20)
+    # _rep_tbl = Table(_rep, colWidths=(50*mm, 50*mm), rowHeights=(10*mm, 250*mm))
     _rep_tbl.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 1)),
+        ('BACKGROUND',(0,0),(-1,0),colors.Color(0, 0, 0, 0.2)),
+        ('FONTSIZE',(0,0),(-1,0),8),
+        ('FONTSIZE',(0,1),(-1,-1),7),
+        ('ALIGN', (9,1), (12,-1), 'RIGHT'),
     ]))
     row.append(_rep_tbl)
-    doc.build(row, onFirstPage=_transfer_header_footer, onLaterPages=_transfer_header_footer)    
+    doc.pagesize = landscape(A4)
+    doc.build(row, onFirstPage=_landscape_header, onLaterPages= _landscape_header)    
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 
-def price_list_support_option():
+def price_list_report_option():
     row = []    
     _query = db(db.Item_Master.supplier_code_id == request.vars.supplier_code_id).select()    
     if _query:
-        thead = THEAD(TR(TH('#'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Item Code'),TH('Supplier Ref.'),TH('UOM'),TH('Whole Price'),TH('Retail Price')))
+        thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('UOM'),TH('Type'),TH('Whole Price'),TH('Retail Price')))
         ctr = 0
-        for n in db().select(db.Item_Master.ALL, db.Item_Prices.ALL, left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):
+        for n in db(db.Item_Master.supplier_code_id == request.vars.supplier_code_id).select(db.Item_Master.ALL, db.Item_Prices.ALL, 
+        orderby = db.Item_Master.product_code_id | db.Item_Master.subproduct_code_id | db.Item_Master.group_line_id | db.Item_Master.brand_line_code_id | db.Item_Master.brand_cls_code_id ,  left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):
             ctr += 1
             row.append(TR(
                 TD(ctr),
-                TD(n.Item_Master.product_code_id.product_name),
+                TD(n.Item_Master.item_code),
+                TD(n.Item_Master.supplier_item_ref),
+                TD(n.Item_Master.product_code_id.product_name),                
                 TD(n.Item_Master.subproduct_code_id.subproduct_name),
                 TD(n.Item_Master.group_line_id.group_line_name),
                 TD(n.Item_Master.brand_line_code_id.brand_line_name),
-                TD(n.Item_Master.brand_cls_code_id.brand_cls_name),                
-                TD(n.Item_Master.item_code),TD(n.Item_Master.supplier_item_ref),TD(n.Item_Master.uom_value),TD(n.Item_Prices.wholesale_price),TD(n.Item_Prices.retail_price)))
+                TD(n.Item_Master.brand_cls_code_id.brand_cls_name),                                
+                TD(n.Item_Master.uom_value),
+                TD(n.Item_Master.uom_id.mnemonic),
+                TD(n.Item_Prices.wholesale_price),
+                TD(n.Item_Prices.retail_price)))
         tbody = TBODY(*row)
         table = TABLE(*[thead, tbody], _class = 'table')
         return table
     else:
         return CENTER(DIV(B('INFO! '),'No item record yet.',_class='alert alert-info',_role='alert'))
 
-def _price_list_support_option():
-    row = []    
-    _query = db(db.Item_Master.supplier_code_id == request.vars.supplier_code_id).select()    
-    if _query:
-        thead = THEAD(TR(TH('#'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Item Code'),TH('Supplier Ref.'),TH('UOM'),TH('Whole Price'),TH('Retail Price')))
-        ctr = 0
-        for n in db().select(db.Item_Master.product_code_id, orderby = db.Item_Master.product_code_id, groupby = db.Item_Master.product_code_id):
-            ctr += 1
-            row.append(TR(TD(ctr),TD(n.product_code_id.product_name),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD()))
-
-            for n in db(db.Item_Master.product_code_id == n.product_code_id).select(db.Item_Master.subproduct_code_id, orderby = db.Item_Master.subproduct_code_id, groupby = db.Item_Master.subproduct_code_id):
-                row.append(TR(TD(),TD(),TD(n.subproduct_code_id.subproduct_name),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD()))
-
-                for n in db(db.Item_Master.subproduct_code_id == n.subproduct_code_id).select(db.Item_Master.group_line_id, orderby = db.Item_Master.group_line_id, groupby = db.Item_Master.group_line_id):
-                    row.append(TR(TD(),TD(),TD(),TD(n.group_line_id.group_line_name),TD(),TD(),TD(),TD(),TD(),TD(),TD()))                    
-
-                    for n in db(db.Item_Master.group_line_id == n.group_line_id).select(db.Item_Master.brand_line_code_id, orderby = db.Item_Master.brand_line_code_id, groupby = db.Item_Master.brand_line_code_id):
-                        row.append(TR(TD(),TD(),TD(),TD(),TD(n.brand_line_code_id.brand_line_name),TD(),TD(),TD(),TD(),TD(),TD()))
-
-                        for n in db(db.Item_Master.brand_line_code_id == n.brand_line_code_id).select(db.Item_Master.brand_cls_code_id, orderby = db.Item_Master.brand_cls_code_id, groupby = db.Item_Master.brand_cls_code_id):
-                            row.append(TR(TD(),TD(),TD(),TD(),TD(),TD(n.brand_cls_code_id.brand_cls_name),TD(),TD(),TD(),TD(),TD()))
-
-                            for n in db(db.Item_Master.brand_cls_code_id == n.brand_cls_code_id).select(db.Item_Master.ALL, db.Item_Prices.ALL, left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):                                
-                                row.append(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(n.Item_Master.item_code),TD(n.Item_Master.supplier_item_ref),TD(n.Item_Master.uom_value),TD(n.Item_Prices.wholesale_price),TD(n.Item_Prices.retail_price)))
-        tbody = TBODY(*row)
-        table = TABLE(*[thead, tbody], _class = 'table')
-        return table
-    else:
-        return CENTER(DIV(B('INFO! '),'No item record yet.',_class='alert alert-info',_role='alert'))
-
-
-def price_list_support():
+def price_list_report():
     form = SQLFORM.factory(
         Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')))
     if form.process().accepted:
         response.flash = 'SUCCESS'
+        redirect(URL('price_list_report_print', args = form.vars.supplier_code_id))
     elif form.errors:
         response.flash = 'ERROR'
     return dict(form = form)

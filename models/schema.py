@@ -85,7 +85,8 @@ db.define_table('Transaction_Prefix',
     Field('prefix', length = 10, requires = [IS_UPPER(), IS_NOT_EMPTY()]), 
     Field('prefix_name','string', length = 30, requires = [IS_UPPER(), IS_NOT_EMPTY()]),    
     Field('current_year_serial_key', 'integer'),
-    Field('previous_year_serial_key', 'integer'),
+    Field('previous_year_serial_key', 'integer', writable = False),
+    Field('prefix_key','string', length = 10, requires = [IS_UPPER(), IS_NOT_EMPTY()]), 
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -291,6 +292,15 @@ db.define_table('Brand_Line',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = '%(brand_line_code)s')
 
+db.define_table('Brand_Line_Department',
+    Field('brand_line_code_id','reference Brand_Line', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Brand_Line.id, '%(brand_line_code)s - %(brand_line_name)s', zero= 'Choose Brand Line')),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
+    Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = '%(brand_line_code)s')
+
 db.define_table('Sub_Group_Line',
     Field('group_line_code_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id,'%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line Code')),
     Field('supplier_code_id', 'reference Supplier_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero =  'Choose Supplier')),
@@ -314,6 +324,15 @@ db.define_table('Brand_Classification',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = '%(brand_cls_code)s')
+
+db.define_table('Brand_Classificatin_Department',
+    Field('brand_cls_code_id','reference Brand_Classification',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Brand_Classification.id,'%(brand_cls_code)s - %(brand_cls_name)s', zero = 'Choose Brand Classification')),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
+    Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = '%(brand_line_code)s')
 
 db.define_table('Fragrance_Type',        
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
@@ -472,9 +491,9 @@ db.define_table('Item_Master',
     Field('supplier_uom_id', 'reference UOM', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose UOM Pack Size')),
     Field('weight_value', 'integer'),
     Field('weight_id', 'reference Weight', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Weight.id, '%(mnemonic)s', zero = 'Choose Weight')),
-    Field('type_id', 'reference Item_Type',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Item_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), # saleable/non-saleable => item_type_id
-    Field('selective_tax','string', length = 25),
-    Field('vat_percentage','string', length = 25),    
+    Field('type_id', 'reference Item_Type',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Item_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), # saleable/non-saleable => item_type_id    
+    Field('selectivetax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
+    Field('vatpercentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),    
     Field('division_id', 'reference Division', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
@@ -689,6 +708,7 @@ db.define_table('Stock_File',
     Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s', zero = 'Choose Location Code')),    
     Field('opening_stock', 'integer', default = 0),
     Field('closing_stock', 'integer', default = 0),
+    Field('previous_year_closing_stock', 'integer', default = 0),
     Field('stock_in_transit', 'integer', default = 0),
     Field('free_stock_qty', 'integer', default = 0),
     Field('reorder_qty', 'integer', default = 0), 
@@ -771,3 +791,179 @@ db.define_table('Batch_Order_Transaction',
     Field('date_ordered','date'))
 
 
+#---------- S   A   L   E   S   S c h e m a ----------
+
+db.define_table('Customer',
+    Field('customer_account_no','string',length = 15),
+    Field('customer_name','string', length = 50),
+    Field('customer_type'), # hypermarket, restaurant
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'customer_account_no')
+    
+db.define_table('Sales_Man',
+    Field('employee_id','string', length = 10),
+    Field('name','string', length = 25),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'employee_id')
+
+db.define_table('Sales_Order',       
+    Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('sales_order_no', 'integer', default = 0, writable = False),
+    Field('sales_order_date', 'date', default = request.now),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+    Field('stock_source_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+    Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+    Field('customer_order_reference','string', length = 25),
+    Field('delivery_due_date', 'date', default = request.now),
+    Field('total_amount','decimal(10,2)', default = 0),    
+    Field('sales_order_date_approved','date', writable = False),
+    Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
+    Field('remarks', 'string'),
+    Field('sales_invoice_no', 'integer', writable = False),    
+    Field('delivery_note_no', 'integer', writable = False),
+    Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'sales_order_no')
+ 
+
+db.define_table('Sales_Order_Transaction',
+    Field('sales_order_no_id','reference Stock_Adjustment',ondelete = 'NO ACTION',writable = False, requires = IS_IN_DB(db, db.Stock_Adjustment.id, '%(stock_adjustment_no)s', zero = 'Choose Adjustment No')),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(10,6)', default = 0),
+    Field('average_cost','decimal(10,4)', default = 0),
+    Field('sale_cost', 'decimal(10,2)', default = 0),
+    Field('wholesale_price', 'decimal(10,2)', default = 0),
+    Field('retail_price', 'decimal(10,2)',default = 0),
+    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('discount_percentage', 'decimal(10,2)',default =0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
+    Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),            
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Sales_Order_Transaction_Temporary',
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', writable = False),        
+    Field('item_code', 'string', length = 25),        
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default = 0),
+    Field('discount_percentage', 'decimal(10,2)',default =0),
+    Field('taxable_value','decimal(10,2)', default = 0),
+    Field('tax_percentage','decimal(10,2)', default = 0),
+    Field('tax_amount','decimal(10,2)', default = 0),
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('stock_source_id','reference Location', ondelete = 'NO ACTION'),
+    Field('remarks','string'),
+    Field('ticket_no_id', 'string', length = 10),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
+
+db.define_table('Delivery_Note',       
+    Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('delivery_note_no', 'integer', default = 0, writable = False),
+    Field('delivery_note_date', 'date', default = request.now),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+    Field('stock_source_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+    Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+    Field('customer_order_reference','string', length = 25),
+    Field('delivery_due_date', 'date', default = request.now),
+    # Field('total_amount','decimal(10,2)', default = 0),    
+    Field('remarks', 'string'),
+    Field('sales_invoice_no', 'integer', writable = False),    
+    Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION'),
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'delivery_note_no')
+ 
+db.define_table('Delivery_Note_Transaction',
+    Field('delivery_note_id'),    
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Sales_Invoice',       
+    Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('sales_invoice_no', 'integer', default = 0, writable = False),
+    Field('sales_invoice_date', 'date', default = request.now),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+    Field('stock_source_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+    Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+    Field('customer_order_reference','string', length = 25),
+    Field('delivery_due_date', 'date', default = request.now),
+    Field('total_amount','decimal(10,2)', default = 0),    
+    Field('sales_order_date_approved','date'),
+    Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
+    Field('remarks', 'string'),
+    Field('sales_order_no', 'integer',  writable = False),    
+    Field('delivery_note_id','integer', writable = False),
+    Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION'),
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'sales_invoice_no')
+ 
+db.define_table('Sales_Invoice_Transaction',
+    Field('sales_invoice_no_id','reference Sales_Invoice',ondelete = 'NO ACTION',writable = False),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(10,6)', default = 0),
+    Field('average_cost','decimal(10,4)', default = 0),
+    Field('sale_cost', 'decimal(10,2)', default = 0),
+    Field('wholesale_price', 'decimal(10,2)', default = 0),
+    Field('retail_price', 'decimal(10,2)',default = 0),
+    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('discount_percentage', 'decimal(10,2)',default =0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
+    Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+from num2words import num2words
+
+def amt2words(amount, currency='riyals', change='dirhams', precision=2):
+    change_amt = (amount - int(amount))*pow(10, precision)
+    words = '{main_amt} {main_word}'.format(
+        main_amt=num2words(int(amount)),
+        main_word=currency,
+    )
+    if change_amt > 0:
+        words += ' and {change_amt} {change_word}'.format(
+        change_amt=num2words(change_amt),
+        change_word=change,
+    )
+    return words
+
+# i.number_to_words(49)
+
+# from num2words import num2words
+
+# test = 23.25
+
+# intpart,decimalpart = int(test), test-int(test) 
+# print(num2words(intpart).replace('-', ' ') + ' and ' + str( int(decimalpart * (10 ** (len(str(decimalpart)) - 2)))) +  ' cent')

@@ -1,0 +1,234 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_browse')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">SALES ORDER FORM</span>
+        </div>
+        <div class="card-body tab-content">            
+                        
+            <!-- <el-form ref="form" :model="form" label-width="120px"> -->
+            <div class="form-horizontal">   
+                {{=form.custom.begin}}	                    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sales Order No</label>
+                            <div class="col-sm-8">                                
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <div id="_sales_order_no"></div>
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sales Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
+                                <p class="help-block">readonly</p>                            
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Delivery Due Date</label>
+                            <div class="col-sm-8">{{=form.custom.widget.sales_order_date}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">
+                                    {{=form.custom.widget.dept_code_id}}
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location Source</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.stock_source_id}}   
+                            </div>
+                        </div>                                           
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sales Man</label>
+                            <div class="col-sm-8">{{=form.custom.widget.sales_man_id}}</div>
+
+                        </div>
+                    </div>
+    
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Customer</label>
+                            <div class="col-sm-8">{{=form.custom.widget.customer_code_id}}</div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+
+                            <label class="col-sm-4 control-label">Order Reference</label>
+                            <div class="col-sm-8">{{=form.custom.widget.customer_order_reference}}</div>
+
+                        </div>                 
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Address</label>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                        </div>                                               
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">
+                                {{=form.custom.submit}}{{=form.custom.end}}
+                                <input class="btn btn-success" type="button" value="proceed" id="btnorder">
+                                <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">
+                                
+                            </div>        
+                        </div>                        
+                    </div>
+                </div>
+
+                <hr>
+                <div id = "_item_code_description"></div>      
+                <div class="row">
+                    <div id = "order_panel">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Item No</label>
+                                <div class="col-sm-8">                                
+                                    <input type="text" class="form-control" id="item_code" name = "item_code">
+                                </div>                           
+                            </div>                        
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Quantity</label>
+                                <div class="col-sm-6"> 
+                                    <input type="text" class="form-control" id="quantity" name = "quantity" value = "0">
+                                </div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Pieces</label>
+                                <div class="col-sm-6">                                
+                                    <input type="text" class="form-control" id="pieces" name = "pieces" value = "0">
+                                </div>                           
+                            </div>    
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Discount %</label>
+                                <div class="col-sm-6">                                
+                                    <input type="text" class="form-control" id="discount" name = "discount" value = "0">
+                                </div>                           
+                            </div>                                     
+                        </div>                    
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Category</label>
+                                <div class="col-sm-8"> 
+                                    <!-- <input type="text" class="form-control" id="category_id" name = "category_id"> -->
+                                    <select class="generic-widget form-control" id="no_table_category_id" name="category_id"><option value="">Choose Category</option><option value="1">D - DAMAGE</option><option selected="selected" value="4">N - NORMAL</option><option value="3">P - FOC</option></select>
+                                </div>
+                            </div>                    
+                        </div>
+                        <div class="col-md-1">                        
+                            <input class="btn btn-primary" type="button" value="add" onclick="insert();">
+                            
+                        </div>                        
+                    </div>                    
+                </div>
+                
+                <div id = "_item_code_inserted"></div>
+                
+            </div>  
+        
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){    
+    $('#order_panel').hide();
+    $('#Sales_Order_dept_code_id').change(function(){
+        ajax('{{=URL('generate_sales_order_no')}}', ['dept_code_id'], '_sales_order_no');        
+        return false;
+    });
+
+    $('#item_code').change(function(){
+        $("#Sales_Order_dept_code_id").removeAttr('disabled');
+        $("#Sales_Order_stock_source_id").removeAttr('disabled');
+        ajax('{{=URL('item_code_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');        
+        $("#Sales_Order_dept_code_id").attr('disabled','disabled');
+        $("#Sales_Order_stock_source_id").attr('disabled','disabled');
+        return false;
+    });
+    $('#btnorder').click(function(){        
+        $('#order_panel').slideDown('slow');
+        $("#item_code").focus();
+        $("#Sales_Order_dept_code_id").attr('disabled','disabled');
+        $("#Sales_Order_stock_source_id").attr('disabled','disabled');
+        $("#Sales_Order_customer_code_id").attr('disabled','disabled');
+        $("#Sales_Order_sales_order_date").attr('disabled','disabled');
+        $("#Sales_Order_customer_order_reference").attr('disabled','disabled');
+        $("#Sales_Order_sales_man_id").attr('disabled','disabled');
+        $("#Sales_Order_status_id").attr('disabled','disabled');
+        $("#Sales_Order_remarks").attr('disabled','disabled');
+        // $("#Sales_Order_dept_code_id").removeAttr('disabled');
+        return false;
+    });
+});
+</script>
+<script>
+    function insert() {
+        $("#Sales_Order_stock_source_id").removeAttr('disabled');
+        ajax('{{=URL('sales_order_transaction_temporary')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id','stock_source_id'], '_item_code_inserted');
+        $("#Sales_Order_stock_source_id").attr('disabled','disabled');
+        document.getElementById('item_code').value = ''
+        document.getElementById('quantity').value = '0'
+        document.getElementById('pieces').value = '0'
+        document.getElementById('discount').value = '0'
+        $("#item_code").focus();
+        return false;
+    }
+    function btnorder() {
+        console.log('order click');
+        return false;
+    }
+
+</script>
+<script>
+    $(document).ready(function(){
+    $("#flip").click(function(){
+        $("#panel").slideDown("slow");
+    });
+    });
+</script>
