@@ -956,6 +956,7 @@ def brndlne_add_form():
 @auth.requires_login()
 def brndlne_edit_form():
     db.Brand_Line_Department.brand_line_code_id.writable = False
+    db.Brand_Line.dept_code_id.writable = False
     ctr_val = db(db.Brand_Line.id == request.args(0)).select().first()
     form = SQLFORM(db.Brand_Line, request.args(0), deletable = True)
     if form.process().accepted:
@@ -975,14 +976,22 @@ def brndlne_edit_form():
     for n in db(db.Brand_Line_Department.brand_line_code_id == request.args(0)).select():
         ctr += 1
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('brand_line_department_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-
-        row.append(TR(TD(ctr),TD(n.brand_line_code_id.brand_line_name),TD(n.dept_code_id.dept_name),TD(n.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.brand_line_code_id.brand_line_name),TD(n.dept_code_id.dept_code + ' - ' + n.dept_code_id.dept_name),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class= 'table')        
     return dict(form = form, ctr_val = ctr_val, dform = dform, table = table)
+
+def brand_line_department_edit_form():
+    form = SQLFORM(db.Brand_Line_Department, request.args(0))
+    if form.process().accepted:
+        session.flash = 'RECORD UPDATED'
+        redirect(URL('brndlne_mas'))
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    return dict(form = form)
 
 def validate_brand_line_department(form):
     form.vars.brand_line_code_id = request.args(0)
@@ -1057,6 +1066,7 @@ def brndclss_add_form():
 def brndclss_edit_form():
     db.Brand_Classification.group_line_id.writable = False
     db.Brand_Classificatin_Department.brand_cls_code_id.writable = False
+    # db.Brand_Classification.dept_code_id.writable = False
     ctr_val = db(db.Brand_Classification.id == request.args(0)).select().first()
     form = SQLFORM(db.Brand_Classification, request.args(0), deletable = True)
     if form.process().accepted:
@@ -1076,7 +1086,7 @@ def brndclss_edit_form():
     for n in db(db.Brand_Classificatin_Department.brand_cls_code_id == request.args(0)).select():
         ctr += 1
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('brand_classification_department_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
 
@@ -1088,6 +1098,14 @@ def brndclss_edit_form():
 def validate_brand_classification_department(form):
     form.vars.brand_cls_code_id = request.args(0)
 
+def brand_classification_department_edit_form():
+    form = SQLFORM(db.Brand_Classificatin_Department, request.args(0))
+    if form.process().accepted:
+        session.flash = 'RECORD UPDATED'
+        redirect(URL('brndclss_mas'))
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    return dict(form = form)
 # ---- Item Color Master  -----
 @auth.requires_login()
 def itmcol_mas():
@@ -2744,7 +2762,7 @@ def itm_view():
     grand_total = 0
     form = SQLFORM(db.Stock_Transaction_Temp)
     if form.accepts(request, formname=None, onvalidation = validate_item_code):    
-        response.flash = 'Item Code inserted'
+        
         # uom = db(db.Item_Master.item_code == request.vars.item_code).select().first()
         
         # rpv = db(db.Item_Prices.item_code_id == uom.id).select(db.Item_Prices.retail_price).first()
@@ -2845,18 +2863,19 @@ def id_generator():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 from datetime import date
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stock_request_dept_code_id():   
     return SELECT(_class='form-control', _id='stk_item_code_id', _name="stk_item_code_id", *[OPTION(r.item_code, _value = r.id) for r in db(db.Item_Master.dept_code_id == request.vars.dept_code_id).select(orderby=db.Item_Master.item_code)])
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stock_request_no_prefix():   
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix == 'SRN')).select().first()    
     _serial = _trans_prfx.current_year_serial_key + 1
     _stk_req_no = str(_trans_prfx.prefix) + str(_serial)
     return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _value=_stk_req_no, _disabled = True))
     
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_add_form():          
     ctr = db(db.Transaction_Prefix.prefix_key == 'SRN').select().first()
     _skey = ctr.current_year_serial_key 
@@ -2936,7 +2955,8 @@ def stk_req_add_form():
     return dict(form = form,  form2 = form2, ticket_no_id = _ticket_no)
 
 # STOCK REQUEST FORM #
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_details_form():
     
     db.Stock_Request.stock_request_date.writable = False    
@@ -2988,19 +3008,19 @@ def stk_req_details_form():
     table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
     return dict(form = form, table = table, _id = _id)
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_details_add_form():   
     _stk_req_no = db(db.Stock_Request.id == request.args(0)).select().first()
     # _stk_trn_no = db(db.Stock_Request_Transaction.stock_request_id == _stk_req_no.id).select().first()
 
     return dict(_stk_req_no = _stk_req_no, _stk_trn_no = '_stk_trn_no')
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_form():   
     
     return dict()
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_del():
     itm = db(db.Stock_Request_Transaction.id == request.args(0)).select().first()
     itm.update_record(delete = True)
@@ -3027,11 +3047,11 @@ def stk_req__trans_edit_form():
 
 # STORE KEEPER
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def str_kpr_grid():    
     return dict()
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def str_kpr_grid_details():
     db.Stock_Request.stock_request_date.writable = False    
     db.Stock_Request.stock_due_date.writable = False        
@@ -3078,7 +3098,7 @@ def str_kpr_grid_gen_stk_trn_():
     print 'redirect to '
     redirect(URL('inventory', 'str_kpr_grid'))  
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def str_kpr_grid_gen_stk_trn():    
 
     _stk_req = db(db.Stock_Request.id == request.vars._id).select().first()
@@ -3894,6 +3914,10 @@ from num2words import num2words
 import time
 from datetime import date
 from time import gmtime, strftime
+
+
+today = datetime.datetime.now()
+
 MaxWidth_Content = 530
 styles = getSampleStyleSheet()
 styleN = styles["BodyText"]
@@ -3906,7 +3930,7 @@ _style = ParagraphStyle(
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.8*inch, leftMargin=10, rightMargin=10)#, showBoundary=1)
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.8*inch, leftMargin=20, rightMargin=20)#, showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
@@ -3919,7 +3943,7 @@ _limage.drawWidth = 2.25 * inch
 _limage.hAlign = 'CENTER'
 
 
-merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="gray">|</font></font> <font size=7 color="gray"> Merch ERP</font>''',styles["BodyText"])
+merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
 
 def _landscape_header(canvas, doc):
     canvas.saveState()
@@ -3957,6 +3981,7 @@ def _transfer_header_footer(canvas, doc):
         [str(_trn.stock_transfer_approved_by.first_name + ' ' + _trn.stock_transfer_approved_by.last_name),'',''],
         ['Issued by','Receive by', 'Delivered by'],
         ['','','Printed by: ' + str(auth.user.first_name.upper()) + ' ' + str(auth.user.last_name.upper()) + ' ' + str(strftime("%X"))],
+        ['','- - WAREHOUSE COPY - -',''],
         [merch,'',''],['','',today.strftime("%A %d. %B %Y")]], colWidths=[None])
     footer.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
@@ -3964,11 +3989,54 @@ def _transfer_header_footer(canvas, doc):
         # ('TEXTCOLOR',(0,4),(1,4), colors.black),
         ('ALIGN',(0,0),(2,1),'CENTER'),
         ('FONTSIZE',(0,0),(2,1),8),
-        ('FONTSIZE',(0,4),(2,4),8),
+        ('FONTSIZE',(0,5),(2,5),8),
         ('FONTSIZE',(0,2),(2,2),7),
-        ('ALIGN',(0,2),(2,2),'RIGHT'),
-        ('ALIGN',(0,4),(2,4),'RIGHT'),
-        ('LINEABOVE',(0,4),(2,4),1, colors.Color(0, 0, 0, 0.55))
+        ('ALIGN',(0,3),(1,3),'CENTER'),
+        ('FONTSIZE',(0,3),(1,3),8),
+        ('ALIGN',(0,2),(2,2),'RIGHT'),        
+        ('ALIGN',(0,5),(2,5),'RIGHT'),
+        ('LINEABOVE',(0,5),(2,5),1, colors.Color(0, 0, 0, 0.55))
+        ]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
+
+    # Release the canvas
+    canvas.restoreState()
+
+def _header_footer_stock_receipt(canvas, doc):
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+
+    # Header 'Stock Request Report'
+    header = Table([[img]], colWidths='*')
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(0,0),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        # ('LINEBELOW',(0,0),(0, 0),0.10, colors.gray),
+        # ('BOTTOMPADDING',(0,0),(0, 1),10)
+        # ('TOPPADDING',(0,2),(1,2),6)
+        ]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .7 * inch)
+
+
+    # Footer
+    today = date.today()
+    _stk_req = db(db.Stock_Request.id == request.args(0)).select().first()
+    footer = Table([
+        [str(_stk_req.stock_receipt_approved_by.first_name + ' ' + _stk_req.stock_receipt_approved_by.last_name),''],
+        ['Received by:','Delivered by:'],
+        ['',''],
+        [merch,''],['',today.strftime("%A %d. %B %Y")]], colWidths=[None])
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('TEXTCOLOR',(0,0),(0,0), colors.gray),
+
+        ('FONTSIZE',(0,0),(-1,1),8),
+        ('FONTSIZE',(0,4),(1,4),8),
+        ('ALIGN',(0,0),(-1,1),'CENTER'),
+        ('ALIGN',(0,4),(1,4),'RIGHT'),
+        ('LINEABOVE',(0,4),(1,4),0.25, colors.black)
         ]))
     footer.wrap(doc.width, doc.bottomMargin)
     footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
@@ -3994,14 +4062,22 @@ def _header_footer(canvas, doc):
 
 
     # Footer
-    today = date.today()
-    footer = Table([[merch],[today.strftime("%A %d. %B %Y")]], colWidths=[None])
+    
+    _stk_req = db(db.Stock_Request.id == request.args(0)).select().first()
+    footer = Table([
+        [str(_stk_req.created_by.first_name + ' ' + _stk_req.created_by.last_name),str(_stk_req.stock_request_approved_by.first_name + ' ' + _stk_req.stock_request_approved_by.last_name)],
+        ['Requested by:','Approved by:'],
+        ['',''],
+        [merch,''],['',today.strftime("%A %d. %B %Y, %I:%M%p ")]], colWidths=[None])
     footer.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('TEXTCOLOR',(0,0),(0,0), colors.gray),
-        ('FONTSIZE',(0,1),(0,1),8),
-        ('ALIGN',(0,1),(0,1),'RIGHT'),
-        ('LINEABOVE',(0,1),(0,1),0.25, colors.gray)
+        # ('TEXTCOLOR',(0,0),(0,0), colors.gray),
+
+        ('FONTSIZE',(0,0),(-1,1),8),
+        ('FONTSIZE',(0,4),(1,4),8),
+        ('ALIGN',(0,0),(-1,1),'CENTER'),
+        ('ALIGN',(0,4),(1,4),'RIGHT'),
+        ('LINEABOVE',(0,4),(1,4),0.25, colors.black)
         ]))
     footer.wrap(doc.width, doc.bottomMargin)
     footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
@@ -4009,6 +4085,24 @@ def _header_footer(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
+def reprint():
+    query = db(db.Stock_Request_Transaction.stock_request_id == 11).select(
+        db.Stock_Request_Transaction.ALL,
+        db.Item_Master.ALL, 
+        db.Stock_Request.ALL,
+        
+    
+    left  = [
+        db.Stock_Request.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id),        
+        db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id)]
+    )
+    for q in query:
+        # for s in db(db.Stock_File.location_code_id == q.Stock_Request.stock_destination_id).select(db.Stock_Request.ALL, db.Stock_File.ALL,
+        # db.Stock_Request_Transaction.ALL):
+        print 'item master stock: ',q.Stock_Request.id,q.Stock_Request_Transaction.item_code_id#, s.Stock_File.closing_stock
+        for f in db(db.Stock_File.item_code_id == q.Stock_Request_Transaction.item_code_id).select():
+            print 'stock location', f.location_code_id
+    return locals()
 import inflect 
 from decimal import Decimal
 w=inflect.engine()
@@ -4101,42 +4195,54 @@ def stock_transaction_report():
     return pdf_data   
 
 def str_kpr_rpt():
-    _id = request.args(0)
+    
     _grand_total = 0
     ctr = 0
     _total = 0
-    for s in db(db.Stock_Request.id == _id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):        
+    for s in db(db.Stock_Request.id == request.args(0)).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):        
         stk_req_no = [
             ['STOCK REQUEST'],   
             [''],            
-            ['STOCK REQUEST NO',':  '+ str(s.Stock_Request.stock_request_no_id.prefix)+str(s.Stock_Request.stock_request_no), 'STOCK REQUEST DATE',':  ' +str(s.Stock_Request.stock_request_date)],
+            ['STOCK REQUEST NO',':  '+ str(s.Stock_Request.stock_request_no_id.prefix)+str(s.Stock_Request.stock_request_no), 'STOCK REQUEST DATE',':  ' +str(s.Stock_Request.stock_request_date.strftime('%d-%m-%Y'))],
             ['Stock Request From', ':  '+ s.Stock_Request.stock_source_id.location_name,'Stock Request To',':  '+ s.Stock_Request.stock_destination_id.location_name],
             ['Department',':  '+ s.Stock_Request.dept_code_id.dept_name,'',''],
             ['Remarks',':  '+ s.Stock_Request.remarks,'','']]
         
     
-    stk_trn = [['#', 'Item Code', 'Item Description','Cat.', 'UOM','Qty.','Unit Price','Remarks','Total']]
-    for i in db(db.Stock_Request_Transaction.stock_request_id == _id).select(db.Stock_Request_Transaction.ALL, db.Item_Master.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
+    stk_trn = [['#', 'ITEM CODE', 'ITEM DESCRIPTION','UNIT','CAT.', 'UOM','QTY.','PRICE','SOH','TOTAL']]
+    for i in db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select(db.Stock_Request_Transaction.ALL, db.Item_Master.ALL, db.Stock_File.ALL, 
+        # join = db.Stock_Request_Transaction.on(db.Stock_Request_Transaction.item_code_id == db.Stock_File.item_code_id),
+        left = [
+
+        db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id)  
+        # db.Stock_File.on(db.Stock_File.item_code_id == db.Stock_Request_Transaction.item_code_id)
+        # db.Stock_Request.on(db.Stock_Request.stock_destination_id == db.Stock_File.location_code_id),
+        
+        
+        ]):
         ctr += 1
         _total = i.Stock_Request_Transaction.quantity * i.Stock_Request_Transaction.price_cost
         _grand_total += _total
+        # _stock_on_hand = card(i.Stock_Request_Transaction.item_code_id, i.Stock_File.closing_stock, i.Stock_Request_Transaction.uom)
         stk_trn.append([ctr,
         i.Stock_Request_Transaction.item_code_id.item_code,        
-        Paragraph(i.Item_Master.item_description.upper(), style = _style),
+        str(i.Item_Master.brand_line_code_id.brand_line_name)+str('\n')+str(i.Item_Master.item_description.upper())+str('\n')+str('Remarks: ')+str(i.Stock_Request_Transaction.remarks),        
+        i.Item_Master.uom_id.mnemonic,
         i.Stock_Request_Transaction.category_id.mnemonic,
         i.Stock_Request_Transaction.uom,
-        card(i.Item_Master.id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),
-        # i.Stock_Request_Transaction.quantity,
-        i.Item_Prices.retail_price,
-        i.Stock_Request_Transaction.remarks,
+        card(i.Stock_Request_Transaction.item_code_id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),        
+        i.Stock_Request_Transaction.retail_price,
+        '_stock_on_hand',
         locale.format('%.2F',_total or 0, grouping = True)])
 
-    stk_trn.append(['', '','', '','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    stk_trn.append(['','', '','', '','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
 
-    stk_tbl = Table(stk_req_no, colWidths=[130, 150,130,170 ], rowHeights=20)
+    stk_tbl = Table(stk_req_no, colWidths=[120, 150,120,150 ], rowHeights=20)
     stk_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (0,2), (-1,2), 1, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (0,2), (-1,2), 1, colors.Color(0, 0, 0, 0.2)),
+        
+        ('BACKGROUND',(0,2),(-1,2),colors.gray),
         ('SPAN',(0,0),(3,0)),
         ('ALIGN', (0,0), (0,0), 'CENTER'),
         ('TOPPADDING',(0,0),(0,0),12),
@@ -4146,31 +4252,128 @@ def str_kpr_rpt():
         ('FONTSIZE',(0,3),(3,-1),9)
         ]))
     
-    trn_tbl = Table(stk_trn, colWidths = [20,55,140,30,30,40,60,150,50])
+    trn_tbl = Table(stk_trn, colWidths = [25,55,170,30,30,30,50,50,50], repeatRows=1)
     trn_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
-        ('ALIGN',(6,0),(6,-1),'RIGHT'),
-        ('ALIGN',(7,1),(7,-1),'RIGHT'),
-        ('ALIGN',(8,0),(8,-1),'RIGHT'),
+        # ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
+        ('LINEABOVE', (0,-1), (-1,-1), .5, colors.black),
+        ('BACKGROUND',(0,0),(-1,0),colors.gray),
+        ('ALIGN',(6,1),(9,-1),'RIGHT'),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        # ('ALIGN',(8,0),(8,-1),'RIGHT'),
         ('VALIGN',(0,1),(-1,-1),'TOP'),
         ('FONTSIZE',(0,0),(-1,-1),8)]))
     row.append(stk_tbl)
     row.append(Spacer(1,.10*cm))
     row.append(trn_tbl)
-
-    wrds_trnls = [['QR ' + string.capwords(num2words(_grand_total,   lang='en')) ]]
+    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    wrds_trnls = [['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
     wrds_tbld = Table(wrds_trnls, colWidths='*')
     wrds_tbld.setStyle(TableStyle([
-        ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
-        ('FONTSIZE',(0,0),(-1,-1),7)
+        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        ('LINEABOVE', (0,0), (-1,0), .5, colors.black),
+        ('LINEBELOW', (0,0), (-1,0), .5, colors.black),
+        ('FONTSIZE',(0,0),(-1,-1),8)
     ]))
     row.append(Spacer(1,.7*cm))
     row.append(wrds_tbld)
 
     doc.build(row, onFirstPage=_header_footer, onLaterPages=_header_footer)
+    
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    
+    return pdf_data   
+
+
+def stock_receipt_report():
+    _id = request.args(0)
+    _grand_total = 0
+    ctr = 0
+    _total = 0
+    for s in db(db.Stock_Request.id == _id).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):        
+        stk_req_no = [
+            ['STOCK RECEIPT'],   
+            [''],            
+            ['STOCK RECEIPT NO',':  '+ str(s.Stock_Request.stock_receipt_no_id.prefix)+str(s.Stock_Request.stock_receipt_no), 'STOCK RECEIPT DATE',':  ' +str(s.Stock_Request.stock_receipt_date_approved)],
+            ['STOCK TRANSFER NO',':  '+ str(s.Stock_Request.stock_transfer_no_id.prefix)+str(s.Stock_Request.stock_transfer_no), 'STOCK TRANSACTION DATE',':  ' +str(s.Stock_Request.stock_transfer_date_approved)],
+            ['STOCK REQUEST NO',':  '+ str(s.Stock_Request.stock_request_no_id.prefix)+str(s.Stock_Request.stock_request_no), 'STOCK REQUEST DATE',':  ' +str(s.Stock_Request.stock_request_date)],
+            ['Stock Request From', ':  '+ s.Stock_Request.stock_source_id.location_name,'Stock Request To',':  '+ s.Stock_Request.stock_destination_id.location_name],
+            ['Department',':  '+ s.Stock_Request.dept_code_id.dept_name,'',''],
+            ['Remarks',':  '+ s.Stock_Request.remarks,'','']]
+        
+    
+    stk_trn = [['#', 'ITEM CODE', 'ITEM DESCRIPTION','UNIT','CAT.', 'UOM','QTY.','PRICE','SOH','TOTAL']]
+    for i in db(db.Stock_Request_Transaction.stock_request_id == _id).select(db.Stock_Request_Transaction.ALL, 
+    db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, db.Stock_Request.ALL,
+    left = [
+        db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id), 
+        db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id),
+        db.Stock_File.on(db.Stock_File.item_code_id == db.Stock_Request_Transaction.item_code_id),
+        db.Stock_Request.on(db.Stock_File.location_code_id == db.Stock_Request.stock_source_id)
+        ]):
+        ctr += 1
+        _total = i.Stock_Request_Transaction.quantity * i.Stock_Request_Transaction.price_cost
+        _grand_total += _total
+        _stock_on_hand = card(i.Item_Master.id, i.Stock_File.closing_stock, i.Stock_Request_Transaction.uom)
+        stk_trn.append([ctr,
+        i.Stock_Request_Transaction.item_code_id.item_code,        
+        str(i.Item_Master.brand_line_code_id.brand_line_name)+str('\n')+str(i.Item_Master.item_description.upper())+str('\n')+str(i.Stock_Request_Transaction.remarks),        
+        i.Item_Master.uom_id.mnemonic,
+        i.Stock_Request_Transaction.category_id.mnemonic,
+        i.Stock_Request_Transaction.uom,
+        card(i.Item_Master.id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),        
+        i.Item_Prices.retail_price,
+        _stock_on_hand,
+        locale.format('%.2F',_total or 0, grouping = True)])
+
+    stk_trn.append(['','', '','', '','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
+
+    stk_tbl = Table(stk_req_no, colWidths=[120, 150,150,120 ], rowHeights=20)
+    stk_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (0,2), (-1,2), 1, colors.Color(0, 0, 0, 0.2)),
+        
+        ('BACKGROUND',(0,2),(-1,2),colors.gray),
+        ('SPAN',(0,0),(3,0)),
+        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        ('TOPPADDING',(0,0),(0,0),12),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTSIZE',(0,2),(-1,2),10),        
+        ('FONTSIZE',(0,3),(3,-1),9)
+        ]))
+    
+    trn_tbl = Table(stk_trn, colWidths = [25,55,170,30,30,30,50,50,50])
+    trn_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEABOVE', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (0,0), (-1,0), 1, colors.Color(0, 0, 0, 0.2)),
+        ('LINEABOVE', (0,-1), (-1,-1), .5, colors.black),
+        ('BACKGROUND',(0,0),(-1,0),colors.gray),
+        ('ALIGN',(6,1),(9,-1),'RIGHT'),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        # ('ALIGN',(8,0),(8,-1),'RIGHT'),
+        ('VALIGN',(0,1),(-1,-1),'TOP'),
+        ('FONTSIZE',(0,0),(-1,-1),8)]))
+    row.append(stk_tbl)
+    row.append(Spacer(1,.10*cm))
+    row.append(trn_tbl)
+    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    wrds_trnls = [['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
+    wrds_tbld = Table(wrds_trnls, colWidths='*')
+    wrds_tbld.setStyle(TableStyle([
+        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        ('LINEABOVE', (0,0), (-1,0), .5, colors.black),
+        ('LINEBELOW', (0,0), (-1,0), .5, colors.black),
+        ('FONTSIZE',(0,0),(-1,-1),8)
+    ]))
+    row.append(Spacer(1,.7*cm))
+    row.append(wrds_tbld)
+
+    doc.build(row, onFirstPage=_header_footer_stock_receipt, onLaterPages=_header_footer_stock_receipt)
     
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
@@ -4391,6 +4594,8 @@ def price_list_report():
     elif form.errors:
         response.flash = 'ERROR'
     return dict(form = form)
+    
+
 
 def test():
     
@@ -4422,22 +4627,3 @@ def test():
     response.headers['Content-Type']='application/pdf'
     return pdf_data 
 
-def test_05_coordinates():
-    from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen.canvas import Canvas
-    from reportlab.lib.units import inch
-    from reportlab.lib.colors import pink, black, red, blue, green
-    c = Canvas('demo.pdf', pagesize=A4)
-    c.translate(inch,inch)
-    c.setStrokeColor(pink)
-    c.grid([1*inch,2*inch,3*inch,4*inch],[0.5*inch, 1*inch, .5*inch, 2*inch, 2.5*inch])
-    c.setFont("Times-Roman", 20)
-    c.drawString(0,0, "(0,0) the Origin")
-    c.drawString(2.5*inch, 1*inch, "(2.5,1) in inches")
-    c.drawString(4*inch, 2.5*inch, "(4,2.5)")
-    c.setFillColor(red)
-    c.rect(0,2*inch,0.2*inch, 0.3*inch, fill=1)
-    c.setFillColor(green)
-    c.circle(4.5*inch, 0.4*inch, 0.2*inch, fill=1)
-    c.showPage()
-    c.save() 

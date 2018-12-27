@@ -7,7 +7,12 @@ sudo dpkg -i /path/to/deb/file followed by sudo apt-get install -f
 sudo apt install ./name.deb
 
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
+* run bin file
+    chmod +x file-name.run
+    ./file-name.runsudo 
+    ./file-name.run
 
+rows=db(WHERE CLAUSE IF YOU HAVE SOME OTHER THAN THE JOIN).select(db.parent.ALL, db.child.ALL, db.grandchild.ALL, join=db.child.on(db.child.parent_id==db.parent.id), left=db.grandchild.on(db.child.id==db.grandchild.child_id))
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
 # Create a database named 'person' with 'last_name' and 'first_name' fields.
 # web2py also creates a field named 'id' automatically.

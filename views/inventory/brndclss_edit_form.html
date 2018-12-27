@@ -6,7 +6,7 @@
                     <li class="active"><a href="#tab1">EDIT</a></li>                          
                     <li><a href="#" onclick=window.location="{{=URL('brndclss_mas')}}";>BROWSE</a></li>
                 </ul>                
-                <span class="card-title">Brand Classification</span>
+                <span class="card-title">BRAND CLASSIFICATION</span>
             </div>
             <div class="card-body tab-content">
                 {{=form.custom.begin}} 
@@ -26,7 +26,8 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Department</label>
                         <div class="col-sm-8">
-                            {{=form.custom.widget.dept_code_id}}
+                            <input type="text" class="form-control" value="{{=ctr_val.dept_code_id}}" readonly>                            
+                            
                         </div>
                     </div>
     
@@ -49,6 +50,8 @@
                 
                 {{=form.custom.end}}  
                 <hr>
+                <span class="card-title">ASSOCIATED DEPARTMENT</span>
+                <br/><br/>
                 {{=bform.custom.begin}}
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Department</label>

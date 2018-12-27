@@ -87,11 +87,16 @@ def sales_order_transaction_temporary():
 
 
 def validate_sales_order_transaction(form):    
+    
     _id = db(db.Item_Master.item_code == request.vars.item_code).select().first()
     _sfile = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()    
     _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()        
-    if not _id:
-        form.errors._id = CENTER(DIV(B('WARNING! '),'Item code does not exist',_class='alert alert-warning',_role='alert'))
+    if _id:
+
+        print 'here'    
+    if _id.item_code == False:
+        print 'not here'
+        form.errors._id.item_code = CENTER(DIV(B('WARNING! '),'Item code does not exist',_class='alert alert-warning',_role='alert'))
     
     if not _sfile:
         form.errors._stk_file =  CENTER(DIV(B('WARNING! '),'Item code does not exist in stock file',_class='alert alert-warning',_role='alert'))

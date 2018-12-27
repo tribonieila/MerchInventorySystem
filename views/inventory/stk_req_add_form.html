@@ -103,18 +103,19 @@
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
                                     {{=form.custom.submit}}{{=form.custom.end}}
-                                    <!-- <input class="btn btn-danger" type="button" value="cancel"> -->                                
+                                    <input class="btn btn-success" type="button" value="proceed" id="btnrequest">
+                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">
+                                   
                                 </div>                            
                             </div>                    
                         </div>
                     </div>  
                     
                 </div>  
+                <div id = "request_panel">
                     <hr>
-
                     <div id ="desc" >
                     </div>
-                    <hr>
                     <div class="row">{{=form2.custom.begin}}
                         <div class="col-md-3">
                             <div class="form-group">
@@ -153,6 +154,7 @@
                     <hr>
                     {{=form2.custom.end}}
                     <div id="target"></div>            
+                </div>
             </div>
         </div>
     </div>
@@ -160,54 +162,54 @@
 <script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
 
 <script>    
-    
+$(document).ready(function(){
+    $('#request_panel').hide();
     $('#no_table_dept_code_id').change(function() {
         ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
-        // ajax('{{=URL('stock_request_dept_code_id')}}', ['dept_code_id'], '_dept_code_id');                
-        $('#_stk_req_no_div').fadeIn();      
-        document.getElementById('no_table_pieces').disabled = false;    
-        document.getElementById('no_table_quantity').disabled = false;
-        document.getElementById('no_table_category_id').disabled = false;
-        document.getElementById('btninsert').disabled = false;
         return false;
     })
 
     $('#no_table_item_code').change(function(){
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');        
         ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
         return false;      
     })
 
-    $('#stk_item_code_id').change(function(){
-        console.log('ajax success!!!');       
-        return false;      
-    })
-    var stock_source_id = select = document.getElementById( 'stock_source_id' );
-    var dept_id = select = document.getElementById('dept_code_id');
-    // var item_code_id = document.getElementById("item_code_id"); 
+    $('#btnrequest').click(function(){
+        $('#request_panel').slideDown('slow');
+        $("#no_table_item_code").focus();
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_srn_status_id').attr('disabled','disabled');
+        $('#no_table_remarks').attr('disabled','disabled');
+        $('#no_table_stock_due_date').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');        
+        return false;
+    });
+});
+
 
     
 </script> 
 <script>
     function insert(){
-        
-        ajax('{{=URL('itm_view')}}',
-            ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');        
+        $('#no_table_stock_destination_id').removeAttr('disabled');        
+        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
             document.getElementById('no_table_item_code').value = ''
             document.getElementById('no_table_quantity').value = '0'
             document.getElementById('no_table_pieces').value = '0'
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');             
         return false;
         
 
     }
-
-    function refresh() {
-        console.log('refresh');
-        // $( "#tblIC" ).load(window.location.href + " #tblIC" );
-        $( "#tblIC" ).load(" #tblIC" );
-    }
-
-
-    
 </script>                
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>

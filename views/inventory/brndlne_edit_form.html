@@ -29,7 +29,7 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Department</label>
                         <div class="col-sm-8">
-                            {{=form.custom.widget.dept_code_id}}
+                            <input type="text" class="form-control" value="{{=ctr_val.dept_code_id.dept_code}} - {{=ctr_val.dept_code_id.dept_name}}" readonly ><div class="form-control-line"></div>                            
                         </div>
                     </div>
     
@@ -54,6 +54,8 @@
                 
                 {{=form.custom.end}}  
                     <hr>
+                    <span class="card-title">ASSOCIATED DEPARTMENT</span>
+                    <br/><br/>
                 {{=dform.custom.begin}}
                 <div class="form-group">
                     <label class="col-sm-2 control-label">Department</label>
