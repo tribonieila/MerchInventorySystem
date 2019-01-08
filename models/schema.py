@@ -56,7 +56,6 @@ db.define_table('Prefix_Data',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = '%(prefix)s')
 
-
 db.define_table('Division',
     Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION', writable = False),
     Field('div_code','string', length = 5, label = 'Division Code', writable = False, requires = IS_NOT_IN_DB(db, 'Division.div_code')),
@@ -577,11 +576,50 @@ db.define_table('Stock_Request_Transaction',
     Field('vansale_price', 'decimal(10,2)',default =0),
     Field('remarks','string'),
     Field('delete', 'boolean', default = False),
-    Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
+    # Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+
+db.define_table('Stock_Transaction_Temp',    
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code'))),
+    Field('item_code', 'string',length = 10),
+    Field('stock_source_id', 'reference Location',ondelete = 'NO ACTION'),
+    Field('stock_destination_id', 'reference Location',ondelete = 'NO ACTION'),
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default =0),
+    Field('qty', 'integer', default =0),
+    Field('price_cost', 'decimal(10, 4)', default = 0),
+    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
+    Field('amount','decimal(10,2)', default =0),
+    Field('remarks','string'),
+    Field('ticket_no_id', 'string', length = 10),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
+
+    # Field('uom','integer', default =0),
+    # Field('price_cost', 'decimal(10,2)',default = 0),
+    # Field('wholesale_price', 'decimal(10,2)', default = 0),
+    # Field('retail_price', 'decimal(10,2)',default = 0),    
+
+db.define_table('Stock_File',
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s', zero = 'Choose Location Code')),    
+    Field('opening_stock', 'integer', default = 0),
+    Field('closing_stock', 'integer', default = 0),
+    Field('previous_year_closing_stock', 'integer', default = 0),
+    Field('stock_in_transit', 'integer', default = 0),
+    Field('free_stock_qty', 'integer', default = 0),
+    Field('reorder_qty', 'integer', default = 0), 
+    Field('last_transfer_date', 'datetime', default = request.now),
+    Field('last_transfer_qty', 'integer', default = 0),
+    Field('probational_balance','integer', default = 0),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 
 db.define_table('Adjustment_Type',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
@@ -651,6 +689,8 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
        
 db.define_table('Stock_Adjustment_Transaction_Temp',
+    #db.insured_vehicles.reg_no_id.widget = SQLFORM.widgets.autocomplete(request, db.vehicle.reg_no, id_field = db.vehicle.id, limitby = (0,10), min_length=2)
+    # Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
     Field('stock_adjustment_date', 'date', default = request.now),
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
@@ -661,7 +701,7 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('total_cost','decimal(10,4)', default = 0),
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
@@ -681,45 +721,6 @@ db.define_table('Item_Prices',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
-
-db.define_table('Stock_Transaction_Temp',    
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code'))),
-    Field('item_code', 'string',length = 10),
-    Field('stock_source_id', 'reference Location',ondelete = 'NO ACTION'),
-    Field('stock_destination_id', 'reference Location',ondelete = 'NO ACTION'),
-    Field('quantity','integer', default = 0),
-    Field('pieces','integer', default =0),
-    Field('qty', 'integer', default =0),
-    Field('price_cost', 'decimal(10, 4)', default = 0),
-    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
-    Field('amount','decimal(10,2)', default =0),
-    Field('remarks','string'),
-    Field('ticket_no_id', 'string', length = 10),
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
-
-    # Field('uom','integer', default =0),
-    # Field('price_cost', 'decimal(10,2)',default = 0),
-    # Field('wholesale_price', 'decimal(10,2)', default = 0),
-    # Field('retail_price', 'decimal(10,2)',default = 0),    
-
-db.define_table('Stock_File',
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
-    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s', zero = 'Choose Location Code')),    
-    Field('opening_stock', 'integer', default = 0),
-    Field('closing_stock', 'integer', default = 0),
-    Field('previous_year_closing_stock', 'integer', default = 0),
-    Field('stock_in_transit', 'integer', default = 0),
-    Field('free_stock_qty', 'integer', default = 0),
-    Field('reorder_qty', 'integer', default = 0), 
-    Field('last_transfer_date', 'datetime', default = request.now),
-    Field('last_transfer_qty', 'integer', default = 0),
-    Field('probational_balance','integer', default = 0),
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
-    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
-
 
 ### PROCUREMENT SYSTEMS
   

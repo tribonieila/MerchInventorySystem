@@ -30,8 +30,12 @@
                             <hr>
                             {{=table}}
                         </el-tab-pane>
-                        <el-tab-pane label="Member">Member</el-tab-pane>
-                        <el-tab-pane label="Group">Group</el-tab-pane>                        
+                        <el-tab-pane label="Member">
+                            {{=LOAD('sili','pansigang.load', ajax = True)}}
+                        </el-tab-pane>
+                        <el-tab-pane label="Group">
+                            {{=LOAD('sili','haba.load', ajax = True)}}
+                        </el-tab-pane>                        
                     </el-tabs>
                 </template>
             </div>

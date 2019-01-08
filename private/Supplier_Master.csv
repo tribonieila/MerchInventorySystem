@@ -1,18 +1,18 @@
-dept_code_id,supp_code,supp_sub_code,supp_name,supplier_type,contact_person,address_1,address_2,country_id,contact_no,fax_no,email_address,currency_id,purchase_budget,supplier_ib_account,supplier_purchase_account,supplier_sales_account,status_id,created_on,created_by,updated_on,updated_by,prefix_id
-,16-108,,AGIO SIGARENFABRIEKEN NV,,,,,,,,,,,,,,1,,,,,11
-,16-395,,CAMPBELL FOODS,,,,,,,,,,,,,,1,,,,,11
-,16-400,,CHOCOLATES VALOR S.A,,,,,,,,,,,,,,1,,,,,11
-,16-287,,FERRERO TRADING,,,,,,,,,,,,,,1,,,,,11
-,16-213,,IMPERIAL TOBACCO,,,,,,,,,,,,,,1,,,,,11
-,16-388,,ITC LIMITED,,,,,,,,,,,,,,1,,,,,11
-,16-119,,KIWI FRANCE SA,,,,,,,,,,,,,,1,,,,,11
-,16-3001,,NATIONAL FOOD CO.-AMERICANA,,,,,,,,,,,,,,1,,,,,11
-,16-398,,NATIONAL REFRESHMENTS CO.L.L.C,,,,,,,,,,,,,,1,,,,,11
-,16-118,,NICHOLAS KIWI INTERNATIONAL,,,,,,,,,,,,,,1,,,,,11
-,16-370,,NTAC,,,,,,,,,,,,,,1,,,,,11
-,16-3011,,PALC,,,,,,,,,,,,,,1,,,,,11
-,16-3002,,PEETERS PRODUKTEN B.V,,,,,,,,,,,,,,1,,,,,11
-,16-384,,TCHIBO,,,,,,,,,,,,,,1,,,,,11
-,16-3008,,VIDAL GOLOSINAS S.A,,,,,,,,,,,,,,1,,,,,11
-,16-366,,VILLIGER SOHNE AG,,,,,,,,,,,,,,1,,,,,11
-,16-399,,VON EICKEN,,,,,,,,,,,,,,1,,,,,11
+prefix_id,dept_code_id,supp_code,supp_sub_code,supp_name,supplier_type,contact_person,address_1,address_2,country_id,contact_no,fax_no,email_address,currency_id,purchase_budget,supplier_ib_account,supplier_purchase_account,supplier_sales_account,status_id,created_on,created_by,updated_on,updated_by
+11,3,10001,16-108,AGIO SIGARENFABRIEKEN NV,FOREIGN,,,,6,,,,,,,,,1,,,12/13/2018,
+11,3,10002,16-395,CAMPBELL FOODS,FOREIGN,,,,11,,,,,,,,,1,,,12/13/2018,
+11,3,10003,16-400,CHOCOLATES VALOR S.A,FOREIGN,,,,8,,,,,,,,,1,,,12/13/2018,
+11,3,10004,16-287,FERRERO TRADING,FOREIGN,,,,4,,,,,,,,,1,,,12/13/2018,
+11,3,10005,16-213,IMPERIAL TOBACCO,FOREIGN,,,,2,,,,,,,,,1,,,12/13/2018,
+11,3,10006,16-388,ITC LIMITED,FOREIGN,,,,3,,,,,,,,,1,,,12/13/2018,
+11,3,10007,16-119,KIWI FRANCE SA,FOREIGN,,,,5,,,,,,,,,1,,,12/13/2018,
+11,3,10008,16-3001,NATIONAL FOOD CO.-AMERICANA,FOREIGN,,,,7,,,,,,,,,1,,,12/13/2018,
+11,3,10009,16-398,NATIONAL REFRESHMENTS CO.L.L.C,FOREIGN,,,,10,,,,,,,,,1,,,12/13/2018,
+11,3,10010,16-118,NICHOLAS KIWI INTERNATIONAL,FOREIGN,,,,5,,,,,,,,,1,,,12/13/2018,
+11,3,10011,16-370,NTAC,FOREIGN,,,,1,,,,,,,,,1,,,12/13/2018,
+11,3,10012,16-3011,PALC,FOREIGN,,,,8,,,,,,,,,1,,,12/13/2018,
+11,3,10013,16-3002,PEETERS PRODUKTEN B.V,FOREIGN,,,,6,,,,,,,,,1,,,12/13/2018,
+11,3,10014,16-384,TCHIBO,FOREIGN,,,,2,,,,,,,,,1,,,12/13/2018,
+11,3,10015,16-3008,VIDAL GOLOSINAS S.A,FOREIGN,,,,8,,,,,,,,,1,,,12/13/2018,
+11,3,10016,16-366,VILLIGER SOHNE AG,LOCAL,,,,9,,,,,,,,,1,,,12/13/2018,
+11,3,10017,16-399,VON EICKEN,FOREIGN,,,,2,,,,,,,,,1,,,12/13/2018,

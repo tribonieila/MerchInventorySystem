@@ -8,19 +8,17 @@
             </ul>
             <span class="card-title">STOCK REQUEST FORM</span>
         </div>
-        <div class="card-body tab-content">            
-            			
-            <!-- <el-form ref="form" :model="form" label-width="120px"> -->
-            <div class="form-horizontal">   
-                {{=form.custom.begin}}	
+        <div class="card-body tab-content">     
+            {{=form.custom.begin}}       
+            <div class="form-horizontal">                   	
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Request No</label>
                             <div class="col-sm-8">                                                  
-                                    
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                 <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_no_id}}{{=form.custom.widget.stock_request_no}}" readonly >
-                                <p class="help-block">autogenerate</p>                            
+                                <p class="help-block">autogenerate</p>
                             </div>                           
                         </div>                        
                     </div>
@@ -36,13 +34,13 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                            <div class="form-group">
-                                    <label class="col-sm-4 control-label">Requested By</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
-                                        <p class="help-block">readonly</p>                                                                                
-                                    </div>
-                                </div>            
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Requested By</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
+                                <p class="help-block">readonly</p>                                                                                
+                            </div>
+                        </div>            
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
@@ -54,8 +52,7 @@
                         </div>                                           
                     </div>
     
-                </div>
-                
+                </div>                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -63,7 +60,7 @@
                             <div class="col-sm-8">
                                 <input type="text" class="form-control" value="{{=_id.dept_code_id.dept_code}} - {{=_id.dept_code_id.dept_name}}" readonly >
                                 <p class="help-block">readonly</p>
-    
+                                <input type="text" class="form-control" id="dept_code_id" name="dept_code_id" value="{{=_id.dept_code_id}}" hidden >
                             </div>
                         </div>                    
                     </div>
@@ -73,11 +70,11 @@
                             <div class="col-sm-8">
                                 <input type="text" class="form-control" value="{{=_id.stock_source_id.location_code}} - {{=_id.stock_source_id.location_name}}" readonly >
                                 <p class="help-block">readonly</p>    
+                                <input type="text" class="form-control" id="stock_source_id" name="stock_source_id" value="{{=_id.stock_source_id}}" hidden >
                             </div>
                         </div>                 
                     </div>
-                </div>
-    
+                </div>    
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -94,6 +91,7 @@
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" value="{{=_id.stock_destination_id.location_code}} - {{=_id.stock_destination_id.location_name}}" readonly >
                                 <p class="help-block">readonly</p>    
+                                <input type="text" class="form-control" id="stock_destination_id" name="stock_destination_id" value="{{=_id.stock_destination_id}}" hidden >
                             </div>
                         </div>                                               
                     </div>
@@ -114,32 +112,93 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{ if _id.srn_status_id == 6:  }}
-                                    <input class="btn btn-primary" type="submit" value="Submit" disabled>
-                                    <input class="btn btn-success" type="button" value="add new" onclick="newReq();" disabled>   
-
-                                {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="Submit">
-                                    <input class="btn btn-success" type="button" value="add new" onclick="newReq();">   
-
-                                {{ pass }}
+                                <input class="btn btn-primary" type="submit" value="Submit">                                                                     
+                                {{=btnAdd}}
+                                    <!-- <input class="btn btn-success" type="button" value="add new" id="btnnewReq" onclick="newReq();"> --> 
+                                <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">   
                             </div>                            
                         </div>                    
                     </div>
                 </div>  
-                
             </div>  
-                <hr>
+            {{=form.custom.end}}
+            
+            <hr>
 
-                {{=form.custom.end}}
+            <div id="newReqPanel">
+                <div id = "_item_code_description"></div> 
+                <form>
+                <div class="row">                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Item No</label>
+                            <div class="col-sm-8">                                
+                                <input type="text" class="form-control" id="item_code" name = "item_code">
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Quantity</label>
+                            <div class="col-sm-6"> 
+                                <input type="text" class="form-control" id="quantity" name = "quantity">
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Pieces</label>
+                            <div class="col-sm-6">                                
+                                <input type="text" class="form-control" id="pieces" name = "pieces">
+                            </div>                           
+                        </div>    
+                    </div>                   
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Category</label>
+                            <div class="col-sm-8">                                 
+                                <select class="generic-widget form-control" id="no_table_category_id" name="category_id"><option value="">Choose Category</option><option value="1">D - DAMAGE</option><option selected="selected" value="4">N - NORMAL</option><option value="3">P - FOC</option></select>
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-1">                        
+                        <!-- <input class="btn btn-primary" type="submit" value="add" id="btnInsert">                         -->
+                        <button class="btn btn-primary" type="submit" id="btnInsert">add</button>
+                    </div>                                                              
+                </div> 
+                </form> 
+                <div id="tblReqNew">
+                    {{=table}}
+                </div>              
+            </div>
+            <div id="tblReqOld">
                 {{=table}}
+            </div>                                
         </div>
     </div>
 </div>
-
 <script>
-    function newReq() {
-        console.log('new');
-    }
+    
+    $('#newReqPanel').hide();
+    $('#item_code').change(function(){        
+        ajax('{{=URL('itm_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
+    });
+    $('#btnrewReq').click(function(){
+        $('#newReqPanel').toggle( "slide" );
+        $('#tblReqOld').toggle( "slide" );
+        $("#item_code").focus();
+        $('#btnnewReq').attr('disabled','disabled');        
+        return false;
+        
+    })
+    $('#btnInsert').click(function() {        
+        console.log('click')
+        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id']);
+        document.getElementById('item_code').value = ''
+        document.getElementById('quantity').value = '0'
+        document.getElementById('pieces').value = '0'      
+        $('#item_code').focus();        
+        return false;
+    });
+    
 </script>
-

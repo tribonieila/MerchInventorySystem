@@ -101,22 +101,23 @@
                         <div class="col-md-6">  
                         <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.submit}}{{=form.custom.end}}
+                                <div class="col-sm-8">                                    
+                                    <input class="btn btn-primary" type="submit" value="Submit"  id="btnsubmit">
                                     <input class="btn btn-success" type="button" value="proceed" id="btnrequest">
                                     <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">
-                                   
+                                    
                                 </div>                            
                             </div>                    
                         </div>
                     </div>  
-                    
+                    {{=form.custom.end}}
                 </div>  
                 <div id = "request_panel">
                     <hr>
                     <div id ="desc" >
                     </div>
-                    <div class="row">{{=form2.custom.begin}}
+                    {{=form2.custom.begin}}
+                    <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Item Code</label>
@@ -143,17 +144,17 @@
                                 <label class="col-sm-4 control-label">Category</label>
                                 <div class="col-sm-8">{{=form2.custom.widget.category_id}}</div>
                             </div>   
-                        </div>
-        
+                        </div>        
                         <div class="col-md-2">
-                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();">
+                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >
+                            
                             <!-- <input class="btn btn-warning" type="button" value="refresh" onclick="refresh();"> -->
                             
                         </div>            
                     </div>
                     <hr>
                     {{=form2.custom.end}}
-                    <div id="target"></div>            
+                    <div id = 'target'></div>
                 </div>
             </div>
         </div>
@@ -163,12 +164,16 @@
 
 <script>    
 $(document).ready(function(){
+
     $('#request_panel').hide();
     $('#no_table_dept_code_id').change(function() {
         ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
         return false;
     })
 
+    $('#click').click(function(){                        
+            $("#request_panel").load(" #target");            
+    });
     $('#no_table_item_code').change(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');        
@@ -189,9 +194,15 @@ $(document).ready(function(){
         $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;
     });
+    $('#btnsubmit').click(function(){
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_srn_status_id').removeAttr('disabled');
+        $('#no_table_remarks').removeAttr('disabled');
+        $('#no_table_stock_due_date').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');
+        $('#no_table_stock_destination_id').removeAttr('disabled');        
+    })
 });
-
-
     
 </script> 
 <script>
@@ -199,13 +210,15 @@ $(document).ready(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');        
         $('#no_table_stock_destination_id').removeAttr('disabled');        
-        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');
-            document.getElementById('no_table_item_code').value = ''
-            document.getElementById('no_table_quantity').value = '0'
-            document.getElementById('no_table_pieces').value = '0'
+        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');        
+        document.getElementById('no_table_item_code').value = ''
+        document.getElementById('no_table_quantity').value = '0'
+        document.getElementById('no_table_pieces').value = '0'
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_stock_source_id').attr('disabled','disabled');
         $('#no_table_stock_destination_id').attr('disabled','disabled');             
+        $("#no_table_item_code").focus();
+        // $("#tblIC").load(" #tblIC");
         return false;
         
 

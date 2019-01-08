@@ -46,13 +46,12 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Quantity</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" value="{{=_id.quantity}}" readonly >
-                                <p class="help-block">readonly</p>                                                                                
+                            <div class="col-sm-3">
+                                {{=form.custom.widget.quantity}}
                             </div>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" value="0">
-                                <p class="help-block">update</p>                                                                                
+                            <label class="col-sm-2 control-label">Pieces</label>
+                            <div class="col-sm-3">
+                                {{=form.custom.widget.pieces}}                                
                             </div>
     
                         </div>                                           
@@ -101,7 +100,7 @@
                         </div>                    
                     </div>
                 </div>  
-                
+                {{=form.custom.end}}
             </div>  
         </div>
     </div>

@@ -2,6 +2,8 @@ import string
 import random
 import locale
 from datetime import date
+
+# ----------    SALES ORDER FORM    ----------
 @auth.requires_login()
 def sales_order_form():
     db.Sales_Order.status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')    
@@ -15,6 +17,10 @@ def sales_order_form():
     elif form.errors:
         response.flash = 'ENTRY HAS ERROR'
     return dict(form = form, ticket_no_id = id_generator())
+
+def validate_sales_order_form():
+
+    return locals()
 
 def sales_order_transaction_temporary():
     form = SQLFORM(db.Sales_Order_Transaction_Temporary)
@@ -86,43 +92,40 @@ def sales_order_transaction_temporary():
         return table
 
 
-def validate_sales_order_transaction(form):    
-    
+def validate_sales_order_transaction(form):        
     _id = db(db.Item_Master.item_code == request.vars.item_code).select().first()
-    _sfile = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()    
-    _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()        
-    if _id:
 
-        print 'here'    
-    if _id.item_code == False:
-        print 'not here'
-        form.errors._id.item_code = CENTER(DIV(B('WARNING! '),'Item code does not exist',_class='alert alert-warning',_role='alert'))
-    
-    if not _sfile:
-        form.errors._stk_file =  CENTER(DIV(B('WARNING! '),'Item code does not exist in stock file',_class='alert alert-warning',_role='alert'))
-    
-    if _exist:
-        form.errors.item_code = CENTER(DIV(B('WARNING! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))
+    if not _id:
+        form.errors._id = CENTER(DIV(B('DANGER! '),'Item code does not exist',_class='alert alert-danger',_role='alert'))            
+    else:
+        _sfile = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()    
+        _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()        
+        
+        if not _sfile:
+            form.errors._stk_file =  CENTER(DIV(B('DANGER! '),'Item code does not exist in stock file',_class='alert alert-danger',_role='alert'))
+        
+        if _exist:
+            form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))
 
-    if _id.uom_value == 1:
-        if form.vars.pieces > 0:
-            form.errors.pieces = CENTER(DIV(B('WARNING! '),' Pieces value is not applicable to this item.',_class='alert alert-warning',_role='alert')) 
-            form.vars.pieces = 0
-    elif form.vars.pieces >= int(_id.uom_value):
-        form.errors._id = CENTER(DIV(B('WARNING! '),' Pieces value should be not more than uom value ' + str(int(_id.uom_value)),_class='alert alert-warning',_role='alert')) 
-            
-    form.vars.item_code_id = _id.id
-    form.vars.taxable_value = 0
-    form.vars.tax_percentage = 0
-    form.vars.tax_amount = 0
-    
+        if _id.uom_value == 1:
+            if form.vars.pieces > 0:
+                form.errors.pieces = CENTER(DIV(B('DANGER! '),' Pieces value is not applicable to this item.',_class='alert alert-danger',_role='alert')) 
+                form.vars.pieces = 0
+        elif form.vars.pieces >= int(_id.uom_value):
+            form.errors._id = CENTER(DIV(B('DANGER! '),' Pieces value should be not more than uom value ' + str(int(_id.uom_value)),_class='alert alert-danger',_role='alert')) 
+                
+        form.vars.item_code_id = _id.id
+        form.vars.taxable_value = 0
+        form.vars.tax_percentage = 0
+        form.vars.tax_amount = 0
 
+
+# ----------    AUTOGENERATE FORM    ----------
 def generate_sales_order_no():
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SO')).select().first()    
     _serial = _trans_prfx.current_year_serial_key + 1
     _stk_req_no = str(_trans_prfx.prefix) + str(_serial)
     return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _value=_stk_req_no, _disabled = True))
-
 
 def item_code_description():
     _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == request.vars.dept_code_id)).select().first()    
@@ -150,7 +153,7 @@ def item_code_description():
         else:
             return CENTER(DIV(B('WARNING! '),"Item code doesn't exist on location source.",_class='alert alert-warning',_role='alert'))        
     else:
-        return CENTER(DIV(B('WARNING! '),"Item code doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
+        return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
 
 @auth.requires_login()
 def sales_order_browse():

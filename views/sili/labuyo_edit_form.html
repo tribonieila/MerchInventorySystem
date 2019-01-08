@@ -1,0 +1,31 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">ADMINISTRATOR (IT DEPT.)</span>
+        </div>
+        <div class="card-body tab-content">
+            <table>
+                <tbody>
+                    {{=form.custom.begin}}                    
+                    <tr><td>FIRST NAME</td><td>LAST NAME</td><td>EMAIL</td></tr>
+                    <tr><td>{{=form.custom.widget.first_name}}</td><td>{{=form.custom.widget.last_name}}</td><td>{{=form.custom.widget.email}}</td></tr>
+                    <tr><td>USER NAME </td><td>PASSWORD</td><td></td></tr>
+                    <tr><td>{{=form.custom.widget.username}}</td><td>{{=form.custom.widget.password}}</td><td>{{=form.custom.submit}}</td></tr>
+                    {{=form.custom.end}}
+                </tbody>
+            </table>
+        </div>        
+    </div>
+</div>
+
+
+<script>
+    $(document).ready( function () {
+        $('table').DataTable();
+    } );
+</script>
+
+
+
+

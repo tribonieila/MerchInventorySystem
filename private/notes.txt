@@ -2,6 +2,8 @@ merch4658666
 
 T.force('it-it')
 
+TRUNCATE TABLE "Supplier_Master" RESTART IDENTITY;
+
 sudo -H pip install psycopg2
 sudo dpkg -i /path/to/deb/file followed by sudo apt-get install -f 
 sudo apt install ./name.deb
@@ -9,9 +11,16 @@ sudo apt install ./name.deb
 python web2py.py -i 127.0.0.1 -p 8000 -f /path/to/apps
 * run bin file
     chmod +x file-name.run
-    ./file-name.runsudo 
     ./file-name.run
+    sudo ./file-name.run
 
+for page in pages:
+    canvas.setPageSize((page.BBox[2], page.BBox[3]))
+    canvas.doForm(makerl(canvas, page))
+    canvas.showPage()
+    
+hmac+md5 or hmac+sha512
+    
 rows=db(WHERE CLAUSE IF YOU HAVE SOME OTHER THAN THE JOIN).select(db.parent.ALL, db.child.ALL, db.grandchild.ALL, join=db.child.on(db.child.parent_id==db.parent.id), left=db.grandchild.on(db.child.id==db.grandchild.child_id))
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
 # Create a database named 'person' with 'last_name' and 'first_name' fields.

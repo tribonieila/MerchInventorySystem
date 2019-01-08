@@ -24,8 +24,9 @@
                         <el-table-column prop="stk_adj_type" label = "Adjustment Type"></el-table-column>
                         <el-table-column prop="stk_adj_amt" label = "Amount"></el-table-column>
                         <el-table-column prop="stk_sta_id" label = "Status"></el-table-column>
-                        <el-table-column fixed="right" label="Actions" width="90">
+                        <el-table-column fixed="right" label="Actions" width="200">
                             <template slot-scope="scope">
+                                <el-button @click="printClick(scope.row.stk_adj_id)" type="primary" size="mini" plain>Print</el-button>
                                 <el-button @click="linksClick(scope.row.stk_adj_id)" type="primary" size="mini" plain>Details</el-button>
                             </template>
                         </el-table-column>
@@ -63,6 +64,9 @@
         methods: {     
             linksClick(row) {
                 window.open("{{=URL('inventory','stock_adjustment_browse_details')}}" + "/" + row);        
+            },
+            printClick(row){
+                window.open("{{=URL('inventory','stock_adjustment_report')}}" + "/" + row);        
             },
         }
     }

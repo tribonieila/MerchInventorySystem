@@ -1,108 +1,151 @@
-<div class="container">
-    <div class="row">
-        <section>
 
-            <ul class="nav nav-tabs" role="tablist">
+<div id="app">
+  <h4 class="head"> Application</h4>
+  <div class="container">
+    <table class="table-responsive bordered highlight centered hoverable z-depth-2" v-show="persons.length">
+      <thead>
+        <tr>
+          <th v-for="column in columns">
+            {{column}}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(person,index) in persons">
+          <td>{{index}}</td>
+          <td>
+            {{person.lname}}
+          </td>
+          <td>
+            {{person.fname}}
+          </td>
+          <td>
+            {{person.age}} years
+          </td>
+          <td>
+            {{person.job}}
+          </td>
+          <td>
+            {{person.address}}
+          </td>
+          <td style="width: 18%;">
+            <a href="#modal" @click="edit(index)" class="btn waves-effect waves-light yellow darken-2"><i class="material-icons">edit</i>
+            </a>
+            <a href="#!" class="btn waves-effect waves-light red darken-2" @click="archive(index)"><i class="material-icons">archive</i>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <div class="input-field">
+              <input placeholder="Placeholder" ref="lname" v-model="input.lname" id="lname" type="text">
+              <label for="lname">Last Name</label>
+            </div>
+          </td>
+          <td>
+            <div class="input-field">
+              <input placeholder="Placeholder" v-model="input.fname" id="fname" type="text">
+              <label for="fname">First Name</label>
+            </div>
+          </td>
+          <td>
+            <div class="input-field">
+              <input placeholder="Placeholder" v-model="input.age" id="age" type="text">
+              <label for="age">Age</label>
+            </div>
+          </td>
+          <td>
+            <div class="input-field">
+              <input placeholder="Placeholder" v-model="input.job" id="job" type="text">
+              <label for="job">Job</label>
+            </div>
+          </td>
+          <td>
+            <div class="input-field">
+              <input placeholder="Placeholder" v-model="input.address" id="address" type="text">
+              <label for="address">Address</label>
+            </div>
+          </td>
+          <td><a href="#!" @click="add" class="btn btn-waves green darken-2"><i class="material-icons">add</i></a></td>
+        </tr>
+      </tbody>
+    </table>
 
-                <li role="presentation" class="nav-item">
-                    <a href="#step1" class="nav-link active" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">1</a>
-                </li>
+    <table class="table-responsive centered bordered striped highlight z-depth-1 hoverable" v-show="bin.length">
+      <thead>
+        <tr>
+          <th v-for="column in columns">
+            {{column}}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(person,index) in bin">
+          <td>{{index}}</td>
+          <td>
+            {{person.lname}}
+          </td>
+          <td>
+            {{person.fname}}
+          </td>
+          <td>
+            {{person.age}} years
+          </td>
+          <td>
+            {{person.job}}
+          </td>
+          <td>
+            {{person.address}}
+          </td>
+          <td>
+            <a href="#!" @click="restore(index)" class="btn waves-effect waves-light blue darken-2"><i class="material-icons">restore</i>
+            </a>
+            <a href="#!" @click="deplete(index)" class="btn waves-effect waves-light red darken-2"><i class="material-icons">delete</i>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-                <li role="presentation" class="nav-item">
-                    <a href="#step2" class="nav-link disabled" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">2</a>
-                </li>
-                <li role="presentation" class="nav-item">
-                    <a href="#step3" class="nav-link disable" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">3</a>
-                </li>
-
-                <li role="presentation" class="nav-item">
-                    <a href="#complete" class="nav-link disable" data-toggle="tab" aria-controls="complete" role="tab" title="Complete">4</a>
-                </li>
-            </ul>
-
-            <form role="form">
-                <div class="tab-content">
-                    <div class="tab-pane active" role="tabpanel" id="step1">
-                        <h3>Step 1</h3>
-                        <p>This is step 1</p>
-                        <ul class="list-inline pull-xs-right">
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-primary next-step">Save and continue</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="tab-pane" role="tabpanel" id="step2">
-                        <h3>Step 2</h3>
-                        <p>This is step 2</p>
-                        <ul class="pull-xs-right">
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-default prev-step">Previous</button>
-                            </li>
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-primary next-step">Save and continue</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="tab-pane" role="tabpanel" id="step3">
-                        <h3>Step 3</h3>
-                        <p>This is step 3</p>
-                        <ul class="list-inline pull-xs-right">
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-default prev-step">Previous</button>
-                            </li>
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-default next-step">Skip</button>
-                            </li>
-                            <li class="list-inline-item">
-                                <button type="button" class="btn btn-primary btn-info-full next-step">Save and continue</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="tab-pane" role="tabpanel" id="complete">
-                        <h3>Complete</h3>
-                        <p>You have successfully completed all steps.</p>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-            </form>
-        </section>
+  <div id="modal" class="modal modal-fixed-footer">
+    <div class="modal-content">
+      <h4 class="center-align">Edit</h4>
+      <p class="center-align">Edition form. Update informations</p>
+      <div class="row">
+        <form class="col s12">
+          <div class="row">
+            <div class="input-field col s6">
+              <input placeholder="John" id="last_name" type="text" v-model="editInput.lname">
+              <label for="last_name">Last Name</label>
+            </div>
+            <div class="input-field col s6">
+              <input placeholder="Doe" id="first_name" type="text" v-model="editInput.fname">
+              <label for="first_name">First Name</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s6">
+              <input placeholder="26" id="edit_age" type="text" v-model="editInput.age">
+              <label for="edit_age">Age</label>
+            </div>
+            <div class="input-field col s6">
+              <input placeholder="Teacher" id="edit_job" type="text" v-model="editInput.job">
+              <label for="edit_job">Job</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <input placeholder="Address" id="edit_address" type="text" v-model="editInput.address">
+              <label for="edit_address">First Name</label>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+      <a href="#!" @click="update" class="btn waves-effect waves-light"><i class="material-icons">edit</i></a>
+    </div>
+  </div>
 </div>
-
-<script type="text/javascript">
-    $(document).ready(function () {
-        //Initialize tooltips
-        $('.nav-tabs > li a[title]').tooltip();
-        
-        //Wizard
-        $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
-    
-            var $target = $(e.target);
-        
-            if ($target.parent().hasClass('disabled')) {
-                return false;
-            }
-        });
-    
-        $(".next-step").click(function (e) {
-    
-            var $active = $('.nav-tabs li>a.active');
-            $active.parent().next().removeClass('disabled');
-            nextTab($active);
-    
-        });
-        $(".prev-step").click(function (e) {
-    
-            var $active = $('.nav-tabs li>a.active');
-            prevTab($active);
-    
-        });
-    });
-    
-    function nextTab(elem) {
-        $(elem).parent().next().find('a[data-toggle="tab"]').click();
-    }
-    function prevTab(elem) {
-        $(elem).parent().prev().find('a[data-toggle="tab"]').click();
-    }
-    </script>
