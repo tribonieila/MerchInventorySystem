@@ -1,6 +1,9 @@
 merch4658666
 
 T.force('it-it')
+op: lar 
+pa: 54193
+np: larrypas123
 
 TRUNCATE TABLE "Supplier_Master" RESTART IDENTITY;
 

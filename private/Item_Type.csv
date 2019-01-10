@@ -1,0 +1,4 @@
+mnemonic,description,status_id,created_by,created_on,updated_on,updated_by
+NOS,NON-SALEABLE,1,1,12/13/2018,12/13/2018,1
+PRO,SALEABLE PROMO PACK,1,1,12/13/2018,12/13/2018,1
+SAL,SALEABLE REGULAR,1,1,12/13/2018,12/13/2018,1

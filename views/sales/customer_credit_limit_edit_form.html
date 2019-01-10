@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('customer_grid')}}";>BROWSE</a></li>
+            </ul>        
+            <span class="card-title">CUSTOMER CREDIT LIMIT</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form.custom.begin}}            
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.dept_code_id}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Credit Limit Amount</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.credit_limit_amount}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.submit}}
+                            </div>                           
+                        </div>                        
+                    </div>                    
+                </div>                  
+            </div>
+            {{=form.custom.end}}            
+        </div>
+    </div>
+</div>

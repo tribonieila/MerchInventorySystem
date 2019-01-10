@@ -146,10 +146,8 @@
                             </div>   
                         </div>        
                         <div class="col-md-2">
-                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >
-                            
-                            <!-- <input class="btn btn-warning" type="button" value="refresh" onclick="refresh();"> -->
-                            
+                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >                            
+                            <button class="btn btn-info" type="button" id="btnHelp">Help?</button>    
                         </div>            
                     </div>
                     <hr>
@@ -166,22 +164,32 @@
 $(document).ready(function(){
 
     $('#request_panel').hide();
+
     $('#no_table_dept_code_id').change(function() {
         ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
         return false;
-    })
+    });
+
+    $('#btnHelp').on('click',function(){
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        var x = document.getElementById("no_table_dept_code_id").selectedIndex;
+        console.log(x);
+        {{ print 'attri ', form.vars.dept_code_id, request.vars.dept_code_id }}
+    });
 
     $('#click').click(function(){                        
-            $("#request_panel").load(" #target");            
+        $("#request_panel").load(" #target");            
+        return false;
     });
+
     $('#no_table_item_code').change(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
-        $('#no_table_stock_source_id').removeAttr('disabled');        
+        $('#no_table_stock_source_id').removeAttr('disabled');         
         ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
         $('#no_table_dept_code_id').attr('disabled','disabled');
-        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');        
         return false;      
-    })
+    });
 
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
@@ -194,6 +202,7 @@ $(document).ready(function(){
         $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;
     });
+    
     $('#btnsubmit').click(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_srn_status_id').removeAttr('disabled');
@@ -201,7 +210,8 @@ $(document).ready(function(){
         $('#no_table_stock_due_date').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');
         $('#no_table_stock_destination_id').removeAttr('disabled');        
-    })
+        return false;
+    });
 });
     
 </script> 

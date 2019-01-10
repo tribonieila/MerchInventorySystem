@@ -1,8 +1,8 @@
-"id","first_name","last_name","username","email","password","registration_key","reset_password_key","registration_id"
-7,"ADMIN","ADMIN","admin","admin@admin.com","pbkdf2(1000,20,sha512)$86b54b72a7928b1d$da3dd55830920bf6557f4fc98fe3ed4b973febdb","","",""
-8,"ALEXIS","ALEXIS","alexis","john@john.com","pbkdf2(1000,20,sha512)$b057752578ff1268$6378dd4563b0934868f3f36d0c9e4a81f408e2ba","","",""
-9,"WAEL","WAEL","wael","clint@gmail.com","pbkdf2(1000,20,sha512)$ad510db4fa19db6d$880eaa80a1045f27e5debf7d0174386531bf157f","","",""
-10,"HAKIM","HAKIM","hakim","jack@gmail.com","pbkdf2(1000,20,sha512)$a7a310be030b4a3a$2c0904819ca1c420a1228ea705990cce925d2489","","",""
-11,"POS","POS","pos","charles@gmail.com","pbkdf2(1000,20,sha512)$ba4022ff564f18e6$89bf8b290ab92fb89993ce5695b5be92d8ca1076","","",""
-12,"MUNZER","MUNZER","munzer","munzer@mail.com","pbkdf2(1000,20,sha512)$a8709ae89884eb38$aa0c7bb9324efd6b4b6da0b369f4a9482737b98a","","",""
-13,"manoj","manoj","manoj","manoj@gmail.com","pbkdf2(1000,20,sha512)$a56f1d93a4672a26$a4887896b1e511ff481012dcf7f81ab1b5e1acb4","","",""
+id,first_name,last_name,username,email,password,registration_key,reset_password_key,registration_id
+1,admin,admin,admin,admin@admin.com,"pbkdf2(1000,20,sha512)$9f99d428904dcb7f$606db8180e5f2e755ff5db9607655e10594af557",,,
+2,alexis,alexis,alexis,alexis@mail.com,"pbkdf2(1000,20,sha512)$9e91ed8963bd5f40$b8a64994ab1a739624c0a55067712516df38171b",,,
+3,wael,wael,wael,wael@mail.com,"pbkdf2(1000,20,sha512)$819539ea3d8e1fa8$6efd2276cc9081b68b311bf0229ed41f6385aba6",,,
+4,hakim,hakim,hakim,hakim@mail.com,"pbkdf2(1000,20,sha512)$a263bdb20e6507bf$5b38a7867de0e36204fa7bd6a72ea02f10efb9fd",,,
+5,pos,pos,pos,pos@mail.com,"pbkdf2(1000,20,sha512)$befdd67a7b5ecebf$66c88ab5f077f286c49f486c03da9244182f721d",,,
+6,munzer,munzer,munzer,munzer@mail.com,"pbkdf2(1000,20,sha512)$850e1dfb4dfb5a31$f7c624190717769ae7a53bcb833cea601da26a6c",,,
+7,manoj,manoj,manoj,manoj@mail.com,"pbkdf2(1000,20,sha512)$a089949b77f02f43$a8ca7f7f3ea38ae2fd7b4bd297c786408a5d5dff",,,

@@ -794,15 +794,95 @@ db.define_table('Batch_Order_Transaction',
 
 #---------- S   A   L   E   S   S c h e m a ----------
 
+db.define_table('Customer_Category', # hypermarket, restaurant
+    Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
+    Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Customer_Account_Type',# cash, credit, bill
+    Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
+    Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Customer_Group_Code',
+    Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
+    Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Customer',
     Field('customer_account_no','string',length = 15),
+    Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION'),
     Field('customer_name','string', length = 50),
-    Field('customer_type'), # hypermarket, restaurant
+    Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION'),
+    Field('customer_account_type', 'reference Customer_Account_Type', ondelete = 'NO ACTION'),
+    # Field('account_type', ), account receivable
+    Field('po_box_no', 'integer'),
+    Field('unit_no', 'integer'),
+    Field('building_no', 'integer'),
+    Field('street_no', 'integer'),
+    Field('zone', 'integer'),
+    Field('telephone_no','string',length = 25),
+    Field('fax_no','string',length = 25),
+    Field('email_address','string', length = 50),
+    Field('area_name','string', length = 25),
+    Field('state','string', length = 50),
+    Field('country','string', length = 50),
+    Field('sponsor_name','string', length = 50),
+    # Field('sponsor_id','string', length = 50),
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'customer_account_no')
-    
+
+db.define_table('Customer_Contact_Person',
+    Field('customer_id', 'reference Customer', ondelete = 'NO ACTION',writable = False),
+    Field('contact_person','string', length = 50),
+    Field('contact_number','string',length = 25),
+    Field('position','string', length = 50),
+    Field('email_address','string',length = 25),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'contact_person')
+
+db.define_table('Customer_Credit_Limit',
+    Field('customer_id', 'reference Customer', ondelete = 'NO ACTION', writable = False),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION'),
+    Field('credit_limit_amount','decimal(10,2)'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'customer_account_no')
+
+db.define_table('Customer_Bank_Detail', 
+    Field('customer_id', 'reference Customer', ondelete = 'NO ACTION', writable = False),        
+    Field('account_no', 'string', length = 50),
+    Field('bank_name', 'string', length = 50),
+    Field('beneficiary_name', 'string', length = 50),
+    Field('iban_code', 'string', length = 50),
+    Field('swift_code', 'string', length = 50),
+    Field('bank_address', 'string', length = 50),
+    Field('city', 'string', length = 50),
+    Field('country_id','reference Made_In', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Made_In.id, '%(mnemonic)s - %(description)s', zero = 'Choose Country')),
+    Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Sales_Man',
     Field('employee_id','string', length = 10),
     Field('name','string', length = 25),
@@ -821,6 +901,9 @@ db.define_table('Sales_Order',
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
     Field('total_amount','decimal(10,2)', default = 0),    
+    Field('total_selective_tax', 'decimal(10,2)', default = 0),
+    # Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
+    Field('total_vat_amount', 'decimal(10,2)', default = 0),
     Field('sales_order_date_approved','date', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),
@@ -828,6 +911,7 @@ db.define_table('Sales_Order',
     Field('delivery_note_no', 'integer', writable = False),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
+    Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -862,6 +946,7 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('pieces','integer', default = 0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('taxable_value','decimal(10,2)', default = 0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
     Field('tax_percentage','decimal(10,2)', default = 0),
     Field('tax_amount','decimal(10,2)', default = 0),
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
@@ -880,7 +965,7 @@ db.define_table('Delivery_Note',
     Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    # Field('total_amount','decimal(10,2)', default = 0),    
+    # Field('total_amount','decimal(10,2)', default = 0),
     Field('remarks', 'string'),
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION'),
@@ -944,6 +1029,9 @@ db.define_table('Sales_Invoice_Transaction',
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+#---------- S   A   L   E   S   S c h e m a ----------
+
 
 from num2words import num2words
 

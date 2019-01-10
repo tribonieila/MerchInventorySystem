@@ -1,0 +1,107 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('customer_grid')}}";>BROWSE</a></li>
+            </ul>        
+            <span class="card-title">CUSTOMER BANK DETAILS</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form.custom.begin}}            
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Account No</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.account_no}}
+                            </div>    
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Bank Name</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.bank_name}}
+                            </div>                               
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Beneficiary Name</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.beneficiary_name}}
+                            </div>                               
+                        </div>                    
+                    </div>    
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">IBAN CODE</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.iban_code}}
+                            </div>                           
+                        </div>                                
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Swift Code</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.swift_code}}
+                            </div>                           
+                        </div>                                
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Bank Address</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.bank_address}}
+                            </div>                           
+                        </div>                        
+                    </div>                    
+                </div>      
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">City</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.city}}
+                            </div>                           
+                        </div>                                
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Country</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.country_id}}
+                            </div>                           
+                        </div>                                
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.status_id}}
+                            </div>                           
+                        </div>                        
+                    </div>    
+
+                </div>     
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.submit}}
+                            </div>                           
+                        </div>                                
+                    </div>                                         
+                </div>                                             
+            </div>
+            {{=form.custom.end}}                     
+        </div>
+    </div>
+</div>

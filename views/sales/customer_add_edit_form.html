@@ -1,0 +1,190 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('customer_grid')}}";>BROWSE</a></li>
+            </ul>        
+            <span class="card-title">CUSTOMER MASTER</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form.custom.begin}}            
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Account No</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.customer_account_no}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Group Code</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.customer_group_code_id}}
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Name</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.customer_name}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Category</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.customer_category_id}}
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Customer Account Type</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.customer_account_type}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                </div>                
+                
+                <hr>
+                <span class="card-title">CUSTOMER ADDRESS</span>
+                <br>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">PO Box</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.po_box_no}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Unit No</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.unit_no}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Building No</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.building_no}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Street No</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.street_no}}
+                            </div>                           
+                        </div>                        
+                    </div>
+        
+
+                </div>     
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Zone</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.zone}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Telephone No</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.telephone_no}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Fax No.</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.fax_no}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Email Address</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.email_address}}
+                            </div>                           
+                        </div>                        
+                    </div>        
+                </div>       
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Area Name</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.area_name}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">State</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.state}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Country</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.country}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sponsor Name</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.sponsor_name}}
+                            </div>                           
+                        </div>                        
+                    </div>        
+                </div>                                      
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">                                                  
+                                {{=form.custom.widget.status_id}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.submit}}
+                            </div>
+                        </div>                    
+                    </div>    
+                </div>   
+            </div>
+            {{=form.custom.end}}
+        </div>
+    </div>
+</div>

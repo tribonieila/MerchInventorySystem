@@ -1,0 +1,37 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('customer_grid')}}";>BROWSE</a></li>
+            </ul>                  
+            <span class="card-title">CUSTOMER DETAILS</span>
+        </div>
+        <div class="card-body tab-content">   
+            <div>
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#customer" aria-controls="customer" role="tab" data-toggle="tab">Customer Profile</a></li>
+                    <li role="presentation"><a href="#contact" aria-controls="contact" role="tab" data-toggle="tab">Contact Person</a></li>
+                    <li role="presentation"><a href="#bank" aria-controls="bank" role="tab" data-toggle="tab">Bank Details</a></li>
+                    
+                </ul>
+                
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="customer"><br>{{=LOAD('sales','view_customer_info', args = request.args(0))}}</div>
+                    <div role="tabpanel" class="tab-pane fade in" id="contact"><br>{{=LOAD('sales','view_contact', args = request.args(0))}}</div>
+                    <div role="tabpanel" class="tab-pane fade in" id="bank"><br>{{=LOAD('sales','view_bank', args = request.args(0))}}</div>                    
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#myTabs a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
+</script>
