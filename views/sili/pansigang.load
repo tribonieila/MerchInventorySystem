@@ -1,7 +1,5 @@
-
-                			
-                {{=form}}
-                {{=table}}
+{{=form}}
+{{=table}}
 
 
 

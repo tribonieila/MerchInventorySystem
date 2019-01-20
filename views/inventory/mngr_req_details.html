@@ -87,7 +87,9 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.srn_status_id}}
+                                <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
+                                <p class="help-block">readonly</p>
+    
                             </div>
                         </div>                    
                     </div>
@@ -113,11 +115,9 @@
                     <div class="col-md-6">  
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">
-                                {{=form.custom.submit}}
-                                <input class="btn btn-success" type="button" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')">
-                                <input class="btn btn-warning" type="button" value="reject" onclick="window.open('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}')">                                
-                                <!-- <input class="btn btn-info" type="button" value="approved" onclick="window.open('{{=URL('inventory','str_kpr_grid_gen_stk_trn', args = request.args(0))}}')">                                 -->
+                            <div class="col-sm-8">                                                                                
+                                <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')">
+                                <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}')">                                                                
                             </div>                            
                         </div>                    
                     </div>

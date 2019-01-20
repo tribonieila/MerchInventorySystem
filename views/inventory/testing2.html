@@ -1,6 +1,10 @@
 {{extend 'layout.html'}}
-{{=form2}}
-<div id="target"></div> 
 
+{{=LOAD('inventory', 'testinghead.load', ajax = True, vars = dict(ticket_no_id = request.vars.ticket_no_id))}}
+{{=LOAD('inventory', 'tail.load', ajax = True, args = request.vars.ticket_no_id)}}
 
-{{=LOAD('inventory', 'tail.load', ajax = True)}}
+<script>
+    $('submit').onclick(function(){
+        ajax('{{=URL('tail')}}', ['ticket_no_id'])
+    })
+</script>

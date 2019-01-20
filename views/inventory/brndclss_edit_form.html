@@ -26,8 +26,8 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">Department</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" value="{{=ctr_val.dept_code_id}}" readonly>                            
-                            
+                            <!-- <input type="text" class="form-control" value="{{=ctr_val.dept_code_id}}" readonly>                             -->
+                            {{=form.custom.widget.dept_code_id}}
                         </div>
                     </div>
     
@@ -86,7 +86,7 @@ $.noConflict();
     jQuery(function($) { 
       var data = [ {{for x in db(db.GroupLine.status_id == 1).select(db.GroupLine.ALL):}}
         { text: '{{=x.group_line_code}} - {{=x.group_line_name}}', value: '{{=x.id}}', 
-            children: [ {{for y in db(db.Brand_Line.group_line_id == x.id).select(db.Brand_Line.ALL):}}
+            children: [ {{for y in db(db.Brand_Line.group_line_id == x.id).select(orderby = db.Brand_Line.brand_line_name):}}
                 { text:'{{=y.brand_line_code}} - {{=y.brand_line_name}}', value:'{{=y.id}}'}, {{pass}} 
             ],
         }, {{pass}}   

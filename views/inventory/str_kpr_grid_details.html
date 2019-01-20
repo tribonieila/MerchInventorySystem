@@ -87,9 +87,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                <!-- {{=form.custom.widget}} -->
-                                <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
-                                <p class="help-block">readonly</p>            
+                                {{ if _id.srn_status_id == 5: }}
+                                    <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
+                                    <p class="help-block">readonly</p>            
+                                {{ else: }}
+                                    {{=form.custom.widget.srn_status_id}}
+                                {{ pass }}
                         </div>
                         </div>                    
                     </div>
@@ -115,13 +118,16 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{ if _id.srn_status_id == 5:  }}
+                                {{ if _id.srn_status_id == 5 or _id.srn_status_id == 6:  }}
                                     <input type="submit" value="submit", class="btn btn-primary disabled">
+                                    <input type="submit" value="stock request print", class="btn btn-primary disabled">
                                     <input type="button" value="create stock transfer & print", class="btn btn-success disabled">
                                 {{ else: }}
                                     <input type="text" class="form-control" id="_id" name = "_id" value="{{=_id.id}}" hidden >
-                                    <input type="submit" value="submit", class="btn btn-primary">                            
-                                    <input class="btn btn-warning" id="btnPrint" type="button" value="create stock transfer & print" onclick="window.open('{{=URL('inventory','str_kpr_rpt', args = request.args(0))}}')">
+                                    <input type="submit" value="submit", class="btn btn-primary">
+                                    <input class="btn btn-warning" id="btnStkReqPrint" type="button" value="stock request print" onclick="window.open('{{=URL('inventory','str_kpr_rpt', args = request.args(0))}}')">
+                                    <a class="btn btn-info" id="btnStkTrnPrint" role="button" href="{{=URL('str_kpr_grid')}}">create stock transfer & print</a>
+                                    <!-- <input class="btn btn-info" id="btnStkTrnPrint" type="button" value="create stock transfer & print" onclick="window.open('{{=URL('inventory','stock_transaction_report', args = request.args(0))}}')"> -->
                                 {{pass}}
                             </div>                            
                         </div>                    
@@ -137,8 +143,9 @@
 
 
 <script>
-    $('#btnPrint').click(function() {
+    $('#btnStkTrnPrint').click(function() {
         ajax('{{=URL('str_kpr_grid_gen_stk_trn')}}',['_id']);
-        
+        window.open('{{=URL('inventory','stock_transaction_report', args = request.args(0))}}');
     });
+    
 </script>

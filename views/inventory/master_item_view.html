@@ -5,8 +5,25 @@
         <div class="card-head">
             <span class="card-title">MASTER STOCK CARD VIEW</span>
         </div>
-        <div class="card-body tab-content">                            
-            {{=form}}
+        <div class="card-body tab-content">
+            {{=form.custom.begin}}
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="col-sm-4 control-label">Item Code</label>
+                        <div class="col-sm-8">
+                            {{=form.custom.widget.item_code_id}}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="col-sm-8">
+                            {{=form.custom.submit}}
+                        </div>
+                    </div>
+                </div>
+            </div>              
+            {{=form.custom.end}} 
+            <br>               
             {{=i_table}}
             {{=table}}
         </div>

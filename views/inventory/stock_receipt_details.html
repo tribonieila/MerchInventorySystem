@@ -134,9 +134,23 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
-                                    {{=form.custom.submit}}                                
-                                    <input class="btn btn-success" type="button" value="CREATE STOCK RECEIPT" onclick="ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')">                                                                
-                                    <input class="btn btn-warning" type="button" value="print" onclick="window.open('{{=URL('inventory','stock_transaction_report', args = request.args(0))}}')">                                
+                                    {{ if _id.srn_status_id == 6: }}                                        
+                                        <input class="btn btn-success" type="button" value="submit" disabled>
+                                        <!-- <input class="btn btn-success" type="button" value="CREATE STOCK RECEIPT" disabled> -->
+                                        <input class="btn btn-warning" type="button" value="create stock receipt and print" disabled>                                
+                                    {{ else:}}
+                                        <!-- <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')"> -->
+                                        <!-- submit button -->
+                                        <input class="btn btn-success" type="submit" value="submit">
+                                        <!-- <input class="btn btn-success" type="submit" value="create stock receipt" onclick="ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')"> -->
+                                         <!-- onclick="ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')">  -->
+                                        <!-- <a class="btn btn-success" href="{{=URL('stock_receipt')}}" id="btngenprint" role="button" >create stock receipt</a> -->
+                                        <!-- <a class="btn btn-warning" href="{{=URL('stock_receipt_report', args = request.args(0))}}" target ="_blank"id="btngenprint" role="button" >create stock receipt and print</a> -->
+                                        <input class="btn btn-warning" type="button" value="create stock receipt and print" id="genstr" onclick="ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')">                                
+                                    {{ pass }}
+                                    
+                                    
+
                                     <!-- <input class="btn btn-warning" type="button" value="test" onclick="window.open('{{=URL('inventory','test')}}')">                                 -->
                                 </div>                            
                             </div>                    
@@ -151,3 +165,10 @@
 </div>
 
 
+<script>
+    $('#genstr').click(function(){
+        ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')
+        window.open("{{=URL('inventory','stock_receipt_report', args = request.args(0))}}");        
+        $('#genstr').attr('disabled','disabled');
+    })
+</script>

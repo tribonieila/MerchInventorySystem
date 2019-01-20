@@ -99,7 +99,7 @@
 							</span>
 						</a>
 						<ul class="dropdown-menu animation-dock">
-							<li><a href="{{=URL('default','user/Profile')}}"><i class="fa fa-fw fa-user text-primary"></i>My profile</a></li>
+							<!-- <li><a href="{{=URL('default','user/Profile')}}"><i class="fa fa-fw fa-user text-primary"></i>My profile</a></li> -->
 							<li><a href="{{=URL('default','user/logout')}}"><i class="fa fa-fw fa-power-off text-danger"></i> Logout</a></li>
 						</ul><!--end .dropdown-menu -->
 					</li><!--end .dropdown -->
@@ -192,6 +192,7 @@
 							<ul>
 								<li><a href="{{=URL('inventory','pre_mas')}}" ><span class="title">Master Prefix Data</span></a></li>
 								<li><a href="{{=URL('inventory','trns_pre_mas')}}" ><span class="title">Transaction Prefix Data</span></a></li>
+								<li><a href="{{=URL('inventory','adjustment_type')}}" ><span class="title">Adjustment Type</span></a></li>
 								<li><a href="{{=URL('inventory','div_mas')}}" ><span class="title">Division</span></a></li>
 								<li><a href="{{=URL('inventory','dept_mas')}}" ><span class="title">Department</span></a></li>
 								<li><a href="{{=URL('inventory','sec_mas')}}" ><span class="title">Section</span></a></li>
@@ -232,13 +233,29 @@
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
 					<ul>
-						<li><a href="{{=URL('sales', 'customer_category_grid')}}" ><span class="title">Customer Category</span></a></li>
-						<li><a href="{{=URL('sales', 'customer_account_type_grid')}}" ><span class="title">Customer Account Type</span></a></li>
-						<li><a href="{{=URL('sales', 'customer_group_code_grid')}}" ><span class="title">Customer Group Code</span></a></li>
-						<li><a href="{{=URL('sales', 'customer_grid')}}" ><span class="title">Customer Master</span></a></li>
-						<li><a href="{{=URL('sales', 'sales_order_form')}}" ><span class="title">Sales Order</span></a></li>
-						<li><a href="{{=URL('sales', 'stock_card_movement')}}" ><span class="title">Delivery Note</span></a></li>
-						<li><a href="{{=URL('sales', 'stock_card_movement')}}" ><span class="title">Sales Invoice</span></a></li>						
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'customer_grid')}}" ><span class="title">Customer Master</span></a></li>
+								<!-- <li><a href="#" ><span class="title"></span></a></li> -->
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'sales_order_form')}}" ><span class="title">Sales Order</span></a></li>
+								<li><a href="{{=URL('sales', 'stock_card_movement')}}" ><span class="title">Delivery Note</span></a></li>
+								<li><a href="{{=URL('sales', 'stock_card_movement')}}" ><span class="title">Sales Invoice</span></a></li>
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Settings</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'customer_category_grid')}}" ><span class="title">Customer Category</span></a></li>
+								<li><a href="{{=URL('sales', 'customer_account_type_grid')}}" ><span class="title">Customer Account Type</span></a></li>
+								<li><a href="{{=URL('sales', 'customer_group_code_grid')}}" ><span class="title">Customer Group Code</span></a></li>			
+							</ul>
+						</li>
 					</ul>
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-bar"></i></div><span class="title">FINANCES</span></a></li>

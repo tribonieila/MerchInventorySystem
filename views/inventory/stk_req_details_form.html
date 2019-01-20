@@ -80,15 +80,19 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
-                                <p class="help-block">readonly</p>    
+                                {{ if _id.srn_status_id == 4 or _id.srn_status_id == 3: }}                       
+                                    {{=form.custom.widget.srn_status_id}}
+                                {{ else: }}                                    
+                                    <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >                                    
+                                    <p class="help-block">readonly</p>                                    
+                                {{ pass }}
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Destination</label>
-                            <div class="col-sm-8">                                
+                            <div class="col-sm-8">                                                                
                                 <input type="text" class="form-control" value="{{=_id.stock_destination_id.location_code}} - {{=_id.stock_destination_id.location_name}}" readonly >
                                 <p class="help-block">readonly</p>    
                                 <input type="text" class="form-control" id="stock_destination_id" name="stock_destination_id" value="{{=_id.stock_destination_id}}" hidden >
@@ -101,10 +105,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.remarks}}
-                                <!-- <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
-                                <p class="help-block">readonly</p>     -->
-    
+                                {{ if _id.srn_status_id == 4 or _id.srn_status_id == 3: }}
+                                    {{=form.custom.widget.remarks}}
+                                {{ else: }}
+                                    <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
+                                    <p class="help-block">readonly</p>    
+                                {{ pass }}
                             </div>
                         </div>                  
                     </div>
@@ -112,10 +118,18 @@
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                <input class="btn btn-primary" type="submit" value="Submit">                                                                     
-                                {{=btnAdd}}
-                                    <!-- <input class="btn btn-success" type="button" value="add new" id="btnnewReq" onclick="newReq();"> --> 
-                                <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">   
+                                {{ if (_id.srn_status_id == 2) or (_id.srn_status_id == 5) or (_id.srn_status_id == 6): }}
+                                    <input class="btn btn-success" type="button" value="submit" disabled> 
+                                    <!-- <input class="btn btn-info" type="button" value="add new" disabled>  -->
+                                    <input class="btn btn-warning" type="button" value="refresh" disabled>   
+
+                                {{ else: }}
+                                    <input class="btn btn-success" type="submit" value="submit"> 
+                                    <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
+                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
+
+                                
+                                {{ pass }}
                             </div>                            
                         </div>                    
                     </div>
@@ -163,7 +177,7 @@
                     </div>
                     <div class="col-md-2">                        
                         <button class="btn btn-primary" type="submit" id="btnInsert">add</button>                        
-                        {{=btnHelp}}
+                        
                     </div>                                                              
                 </div> 
                 </form> 

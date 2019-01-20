@@ -19,13 +19,13 @@
                 <template>                         
                     <el-tabs :tab-position="tabPosition" style="height: 100%;">
                         <el-tab-pane label="Stock Request">                            
-                            <div style="margin-top: 20px" >
+                            <!-- <div style="margin-top: 20px" >
                                 <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Approved</el-button>
                                 <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
-                            </div>
+                            </div> -->
                             
                             <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
-                                <el-table-column type="selection" width="55"></el-table-column>
+                                <!-- <el-table-column type="selection" width="55"></el-table-column> -->
                                 <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
                                 <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
                                 <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
@@ -34,7 +34,7 @@
                                 <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
                                 <el-table-column prop="stat" label="Status" width="150"></el-table-column>
                                 <el-table-column prop="req" label="Required Action" width="140"></el-table-column>
-                                <el-table-column fixed="right" label="Actions" width="100">
+                                <el-table-column fixed="right" label="Actions" width="200">
                                     <template slot-scope="scope">
                                         <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
                                         <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
@@ -43,8 +43,12 @@
                             </el-table>
                                                     
                         </el-tab-pane>
-                        <el-tab-pane label="Sales Order">Sales Order</el-tab-pane>
-                        <el-tab-pane label="Sales Return">Sales Return</el-tab-pane>                        
+                        <el-tab-pane label="Sales Order">
+                            <el-alert title="Sales Order" type="info" description="on progress" show-icon></el-alert>    
+                        </el-tab-pane>
+                        <el-tab-pane label="Sales Return">
+                            <el-alert title="Sales Return" type="info" description="on progress" show-icon></el-alert>    
+                        </el-tab-pane>                        
                     </el-tabs>
                     <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
                         <el-table :data="gridData">
@@ -94,7 +98,7 @@ var Main = {
         ],          
         dialogTableVisible: false,
         tabPosition: 'top',
-        tableData: [{{for s in db(db.Stock_Request.srn_status_id == 3 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
+        tableData: [{{for s in db(db.Stock_Request.srn_status_id == 4 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
         orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
         {
             tag: '{{=s.Stock_Request.id}}',                

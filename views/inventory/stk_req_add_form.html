@@ -24,7 +24,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Sales Order No</label>
+                                <label class="col-sm-4 control-label">Stock Request Order</label>
                                 <div class="col-sm-8">                                
                                     <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                     <div id="_stk_req_no_div"></div>
@@ -33,7 +33,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Sales Order Date</label>
+                                <label class="col-sm-4 control-label">Stock Request Date</label>
                                 <div class="col-sm-8"> {{import datetime}}
                                     <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                     <p class="help-block">readonly</p>                            
@@ -102,10 +102,15 @@
                         <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
-                                    <input class="btn btn-primary" type="submit" value="Submit"  id="btnsubmit">
-                                    <input class="btn btn-success" type="button" value="proceed" id="btnrequest">
-                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">
-                                    
+                                    <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">
+                                    <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
+                                    <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
+                                    <a class="btn btn-info" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
+                                    <input class="btn btn-success"  type="button" value="foot" id="btnref">
+                                    <!-- <a class="btn btn-info" id="btnHelp" target="blank" role="button" href = "#">help?</a>                               -->
+                                    <!-- <input class="btn btn-danger"  type="button" value="abort" onclick="window.location.reload()">       -->
+                                    <!-- <input class="btn btn-info"     type="button" value="help?" id="btnHelp" onclick="window.open('{{=URL('inventory','item_help')}}')"> -->
+
                                 </div>                            
                             </div>                    
                         </div>
@@ -113,9 +118,10 @@
                     {{=form.custom.end}}
                 </div>  
                 <div id = "request_panel">
+
                     <hr>
-                    <div id ="desc" >
-                    </div>
+                    <div id = 'target'></div>
+    
                     {{=form2.custom.begin}}
                     <div class="row">
                         <div class="col-md-3">
@@ -142,17 +148,22 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Category</label>
-                                <div class="col-sm-8">{{=form2.custom.widget.category_id}}</div>
+                                <div class="col-sm-8">
+                                    <div id="cat_id"></div>
+                                    
+                                </div>
                             </div>   
                         </div>        
                         <div class="col-md-2">
-                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >                            
-                            <button class="btn btn-info" type="button" id="btnHelp">Help?</button>    
+                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >
                         </div>            
                     </div>
+
                     <hr>
                     {{=form2.custom.end}}
-                    <div id = 'target'></div>
+                    <div id ="desc" ></div>
+
+                    
                 </div>
             </div>
         </div>
@@ -160,40 +171,56 @@
 
 <script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
 
-<script>    
-$(document).ready(function(){
 
+<script>    
+
+$(document).ready(function(){
+    $('#btnsubmit').attr('disabled','disabled');
+    var _p = $('#no_table_dept_code_id').val();
+    var _s = $('#no_table_stock_source_id').val();
+    var _d = $('#no_table_stock_destination_id').val();
+    // $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();
 
     $('#no_table_dept_code_id').change(function() {
         ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
         return false;
     });
-
-    $('#btnHelp').on('click',function(){
-        $('#no_table_dept_code_id').removeAttr('disabled');
-        var x = document.getElementById("no_table_dept_code_id").selectedIndex;
-        console.log(x);
-        {{ print 'attri ', form.vars.dept_code_id, request.vars.dept_code_id }}
+    $('#btnAbort').click(function(){
+        ajax('{{=URL('abort_entry')}}',['ticket_no_id']);
     });
-
     $('#click').click(function(){                        
         $("#request_panel").load(" #target");            
         return false;
     });
+    $('#btnHelp').click(function(){
+        ajax('{{=URL('item_help')}}',['dept_code_id','stock_source_id']);  
+        window.open('{{=URL('inventory','item_help', args = [request.vars.dept_code_id, request.vars_stock_source_id])}}');      
+    });
+    
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
 
     $('#no_table_item_code').change(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
-        $('#no_table_stock_source_id').removeAttr('disabled');         
+        $('#no_table_stock_source_id').removeAttr('disabled');    
+        $('#no_table_stock_destination_id').removeAttr('disabled');     
         ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
         $('#no_table_dept_code_id').attr('disabled','disabled');
-        $('#no_table_stock_source_id').attr('disabled','disabled');        
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;      
     });
-
+    
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
-        $("#no_table_item_code").focus();
+        $("#no_table_item_code").focus(); 
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_srn_status_id').attr('disabled','disabled');
         $('#no_table_remarks').attr('disabled','disabled');
@@ -202,7 +229,9 @@ $(document).ready(function(){
         $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;
     });
-    
+    $('#btnref').click(function(){        
+        $("#tblfoot").load(location.href + " #tblfoot");
+    });
     $('#btnsubmit').click(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_srn_status_id').removeAttr('disabled');
@@ -210,20 +239,25 @@ $(document).ready(function(){
         $('#no_table_stock_due_date').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');
         $('#no_table_stock_destination_id').removeAttr('disabled');        
-        return false;
+        
     });
 });
     
 </script> 
 <script>
     function insert(){
+        $('#btnsubmit').removeAttr('disabled');
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');        
-        $('#no_table_stock_destination_id').removeAttr('disabled');        
+        $('#no_table_stock_destination_id').removeAttr('disabled');
+        var i = document.getElementById('no_table_item_code').value;
+        console.log(i);
+        console.log( i.split(' ').join('') );
         ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');        
         document.getElementById('no_table_item_code').value = ''
         document.getElementById('no_table_quantity').value = '0'
         document.getElementById('no_table_pieces').value = '0'
+        $('#btnrequest').attr('disabled','disabled');
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_stock_source_id').attr('disabled','disabled');
         $('#no_table_stock_destination_id').attr('disabled','disabled');             

@@ -1,51 +1,37 @@
 {{extend 'layout.html'}}
-<style>
-    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
-</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
             <span class="card-title">Stock Card Movement</span>
         </div>
         <div class="card-body tab-content">
-                <!-- <div id="app">
-                        <el-form ref="form" :model="form" label-width="120px">                       
-                          <el-form-item label="Item Code">
-                            <el-autocomplete 
-                            class="inline-input" 
-                            v-model="state2" 
-                            :fetch-suggestions="querySearch" 
-                            placeholder="Please Input" 
-                            :trigger-on-focus="false" 
-                            @select="handleSelect">
-                          </el-autocomplete>
-                          </el-form-item>
-                          <el-form-item label="Location">
-                            <el-select v-model="form.region" placeholder="please select your location">
-                              {{for l in db(db.Location).select():}}
-                              <el-option label="{{=l.location_code}} - {{=l.location_name}}" value="{{=l.id}}"></el-option>                              
-                              {{pass}}
-                            </el-select>
-                          </el-form-item>
+          {{=form.custom.begin}}
+          <div class="form-horizontal" role="form">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Item Code</label>
+              <div class="col-sm-8">{{=form.custom.widget.item_code_id}}</div>    
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Location Code</label>
+              <div class="col-sm-8">{{=form.custom.widget.location_code_id}}</div>    
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Start Date</label>
+              <div class="col-sm-8">{{=form.custom.widget.start_date}}</div>    
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">End Date</label>
+              <div class="col-sm-8">{{=form.custom.widget.end_date}}</div>    
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label"></label>
+              <div class="col-sm-8">{{=form.custom.submit}}</div>      
+            </div>
+            
+          </div>
+          {{=form.custom.end}}
 
-                            <el-form-item label="Date">
-                              <el-date-picker v-model="value7" type="daterange" align="right" unlink-panels range-separator="To" start-placeholder="Start date" end-placeholder="End date" :picker-options="pickerOptions2">
-                              </el-date-picker>
-  
-                            </el-form-item>
-                          
-                          <el-form-item>
-                            <el-button type="primary" @click="onSubmit">submit</el-button>
-                            <el-button>Cancel</el-button>
-                          </el-form-item>
-                        </el-form>
-                        </div> -->
-
-            {{=form}}
+            
             {{=i_table}}
             <hr>
             {{=table}}

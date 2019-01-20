@@ -7,8 +7,30 @@
 def index():
     response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
     return dict(message=T('Welcome to the jungle!'))
+session.ROWS = 10
 
+def row_column():
+    print session.ROWS
+    session.ROWS = session.ROWS+1
+    print session.ROWS
+def one():
+    form = SQLFORM(db.Stock_Request)
+    if form.process().accepted:
+        response.flash = 'save'
+    elif form.errors:
+        response.flash = 'error'
+    return dict(form = form)
 
+def many():
+
+    form = SQLFORM(db.Stock_Transaction_Temp)
+    if form.process().accepted:
+        response.flash = 'save'
+    elif form.errors:
+        response.flash = 'error'
+    for n in db().select(db.Stock_Transaction_Temp.ALL):
+        
+    return dict(form = form, table = table)
 # ---- API (example) -----
 @auth.requires_login()
 def api_get_user_email():
