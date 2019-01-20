@@ -121,7 +121,8 @@
 
                     <hr>
                     <div id = 'target'></div>
-    
+                    <div id='gt'></div>
+                    {{=_grand_total}}
                     {{=form2.custom.begin}}
                     <div class="row">
                         <div class="col-md-3">
@@ -240,6 +241,9 @@ $(document).ready(function(){
         $('#no_table_stock_source_id').removeAttr('disabled');
         $('#no_table_stock_destination_id').removeAttr('disabled');        
         
+    });
+    $('#del').click(function(){
+        ajax('{{=URL('gt')}}', ['ticket_no_id'],'gt');
     });
 });
     

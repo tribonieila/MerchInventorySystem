@@ -2757,17 +2757,20 @@ def del_item():
     session.grand_total = _balanced
     db(db.Stock_Transaction_Temp.id == request.args(0)).delete()    
     print 'total amount :: ', _balanced
-    response.js = "web2py_component('#tblfoot').load(location.href + ' #tblfoot');"
+    return session.grand_total
+    
+    # response.js = "web2py_component('#tblfoot').load(location.href + ' #tblfoot');"
     # redirect(URL('inventory','itm_view'))
 
     
     # print 'after deleted', session.grand_total
     # response.js = "web2py_component('#tblIC').get(0).reload();"
     # $("#tblfoot").load(location.href + " #tblfoot");
-def grand_total(e):
-    print e
+def _grand_total(e):    
     session.grand_total += e
     return session.grand_total
+def gt():
+    print request.vars.ticket_no_id
 
 def itm_view():    
     row = []
@@ -2790,7 +2793,7 @@ def itm_view():
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del',callback=URL('del_item', args = k.Stock_Transaction_Temp.id))            
             btn_lnk = DIV(dele_lnk)
             # g = sum(db.Stock_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).amount for a in session.grand_total.items()
-            grand_total(k.Stock_Transaction_Temp.amount)
+            _grand_total(k.Stock_Transaction_Temp.amount)
             row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),
             TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),
             TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),
@@ -2826,8 +2829,6 @@ def itm_view():
         table = TABLE(*[TR(v) for k, v in form.errors.items()],_class='table')        
         table += TABLE(*[head, body, foot], _class='table')
         return table
-
-
 
 import string
 import random
@@ -2934,7 +2935,7 @@ def stk_req_add_form():
     
     btnHelp = A(_class='btn btn-info', _type = 'button', _href = URL('inventory', 'item_help', args = [form.vars.dept_code_id, form.vars.stock_source_id]))
 
-    return dict(form = form,  form2 = form2, ticket_no_id = _ticket_no, btnHelp = btnHelp)
+    return dict(form = form,  form2 = form2, ticket_no_id = _ticket_no, btnHelp = btnHelp, _grand_total = session.grand_total)
 
 # STOCK REQUEST FORM #
 
