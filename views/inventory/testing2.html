@@ -1,10 +1,4 @@
 {{extend 'layout.html'}}
 
-{{=LOAD('inventory', 'testinghead.load', ajax = True, vars = dict(ticket_no_id = request.vars.ticket_no_id))}}
-{{=LOAD('inventory', 'tail.load', ajax = True, args = request.vars.ticket_no_id)}}
-
-<script>
-    $('submit').onclick(function(){
-        ajax('{{=URL('tail')}}', ['ticket_no_id'])
-    })
-</script>
+{{=LOAD('inventory', 'testinghead.load', ajax = True, args = [request.vars.ticket_no_id])}}
+{{=LOAD('inventory', 'tail.load', ajax = True, vars = request.vars.ticket_no_id)}}

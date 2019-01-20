@@ -60,7 +60,7 @@
 <script type="text/javascript">
     jQuery(document).ready(function($){
 
-        var data = [ {{ for g in db(db.GroupLine).select(orderby = db.GroupLine.group_line_code): }}
+        var data = [ {{ for g in db(db.GroupLine.status_id == 1).select(orderby = db.GroupLine.group_line_code): }}
             { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
                 children: [ {{ for b in db(db.Brand_Line.group_line_id == g.id).select(orderby = db.Brand_Line.brand_line_name): }}
                     { text: '{{=b.brand_line_code}} - {{=b.brand_line_name}}', value: '{{=b.id}}'}, {{pass}}

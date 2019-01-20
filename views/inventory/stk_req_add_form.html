@@ -230,7 +230,7 @@ $(document).ready(function(){
         return false;
     });
     $('#btnref').click(function(){        
-        $("#tblfoot").load(location.href + " #tblfoot");
+        $("#tblIC").load(location.href + " #tblIC");
     });
     $('#btnsubmit').click(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
@@ -251,8 +251,8 @@ $(document).ready(function(){
         $('#no_table_stock_source_id').removeAttr('disabled');        
         $('#no_table_stock_destination_id').removeAttr('disabled');
         var i = document.getElementById('no_table_item_code').value;
-        console.log(i);
-        console.log( i.split(' ').join('') );
+        // console.log(i);
+        // console.log( i.split(' ').join('') );
         ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');        
         document.getElementById('no_table_item_code').value = ''
         document.getElementById('no_table_quantity').value = '0'

@@ -1071,6 +1071,7 @@ def brndclss_edit_form():
     db.Brand_Classificatin_Department.brand_cls_code_id.writable = False
     # db.Brand_Classification.dept_code_id.writable = False
     ctr_val = db(db.Brand_Classification.id == request.args(0)).select().first()
+    db.Brand_Classification.brand_line_code_id.requires = IS_IN_DB(db(db.Brand_Line.group_line_id == ctr_val.group_line_id), db.Brand_Line.id, '%(brand_line_code)s - %(brand_line_name)s', zero= 'Choose Brand Line')
     form = SQLFORM(db.Brand_Classification, request.args(0), deletable = True)
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
@@ -2409,16 +2410,14 @@ import datetime
 def testing2():
     return dict()
 
-def testinghead():
-    
-    db(db.Stock_Transaction_Temp.created_by ==  auth.user_id).delete()
+def testinghead():    
+    # db(db.Stock_Transaction_Temp.created_by ==  auth.user_id).delete()
     form2 = SQLFORM.factory(        
         Field('stock_request_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('stock_source_id','reference Location', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
         Field('stock_destination_id','reference Location', label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
-        Field('stock_due_date','date', default = request.now),
-        Field('ticket_no_id','string', default = 'AYOS'),)
+        Field('stock_due_date','date', default = request.now))
     # if form2.process(formname = 'head').accepted:
     if form2.accepts(request.vars):
         response.flash = 'save'
@@ -2427,7 +2426,7 @@ def testinghead():
         response.flash = 'invalid values in form!'
     # records = SQLTABLE(db.Stock_Transaction_Temp).select(),headers='fieldname:capitalize')
     # print request.vars.item_code_id, ' from testing 2'
-    return dict(form2 = form2)
+    return dict(form2 = form2, ticket_no_id = 'ayos')
 
 def tail():
     
@@ -2438,23 +2437,8 @@ def tail():
         Field('pieces', 'integer', default = 0),
         Field('category_id', 'reference Transaction_Item_Category', default = 4, requires = IS_IN_DB(db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')),
         Field('srn_status_id','reference Stock_Status', default = 4, requires = IS_IN_DB(db(db.Stock_Status.id == 3), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
-    if form.process(formname = 'tail').accepted:        
-        
-        uom = db(db.Item_Master.id == request.vars.item_code_id).select(db.Item_Master.uom_value).first()
-        rpv = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select(db.Item_Prices.retail_price).first()
-        total_pcs = int(request.vars.quantity) * int(uom.uom_value) + int(request.vars.pieces)  
-        unit_price = int(rpv.retail_price) / int(uom.uom_value)      
-        total_amount_value = int(unit_price) * int(total_pcs)
-
-        _id = db(db.Stock_Transaction_Temp.item_code_id == request.vars.item_code_id).select().first()        
-      
-        
-        # stk = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select(db.Stock_File.ALL).first()        
-        
-        # stk.stock_in_transit += total_pcs
-        # stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
-        # stk.update_record()
-        print 'tick: ', request.args(0), request.vars.ticket_no_id
+    if form.process(formname = 'tail').accepted:                
+        print 'tick: ', request.args(0), request.vars.ticket_no_id, form.vars.ticket_no_id
         total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
         grand_total = db().select(total).first()[total]
         db.Stock_Transaction_Temp.insert(
@@ -2462,7 +2446,7 @@ def tail():
             quantity = form.vars.quantity,
             pieces = form.vars.pieces,
             category_id = form.vars.category_id,
-            amount = total_amount_value,
+            # amount = total_amount_value,
             stock_source_id = request.vars.stock_source_id,
             ticket_no_id = form.vars.ticket_no_id)
         # grand_total += float(total_amount_value)
@@ -2772,21 +2756,27 @@ def del_item():
     _balanced = float(session.grand_total) - float(itm.amount)
     session.grand_total = _balanced
     db(db.Stock_Transaction_Temp.id == request.args(0)).delete()    
-    print 'total amount - ', _balanced
+    print 'total amount :: ', _balanced
+    response.js = "web2py_component('#tblfoot').load(location.href + ' #tblfoot');"
+    # redirect(URL('inventory','itm_view'))
 
     
     # print 'after deleted', session.grand_total
-    response.js = "web2py_component('#tblIC').get(0).reload();"
+    # response.js = "web2py_component('#tblIC').get(0).reload();"
+    # $("#tblfoot").load(location.href + " #tblfoot");
+def grand_total(e):
+    print e
+    session.grand_total += e
+    return session.grand_total
 
 def itm_view():    
     row = []
     uom_value = 0
     retail_price_value = 0
-    total_pcs = 0    
+    total_pcs = 0        
     session.grand_total = 0
     form = SQLFORM(db.Stock_Transaction_Temp)
-    if form.accepts(request, formname=None, onvalidation = validate_item_code):                   
-        
+    if form.accepts(request, formname=None, onvalidation = validate_item_code):                           
         ctr = 0
         row = []        
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
@@ -2797,10 +2787,10 @@ def itm_view():
             # edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', callback=URL( args = k.Stock_Transaction_Temp.id), data = dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id),'_data-qt':(k.Stock_Transaction_Temp.quantity), '_data-pc':(k.Stock_Transaction_Temp.pieces)})            
             # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', callback = URL('stock_adjustment_delete', args = k.Stock_Transaction_Temp.id))
 
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del',callback=URL('del_item', args = k.Stock_Transaction_Temp.id))            
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del',callback=URL('del_item', args = k.Stock_Transaction_Temp.id))            
             btn_lnk = DIV(dele_lnk)
             # g = sum(db.Stock_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).amount for a in session.grand_total.items()
-            session.grand_total += k.Stock_Transaction_Temp.amount
+            grand_total(k.Stock_Transaction_Temp.amount)
             row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id.mnemonic),TD(k.Item_Master.uom_value),
             TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),
             TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),
