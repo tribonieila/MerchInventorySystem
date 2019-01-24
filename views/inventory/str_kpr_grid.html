@@ -19,45 +19,7 @@
                 <template>                                               
                 <el-tabs :tab-position="tabPosition" style="height: 100%;">
                         <el-tab-pane label="Stock Request"> 
-
-                            <!-- <div style="margin-top: 20px" >
-                                <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Create Stock Transfer & Print</el-button>
-                                <el-button type="warning" icon="el-icon-printer" @click="printstockrequest()">Print Stock Request</el-button>
-                                <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
-                            </div> -->
-                            
-                            <el-table ref="multipleTable" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
-                                <!-- <el-table-column type="selection" width="55"></el-table-column> -->
-                                <el-table-column fixed prop="date" label="Date" width="110"></el-table-column>
-                                <el-table-column fixed prop="req_no" label="Stock Request No" width="150"></el-table-column>
-                                <el-table-column prop="stk_src" label="Stock Source" width="200"></el-table-column>
-                                <el-table-column prop="stk_des" label="Stock Destination" width="200"></el-table-column>
-                                <el-table-column prop="req_by" label="Requested by" width="200"></el-table-column>
-                                <el-table-column prop="amount" label="Amount" width="100"></el-table-column>
-                                <el-table-column prop="stat" label="Status" width="150"></el-table-column>
-                                <el-table-column prop="req" label="Required Action" width="300"></el-table-column>
-                                <el-table-column fixed="right" label="Actions" width="200">
-                                    <template slot-scope="scope">
-                                        <!-- <el-button @click="detailsClick(scope.row.tag)" type="primary" plain size="mini">Details</el-button>
-                                        <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Print SR</el-button>
-                                        <el-button @click="linksClick(scope.row.tag)" type="primary" plain size="mini">Print ST</el-button>  -->
-                                        <el-tooltip class="item" effect="dark" content="Details" placement="top">
-                                        <el-button @click="detailsClick(scope.row.tag)" type="info" size="mini" icon="el-icon-document" circle></el-button>
-                                        </el-tooltip>
-                                        <el-tooltip class="item" effect="dark" content="Print Stock Request" placement="top">
-                                        <el-button @click="StkReqClick(scope.row.tag)" type="warning" size="mini" icon="el-icon-printer" circle></el-button>
-                                        </el-tooltip>
-                                        {{ if db(db.Stock_Request.srn_status_id == 5).select(db.Stock_Request.ALL).first(): }}
-                                            <el-tooltip class="item" effect="dark" content="Print Stock Transfer" placement="top"></el-tooltip>    
-                                                <el-button @click="StkTrxClick(scope.row.tag)" type="primary" size="mini" icon="el-icon-printer" circle></el-button>                                            
-                                            </el-tooltip> 
-                                        {{ elif db(db.Stock_Request).select(db.Stock_Request.ALL): }}
-                                            <el-button @click="StkTrxClick(scope.row.tag)" type="primary" size="mini" icon="el-icon-printer" circle disabled></el-button>                                            
-                                        {{ pass }}
-                                        <!-- <el-button type="text" @click="dialogTableVisible = true">open a Table nested Dialog</el-button> -->
-                                    </template>
-                                </el-table-column>
-                            </el-table>
+                            {{=table}}                            
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">
                             <el-alert title="Sales Order" type="info" description="on progress" show-icon></el-alert>    
@@ -72,7 +34,7 @@
 </div>
     
 <script>
-var Main = {
+var Main = { 
     methods: {
         printstockrequest() {
             this.multipleSelection = [];

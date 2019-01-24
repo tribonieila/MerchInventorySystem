@@ -119,8 +119,8 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 {{ if _id.srn_status_id == 5 or _id.srn_status_id == 6:  }}
-                                    <input type="submit" value="submit", class="btn btn-primary disabled">
-                                    <input type="submit" value="stock request print", class="btn btn-primary disabled">
+                                    <input type="button" value="submit", class="btn btn-primary disabled">
+                                    <input type="button" value="stock request print", class="btn btn-primary disabled">
                                     <input type="button" value="create stock transfer & print", class="btn btn-success disabled">
                                 {{ else: }}
                                     <input type="text" class="form-control" id="_id" name = "_id" value="{{=_id.id}}" hidden >

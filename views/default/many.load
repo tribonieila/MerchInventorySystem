@@ -1,0 +1,10 @@
+{{=form}}
+{{=table}}
+{{=session._grand_total}}
+<input class="btn btn-success" type="button" value="approved" id="dele">
+
+<script>
+    $('#dele').click(function(){
+        $("#tblIC").get(0).reload();         
+    })
+</script>

@@ -8,6 +8,18 @@ auth = Auth(globals(),db)
 
 auth.settings.actions_disabled=['register', 'request_reset_password','retrieve_username']
 if request.controller != 'appadmin': auth.settings.actions_disabled +=['register']
+
+db.define_table('Division_Group',
+    Field('division_group_name','string',label = 'Division',length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Division_Group.division_group_name')]))
+
+db.define_table('Department_Group',
+    Field('division_group_id','reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+    Field('department_group_name','string',label = 'Department', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Department_Group.department_group_name')]))
+
+db.define_table('Section_Group',
+    Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+    Field('section_group_name','string',label = 'Section', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db, 'Section_Group.section_group_name')]))
+
 db.define_table(
     auth.settings.table_user_name,
     Field('first_name', length=128),
@@ -15,6 +27,9 @@ db.define_table(
     Field('username', unique = True, readable = False),
     Field('email', length=128), # required
     Field('password', 'password', length=512,readable=False, label='Password'), # required
+    Field('division_group_id', 'reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+    Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+    Field('section_group_id', 'reference Section_Group', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
     Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s')# required
@@ -77,7 +92,6 @@ db.define_table('Department',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format = '%(dept_code)s')
-
 
 db.define_table('Transaction_Prefix',    
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
@@ -483,7 +497,7 @@ db.define_table('Item_Master',
     Field('int_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.int_barcode')]), #unique
     Field('loc_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.loc_barcode')]), #unique
     Field('purchase_point', 'integer', default = 40),
-    Field('ib', 'decimal(10,2)', default = 0),    
+    Field('ib', 'decimal(10,2)', default = 0),
     Field('uom_value', 'integer'),    
     Field('uom_id', 'reference UOM', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose UOM Pack Size')),
     Field('supplier_uom_value', 'integer'),
@@ -602,7 +616,8 @@ db.define_table('Stock_Transaction_Temp',
     Field('qty', 'integer', default =0),
     Field('price_cost', 'decimal(10, 4)', default = 0),
     Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
-    Field('amount','decimal(10,2)', default =0),
+    # compute = lambda p: p['regular_maintenance'] + p['accident_repair'] + p['statutory_expenses'] + p['spare_parts']
+    Field('amount','decimal(10,2)', default = 0, compute = lambda p: p['qty'] * p['price_cost']),
     Field('remarks','string'),
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -622,7 +637,6 @@ db.define_table('Stock_File',
     Field('stock_in_transit', 'integer', default = 0),
     Field('free_stock_qty', 'integer', default = 0),
     Field('reorder_qty', 'integer', default = 0), 
-    Field('last_transfer_date', 'datetime', default = request.now),
     Field('last_transfer_qty', 'integer', default = 0),
     Field('probational_balance','integer', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -698,21 +712,18 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
        
 db.define_table('Stock_Adjustment_Transaction_Temp',
-    #db.insured_vehicles.reg_no_id.widget = SQLFORM.widgets.autocomplete(request, db.vehicle.reg_no, id_field = db.vehicle.id, limitby = (0,10), min_length=2)
-    # Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('stock_adjustment_date', 'date', default = request.now),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code'))),
+    Field('item_code', 'string', length = 15),    
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('pieces','integer', default = 0),
     Field('uom', 'integer', default = 0),
+    Field('total_quantity', 'integer', default = 0, compute = lambda c: c['quantity'] * c['uom'] + c['pieces']),
     Field('average_cost','decimal(10,4)', default = 0),
-    Field('total_cost','decimal(10,4)', default = 0),
+    Field('total_cost','decimal(10,4)', default = 0, compute = lambda c: c['total_quanity'] * c['average_cost']),
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
-    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))
 
 db.define_table('Item_Prices',
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),

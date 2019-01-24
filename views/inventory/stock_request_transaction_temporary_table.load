@@ -1,0 +1,75 @@
+
+    <hr>
+    
+    {{=table}}
+    {{=form.custom.begin}}
+    <div class="form-horizontal">   
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Item Code</label>
+                <div id="_dept_code_id"></div>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.item_code}}
+                </div>
+            </div>   
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Quantity</label>
+                <div class="col-sm-8">{{=form.custom.widget.quantity}}</div>
+            </div>   
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Pieces</label>
+                <div class="col-sm-8">{{=form.custom.widget.pieces}}</div>
+            </div>   
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Category</label>
+                <div class="col-sm-8">
+                    <div id="cat_id"></div>
+                    
+                </div>
+            </div>   
+        </div>        
+        <div class="col-md-2">
+            <input class="btn btn-success" type="submit" value="ADD" id="add" >
+        </div>            
+    </div>
+    </div>
+    <hr>
+    {{=form.custom.end}}
+    <div id ="desc" ></div>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+
+    $('#no_table_item_code').change(function(){
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');    
+        $('#no_table_stock_destination_id').removeAttr('disabled');     
+        ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');        
+        return false;      
+    });
+
+    $('#add').click(function(){
+        $("#no_table_item_code").focus();
+        
+    });
+});
+</script>    

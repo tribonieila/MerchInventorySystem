@@ -1,6 +1,6 @@
 {{extend 'layout.html'}}
 <!-- <style>
-    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
 </style>
 <script src="//unpkg.com/vue"></script>
 <script src="//unpkg.com/element-ui"></script>
@@ -102,11 +102,11 @@
                         <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
-                                    <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
+                                    <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">
                                     <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                     <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
-                                    <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
-                                    <!-- <input class="btn btn-success"  type="button" value="foot" id="btnref"> -->
+                                    <a class="btn btn-info" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
+                                    <input class="btn btn-success"  type="button" value="foot" id="btnref">
                                     <!-- <a class="btn btn-info" id="btnHelp" target="blank" role="button" href = "#">help?</a>                               -->
                                     <!-- <input class="btn btn-danger"  type="button" value="abort" onclick="window.location.reload()">       -->
                                     <!-- <input class="btn btn-info"     type="button" value="help?" id="btnHelp" onclick="window.open('{{=URL('inventory','item_help')}}')"> -->
@@ -117,19 +117,62 @@
                     </div>  
                     {{=form.custom.end}}
                 </div>  
-                <div id = "request_panel">                                            
-                    {{=LOAD('inventory','stock_request_transaction_temporary_table.load', ajax = True, target = 'tblIC')}}
+                <div id = "request_panel">
+
+                    <hr>
+                    <div id = 'target'></div>
+                    {{=form2.custom.begin}}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Item Code</label>
+                                <div id="_dept_code_id"></div>
+                                <div class="col-sm-8">
+                                    {{=form2.custom.widget.item_code}}
+                                </div>
+                            </div>   
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Quantity</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.quantity}}</div>
+                            </div>   
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Pieces</label>
+                                <div class="col-sm-8">{{=form2.custom.widget.pieces}}</div>
+                            </div>   
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Category</label>
+                                <div class="col-sm-8">
+                                    <div id="cat_id"></div>
+                                    
+                                </div>
+                            </div>   
+                        </div>        
+                        <div class="col-md-2">
+                            <input class="btn btn-success" id="btninsert" type="button" value="ADD" onclick="insert();" >
+                        </div>            
+                    </div>
+
+                    <hr>
+                    {{=form2.custom.end}}
+                    <div id ="desc" ></div>
                 </div>
             </div>
         </div>
     </div>
 
 <script src="{{=URL('static','js/bootstrap-suggest.js')}}"></script>
+<script src="{{=URL('static','js/web2py-bootstrap4.js')}}"></script>
+
 <script>    
 
 $(document).ready(function(){
     $('#btnsubmit').attr('disabled','disabled');
-
     var _p = $('#no_table_dept_code_id').val();
     var _s = $('#no_table_stock_source_id').val();
     var _d = $('#no_table_stock_destination_id').val();
@@ -143,40 +186,116 @@ $(document).ready(function(){
     $('#btnAbort').click(function(){
         ajax('{{=URL('abort_entry')}}',['ticket_no_id']);
     });
-
+    $('#click').click(function(){                        
+        $("#request_panel").load(" #target");            
+        return false;
+    });
     $('#btnHelp').click(function(){
         ajax('{{=URL('item_help')}}',['dept_code_id','stock_source_id']);  
         window.open('{{=URL('inventory','item_help', args = [request.vars.dept_code_id, request.vars_stock_source_id])}}');      
     });
     
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+
+    $('#no_table_item_code').change(function(){
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');    
+        $('#no_table_stock_destination_id').removeAttr('disabled');     
+        ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');        
+        return false;      
+    });
+    
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
         $("#no_table_item_code").focus(); 
-        ajax('{{=URL('push_to_session')}}',['dept_code_id','stock_source_id', 'stock_destination_id']);
-        $('#btnsubmit').removeAttr('disabled');
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_srn_status_id').attr('disabled','disabled');
         $('#no_table_remarks').attr('disabled','disabled');
         $('#no_table_stock_due_date').attr('disabled','disabled');
         $('#no_table_stock_source_id').attr('disabled','disabled');
-        // $('#no_table_stock_destination_id').attr('disabled','disabled');        
-        $('#btnrequest').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;
     });
-
-    $('#btnsubmit').click(function(){        
+    $('#btnref').click(function(){        
+        // $("#tblIC").load(location.href + " #tblIC");
+        $("#tblfoot").html(" {{=session.grand_total}}");    
+    });
+    $('#btnsubmit').click(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_srn_status_id').removeAttr('disabled');
         $('#no_table_remarks').removeAttr('disabled');
         $('#no_table_stock_due_date').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');
-        $('#no_table_stock_destination_id').removeAttr('disabled');                
+        $('#no_table_stock_destination_id').removeAttr('disabled');        
+        
     });
-
+    $('#del').click(function(){
+        ajax('{{=URL('gt')}}', ['ticket_no_id'],'gt');
+    });
 });
     
 </script> 
-               
+<script>
+    function insert(){
+        $('#btnsubmit').removeAttr('disabled');
+        $('#no_table_dept_code_id').removeAttr('disabled');
+        $('#no_table_stock_source_id').removeAttr('disabled');        
+        $('#no_table_stock_destination_id').removeAttr('disabled');
+        var i = document.getElementById('no_table_item_code').value;
+        // console.log(i);
+        // console.log( i.split(' ').join('') );
+        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'target');        
+        document.getElementById('no_table_item_code').value = ''
+        document.getElementById('no_table_quantity').value = '0'
+        document.getElementById('no_table_pieces').value = '0'
+        $('#btnrequest').attr('disabled','disabled');
+        $('#no_table_dept_code_id').attr('disabled','disabled');
+        $('#no_table_stock_source_id').attr('disabled','disabled');
+        $('#no_table_stock_destination_id').attr('disabled','disabled');             
+        $("#no_table_item_code").focus();
+        // $("#tblIC").load(" #tblIC");
+        return false;
+        
+
+    }
+</script>                
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    var _id = $(this).attr('data-id');        
+    var _qt = $(this).attr('data-qt');
+    var _pc = $(this).attr('data-pc');
+    var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
+    $(document).on("click", ".edit", function() {
+        
+        var _id = $(this).attr('data-id');        
+        var _qt = $(this).attr('data-qt');
+        var _pc = $(this).attr('data-pc');        
+        var parent = $(this).parent("div").parent("td").parent("tr");
+        // console.log(_id, _qt, _pc);
+        bootbox.alert({
+            message: form,
+            callback: function() {
+                var qty = form.find('input[name=quantity]').val();
+                var pcs = form.find('input[name=pieces]').val();
+                // parent.fadeOut('slow');   
+                ajax("{{=URL('inventory','test_up')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+                
+                // return false;               
+                // parent.fadeIn('slow');                   
+            }
+        });
+    });
+</script>
 <!-- for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = ~db.Stock_Transaction_Temp.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]): -->
 <script>
     function preventDupes( select, index ) {
@@ -209,32 +328,27 @@ $(document).ready(function(){
 </script>
 
 
-<script>
-        var _id = $(this).attr('data-id');        
-        var _qt = $(this).attr('data-qt');
-        var _pc = $(this).attr('data-pc');
-        var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
-        $(document).on("click", ".edit", function() {
-            
-            var _id = $(this).attr('data-id');        
-            var _qt = $(this).attr('data-qt');
-            var _pc = $(this).attr('data-pc');        
-            var parent = $(this).parent("div").parent("td").parent("tr");
-            // console.log(_id, _qt, _pc);
-            bootbox.alert({
-                message: form,
-                callback: function() {
-                    var qty = form.find(_qt);
-                    var pcs = form.find(_pc);
-                    var qty = form.find('input[name=quantity]').val();
-                    var pcs = form.find('input[name=pieces]').val();
-                    // parent.fadeOut('slow');   
-                    ajax("{{=URL('inventory','stock_request_transaction_temporary_table_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
-                    $('#tblIC').get(0).reload();
-                    // return false;               
-                    // parent.fadeIn('slow');                   
-                }
-            });
-        });
-    </script>
-    
+
+<!-- Button trigger modal -->
+
+      
+      <!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">ITEM CODE</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        {{=LOAD('inventory','itm_req', ajax = True)}}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+    </div>
+    </div>
+</div>
+</div> 
+

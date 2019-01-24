@@ -5,8 +5,12 @@ op: lar
 pa: 54193
 np: larrypas123
 
-TRUNCATE TABLE "Supplier_Master" RESTART IDENTITY;
+TRUNCATE TABLE "<table>" RESTART IDENTITY; // PostgreSQL
 
+TRUNCATE TABLE [<table>] GO // SQL Server
+ALTER SEQUENCE Test.CountBy1 RESTART WITH 1 ;  // SQL Server
+TRUNCATE TABLE PartitionTable1 WITH (PARTITIONS (2, 4, 6 TO 8));  
+GO  
 sudo -H pip install psycopg2
 sudo dpkg -i /path/to/deb/file followed by sudo apt-get install -f 
 sudo apt install ./name.deb
@@ -22,8 +26,26 @@ for page in pages:
     canvas.doForm(makerl(canvas, page))
     canvas.showPage()
     
+Edit static/web2py.js search for /*helper for flash messages*/
+
+and add this command:
+
+setTimeout(‘jQuery(".flash").fadeOut("slow")',5000);
+
+just after:
+
+if (flash.html()) flash.append('<span id="closeflash"> &times; </span>').slideDown();
+
+Adjust 5000 that stands for 5 secods to your needs.
+
 hmac+md5 or hmac+sha512
-    
+
+def flash(message, type='info'):
+    return DIV(BUTTON(XML('&times;'), _type='button', _class='close', data=dict(dismiss='alert')),
+               message, class='alert alert-%s' % type)
+
+response.flash = flash('You did it!', 'success')
+
 rows=db(WHERE CLAUSE IF YOU HAVE SOME OTHER THAN THE JOIN).select(db.parent.ALL, db.child.ALL, db.grandchild.ALL, join=db.child.on(db.child.parent_id==db.parent.id), left=db.grandchild.on(db.child.id==db.grandchild.child_id))
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
 # Create a database named 'person' with 'last_name' and 'first_name' fields.
@@ -437,3 +459,97 @@ $(function () {
 })
 </script>
 <!-- end -->
+
+<script>
+    var _id = $(this).attr('data-id');        
+    var _qt = $(this).attr('data-qt');
+    var _pc = $(this).attr('data-pc');
+    var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
+    $(document).on("click", ".edit", function() {
+        
+        var _id = $(this).attr('data-id');        
+        var _qt = $(this).attr('data-qt');
+        var _pc = $(this).attr('data-pc');        
+        var parent = $(this).parent("div").parent("td").parent("tr");
+        // console.log(_id, _qt, _pc);
+        bootbox.alert({
+            message: form,
+            callback: function() {
+                var qty = form.find(_qt);
+                var pcs = form.find(_pc);
+                // var qty = form.find('input[name=quantity]').val(_qt);
+                // var pcs = form.find('input[name=pieces]').val(_pc);
+                // parent.fadeOut('slow');   
+                ajax("{{=URL('inventory','test_up')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+                $('#tblIC').get(0).reload();
+                // return false;               
+                // parent.fadeIn('slow');                   
+            }
+        });
+    });
+</script>
+
+                <div id = "_stk_adj_desc"></div>
+            
+            
+                {{=form2.custom.begin}}                   
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Item Code</label>
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.item_code_id}}
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">
+                                Quantity
+                            </label>
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.quantity}}
+                            </div>
+                        </div>   
+                    </div>
+                
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Pieces</label>
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.pieces}}
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Average Cost</label>
+                            <div class="col-sm-8">
+                                <div id="average_cost"></div>
+                                
+                                
+                            </div>
+                        </div>   
+                    </div>    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Category</label>                            
+                            <div class="col-sm-8">
+                                {{=form2.custom.widget.category_id}}
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">            
+                            <input class="btn btn-success" type="button" onclick="btnsubmit();" value="Add">
+                            </div>
+                        </div>        
+                    </div>            
+                </div>
+                <hr>
+                
+                {{=form2.custom.end}}
+                
+                <div id = "_stk_adj_tbl"></div>       

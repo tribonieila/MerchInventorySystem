@@ -79,3 +79,30 @@ def pansigang_edit_form():
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'
     return dict(form = form)
+
+def division_group():
+    # form = SQLFORM(db.Division_Group)
+    # if form.process().accepted:
+    #     response.flash = 'RECORD SAVE'
+    # elif form.errors:
+    #     response.flash = 'FORM HAS ERROR'
+    table = SQLFORM.grid(db.Division_Group)
+    return dict(table = table)
+
+def department_group():
+    # form = SQLFORM(db.Department_Group)
+    # if form.process().accepted:
+    #     response.flash = 'RECORD SAVE'
+    # elif form.errors:
+    #     response.flash = 'FORM HAS ERROR'
+    table = SQLFORM.grid(db.Department_Group)
+    return dict(table = table)
+
+def section_group():
+    # form = SQLFORM(db.Section_Group)
+    # if form.process().accepted:
+    #     response.flash = 'RECORD SAVE'
+    # elif form.errors:
+    #     response.flash = 'FORM HAS ERROR'
+    table = SQLFORM.grid(db.Section_Group)
+    return dict(table = table)

@@ -19,13 +19,37 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    
+    $('.archive').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to archive this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','stock_request_archive')}}" + '/'+ _id);
+                    location.reload();                    
+                }
+
+            }
+        })
+    });
+
     $('.str').click(function(){
         var parent = $(this).parent("div").parent("td").parent("tr")
         var _id = $(this).attr('data-id');
         bootbox.confirm({
             size: "small",
-            message: "Would you like to generate Stock Transaction Request and Print?",
+            message: "Would you like to generate Stock Transfer Request and Print?",
             buttons: {
                 confirm: {
                     label: 'Yes',
@@ -52,8 +76,10 @@
         });
     });
 </script>
-<!-- <script>
+
+
+<script>
 $(document).ready( function () {
     $('.table').DataTable();
 } );
-</script> -->
+</script>

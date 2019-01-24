@@ -19,7 +19,10 @@
                             <table>
                                 <tbody>
                                     {{=form.custom.begin}}
-                                    <tr><td colspan="3">USER'S INFO</td></tr>
+                                    <tr><td colspan="3" class="bg-primary">USER'S GROUP</td></tr>
+                                    <tr><td>Division</td><td>Department</td><td>Section</td></tr>
+                                    <tr><td>{{=form.custom.widget.division_group_id}}</td><td>{{=form.custom.widget.department_group_id}}</td><td>{{=form.custom.widget.section_group_id}}</td>
+                                    <tr><td colspan="3" class="bg-primary">USER'S INFO</td></tr>
                                     <tr><td>FIRST NAME</td><td>LAST NAME</td><td>EMAIL</td></tr>
                                     <tr><td>{{=form.custom.widget.first_name}}</td><td>{{=form.custom.widget.last_name}}</td><td>{{=form.custom.widget.email}}</td></tr>
                                     <tr><td>USER NAME </td><td>PASSWORD</td><td></td></tr>
@@ -33,9 +36,23 @@
                         <el-tab-pane label="Member">
                             {{=LOAD('sili','pansigang.load', ajax = True)}}
                         </el-tab-pane>
-                        <el-tab-pane label="Group">
+                        <el-tab-pane label="Role Group">
                             {{=LOAD('sili','haba.load', ajax = True)}}
-                        </el-tab-pane>                        
+                        </el-tab-pane>                      
+                        <el-tab-pane label="User's Group">
+                            <el-tabs :tab-position="tabGroup" style="height: 100%">
+                                <el-tab-pane label="Division">
+                                    {{=LOAD('sili','division_group.load', ajax = True)}}
+                                </el-tab-pane>
+                                <el-tab-pane label="Department">
+                                    {{=LOAD('sili','department_group.load', ajax = True)}}
+                                </el-tab-pane>
+                                <el-tab-pane label="Section">
+                                    {{=LOAD('sili','section_group.load', ajax = True)}}
+                                </el-tab-pane>
+
+                            </el-tabs>
+                        </el-tab-pane>  
                     </el-tabs>
                 </template>
             </div>
@@ -48,7 +65,8 @@
 var Main = {
     data() {
       return {
-        tabPosition: 'left'
+        tabPosition: 'left',
+        tabGroup: 'top'
       };
     }
   };
