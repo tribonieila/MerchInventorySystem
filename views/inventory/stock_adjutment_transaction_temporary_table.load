@@ -30,6 +30,7 @@
             <div class="form-group">
                 <label class="col-sm-4 control-label">Average Cost</label>
                 <div class="col-sm-8">
+                    
                     <div id="average_cost"></div>
                     
                 </div>
@@ -77,8 +78,11 @@ $(document).ready(function(){
     });
 
     $('#add').click(function(){
-        $("#no_table_item_code").focus();
-        
+        $("#no_table_item_code").focus();        
+    });
+
+    $('#del').click(function(){
+        $('#tmptbl').get(0).reload();
     });
 });
 </script>    

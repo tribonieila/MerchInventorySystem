@@ -1,9 +1,4 @@
 {{extend 'layout.html'}}
-<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
 <div id="app">  
     <div class="col-md-12">
         <div class="card card-underline">
@@ -11,77 +6,68 @@
                 <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
             </div>
             <div class="card-body tab-content">         
+                <div>
 
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-pills" role="tablist">
+                      <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt </a></li>
+                      <li role="presentation"><a href="#purchase_order" aria-controls="purchase_order" role="tab" data-toggle="tab">Purchase Order</a></li>
+                      <li role="presentation"><a href="#purchase_return" aria-controls="purchase_return" role="tab" data-toggle="tab">Purchase Return</a></li>
+                      <li role="presentation" class="active"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment <span class="badge">{{=db(db.Stock_Adjustment.srn_status_id==4).count()}}</span></a></li>
+                      <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id==4).count()}}</span></a></li>
+                      <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order</a></li>
+                      <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return</a></li>
+                    </ul>
+                  
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                      <div role="tabpanel" class="tab-pane" id="purchase_receipt">
+                            <br>
+                            <div class="alert alert-success" role="alert">purchase receipt on progress...</div>
+                      </div>
+                      <div role="tabpanel" class="tab-pane" id="purchase_order">
+                            <br>
+                            <div class="alert alert-success" role="alert">purchase order on progress...</div>
+                      </div>
+                      <div role="tabpanel" class="tab-pane" id="purchase_return">
+                            <br>
+                            <div class="alert alert-success" role="alert">purchase return on progress...</div>
+
+                      </div>
+                      <div role="tabpanel" class="tab-pane active" id="stock_adjustment">
+                          {{=LOAD('inventory','stock_adjustment_manager_grid.load', ajax = True, target = 'tbladj')}}
+                        </div>
+                      <div role="tabpanel" class="tab-pane" id="stock_request">
+                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}
+
+                      </div>
+                      <div role="tabpanel" class="tab-pane" id="sales_order">
+                            <br>
+                            <div class="alert alert-success" role="alert">sales order on progress...</div>
+
+                      </div>
+                      <div role="tabpanel" class="tab-pane" id="sales_return">
+                            <br>
+                            <div class="alert alert-success" role="alert">sales return on progress...</div>
+
+                      </div>
+                    </div>
+                  
+                  </div>
                 
-                <template>
-                    <el-tabs :tab-position="tabPosition" style="height: 100%;">
-                        <el-tab-pane label="Purchase Receipt ">Purchase Receipt </el-tab-pane>
-                        <el-tab-pane label="Purchase Order ">Purchase Order </el-tab-pane>
-                        <el-tab-pane label="Purchase Return ">Purchase Return </el-tab-pane>
-                        <el-tab-pane label="Stock Adjustment"> 
-                            <div style="margin-top: 20px" >
-                                <el-button type="primary" icon="el-icon-success" @click="toggleSelection()">Approved selection</el-button>                    
-                                <el-button type="danger" icon="el-icon-error" @click="toggleSelection()">Clear selection</el-button>
-                            </div>
-                            <el-table :data="tableData" size="medium" fit="true" @selection-change="handleSelectionChange">
-                                <el-table-column type="selection" width="55"></el-table-column>
-                                <el-table-column prop="stk_adj_date" label = "Date"></el-table-column>
-                                <el-table-column prop="stk_adj_no" label = "Adjustment No"></el-table-column>
-                                <el-table-column prop="stk_dept_id" label = "Department"></el-table-column>
-                                <el-table-column prop="stk_loc_id" label = "Location"></el-table-column>
-                                <el-table-column align ="right" prop="stk_adj_amt" label = "Amount"></el-table-column>
-                                <el-table-column prop="stk_adj_type" label = "Adjustment Type"></el-table-column>
-                                
-                                
-                                <el-table-column prop="stk_adj_cre" label = "Requested By"></el-table-column>
-                                <el-table-column prop="stk_sta_id" label = "Status"></el-table-column>
-                                <el-table-column fixed="right" label="Actions" width="90">
-                                    <template slot-scope="scope">
-                                        <el-button @click="linksClick(scope.row.stk_adj_id)" type="primary" size="mini" plain>Details</el-button>                               
-                                    </template>
-                                </el-table-column>
-                            </el-table>                                                            
-                        </el-tab-pane>
-                        <el-tab-pane label="Stock Request ">Stock Request </el-tab-pane>
-                        <el-tab-pane label="Sales Order ">Sales Order </el-tab-pane>
-                        <el-tab-pane label="Sales Return ">Sales Return </el-tab-pane>                                
-                    </el-tabs>
-                </template>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    var Main = {
-        delimiters: ["{%","%}"],
-        data() {
-            return {
-                tableData: [
-                    {{ for s in db(db.Stock_Adjustment).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on((db.Transaction_Prefix.id == db.Stock_Adjustment.dept_code_id) & (db.Transaction_Prefix.prefix == 'ADJ'))): }}                
-                        {   {{import locale}}
-                            stk_adj_id  :  '{{=s.Stock_Adjustment.id}}',
-                            stk_adj_date: '{{=s.Stock_Adjustment.stock_adjustment_date}}',
-                            stk_adj_no: '{{=s.Stock_Adjustment.stock_adjustment_no_id.prefix}}{{=s.Stock_Adjustment.stock_adjustment_no}}',
-                            stk_dept_id: '{{=s.Stock_Adjustment.dept_code_id.dept_name}}',
-                            stk_loc_id: '{{=s.Stock_Adjustment.location_code_id.location_name}}',
-                            stk_adj_type: '{{=s.Stock_Adjustment.adjustment_type.mnemonic}} - {{=s.Stock_Adjustment.adjustment_type.description}}',
-                            stk_adj_amt: '{{=locale.format('%.2F',s.Stock_Adjustment.total_amount or 0, grouping = True)}}',
-                            stk_sta_id: '{{=s.Stock_Adjustment.srn_status_id.description}}',
-                            stk_app_by:'{{=s.Stock_Adjustment.approved_by}}',
-                            stk_adj_cre: '{{=s.Stock_Adjustment.created_by.first_name.upper()}} {{=s.Stock_Adjustment.created_by.last_name.upper()}}',
-                        },
-                    {{ pass }}
-                ],
-            }
-        },
-        methods: {     
-            linksClick(row) {
-                window.open("{{=URL('inventory','stock_adjustment_manager_details')}}" + "/" + row);        
-            },
-        }
-    }
+    $(document).ready(function(){
+        $('#stock_adjustment a').click(function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
 
-    var Ctor = Vue.extend(Main)
-    new Ctor().$mount('#app')
+        $('.table').DataTable();
+
+    })
 </script>

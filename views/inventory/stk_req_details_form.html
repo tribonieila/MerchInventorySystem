@@ -126,7 +126,7 @@
                                 {{ else: }}
                                     <input class="btn btn-success" type="submit" value="submit"> 
                                     <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
-                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
+                                    <!-- <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">     -->
 
                                 
                                 {{ pass }}
@@ -203,14 +203,16 @@
         return false;
         
     })
-    $('#btnInsert').click(function() {        
-        console.log('click')
+    $('#btnInsert').click(function() {                
         ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'tblReqNew');
         document.getElementById('item_code').value = ''
         document.getElementById('quantity').value = '0'
         document.getElementById('pieces').value = '0'      
         $('#item_code').focus();        
         return false;
+    });
+    $('#del').click(function(){
+        location.reload();
     });
     
 </script>

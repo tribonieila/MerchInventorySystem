@@ -27,9 +27,9 @@ db.define_table(
     Field('username', unique = True, readable = False),
     Field('email', length=128), # required
     Field('password', 'password', length=512,readable=False, label='Password'), # required
-    Field('division_group_id', 'reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
-    Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
-    Field('section_group_id', 'reference Section_Group', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
+    # Field('division_group_id', 'reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+    # Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+    # Field('section_group_id', 'reference Section_Group', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
     Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s')# required
@@ -665,6 +665,7 @@ db.define_table('Stock_Adjustment',
     Field('srn_status_id','reference Stock_Status', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('approved_by', 'reference auth_user', writable = False),
     Field('date_approved', 'datetime'),
+    Field('archive','boolean', default = False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -712,15 +713,15 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
        
 db.define_table('Stock_Adjustment_Transaction_Temp',
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code'))),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION'),
     Field('item_code', 'string', length = 15),    
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('pieces','integer', default = 0),
-    Field('uom', 'integer', default = 0),
-    Field('total_quantity', 'integer', default = 0, compute = lambda c: c['quantity'] * c['uom'] + c['pieces']),
+    Field('uom', 'integer'),
+    Field('total_quantity', 'integer', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
-    Field('total_cost','decimal(10,4)', default = 0, compute = lambda c: c['total_quanity'] * c['average_cost']),
+    Field('total_cost','decimal(10,4)', default = 0),
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))
