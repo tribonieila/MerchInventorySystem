@@ -36,8 +36,8 @@
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('inventory','stock_request_archive')}}" + '/'+ _id);
-                    location.reload();                    
+                    ajax("{{=URL('inventory','stock_request_archive')}}" + '/'+ _id);                
+                    location.reload();   
                 }
 
             }
@@ -64,6 +64,7 @@
                 if (result) {
                     parent.fadeOut('slow');
                     ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);
+                    // location.reload();
                     $("#tbl").load(location.href + " #tbl");
                     parent.fadeIn('slow');
                     location.reload();

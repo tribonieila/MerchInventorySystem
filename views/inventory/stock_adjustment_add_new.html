@@ -100,31 +100,38 @@
 
 <script>
 $(document).ready(function(){
+    var str_ctr = 0
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
-    $('#request_panel').hide();
-    $('#btnrequest').click(function(){
-        $('#request_panel').slideDown('slow');
-        $('#no_table_item_code').focus();        
-        $('#btnsubmit').removeAttr('disabled');
-        $('#btnhelp').removeAttr('disabled');        
-        ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id']);
-        $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
-        $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
-        $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
-        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
-        $('#btnrequest').attr('disabled','disabled');
-        $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');
-        return false;
-    });    
-
+    $('#btnrequest').attr('disabled','disabled');
+    $('#request_panel').hide();   
     $('#Stock_Adjustment_dept_code_id').change(function(){
-        ajax('{{=URL('stock_adjustment_no')}}',['dept_code_id'], '_stk_adj_no');
+        ajax('{{=URL('stock_adjustment_no')}}',['dept_code_id'], '_stk_adj_no');        
+        var ctr = this.value;        
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }                            
         return false;  
     });
-
+    $('#Stock_Adjustment_adjustment_type').change(function(){
+        var ctr = this.value;              
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }       
+        return false;
+    });
     $('#Stock_Adjustment_location_code_id').change(function(){
         ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
+        var ctr = this.value;        
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }       
         return false;
     });
 
@@ -136,8 +143,44 @@ $(document).ready(function(){
         $('#Stock_Adjustment_srn_status_id').removeAttr('disabled');
         ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','stock_adjustment_date','location_code_id', 'srn_status_id']);        
     });
-    $('#add').click(function(){
+
+    $('#btnrequest').click(function(){
+        $('#request_panel').slideDown('slow');
         $('#no_table_item_code').focus();        
-    });
+        $('#btnsubmit').removeAttr('disabled');
+        $('#btnhelp').removeAttr('disabled');        
+        ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id','adjustment_type']);
+        $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
+        $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
+        $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
+        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
+        $('#btnrequest').attr('disabled','disabled');
+        $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');
+        return false;
+    }); 
+
+    function request(e){
+
+        if (e == 1) {
+            str_ctr += e;
+        } else {
+            str_ctr -= 1;
+        }
+        console.log(e, str_ctr);
+        // if $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
+          
+        var loc = $('#Stock_Adjustment_location_code_id').val();
+        var dept = $('#Stock_Adjustment_dept_code_id').val();        
+        var adj = $('#Stock_Adjustment_adjustment_type').val(); 
+        if (str_ctr >= 3) {
+            if (dept != '' && adj != '' && loc != '') {
+                $('#btnrequest').removeAttr('disabled');               
+            } else {
+                $('#btnrequest').attr('disabled','disabled');
+            }
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }       
+    }
 });
 </script>

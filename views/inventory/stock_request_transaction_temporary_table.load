@@ -36,7 +36,7 @@
             </div>   
         </div>        
         <div class="col-md-2">
-            <input class="btn btn-success" type="submit" value="ADD" id="add" >
+            <input class="btn btn-success" type="submit" value="ADD" >            
         </div>            
     </div>
     </div>
@@ -65,11 +65,6 @@ $(document).ready(function(){
         $('#no_table_stock_source_id').attr('disabled','disabled');
         $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;      
-    });
-
-    $('#add').click(function(){
-        $("#no_table_item_code").focus();
-        
     });
 });
 </script>    

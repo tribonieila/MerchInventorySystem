@@ -86,7 +86,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{=form.custom.submit}}
+                                {{ if _stk_adj.srn_status_id == 2:}}
+                                <input class="btn btn-primary" type="submit" value="Submit" disabled>
+                                {{ else: }}
+                                <input class="btn btn-primary" type="submit" value="Submit">
+                                {{ pass }}
+    
 
                             </div>                            
                         </div>                    

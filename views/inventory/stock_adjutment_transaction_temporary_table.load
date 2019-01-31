@@ -1,7 +1,17 @@
 
     <hr>
-    
     {{=table}}
+    {{if form.errors:}}    
+    <ul>
+        {{for fieldname in form.errors:}}
+            <li>{{=form.errors[fieldname]}}</li>
+        {{pass}}
+    </ul>
+    {{form.errors.clear()}}
+    {{pass}}
+    
+    
+
     {{=form.custom.begin}}
     <div class="form-horizontal">   
     <div class="row">
@@ -23,7 +33,9 @@
         <div class="col-md-2">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Pieces</label>
-                <div class="col-sm-8">{{=form.custom.widget.pieces}}</div>
+                <div class="col-sm-8">
+                    {{=form.custom.widget.pieces}}                                        
+                </div>
             </div>   
         </div>
         <div class="col-md-3">
@@ -46,7 +58,7 @@
             </div>   
         </div>        
         <div class="col-md-1">
-            <input class="btn btn-success" type="submit" value="ADD" id="add" >
+            <input class="btn btn-success" type="submit" value="ADD" >
         </div>            
     </div>
     </div>
@@ -57,29 +69,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    $(document).on('paste', '#no_table_item_code', function(e) {
-        window.setTimeout(function() {
-        var withoutSpaces = $("#no_table_item_code").val();
-        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
-        $("#no_table_item_code").val(withoutSpaces);
-            }, 1);
-    });
 
     $('#no_table_item_code').change(function(){
+        $("#no_table_item_code").focus();    
+        $('#no_table_quantity').val('0');
+        $('#no_table_pieces').val('0');
         $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
         $('#Stock_Adjustment_location_code_id').removeAttr('disabled');                    
         $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');                    
-        ajax('{{=URL('stock_adjustment_description')}}',['item_code', 'location_code_id', 'adjustment_type'], '_stk_adj_desc');        
+        ajax('{{=URL('stock_adjustment_description')}}',['item_code', 'location_code_id', 'adjustment_type', 'dept_code_id'], '_stk_adj_desc');        
         ajax('{{=URL('stock_adjustment_average_cost')}}',['item_code'], 'average_cost');        
         $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');          
         return false;      
     });
+    function add(){
+        $("#no_table_item_code").focus();    
+        $('#no_table_item_code').val('');
+        $('#no_table_quantity').val('0');
+        $('#no_table_pieces').val('0');
 
-    $('#add').click(function(){
-        $("#no_table_item_code").focus();        
-    });
+    }
 
     $('#del').click(function(){
         $('#tmptbl').get(0).reload();

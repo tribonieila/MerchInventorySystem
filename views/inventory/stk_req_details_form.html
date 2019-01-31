@@ -126,7 +126,7 @@
                                 {{ else: }}
                                     <input class="btn btn-success" type="submit" value="submit"> 
                                     <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
-                                    <!-- <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">     -->
+                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
 
                                 
                                 {{ pass }}
@@ -184,11 +184,39 @@
                 <div id="tblReqNew"></div>              
             </div>
             <div id="tblReqOld">
+
                 {{=table}}
             </div>                                
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','stk_req_del')}}" + '/'+ _id);                                
+                    location.reload();   
+                }
+
+            }
+        })
+    });</script>
 <script>
     
     $('#newReqPanel').hide();
@@ -212,7 +240,7 @@
         return false;
     });
     $('#del').click(function(){
-        location.reload();
+        window.location.reload();
     });
     
 </script>

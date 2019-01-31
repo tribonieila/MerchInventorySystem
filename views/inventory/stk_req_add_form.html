@@ -1,12 +1,4 @@
 {{extend 'layout.html'}}
-<!-- <style>
-    @import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
-</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script> -->
-
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
@@ -43,13 +35,13 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                                <div class="form-group">
-                                        <label class="col-sm-4 control-label">Requested By</label>
-                                        <div class="col-sm-8">
-                                            <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
-                                            <p class="help-block">readonly</p>                                                        
-                                        </div>
-                                    </div>            
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Requested By</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
+                                    <p class="help-block">readonly</p>                                                        
+                                </div>
+                            </div>            
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -102,6 +94,7 @@
                         <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
+
                                     <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                     <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                     <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
@@ -128,27 +121,43 @@
 <script>    
 
 $(document).ready(function(){
+    var str_ctr = 0
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
-    var _p = $('#no_table_dept_code_id').val();
-    var _s = $('#no_table_stock_source_id').val();
-    var _d = $('#no_table_stock_destination_id').val();
-    // $('#btnrequest').attr('disabled','disabled');
+    $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();
 
     $('#no_table_dept_code_id').change(function() {
-        ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');                
+        ajax('{{=URL('stock_request_no_prefix')}}', ['dept_code_id'], '_stk_req_no_div');       
+        var ctr = this.value;
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr = ''){
+            request(0)
+        }
         return false;
     });
+
+    $('#no_table_stock_source_id').change(function() {        
+        var ctr = this.value;
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr = ''){
+            request(0)
+        }
+        return false;
+    });
+
     $('#btnAbort').click(function(){
         ajax('{{=URL('abort_entry')}}',['ticket_no_id']);
     });
-  
+
+
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
         $("#no_table_item_code").focus(); 
         ajax('{{=URL('push_to_session')}}',['dept_code_id','stock_source_id', 'stock_destination_id']);
-        $('#btnsubmit').removeAttr('disabled');
+        // $('#btnsubmit').removeAttr('disabled');
         $('#btnhelp').removeAttr('disabled');
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_srn_status_id').attr('disabled','disabled');
@@ -169,9 +178,31 @@ $(document).ready(function(){
         $('#no_table_stock_destination_id').removeAttr('disabled');                
     });
 
+    function request(e){
+        if (e == 1) {
+            str_ctr += e;        
+        } else {
+            str_ctr -= 1;
+        }        
+        var d = $('#no_table_dept_code_id').val();         
+        var l = $('#no_table_stock_source_id').val();
+        console.log(e, str_ctr,d ,l);
+        if (str_ctr >= 2) {
+            if (d != '' && l != '') {
+                $('#btnrequest').removeAttr('disabled');
+                
+            } else {
+                $('#btnrequest').attr('disabled','disabled');    
+            }            
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }
+    }
+
+
 });
     
-</script> 
+</script>  
                
 <!-- for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = ~db.Stock_Transaction_Temp.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]): -->
 <script>

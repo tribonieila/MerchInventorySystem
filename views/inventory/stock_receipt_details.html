@@ -21,30 +21,30 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Request No</label>
+                            <label class="col-sm-4 control-label">Stock Receipt No</label>
                             <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="SRN{{=form.custom.widget.stock_request_no}}" readonly >
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_receipt_no_id}}{{=form.custom.widget.stock_receipt_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
                             </div>                           
                         </div>                        
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Request Date</label>
+                            <label class="col-sm-4 control-label">Receipt Date</label>
                             <div class="col-sm-8"> {{import datetime}}                               
-                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_receipt_date_approved}}" readonly >
                                 <p class="help-block">readonly</p>                            
                             </div>                           
                         </div>                        
                     </div>                    
 
-                </div>
+                </div>                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Transfer No</label>
                             <div class="col-sm-8"> 
-                                <input type="text" class="form-control" value="STV{{=form.custom.widget.stock_transfer_no}}" readonly >
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_transfer_no_id}}{{=form.custom.widget.stock_transfer_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
 
                             </div>
@@ -53,13 +53,35 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Due Date</label>
+                            <label class="col-sm-4 control-label">Transfer Date</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_due_date}}" readonly >
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_transfer_date_approved}}" readonly >
                             </div>
                         </div>                                           
                     </div>    
+                </div>                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Request No</label>
+                            <div class="col-sm-8">                                
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_no_id}}{{=form.custom.widget.stock_request_no}}" readonly >
+                                <p class="help-block">autogenerate</p>                            
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Request Date</label>
+                            <div class="col-sm-8"> {{import datetime}}                               
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_date}}" readonly >
+                                <p class="help-block">readonly</p>                            
+                            </div>                           
+                        </div>                        
+                    </div>                    
+
                 </div>
+
                 
                 <div class="row">
                     <div class="col-md-6">

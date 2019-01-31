@@ -51,7 +51,13 @@
                             </div>
                             <label class="col-sm-2 control-label">Pieces</label>
                             <div class="col-sm-3">
-                                {{=form.custom.widget.pieces}}                                
+                                {{ if _it.uom_value == 1: }}
+                                    <input class="integer form-control" id="no_table_pieces" name="pieces" type="text" value="0" disabled>
+                                {{ else: }}
+                                <input class="integer form-control" id="no_table_pieces" name="pieces" type="text">
+                                {{ pass }}
+                                
+                                <!-- {{=form.custom.widget.pieces}}                                 -->
                             </div>
     
                         </div>                                           
@@ -96,6 +102,7 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 {{=form.custom.submit}}
+                                {{=btn_back}}
                             </div>                            
                         </div>                    
                     </div>

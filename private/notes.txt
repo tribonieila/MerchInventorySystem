@@ -46,12 +46,21 @@ def flash(message, type='info'):
 
 response.flash = flash('You did it!', 'success')
 
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+
 rows=db(WHERE CLAUSE IF YOU HAVE SOME OTHER THAN THE JOIN).select(db.parent.ALL, db.child.ALL, db.grandchild.ALL, join=db.child.on(db.child.parent_id==db.parent.id), left=db.grandchild.on(db.child.id==db.grandchild.child_id))
 web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListProductId=" + priceListProductId, target='priceListProductEdit')
 # Create a database named 'person' with 'last_name' and 'first_name' fields.
 # web2py also creates a field named 'id' automatically.
 db.define_table('person',Field('last_name'), Field('first_name'))
  
+
 # If no database exists, generate a database of 101 unique records
 # with names in the form John1 Smith1, John43 Smith43, etc.
 if db(db.person).isempty():

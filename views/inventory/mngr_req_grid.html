@@ -19,7 +19,7 @@
                 <template>                         
                     <el-tabs :tab-position="tabPosition" style="height: 100%;">
                         <el-tab-pane label="Stock Request">                            
-                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True)}}
+                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}
                                                     
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">
@@ -97,7 +97,4 @@ var Main = {
 var Ctor = Vue.extend(Main)
 new Ctor().$mount('#app')
 </script>
-
-
-
 
