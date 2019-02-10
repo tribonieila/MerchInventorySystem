@@ -3,4 +3,5 @@
      $('.btn').click(function(){
         location.reload();
      });
+
 </script>

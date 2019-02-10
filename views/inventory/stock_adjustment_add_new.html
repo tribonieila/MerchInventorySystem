@@ -146,8 +146,7 @@ $(document).ready(function(){
 
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
-        $('#no_table_item_code').focus();        
-        $('#btnsubmit').removeAttr('disabled');
+        $('#no_table_item_code').focus();                
         $('#btnhelp').removeAttr('disabled');        
         ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id','adjustment_type']);
         $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');

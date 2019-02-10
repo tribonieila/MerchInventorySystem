@@ -1,3 +1,9 @@
+Merch & Partners Co. WLL., Zone 40, St. 340, P.O. Box. 5511
+Unit No. 27, Bldg. 149, Salwa Road, Al-Asiri Interchange
+Doha, Doha
+Qatar
+Phone: 55703868
+
 merch4658666
 
 T.force('it-it')
@@ -59,7 +65,26 @@ web2py_component("{{=URL('pricing', 'priceListProduct.load')}}" + "?priceListPro
 # Create a database named 'person' with 'last_name' and 'first_name' fields.
 # web2py also creates a field named 'id' automatically.
 db.define_table('person',Field('last_name'), Field('first_name'))
- 
+     
+                 <div class="checkbox">
+                <label class="col-sm-6 control-label">
+                    <input type="checkbox" >
+                    Discount %
+                </label>
+            </div>
+
+     if ($('#discount').prop('checked')) {
+        $('#no_table_discount_percentage').show();
+    } else {
+        $('#no_table_discount_percentage').hide();
+        $('#no_table_discount_percentage').change(function(){
+            if ($('#discount').prop('checked')) {
+                $('#no_table_discount_percentage').show();
+            } else {
+                $('#no_table_discount_percentage').hide();
+            }
+        });
+    }
 
 # If no database exists, generate a database of 101 unique records
 # with names in the form John1 Smith1, John43 Smith43, etc.

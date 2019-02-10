@@ -22,7 +22,8 @@
                             {{=table}}                            
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">
-                            <el-alert title="Sales Order" type="info" description="on progress" show-icon></el-alert>    
+                            {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
+ 
                         </el-tab-pane>
                         <el-tab-pane label="Sales Return">
                             <el-alert title="Sales Return" type="info" description="on progress" show-icon></el-alert>    

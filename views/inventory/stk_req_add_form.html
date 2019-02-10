@@ -91,19 +91,13 @@
                             </div>                  
                         </div> 
                         <div class="col-md-6">  
-                        <div class="form-group">
+                            <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
-
                                     <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                     <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                     <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
                                     <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>
-                                    <!-- <input class="btn btn-success"  type="button" value="foot" id="btnref"> -->
-                                    <!-- <a class="btn btn-info" id="btnHelp" target="blank" role="button" href = "#">help?</a>                               -->
-                                    <!-- <input class="btn btn-danger"  type="button" value="abort" onclick="window.location.reload()">       -->
-                                    <!-- <input class="btn btn-info"     type="button" value="help?" id="btnHelp" onclick="window.open('{{=URL('inventory','item_help')}}')"> -->
-
                                 </div>                            
                             </div>                    
                         </div>
@@ -186,7 +180,7 @@ $(document).ready(function(){
         }        
         var d = $('#no_table_dept_code_id').val();         
         var l = $('#no_table_stock_source_id').val();
-        console.log(e, str_ctr,d ,l);
+        // console.log(e, str_ctr,d ,l);
         if (str_ctr >= 2) {
             if (d != '' && l != '') {
                 $('#btnrequest').removeAttr('disabled');
@@ -204,7 +198,7 @@ $(document).ready(function(){
     
 </script>  
                
-<!-- for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = ~db.Stock_Transaction_Temp.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]): -->
+
 <script>
     function preventDupes( select, index ) {
         var options = select.options,

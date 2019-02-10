@@ -1,0 +1,17 @@
+SALES ORDER
+
+total = quantity * wholesale price
+
+TOTAL AMOUNT = TOTAL AMOUNT + ((TOTAL AMOUNT * SELECTIVE TAX) / 100) 
+EX: 50 + (50* 100 ) / 100
+
+DELIVERY NOTE HAKIM PRINT
+
+NO AMOUNT ONLY QUANTITY
+SALES INVOICE REPORT WITH AMOUNT
+
+NO REMARKS
+
+total amount = wholesale + ((retail price * selective tax)) / 100
+
+selective tax = retail price + selective tax / 100

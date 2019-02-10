@@ -2409,7 +2409,8 @@ def testing2():
     row = db(db.Item_Master.dept_code_id == 3).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, join = db.Item_Master.on(db.Item_Master.id == db.Item_Prices.item_code_id))
     return dict(row = row)
 
-
+def pop():
+    return locals()
 def testinghead():    
     # db(db.Stock_Transaction_Temp.created_by ==  auth.user_id).delete()
     form2 = SQLFORM.factory(        
@@ -2495,32 +2496,9 @@ def tail():
 
 import locale
 def testing3():    
-    row = []
-    total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
-    grand_total = db().select(total).first()[total]
-            
-    ctr = 0
-    row = []        
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
-    for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
-        ctr += 1            
-        # view_lnk = A(I(_class='fas fa-search'), _title='ITEM MASTER', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'left','_data-html':'true','_data-content': itm_view_pop(n.id)})
+    
         
-        edit_lnk = A('EDIT', _title='Edit Row', _onclick = "jQuery(show)", callback=URL(args = k.Stock_Transaction_Temp.id), _class='edit', **{'_data-id':k.Stock_Transaction_Temp.id})
-
-        dele_lnk = A('Delete', delete = 'tr', callback=URL('del_item', args = k.Stock_Transaction_Temp.id))
-
-        # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", _onclick = "jQuery(show)",callback=URL(args=k.Stock_Transaction_Temp.id),_class='delete', data=dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id), '_data-in':(k.Stock_Transaction_Temp.id)})
-        # dele_lnk = A('Delete', callback=URL('del_item', args = k.Stock_Transaction_Temp.id  ), delete = 'tr')
-        # dele_lnk = A(SPAN(_class = 'fas fa-trash-alt'), _name='btndel',_title="Delete", callback=URL( args=k.Stock_Transaction_Temp.id),_class='delete')
-        # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle', _onclick = "jQuery().fadeOut()", callback=URL('del_item',args = k.Stock_Transaction_Temp.id))
-        btn_lnk = DIV(edit_lnk, dele_lnk, _class="hidden-sm action-buttons")
-        row.append(TR(TD(ctr),TD(k.Item_Master.item_code),TD(k.Item_Master.item_description.upper()),TD(k.Stock_Transaction_Temp.category_id),TD(k.Item_Master.uom_value),TD(k.Stock_Transaction_Temp.quantity),TD(k.Stock_Transaction_Temp.pieces),TD(k.Item_Prices.retail_price, _align='right'),TD(k.Stock_Transaction_Temp.amount, _align='right'),TD(),TD(btn_lnk)))
-    body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
-    table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
-        
-    return dict(table = table)
+    return dict()
 
 def itm_prcs():
     form = SQLFORM(db.Item_Prices)       
@@ -2649,10 +2627,8 @@ def itm_description():
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"                
                 _on_balanced = _stk_file.probational_balance
                 _on_transit = _stk_file.stock_in_transit
-                _on_hand = _stk_file.closing_stock
-                # print '- true'
-            else:
-                # print 'false -'
+                _on_hand = _stk_file.closing_stock                
+            else:    
                 response.js = "$('#no_table_pieces').removeAttr('disabled')"
                 _outer = int(int(_stk_file.probational_balance) / int(_itm_code.uom_value))
                 _pcs = int(_stk_file.probational_balance) - (int(_outer * _itm_code.uom_value))
@@ -2886,11 +2862,9 @@ def stk_req_add_form():
         response.flash = 'FORM HAS ERROR'    
     btnHelp = A(_class='btn btn-info', _type = 'button', _href = URL('inventory', 'item_help', args = [form.vars.dept_code_id, form.vars.stock_source_id]))
     return dict(form = form,  form2 = form2, ticket_no_id = _ticket_no, btnHelp = btnHelp)
-
-def validate_item_code(form):
-    
+ 
+def validate_item_code(form):    
     _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
-    
     if not _id:
         form.errors.item_code = 'Item code does not exist or empty.'
         # form.errors._id = CENTER(DIV('Item code ',B(str(request.vars.item_code)), ' does not exist or empty.',_class='alert alert-danger',_role='alert'))
@@ -2920,10 +2894,9 @@ def validate_item_code(form):
             # form.errors.item_code_id = CENTER(DIV('Item Code ' , B(str(request.vars.item_code)),' already exist.',_class='alert alert-danger',_role='alert'))
 
         # if _id.uom_value == 1:
-        #     form.vars.pieces = 0
-        
-        # if form.vars.pieces >= _id.uom_value:
-        #     form.errors.pieces = 'Pieces value should not be more than or equal to UOM value '
+        #     form.vars.pieces = 0        
+        if int(form.vars.pieces) >= _id.uom_value:
+            form.errors.pieces = 'Pieces value should not be more than or equal to UOM value '
             # print pcs
             # Pieces Value is not applicable to this item because UOM is equal to 1
             # form.errors.pcs = CENTER(DIV('Pieces value should not be more than or equal to UOM value ',_class='alert alert-danger',_role='alert')) 
@@ -2962,8 +2935,7 @@ def validate_item_code(form):
         else:
             _card = card(_stk_file.item_code_id, _stk_file.last_transfer_qty, _id.uom_value)
             _remarks = 'LTD: ' + str(request.now.strftime("%d/%m/%Y")) + ' - QTY: ' + str(_card)
-
-        
+       
         form.vars.item_code_id = _id.id        
         form.vars.stock_source_id = int(session.stock_source_id)
         form.vars.stock_destination_id = int(session.stock_destination_id)        
@@ -3031,7 +3003,6 @@ def stock_request_transaction_temporary_table():
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f', grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
     table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
-
     return dict(form = form, table = table)
 
 def push_to_session():
@@ -3287,7 +3258,7 @@ def stk_req__trans_edit_form():
 
 # STORE KEEPER
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def str_kpr_grid():    
     row = []
     head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')))
@@ -3616,29 +3587,22 @@ def stock_adjustment_add_new():
     db.Stock_Adjustment.srn_status_id.default = 4  
     form = SQLFORM(db.Stock_Adjustment)
     if form.process(onvalidation = stock_adjustment_form_validation).accepted:          
+        
         _trns_pfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'ADJ')).select().first()
         response.flash = 'RECORD SAVE. ' + str(_trns_pfx.current_year_serial_key)
         _id = db(db.Stock_Adjustment.stock_adjustment_no == int(_trns_pfx.current_year_serial_key)).select().first()     
         _total_cost = 0        
         _tmp = db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL).first()
+        
         for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL):         
             _itm_code = db(db.Item_Master.id == i.item_code_id).select().first()
             _itm_price = db(db.Item_Prices.item_code_id == i.item_code_id).select().first()            
             _qty = i.quantity * _itm_code.uom_value + i.pieces # converted to pcs.                     
             _price_cost = i.average_cost /_itm_code.uom_value # price_cost per pcs.
             _total_cost += _price_cost * _qty # total cost per line
-            db.Stock_Adjustment_Transaction.insert(
-                stock_adjustment_no_id = _id.id, 
-                item_code_id = i.item_code_id, 
-                stock_adjustment_date = request.now, 
-                category_id = i.category_id,
-                quantity = i.total_quantity, 
-                uom = i.uom, 
-                price_cost = _price_cost, 
-                wholesale_price = _itm_price.wholesale_price, 
-                retail_price = _itm_price.retail_price,
-                vansale_price = _itm_price.vansale_price, 
-                average_cost = i.average_cost)                  
+            db.Stock_Adjustment_Transaction.insert(stock_adjustment_no_id = _id.id, item_code_id = i.item_code_id, stock_adjustment_date = request.now, category_id = i.category_id,
+                quantity = i.total_quantity, uom = i.uom, price_cost = _price_cost, wholesale_price = _itm_price.wholesale_price, retail_price = _itm_price.retail_price,
+                vansale_price = _itm_price.vansale_price, average_cost = i.average_cost)                  
         _id.update_record(total_amount = _total_cost)       
         db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).delete()     
         redirect(URL('stock_adjustment_browse'))
@@ -3706,6 +3670,10 @@ def stock_adjutment_transaction_temporary_table():
         db.Stock_Adjustment_Transaction_Temp.insert(item_code_id = form.vars.item_code_id,item_code = form.vars.item_code,quantity = form.vars.quantity,pieces = form.vars.pieces,
         category_id = form.vars.category_id,ticket_no_id = session.ticket_no_id,average_cost = form.vars.average_cost,uom = form.vars.uom,total_quantity = form.vars.total_quantity,
         total_cost = form.vars.total_cost)
+        if db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == session.ticket_no_id).count() != 0:
+            response.js = "$('#btnsubmit').removeAttr('disabled')"
+        else:
+            response.js = "$('#btnsubmit').attr('disabled','disabled')"
     elif form.errors:
         # table = TABLE(*[TR(v) for k, v in form.errors.items()])
         response.flash = 'FORM HAS ERROR'
@@ -3876,7 +3844,7 @@ def stock_adjustment_description():
         if _stk_file:
             if _item_code.uom_value == 1:
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"
-                _on_hand = _stk_file.probational_balance
+                _on_balance = _stk_file.probational_balance
                 _on_transit = _stk_file.stock_in_transit
                 _on_hand = _stk_file.closing_stock
             else:
@@ -3884,7 +3852,7 @@ def stock_adjustment_description():
                 # if _item_code and _item_price and _stl_file:
                 _outer = int(_stk_file.probational_balance) / int(_item_code.uom_value)        
                 _pcs = int(_stk_file.probational_balance) - int(_outer * _item_code.uom_value)    
-                _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_item_code.uom_value)
+                _on_balance = str(_outer) + ' ' + str(_pcs) + '/' +str(_item_code.uom_value)
 
                 _outer_transit = int(_stk_file.stock_in_transit) / int(_item_code.uom_value)   
                 _pcs_transit = int(_stk_file.stock_in_transit) - int(_outer * _item_code.uom_value)
@@ -4037,6 +4005,8 @@ def stock_adjustment_manager_details_approved():
         else:
             _clo_stk = _stk_file.closing_stock - s.quantity
             _stk_file.update_record(closing_stock = _clo_stk,last_transfer_date = request.now)
+    response.flash = 'STOCK ADJUSTMENT APPROVED'        
+    response.js = "$('#tbladj').get(0).reload()"
             # elif (_stk_adj.adjustment_type == 2) and _stk_file:                    
             #     _clo_stk = _stk_file.closing_stock - s.quantity 
             #     # _trans_type = 8            
@@ -4058,14 +4028,14 @@ def stock_adjustment_manager_details_approved():
         #     vansale_price = s.vansale_price,
         #     dept_code = '%s' % (_stk_adj.dept_code_id.dept_name)
         # )
-    response.flash = 'STOCK ADJUSTMENT APPROVED'        
     
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_adjustment_manager_details_reject():
     _stk_adj = db(db.Stock_Adjustment.id == request.args(0)).select().first()
     _stk_adj.update_record(srn_status_id = 3)
-    response.flash = 'STOCK ADJUSTMENT REJECTED'      
+    response.flash = 'STOCK ADJUSTMENT REJECTED'     
+    response.js = "$('#tbladj').get(0).reload()"
     
 
 def stock_adjustment_browse_details():   
@@ -4242,13 +4212,13 @@ def stock_request_manager_grid():
     table = TABLE(*[head, body], _class = 'table', _id = 'tblsr')
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_adjustment_manager_grid():
     row = []        
     head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action')))  
     for i in db(db.Stock_Adjustment.archive == False).select(orderby = ~db.Stock_Adjustment.stock_adjustment_no):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_manager_details', args = i.id, extension = False))
-        
+        appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
         if i.srn_status_id == 2:
             appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
             reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -4257,8 +4227,8 @@ def stock_adjustment_manager_grid():
             reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
         else:
-            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _id='btn',callback = URL('stock_adjustment_manager_details_approved', args = i.id, extension = False))
-            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _id='btn', callback = URL('stock_adjustment_manager_details_reject', args = i.id, extension = False))
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_approved', args = i.id, extension = False))
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_reject', args = i.id, extension = False))
             clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
         
         btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, clea_lnk)        
@@ -4275,6 +4245,48 @@ def stock_adjustment_manager_grid():
     body = TBODY(*row)    
     table = TABLE(*[head, body],  _class='table', _id='tbladj')    
     return dict(table = table)
+
+    
+
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+def stock_request_tool():
+    
+    head = THEAD(TR(TH('Date'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Focal Person'),TH('Action')))
+    for k in db(db.Stock_Transaction_Temp).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Transaction_Temp.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
+
+        redo_lnk = A(I(_class='fas fa-redo'), _title='Redo Row', _type='button ', _role='button', _class='btn btn-icon-toggle redo', callback=URL('inventory','stock_request_tool_redo', args = k.Stock_Transaction_Temp.id))        
+        btn_lnk = DIV(redo_lnk, _class="hidden-sm action-buttons")
+        row.append(TR(            
+            TD(k.Stock_Transaction_Temp.created_on.strftime('%Y-%m-%d')),
+            TD(k.Item_Master.item_code),
+            TD(k.Item_Master.item_description.upper()),
+            TD(k.Stock_Transaction_Temp.category_id.mnemonic),
+            TD(k.Item_Master.uom_value),
+            TD(k.Stock_Transaction_Temp.quantity),
+            TD(k.Stock_Transaction_Temp.pieces),
+            TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),
+            TD(locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True), _align='right'),            
+            TD(k.Stock_Transaction_Temp.remarks),
+            TD(k.Stock_Transaction_Temp.created_by.first_name.upper(),' ',k.Stock_Transaction_Temp.created_by.last_name.upper()),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _id='tblsrt',_class='table')
+    return dict(table = table)
+    
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+def stock_request_tool_redo():     
+    _tmp = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
+    if not _tmp:
+        redirect(URL('inventory','stock_request_tool'))        
+    else:
+        _sto = db((db.Stock_File.item_code_id == _tmp.item_code_id) & (db.Stock_File.location_code_id == _tmp.stock_source_id)).select().first()    
+        _stock_in_transit = _sto.stock_in_transit - _tmp.qty
+        # _clo_stock = _sto.closing_stock + _tmp.qty    
+        _pro_balanced = _sto.closing_stock + _stock_in_transit   
+        _sto.update_record(stock_in_transit = _stock_in_transit, probational_balance = _pro_balanced)
+        db(db.Stock_Transaction_Temp.id == request.args(0)).delete()
+        session.flash = 'ITEM REDO'
+
 
 # ---- Stock Adjustment End   -----    
 

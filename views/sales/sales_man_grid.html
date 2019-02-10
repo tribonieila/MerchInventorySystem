@@ -1,0 +1,40 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">SALES MAN</span>
+        </div>
+        <div class="card-body tab-content">            
+            <div class="form-horizontal">   
+                {{=form.custom.begin}}	                    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Employee ID</label>
+                            <div class="col-sm-8">                                
+                                {{=form.custom.widget.employee_id}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Employee Name</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.name}}
+                        
+                            </div>
+                        </div>      
+                    </div>
+                    <div class="col-md-4">
+                        {{=form.custom.submit}}
+                    </div>
+                </div>
+                {{=form.custom.end}}
+            </div>  
+        </div>
+    </div>
+</div>

@@ -32,7 +32,7 @@ db.define_table(
     # Field('section_group_id', 'reference Section_Group', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
-    Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s')# required
+    Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
 
 
 # db.auth_user.id.represent = lambda auth_id, row: row.first_name + ' ' + row.last_name
@@ -744,75 +744,6 @@ db.define_table('Item_Prices',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
-### PROCUREMENT SYSTEMS
-  
-db.define_table('Purchase_Receipt_Transaction_Header',
-    Field('location_code', 'integer'),    
-    Field('trn_type', 'integer'),
-    Field('trn_date','date'),
-    Field('purchase_receipt_number','integer'),
-    Field('supp_code', 'string',length=8),
-    Field('total_amount','decimal(10,2)'),
-    Field('discount_percentage','decimal(10,2)'),
-    Field('discount_amount','decimal(10,2)'),
-    Field('other_charges','decimal(10,2)'),
-    Field('po_group_ref','string',length=8),
-    Field('lc_number','string', length=20),
-    Field('supp_invoice_no','string',length=10),
-    Field('exchange_rate','decimal(10,2)'),
-    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-    Field('landed_cost_rate','decimal(10,2)'),
-    Field('po_type','integer'),
-    Field('remarks','text'),
-    Field('status','string',length=10),
-    Field('print_counter'))
-
-db.define_table('PO_Group',
-    Field('po_group_refno','string', length=10),
-    Field('po_number','string',length=10))
-
-db.define_table('Purchase_Receipt_Transaction_Details',
-    Field('purchase_receipt_number','string',length=10),
-    Field('item_code','string',length=15),
-    Field('price_cost','decimal(10,2)'),
-    Field('qty','integer'),
-    Field('uom','integer'),
-    Field('item_category','string',length=1),
-    Field('average_cost','decimal(10,2)'),
-    Field('wholesale_price','decimal(10,2)'),
-    Field('retail_price','decimal(10,2)'),
-    Field('net_price','decimal(10,2)'),
-    Field('received_date','date'),
-    Field('status','string',length=10))
-
-db.define_table('Purchase_Order_Transaction_Header',
-    Field('po_number', 'string',length=10),
-    Field('po_date','date'),
-    Field('supp_code','string',length=10),
-    Field('po_amount','decimal(10,2)'),
-    Field('discount_percentage','decimal(10,2)'),
-    Field('discount_amount','decimal(10,2)'),
-    Field('po_tprobational_balanceype','string',length=10),
-    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-    Field('eta','string',length=10),
-    Field('purchase_request_no','string',length=10))
-
-db.define_table('Purchase_Order_Transaction_Details',
-    Field('po_number','string',length=10),
-    Field('item_code','string',length=10),
-    Field('supp_price','decimal(10,2)'),
-    Field('quantity','integer'),
-    Field('uom','integer'),
-    Field('item_category','string',length=10),
-    Field('qty_received','integer'))
-
-db.define_table('Batch_Order_Transaction',
-    Field('item_code','string',length=10),
-    Field('supp_price','decimal(10,2)'),
-    Field('landed_cost','decimal(10,2)'),
-    Field('qty','integer'),
-    Field('date_ordered','date'))
-
 
 #---------- S   A   L   E   S   S c h e m a ----------
 
@@ -845,10 +776,10 @@ db.define_table('Customer_Group_Code',
 
 db.define_table('Customer',
     Field('customer_account_no','string',length = 15),
-    Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION'),
+    Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Group_Code.id,'%(description)s', zero = 'Choose Group Code')), 
     Field('customer_name','string', length = 50),
-    Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION'),
-    Field('customer_account_type', 'reference Customer_Account_Type', ondelete = 'NO ACTION'),
+    Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Category.id,'%(description)s', zero = 'Choose Category')), 
+    Field('customer_account_type', 'reference Customer_Account_Type', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Category.id,'%(description)s', zero = 'Choose Account Type')), 
     # Field('account_type', ), account receivable
     Field('po_box_no', 'integer'),
     Field('unit_no', 'integer'),
@@ -922,26 +853,36 @@ db.define_table('Sales_Order',
     Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(10,2)', default = 0),    
+    Field('total_amount','decimal(10,4)', default = 0),    
     Field('total_selective_tax', 'decimal(10,2)', default = 0),
     # Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('total_vat_amount', 'decimal(10,2)', default = 0),
     Field('sales_order_date_approved','date', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),
-    Field('sales_invoice_no', 'integer', writable = False),    
+    # represent = lambda id, r: db.department(id).name if id else '',
+    # Field('myfield', represent=lambda v, r: '' if v is None else v)
+    # represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('delivery_note_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('delivery_note_no', 'integer', writable = False),
+    Field('delivery_note_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
+    Field('delivery_note_date_approved','date', writable = False),
+    
+    Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('sales_invoice_no', 'integer', writable = False),    
+    Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
+    Field('sales_invoice_date_approved','date', writable = False),
+    
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
-    Field('delete', 'boolean', default = False),    
+    Field('archives', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'sales_order_no')
  
-
 db.define_table('Sales_Order_Transaction',
-    Field('sales_order_no_id','reference Stock_Adjustment',ondelete = 'NO ACTION',writable = False, requires = IS_IN_DB(db, db.Stock_Adjustment.id, '%(stock_adjustment_no)s', zero = 'Choose Adjustment No')),
+    Field('sales_order_no_id','reference Sales_Order',ondelete = 'NO ACTION',writable = False),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
@@ -1053,6 +994,79 @@ db.define_table('Sales_Invoice_Transaction',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 #---------- S   A   L   E   S   S c h e m a ----------
+
+
+#---------- P  R  O  C  U  R  E  M  E  N  T  S c h e m a -------
+  
+db.define_table('Purchase_Receipt_Transaction_Header',
+    Field('location_code', 'integer'),    
+    Field('trn_type', 'integer'),
+    Field('trn_date','date'),
+    Field('purchase_receipt_number','integer'),
+    Field('supp_code', 'string',length=8),
+    Field('total_amount','decimal(10,2)'),
+    Field('discount_percentage','decimal(10,2)'),
+    Field('discount_amount','decimal(10,2)'),
+    Field('other_charges','decimal(10,2)'),
+    Field('po_group_ref','string',length=8),
+    Field('lc_number','string', length=20),
+    Field('supp_invoice_no','string',length=10),
+    Field('exchange_rate','decimal(10,2)'),
+    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+    Field('landed_cost_rate','decimal(10,2)'),
+    Field('po_type','integer'),
+    Field('remarks','text'),
+    Field('status','string',length=10),
+    Field('print_counter'))
+
+db.define_table('PO_Group',
+    Field('po_group_refno','string', length=10),
+    Field('po_number','string',length=10))
+
+db.define_table('Purchase_Receipt_Transaction_Details',
+    Field('purchase_receipt_number','string',length=10),
+    Field('item_code','string',length=15),
+    Field('price_cost','decimal(10,2)'),
+    Field('qty','integer'),
+    Field('uom','integer'),
+    Field('item_category','string',length=1),
+    Field('average_cost','decimal(10,2)'),
+    Field('wholesale_price','decimal(10,2)'),
+    Field('retail_price','decimal(10,2)'),
+    Field('net_price','decimal(10,2)'),
+    Field('received_date','date'),
+    Field('status','string',length=10))
+
+db.define_table('Purchase_Order_Transaction_Header',
+    Field('po_number', 'string',length=10),
+    Field('po_date','date'),
+    Field('supp_code','string',length=10),
+    Field('po_amount','decimal(10,2)'),
+    Field('discount_percentage','decimal(10,2)'),
+    Field('discount_amount','decimal(10,2)'),
+    Field('po_tprobational_balanceype','string',length=10),
+    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+    Field('eta','string',length=10),
+    Field('purchase_request_no','string',length=10))
+
+db.define_table('Purchase_Order_Transaction_Details',
+    Field('po_number','string',length=10),
+    Field('item_code','string',length=10),
+    Field('supp_price','decimal(10,2)'),
+    Field('quantity','integer'),
+    Field('uom','integer'),
+    Field('item_category','string',length=10),
+    Field('qty_received','integer'))
+
+db.define_table('Batch_Order_Transaction',
+    Field('item_code','string',length=10),
+    Field('supp_price','decimal(10,2)'),
+    Field('landed_cost','decimal(10,2)'),
+    Field('qty','integer'),
+    Field('date_ordered','date'))
+
+#---------- P  R  O  C  U  R  E  M  E  N  T  S c h e m a -------
+
 
 
 from num2words import num2words
