@@ -111,9 +111,17 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label"></label>
-                                    <div class="col-sm-8">    
-                                        <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_order_manager_approved_form', args = request.args(0))}}')">
-                                        <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_order_manager_rejected_form', args = request.args(0))}}')">                                                                            
+                                    <div class="col-sm-8">
+                                        {{ if _id.status_id == 4: }}
+                                            <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_order_manager_approved_form', args = request.args(0))}}')">
+                                            <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_order_manager_rejected_form', args = request.args(0))}}')">                                                                            
+
+
+                                        {{ else: }}
+                                            <input class="btn btn-success" type="submit" value="approved" disabled>
+                                            <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
+
+                                        {{ pass }}
                                         <!-- <input class="btn btn-primary" type="submit" value="approved" id="btnsubmit"> -->
                                         <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
                                         <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#">reject</a> -->
@@ -125,8 +133,9 @@
                         </div>
         
                     </div>              
-            {{=table}}
+            {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
         </div>
     </div>                
 </div>
+
 

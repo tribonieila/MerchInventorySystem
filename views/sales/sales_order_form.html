@@ -110,7 +110,7 @@
                             <div class="col-sm-8">                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('sales_order_browse')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        
@@ -134,6 +134,7 @@ $(document).ready(function(){
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
+    $('#selective_tax').hide();
     $('#order_panel').hide();
 
     $('#no_table_dept_code_id').change(function(){

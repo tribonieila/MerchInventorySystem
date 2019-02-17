@@ -116,15 +116,15 @@
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label"></label>
                                     <div class="col-sm-8">    
-                                        {{ if _id.status_id == 8:}}
+                                        {{ if _id.status_id == 9:}}
+                                            <input class="btn btn-primary" type="submit" value="submit">
+                                            <input class="btn btn-warning" type="submit" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
+                                            <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print">                                                                            
+                                        {{ else: }}                                        
                                             <input class="btn btn-primary" type="submit" value="submit" disabled>
                                             <input class="btn btn-warning" type="submit" value="sales order print" disabled>
                                             <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print" disabled>                                                                            
 
-                                        {{ else: }}                                        
-                                            <input class="btn btn-primary" type="submit" value="submit">
-                                            <input class="btn btn-warning" type="submit" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                            <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print">                                                                            
                                         {{ pass }}
                                         {{=form.custom.end}}
                                     </div>        
@@ -133,7 +133,7 @@
                         </div>
         
                     </div>              
-            {{=table}}
+                {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
         </div>
     </div>                
 </div>

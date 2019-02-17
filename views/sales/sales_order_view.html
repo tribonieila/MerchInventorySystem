@@ -184,8 +184,9 @@
                 </div>
             
             </div>  
-            <hr>        
-            {{=table}}
+            <hr>      
+            {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}  
+            <!-- {{=table}} -->
         </div>
     </div>
 </div>

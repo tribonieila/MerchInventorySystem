@@ -186,7 +186,7 @@
                         </div>                        
                     </div>
                 </div>
-                {{=table}}
+                {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
             </div>          
         </div>
     </div>

@@ -15,3 +15,12 @@ NO REMARKS
 total amount = wholesale + ((retail price * selective tax)) / 100
 
 selective tax = retail price + selective tax / 100
+
+discount = grand total * discount / 100
+grand total = grand total - discount
+
+condition 
+if item selective = disabled discount
+
+
+IF CATEGORY IS P ALLOW DUPLICATE ITEMS

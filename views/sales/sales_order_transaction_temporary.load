@@ -4,7 +4,7 @@
 <div class="row">    
     <div class="col-md-2">
         <div class="form-group">
-            <label class="col-sm-4 control-label">Item No</label>
+            <label class="col-sm-4 control-label">Item Code</label>
             <div class="col-sm-8">                                
                 {{=form.custom.widget.item_code}}
             </div>                           
@@ -53,6 +53,7 @@
 
 <script>
 $(document).ready(function(){
+    
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();
@@ -60,12 +61,31 @@ $(document).ready(function(){
         $("#no_table_item_code").val(withoutSpaces);
             }, 1);
     });
-        
+    
     $('#no_table_item_code').change(function(){
         ajax('{{=URL('item_code_description')}}', ['item_code'], '_item_code_description');        
         return false;
     });
+    
+    $('#discount').change(function(){
+        var _g = {{=grand}}
+        var gt = 0;
+        var _d = $('#discount').val();
+        //_d = _g * _d / 100
+        // If x is Not a Number or less than one or greater than 10
+        if (isNaN(_d) || _d < 0 || _d > 1) {
+            text = "Input not valid";
+            $('#discount').val(0);
+        } else {
+            text = "Discount Added";
+            gt = _g - _d                
+            $('#grand_total').val(Number(gt.toFixed(2)).toLocaleString());
 
+        }
+        // ajax('{{=URL('sales','discount_session')}}',['discount']);
+
+        document.getElementById("error").innerHTML = text;
+    });
 
 });
 </script>
@@ -108,7 +128,7 @@ $(document).on("click",".edit", function(){
     var _id = $(this).attr('data-id');
     var _qt = $(this).attr('data-qt');
     var _pc = $(this).attr('data-pc');
-    var parent = $(this).parent("div").parent("td").parent("tr);
+    var parent = $(this).parent("div").parent("td").parent("tr");
     bootbox.alert({        
         message: form,
         callback: function() {

@@ -3261,7 +3261,7 @@ def stk_req__trans_edit_form():
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def str_kpr_grid():    
     row = []
-    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')))
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-danger' ))
     for n in db((db.Stock_Request.srn_status_id == 2) | (db.Stock_Request.srn_status_id == 5)).select(orderby = ~db.Stock_Request.stock_request_no):
         view_lnk = A(I(_class='fas fa-search'), _title='View Details Row', _type=' button', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','str_kpr_grid_details', args = n.id))
         if n.srn_status_id == 2:
@@ -4184,7 +4184,7 @@ def stock_adjustment_manager():
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_request_manager_grid():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')))
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-danger'))
     for n in db((db.Stock_Request.archive == False) & ((db.Stock_Request.srn_status_id == 4) | (db.Stock_Request.srn_status_id == 2))).select(orderby = db.Stock_Request.stock_request_no):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('mngr_req_details', args = n.id, extension = False))
         
@@ -5212,7 +5212,7 @@ def master_item_view():
             i_body = TBODY(*i_row)
             i_table = TABLE(*[i_head, i_body], _class = 'table')
 
-            head = THEAD(TR(TD('#'),TD('Location Code'),TD('Opening Stock'),TD('Closing Stock'),TD('Stock In Transit'),TD('Available Balanced')))
+            head = THEAD(TR(TD('#'),TD('Location Code'),TD('Opening Stock'),TD('Closing Stock'),TD('Stock In Transit'),TD('Available Balanced'),TD('Free Stock'),TD('Damaged Stock')))
             
             for i in db().select(db.Stock_File.ALL, db.Location.ALL, orderby = db.Location.id, left = db.Stock_File.on((db.Stock_File.location_code_id == db.Location.id) & (db.Stock_File.item_code_id == request.vars.item_code_id))):
                 ctr += 1
@@ -5222,17 +5222,23 @@ def master_item_view():
                     _cl = i.Stock_File.closing_stock or 0
                     _st = i.Stock_File.stock_in_transit or 0
                     _av = int(i.Stock_File.closing_stock or 0) - int(i.Stock_File.stock_in_transit or 0)
+                    _fs = i.Stock_File.free_stock_qty or 0
+                    _ds = i.Stock_File.damaged_stock_qty or 0
                 else:
                     _os = card_view(i.Stock_File.item_code_id, i.Stock_File.opening_stock)
                     _cl = card_view(i.Stock_File.item_code_id, i.Stock_File.closing_stock)
                     _st = card_view(i.Stock_File.item_code_id, i.Stock_File.stock_in_transit)
                     _av = card_view(i.Stock_File.item_code_id, _available_balanced)
+                    _fs = card_view(i.Stock_File.item_code_id, i.Stock_File.free_stock_qty)
+                    _ds = card_view(i.Stock_File.item_code_id, i.Stock_File.damaged_stock_qty)
 
                 row.append(TR(TD(ctr),TD(i.Location.location_name),
                 TD(_os),
                 TD(_cl),
                 TD(_st),
-                TD(_av))) 
+                TD(_av),
+                TD(_fs),
+                TD(_ds))) 
                 # TD(i.Stock_File.opening_stock or 0, grouping = True),                
                 # TD(i.Stock_File.closing_stock or 0, grouping = True),
                 # TD(i.Stock_File.stock_in_transit or 0, grouping = True),

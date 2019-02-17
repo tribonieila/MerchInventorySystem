@@ -13,11 +13,11 @@ db.define_table('Division_Group',
     Field('division_group_name','string',label = 'Division',length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Division_Group.division_group_name')]))
 
 db.define_table('Department_Group',
-    Field('division_group_id','reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+    Field('division_group_id','reference Division_Group', ondelete = 'NO ACTION', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
     Field('department_group_name','string',label = 'Department', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Department_Group.department_group_name')]))
 
 db.define_table('Section_Group',
-    Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+    Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
     Field('section_group_name','string',label = 'Section', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db, 'Section_Group.section_group_name')]))
 
 db.define_table(
@@ -27,9 +27,9 @@ db.define_table(
     Field('username', unique = True, readable = False),
     Field('email', length=128), # required
     Field('password', 'password', length=512,readable=False, label='Password'), # required
-    # Field('division_group_id', 'reference Division_Group', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
-    # Field('department_group_id', 'reference Department_Group', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
-    # Field('section_group_id', 'reference Section_Group', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
+    # Field('division_group_id', 'reference Division_Group', ondelete = 'NO ACTION',label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+    # Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION',label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+    # Field('section_group_id', 'reference Section_Group', ondelete = 'NO ACTION', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
     Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
@@ -639,6 +639,7 @@ db.define_table('Stock_File',
     Field('reorder_qty', 'integer', default = 0), 
     Field('last_transfer_qty', 'integer', default = 0),
     Field('probational_balance','integer', default = 0),
+    Field('damaged_stock_qty', 'integer', default = 0),
     Field('last_transfer_date', 'datetime', default = request.now),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -854,15 +855,13 @@ db.define_table('Sales_Order',
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
     Field('total_amount','decimal(10,4)', default = 0),    
+    Field('total_amount_after_discount','decimal(10,4)', default = 0),    
     Field('total_selective_tax', 'decimal(10,2)', default = 0),
-    # Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
+    Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('total_vat_amount', 'decimal(10,2)', default = 0),
     Field('sales_order_date_approved','date', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),
-    # represent = lambda id, r: db.department(id).name if id else '',
-    # Field('myfield', represent=lambda v, r: '' if v is None else v)
-    # represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('delivery_note_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('delivery_note_no', 'integer', writable = False),
     Field('delivery_note_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
