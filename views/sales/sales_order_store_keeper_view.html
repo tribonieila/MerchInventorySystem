@@ -2,7 +2,12 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">SALES ORDER FOR APPROVAL</span>
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#"> DETAILS</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
+            </ul>
+        
+            <span class="card-title">SALES ORDER FOR DELIVERY NOTE</span>
         </div>
         <div class="card-body tab-content">
                 <div class="form-horizontal">   
@@ -119,7 +124,7 @@
                                         {{ if _id.status_id == 9:}}
                                             <input class="btn btn-primary" type="submit" value="submit">
                                             <input class="btn btn-warning" type="submit" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                            <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print">                                                                            
+                                            <a class="btn btn-info" id="btncdn" role="button" href="{{=URL('inventory','str_kpr_grid')}}">create delivery note & print</a>                                                                  
                                         {{ else: }}                                        
                                             <input class="btn btn-primary" type="submit" value="submit" disabled>
                                             <input class="btn btn-warning" type="submit" value="sales order print" disabled>
@@ -140,7 +145,7 @@
 
 <script>
     $('#btncdn').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');
-        window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}');
+        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');        
+        window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
     });
 </script>

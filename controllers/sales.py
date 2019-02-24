@@ -11,7 +11,7 @@ def customer_category_grid():
         response.flash = 'ENTRY HAS ERRORS'
     ctr = 0
     row = []
-    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action'),_class = 'bg-primary'))
     for n in db(db.Customer_Category).select(orderby = db.Customer_Category.id):        
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_category_edit_form', args = n.id))
@@ -40,7 +40,7 @@ def customer_account_type_grid():
         response.flash = 'ENTRY HAS ERRORS'
     ctr = 0
     row = []
-    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action'), _class = 'bg-primary'))
     for n in db(db.Customer_Account_Type).select(orderby = db.Customer_Account_Type.id):        
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_account_type_edit_form', args = n.id))
@@ -69,7 +69,7 @@ def customer_group_code_grid():
         response.flash = 'ENTRY HAS ERRORS'
     ctr = 0
     row = []
-    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Mnemonic'), TH('Description'),TH('Action'),_class='bg-primary'))
     for n in db(db.Customer_Group_Code).select(orderby = db.Customer_Group_Code.id):        
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_group_code_edit_form', args = n.id))
@@ -93,7 +93,7 @@ def customer_group_code_edit_form():
 @auth.requires_login()
 def customer_grid():
     row = []
-    head = THEAD(TR(TH('#'),TH('Account No.'),TH('Group Code'),TH('Name'),TH('Category'),TH('Type'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Account No.'),TH('Group Code'),TH('Name'),TH('Category'),TH('Type'),TH('Action'),_class='bg-primary'))
     for n in db().select(db.Customer.ALL, orderby = db.Customer.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('view_customer_details', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_add_edit_form', args = n.id))
@@ -102,7 +102,7 @@ def customer_grid():
         cred_lnk = A(I(_class='fas fa-credit-card'), _title='Credit Limit', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_credit_limit_add_form', args = n.id))
         bank_lnk = A(I(_class='fas fa-money-check'), _title='Bank Details', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_bank_details', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, cont_lnk, cred_lnk,bank_lnk)
-        row.append(TR(TD(n.id),TD(n.customer_account_no),TD(n.customer_group_code_id),TD(n.customer_name),TD(n.customer_category_id),TD(n.customer_account_type),TD(btn_lnk)))
+        row.append(TR(TD(n.id),TD(n.customer_account_no),TD(n.customer_group_code_id.description),TD(n.customer_name),TD(n.customer_category_id.description),TD(n.customer_account_type.description),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')
     return dict(table = table)
@@ -284,16 +284,28 @@ def view_bank():
 
 # ----------    SALES ORDER FORM    ----------
 
+def sales_order_form_testing():        
+    # _query = db(db.Department.id == 1).select(db.Department.ALL, left = db.Department.on(db.Department.dept_name == db.Department_Group.department_group_name)).first()
+    _query = db.Department.id != 1
+    form = SQLFORM.factory(        
+        Field('dept_code_id','reference Department', requires = IS_IN_DB(db(_query), db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')))
+    if form.process().accepted: 
+        response.flash = 'ok'
+    elif form.errors:
+        response.flash = 'not ok'
+    return dict(form = form)
+
 @auth.requires_login()
 def sales_order_form():
     _query = db().select(left = db.Department.on(db.Department.dept_name == db.Department_Group.department_group_name))
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = 0
+    _total_selective_tax = _total_selective_tax_foc = 0
     form = SQLFORM.factory(
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-        Field('stock_source_id','reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+        Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
         Field('customer_code_id','reference Customer', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
         Field('delivery_due_date', 'date', default = request.now),
@@ -318,36 +330,33 @@ def sales_order_form():
         _id = db(db.Sales_Order.sales_order_no == ctr.current_year_serial_key).select().first()        
         _tmp = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select()
         for n in _tmp:
-            _duplicate = db((n.item_code == db.Sales_Order_Transaction_Temporary.item_code) & (n.category_id == 3)).select().first()
+            
             _item = db(db.Item_Master.id == n.item_code_id).select().first()
             _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
 
-            if not _duplicate:
-                _price_cost = _pric.wholesale_price / _item.uom_value
-            else:
-                _price_cost = 0
-
-            _total_qty = (n.quantity * _item.uom_value) + n.pieces
             db.Sales_Order_Transaction.insert(
                 sales_order_no_id = _id.id,
                 item_code_id = n.item_code_id,
                 category_id = n.category_id,
-                quantity = _total_qty,
+                quantity = n.total_pieces,
                 uom = _item.uom_value,
-                price_cost = _price_cost,
+                price_cost = n.price_cost,
                 average_cost = _pric.average_cost,
                 # sale_cost = _pric.sale_cost,
                 wholesale_price = _pric.wholesale_price,
                 retail_price = _pric.retail_price,
                 vansale_price = _pric.vansale_price,
                 discount_percentage = n.discount_percentage,
-                selective_tax = n.selective_tax)
-                # vat_percentage = n.vat_percentage)
-            _grand_total += float(_price_cost) * int(_total_qty)
+                selective_tax = n.selective_tax,
+                selective_tax_foc = n.selective_tax_foc,
+                total_amount = n.total_amount)
+            _grand_total += n.total_amount
+            _total_selective_tax += n.selective_tax or 0
+            _total_selective_tax_foc += n.selective_tax_foc or 0
         _discount = session.discount or 0
         _discount = float(_grand_total) * float(_discount) / 100
-        _after_discount = float(_grand_total) - float(_discount)        
-        _id.update_record(total_amount = _grand_total, discount_percentage = _discount, total_amount_after_discount = _after_discount )
+        _after_discount = float(_grand_total) - float(_discount)
+        _id.update_record(total_amount = _grand_total, discount_percentage = _discount, total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax , selective_tax_foc = _total_selective_tax_foc)
         session.discount = 0
         db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
         response.flash = 'SAVING SALES ORDER NO ' + str(_skey) + '.'    
@@ -355,7 +364,20 @@ def sales_order_form():
         response.flash = 'ENTRY HAS ERROR'
     return dict(form = form, ticket_no_id = ticket_no_id)
 
-
+def sales_order_form_abort():
+    _query = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select()
+    if not _query:
+        session.flash = 'ABORT'
+    else:        
+        for n in _query:
+            _id = db(db.Item_Master.id == n.item_code_id).select().first()
+            _s = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == n.stock_source_id)).select().first()
+            _quantity = n.quantity * _id.uom_value + n.pieces
+            _s.stock_in_transit -= _quantity
+            _s.probational_balance = int(_s.closing_stock) - int(_s.stock_in_transit)
+            _s.update_record()
+            db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).delete()            
+        session.flash = 'ABORT'
 
 def discount_session():
     session.discount = request.vars.discount
@@ -422,23 +444,49 @@ def validate_sales_order_transaction(form):
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
         _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()                                   
         
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)
+        
         if not _price:
             form.errors.item_code = "Item code does'nt have price."
         
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
             form.error.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
-        
+                
         # if _exist == request.vars.item_code and (request.vars.category_id != 3):
+        _excise_tax_amount = 0
+        _unit_price = 0
+        _total_excise_tax = 0
+        _selective_tax = _selective_tax_foc = 0
         if _exist:
             if int(request.vars.category_id) != 3:                
-                form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'
+                form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'                
+            else:
+                _unit_price = _excise_tax_amount or 0
+                _selective_tax_foc = _id.selectivetax or 0
+                # computation for excise tax foc
+                # _excise_tax_amount_foc = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                # _excise_tax_price_per_piece_foc = _excise_tax_amount_foc / _id.uom_value
+                # _total_excist_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+
+                # _selective_tax_foc = ) / _id.uom_value * int(_total_pcs)
+                _selective_tax = 0
             # form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))                    
+        else:
+            # computation for excise tax
+            _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+            _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+            _total_excise_tax += _excise_tax_price_per_piece * _total_pcs
+            _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+            _selective_tax = _id.selectivetax or 0
+            # print 'unit price ', _unit_price
+
+        # computation for price per unit
+        _price_per_piece = _unit_price / _id.uom_value
+        _total_amount = _total_pcs * _price_per_piece
 
         if _id.uom_value == 1:
             form.vars.pieces = 0
-        
-        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)
-        
+                      
         if _total_pcs == 0:
             form.errors.quantity = 'Zero quantity not accepted.'
 
@@ -446,8 +494,8 @@ def validate_sales_order_transaction(form):
             form.errors.pieces = 'Pieces should not be more than UOM value.'
             # form.errors.pieces = CENTER(DIV(B('DANGER! '),' Pieces value should be not more than uom value ' + str(int(_id.uom_value)),_class='alert alert-danger',_role='alert'))                       
                     
-        _unit_price = float(_price.retail_price) / int(_id.uom_value)
-        _total = float(_unit_price) * int(_total_pcs)
+        # _unit_price = float(_price.retail_price) / int(_id.uom_value)
+        # _total = float(_unit_price) * int(_total_pcs)
 
         if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
             form.errors.quantity = 'Quantity should not be more than probational balance.'
@@ -455,10 +503,14 @@ def validate_sales_order_transaction(form):
         _stk_file.stock_in_transit += _total_pcs    
         _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
         _stk_file.update_record()        
-        form.vars.item_code_id = _id.id               
-    
-def sales_order_transaction_temporary():   
-    
+        form.vars.item_code_id = _id.id
+        form.vars.selective_tax = _selective_tax
+        form.vars.selective_tax_foc = _selective_tax_foc
+        form.vars.total_pieces = _total_pcs
+        form.vars.price_cost = _unit_price
+        form.vars.total_amount = _total_amount
+            
+def sales_order_transaction_temporary():       
     form = SQLFORM.factory(
         Field('item_code', 'string', length = 25, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
         Field('quantity','integer', default = 0, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
@@ -466,48 +518,52 @@ def sales_order_transaction_temporary():
         Field('discount_percentage', 'decimal(10,2)', default = 0, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
         Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
     if form.process( onvalidation = validate_sales_order_transaction).accepted:        
-        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'        
-        # response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
+        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
         _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
-        db.Sales_Order_Transaction_Temporary.insert(item_code_id = form.vars.item_code_id,item_code = form.vars.item_code,quantity = form.vars.quantity,pieces = form.vars.pieces,discount_percentage = form.vars.discount_percentage,
-            category_id = form.vars.category_id,stock_source_id = session.stock_source_id,ticket_no_id = session.ticket_no_id)        
+        db.Sales_Order_Transaction_Temporary.insert(
+            item_code_id = form.vars.item_code_id,
+            item_code = form.vars.item_code,
+            quantity = form.vars.quantity,
+            pieces = form.vars.pieces,
+            total_pieces = form.vars.total_pieces,
+            price_cost = form.vars.price_cost,
+            total_amount = form.vars.total_amount,
+            discount_percentage = form.vars.discount_percentage,
+            category_id = form.vars.category_id,
+            stock_source_id = session.stock_source_id,
+            selective_tax = form.vars.selective_tax,
+            selective_tax_foc = form.vars.selective_tax_foc,
+            ticket_no_id = session.ticket_no_id)        
+        if db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() != 0:            
+            response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
+        else:            
+            response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
+        
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
     ctr = 0
     row = []                
     grand_total = 0
-    _total_amount = 0        
-    _total_excise_tax = 0
-    _selective_tax = DIV('')
+    _selective_tax = _selective_tax_foc = 0
+    _div_tax = _div_tax_foc = DIV('')
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     _query = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)])
     for n in _query:
-        ctr += 1
-        # computation for excise tax
-        _total_pcs = n.Sales_Order_Transaction_Temporary.quantity * n.Item_Master.uom_value + n.Sales_Order_Transaction_Temporary.pieces
-        _excise_tax_amount = float(float(n.Item_Prices.retail_price) * float(n.Item_Master.selectivetax or 0) / 100)
-        _excise_tax_price_per_piece = _excise_tax_amount / n.Item_Master.uom_value
-        _total_excise_tax += _excise_tax_price_per_piece * _total_pcs
-        
-        if _total_excise_tax > 0:
-            _selective_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_total_excise_tax or 0, grouping = True)), _id="selective_tax")
-            response.js = "jQuery('#discount, #btnproceed').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled'), jQuery('#selective_tax').show()"
-            session.discount = 0                  
-
-        # check for duplicate entries if FOC type
-        _duplicate = db((n.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (n.Sales_Order_Transaction_Temporary.item_code == db.Sales_Order_Transaction_Temporary.item_code) & (n.Sales_Order_Transaction_Temporary.category_id == 3)).select().first()
-        if not _duplicate:
-            _unit_price = float(n.Item_Prices.wholesale_price) + _excise_tax_amount            
-        else:
-            _unit_price = _excise_tax_amount
-        # computation for price per unit
-        
-        _price_per_piece = _unit_price / n.Item_Master.uom_value
-        _total_amount = _total_pcs * _price_per_piece
-        grand_total += float(_total_amount)        
+        ctr += 1      
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Sales_Order_Transaction_Temporary.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Sales_Order_Transaction_Temporary.id),'_data-qt':(n.Sales_Order_Transaction_Temporary.quantity), '_data-pc':(n.Sales_Order_Transaction_Temporary.pieces)})
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Sales_Order_Transaction_Temporary.id), **{'_data-id':(n.Sales_Order_Transaction_Temporary.id)})
         btn_lnk = DIV(edit_lnk, dele_lnk)
+        _selective_tax += n.Sales_Order_Transaction_Temporary.selective_tax
+        _selective_tax_foc += n.Sales_Order_Transaction_Temporary.selective_tax_foc
+        if _selective_tax > 0.0:            
+            _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
+            _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
+            response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
+        else:
+            _div_tax = DIV('')
+            _div_tax_foc = DIV('')
+
+        grand_total += n.Sales_Order_Transaction_Temporary.total_amount
         row.append(TR(
             TD(ctr),
             TD(n.Sales_Order_Transaction_Temporary.item_code),
@@ -516,13 +572,12 @@ def sales_order_transaction_temporary():
             TD(n.Item_Master.uom_value),
             TD(n.Sales_Order_Transaction_Temporary.quantity),
             TD(n.Sales_Order_Transaction_Temporary.pieces),
-            TD(locale.format('%.2F',_unit_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%.2F',_total_amount or 0, grouping = True),_align = 'right', _style="width:120px;"),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount, grouping = True),_align = 'right', _style="width:120px;"),
             TD(btn_lnk)))
-    body = TBODY(*row)    
-    
-    foot = TFOOT(TR(TD(),TD(_selective_tax,_colspan = '2'),TD(H4('TOTAL AMOUNT'), _align = 'right', _colspan = '5'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
-    foot += TFOOT(TR(TD(H4('DISCOUNT %'), _align = 'right', _colspan = '8'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
+    body = TBODY(*row)        
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, grand = grand_total)
 
@@ -543,32 +598,14 @@ def generate_total_amount(item, qty, pcs):
     # _tamount = float(_uprice) * int(_pcs)    
     # print 'excise tax ', _excise_tax_amount, _unit_price, _total_amount
     return _unit_price
-
-def generate_total_amount_(qty, pcs, uom, price ):
-    _pcs = qty * uom + pcs
-    _uprice = float(price) / int(uom)
-    _tamount = float(_uprice) * int(_pcs)
-    return _tamount
-
-def sales_order_transaction_temporary_edit():
-    print 'request ', request.args(0), request.args(1), request.args(2)
-
-@auth.requires_login()
-def sales_order_transaction_temporary_edit_():
-    _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()
-    _im = db(db.Item_Master.id == _id.item_code_id).select().first()
-    _qty = int(request.args(1))
-    _pcs = int(request.args(2))
-    _total_pcs = _qty * _im.uom_value + _pcs
-    if _total_pcs >= _im.uom_values:
-        response.flash = 'QUANTITY HAS ERROR'
-    else:
-        _amount = float(_id.price_cost) * int(_total_pcs)
-        _id.update_record(quantity = _qty, pieces = _pcs)
-        response.js = "$('#tblso').get(0).reload()"
-    
+ 
 @auth.requires_login()
 def sales_order_transaction_temporary_delete():
+    _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()    
+    _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()    
+    _stk_file.stock_in_transit -= _id.total_pieces    
+    _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+    _stk_file.update_record()        
     db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()    
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblsot').get(0).reload()"
@@ -576,7 +613,7 @@ def sales_order_transaction_temporary_delete():
 @auth.requires_login()
 def sales_order_browse():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')))
+    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in db((db.Sales_Order.created_by == auth.user.id) & ((db.Sales_Order.archives != True) | (db.Sales_Order.status_id != 9) | (db.Sales_Order.status_id != 10))).select(orderby = ~db.Sales_Order.id):  
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False))            
@@ -610,6 +647,7 @@ def sales_order_browse():
 
 @auth.requires_login()
 def sales_order_view():    
+    session.sales_order_no_id = 0
     db.Sales_Order.sales_order_date.writable = False
     db.Sales_Order.dept_code_id.writable = False
     db.Sales_Order.stock_source_id.writable = False
@@ -622,6 +660,7 @@ def sales_order_view():
     db.Sales_Order.sales_man_id.writable = False    
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 4
+    session.sales_order_no_id = request.args(0)
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process().accepted:
@@ -649,9 +688,16 @@ def sales_order_view():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_order_edit_view', args = n.Sales_Order_Transaction.id))            
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback = URL( args = n.Sales_Order_Transaction.id),  **{'_data-id':(n.Sales_Order_Transaction.id)})            
         btn_lnk = DIV(edit_lnk, dele_lnk)        
-        row.append(TR(TD(ctr),TD(n.Sales_Order_Transaction.item_code_id.item_code),TD(n.Item_Master.item_description.upper()),
-            TD(n.Sales_Order_Transaction.category_id.mnemonic),TD(n.Sales_Order_Transaction.uom),TD(card(n.Sales_Order_Transaction.item_code_id, n.Sales_Order_Transaction.quantity, n.Sales_Order_Transaction.uom)),            
-            TD(n.Sales_Order_Transaction.price_cost, _align = 'right'),TD(locale.format('%.2F',_total_amount or 0, grouping = True),_align = 'right'),TD(btn_lnk)))
+        row.append(TR(
+            TD(ctr),
+            TD(n.Sales_Order_Transaction.item_code_id.item_code),
+            TD(n.Item_Master.item_description.upper()),
+            TD(n.Sales_Order_Transaction.category_id.mnemonic),
+            TD(n.Sales_Order_Transaction.uom),
+            TD(card(n.Sales_Order_Transaction.item_code_id, n.Sales_Order_Transaction.quantity, n.Sales_Order_Transaction.uom)),            
+            TD(n.Sales_Order_Transaction.price_cost, _align = 'right'),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0, grouping = True),_align = 'right'),
+            TD(btn_lnk)))
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD()))
     table = TABLE(*[head, body, foot], _class='table table-striped', _id = 'tblsot')
@@ -718,10 +764,14 @@ def sales_order_edit_view():
         Field('quantity', 'integer', default = _qty),
         Field('pieces', 'integer', default = _pcs))
     if form.process(onvalidation = validate_stock_in_transit).accepted:
-        _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id)
+        _price_per_piece = _id.price_cost / _id.uom
+        _total_amount = form.vars.quantity * _price_per_piece
+        _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id, total_amount = _total_amount)
         for n in db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select():
-            _total += int(n.quantity) * float(n.price_cost)
-        _so.update_record(total_amount = _total)
+            _total += n.total_amount
+        _discount = float(_total) * int(_so.discount_percentage or 0) / 100
+        _total_amount_after_discount = float(_total) - int(_discount)
+        _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount)
         _nsit = _sf.stock_in_transit + _qty
         _sf.update_record(stock_in_transit = _nsit)
         session.flash = 'RECORD UPDATED'
@@ -731,19 +781,16 @@ def sales_order_edit_view():
     btn_back = A('RETURN', _class='btn btn-warning', _role='button', _href = URL('sales_order_view', args = _so.id))
     return dict(form = form, btn_back = btn_back)
 
-def validate_stock_in_transit(form):
-    
+def validate_stock_in_transit(form):    
     _id = db(db.Sales_Order_Transaction.id == request.args(0)).select().first() # from sales order transaction table
     _im = db(db.Item_Master.id == _id.item_code_id).select().first() # Item master table
     _so = db(db.Sales_Order.id == _id.sales_order_no_id).select().first() # from sales order  table
     _sf = db(db.Stock_File.item_code_id == _id.item_code_id).select().first() # from stock file table
-
-    _qty = int(request.vars.quantity) * int(_id.uom) + int(request.vars.pieces or 0)
-    
+    _ip = db(db.Item_Prices.item_code_id == _id.item_code_id).select().first()
+    _qty = int(request.vars.quantity) * int(_id.uom) + int(request.vars.pieces or 0)            
     if _qty >= _sf.closing_stock:        
         form.errors.quantity = 'Total quantity should not be more than the stock file. '
-
-    form.vars.quantity = _qty
+    form.vars.quantity = _qty    
     _old_stock_in_transit = _sf.stock_in_transit - _id.quantity
     _old_probational_balance = _sf.closing_stock - _old_stock_in_transit
     _sf.update_record(stock_in_transit = _old_stock_in_transit)
@@ -767,24 +814,528 @@ def sales_order_delete_view():
     _st = db(db.Sales_Order_Transaction.id == request.args(0)).select().first()    
     _so = db(db.Sales_Order.id == _st.sales_order_no_id).select().first()
     _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.stock_source_id)).select().first()    
+    
     # update the stock file table
     _sf.stock_in_transit -= _st.quantity
     _sf.probational_balance = _sf.closing_stock - _sf.stock_in_transit
     _sf.update_record()
-    # generate computation in sales order transaction table
-    _total = 0
-    for n in db((db.Sales_Order_Transaction.id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select():
-        _total += int(n.quantity) * float(n.price_cost)
-    _total_amount = float(_so.total_amount) - float(_total)        
-    # update the sales order table
-    _so.update_record(total_amount = _total_amount)        
+    
     # update the sales order transaction table
     _st.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)    
-    # response.flash = 'RECORD DELETED'
-
+    
+    # generate re-computation in sales order transaction table
+    _total = 0
+    for n in db((db.Sales_Order_Transaction.sales_order_no_id == _st.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select():
+        _total += n.total_amount
+    _discount = float(_total) * int(_so.discount_percentage or 0) / 100
+    _total_amount_after_discount = float(_total) - int(_discount)    
+    
+    # update the sales order table
+    _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount)    
+    session.flash = 'RECORD DELETED'
+    
+    # response.js = "$('#tblsot').get(0).reload()"
+    
 @auth.requires_login()
 def sales_order_archived():
     return locals()
+
+def sales_order_transaction_table():    
+    ctr = 0
+    row = []                
+    _grand_total = 0
+    _total_amount = 0        
+    _total_excise_tax = 0
+    _selective_tax = _selective_tax_foc = 0
+    _div_tax = DIV('')
+    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+        _query = db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id))
+        _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
+    else:
+        _query = db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id))
+        _id = db(db.Sales_Order.id == request.args(0)).select().first()
+
+    # _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
+    for n in _query:
+    # for n in db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
+        ctr += 1
+
+        # discount & grand total computation
+        _grand_total += float(n.Sales_Order_Transaction.total_amount or 0)
+        _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
+        _grand_total = float(_grand_total) - int(_discount)                
+        
+        # selective tax computation
+        _selective_tax += n.Sales_Order_Transaction.selective_tax or 0
+        _selective_tax_foc += n.Sales_Order_Transaction.selective_tax_foc or 0
+        if _selective_tax > 0.0 or _selective_tax_foc > 0.0:
+            _div_tax = DIV(H4('TOTAL SELECTIVE TAX: ',locale.format('%.2F', _selective_tax or 0, grouping = True)))
+            _div_tax_foc = DIV(H4('TOTAL SELECTIVE TAX FOC: ',locale.format('%.2F', _selective_tax_foc or 0, grouping = True)))
+        else:
+            _div_tax = DIV('')
+            _div_tax_foc = DIV('')
+
+        # ownership 
+        if auth.user_id != n.Sales_Order_Transaction.created_by:
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle disabled')            
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row',_class='btn btn-icon-toggle disabled')
+        else:
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle', _href=URL('sales','sales_order_edit_view', args = n.Sales_Order_Transaction.id, extension = False))
+            # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-icon-toggle delete', callback = URL(args = n.Sales_Order_Transaction.id, extension = False), **{'_data-id':(n.Sales_Order_Transaction.id)})
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-icon-toggle delete', callback = URL( args = n.Sales_Order_Transaction.id, extension = False), **{'_data-id':(n.Sales_Order_Transaction.id)})
+        
+        btn_lnk = DIV(edit_lnk, dele_lnk)
+        row.append(TR(
+            TD(ctr),
+            TD(n.Sales_Order_Transaction.item_code_id.item_code),
+            TD(n.Item_Master.item_description),
+            TD(n.Sales_Order_Transaction.category_id.mnemonic, _style = 'width:120px'),
+            TD(n.Sales_Order_Transaction.uom, _style = 'width:120px'),
+            TD(card(n.Sales_Order_Transaction.item_code_id, n.Sales_Order_Transaction.quantity, n.Sales_Order_Transaction.uom), _style = 'width:120px'),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.price_cost or 0, grouping = True), _align = 'right', _style = 'width:140px'),            
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0, grouping = True), _align = 'right', _style = 'width:140px'),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2F',_grand_total or 0, grouping = True)), _align = 'right', _style="width:120px;"),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(locale.format('%d',0 or 0, grouping = True), _align = 'right')),TD()))
+    table = TABLE(*[head, body, foot], _class='table ', _id = 'tblsot')
+    return dict(table = table)        
+
+# ----------    S A L E S     R E T U R N   ----------
+
+@auth.requires_login()
+def sales_return_view():    
+    session.sales_return_no_id = 0
+    db.Sales_Return.sales_return_date.writable = False
+    db.Sales_Return.dept_code_id.writable = False
+    db.Sales_Return.location_code_id.writable = False
+    db.Sales_Return.customer_code_id.writable = False
+    db.Sales_Return.customer_order_reference.writable = False
+    db.Sales_Return.delivery_due_date.writable = False
+    db.Sales_Return.total_amount.writable = False
+    db.Sales_Return.total_selective_tax.writable = False
+    db.Sales_Return.total_vat_amount.writable = False    
+    db.Sales_Return.sales_man_id.writable = False    
+    db.Sales_Return.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    db.Sales_Return.status_id.default = 4
+    session.sales_return_no_id = request.args(0)
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    form = SQLFORM(db.Sales_Return, request.args(0))
+    if form.process().accepted:
+        response.flash = 'RECORD UPDATED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'    
+    return dict(form = form, _id = _id) 
+
+def sales_return_browse():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+    for n in db((db.Sales_Return.created_by == auth.user.id) & ((db.Sales_Return.archives != True) | (db.Sales_Return.status_id != 9) | (db.Sales_Return.status_id != 10))).select(orderby = ~db.Sales_Return.id):  
+        if n.status_id == 7:            
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False))            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk, clea_lnk)
+
+        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+            TD(n.status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)
+
+def sales_return_form():
+    ticket_no_id = id_generator()
+    session.ticket_no_id = ticket_no_id    
+    _grand_total = 0
+    _total_selective_tax = _total_selective_tax_foc = 0
+    form = SQLFORM.factory(
+        Field('sales_order_date', 'date', default = request.now),
+        Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+        Field('location_code_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+        Field('customer_code_id','reference Customer', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+        Field('customer_order_reference','string', length = 25),
+        Field('delivery_due_date', 'date', default = request.now),
+        Field('remarks', 'string'),        
+        Field('status_id','reference Stock_Status', default = 4, requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
+    if form.process().accepted:        
+        ctr = db((db.Transaction_Prefix.prefix_key == 'SRE') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
+        _skey = ctr.current_year_serial_key
+        _skey += 1
+        ctr.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)        
+        db.Sales_Return.insert(
+            transaction_prefix_id = ctr.id,
+            sales_return_no = ctr.current_year_serial_key,
+            sales_return_date = request.now,
+            dept_code_id = form.vars.dept_code_id,
+            location_code_id = form.vars.location_code_id,
+            customer_code_id =  form.vars.customer_code_id,
+            customer_order_reference = form.vars.customer_order_reference,
+            delivery_due_date = form.vars.delivery_due_date,
+            remarks = form.vars.remarks,            
+            status_id = form.vars.status_id)
+        _id = db(db.Sales_Return.sales_return_no == ctr.current_year_serial_key).select().first()        
+        _tmp = db(db.Sales_Return_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select()
+        for n in _tmp:
+            
+            _item = db(db.Item_Master.id == n.item_code_id).select().first()
+            _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
+
+            db.Sales_Return_Transaction.insert(
+                sales_return_no_id = _id.id,
+                item_code_id = n.item_code_id,
+                category_id = n.category_id,
+                quantity = n.total_pieces,
+                uom = _item.uom_value,
+                price_cost = n.price_cost,
+                average_cost = _pric.average_cost,
+                # sale_cost = _pric.sale_cost,
+                wholesale_price = _pric.wholesale_price,
+                retail_price = _pric.retail_price,
+                vansale_price = _pric.vansale_price,
+                discount_percentage = n.discount_percentage,
+                selective_tax = n.selective_tax,
+                selective_tax_foc = n.selective_tax_foc,
+                total_amount = n.total_amount)
+            _grand_total += n.total_amount
+            _total_selective_tax += n.selective_tax or 0
+            _total_selective_tax_foc += n.selective_tax_foc or 0
+        _discount = session.discount or 0
+        _discount = float(_grand_total) * float(_discount) / 100
+        _after_discount = float(_grand_total) - float(_discount)
+        _id.update_record(total_amount = _grand_total, discount_percentage = _discount, total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax , selective_tax_foc = _total_selective_tax_foc)
+        session.discount = 0
+        db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
+        response.flash = 'SAVING SALES RETURN NO ' + str(_skey) + '.'    
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERROR'
+    return dict(form = form, ticket_no_id = ticket_no_id)
+
+def sales_return_item_code_description():
+    response.js = "$('#btnadd').removeAttr('disabled')"
+    response.js = "$('#no_table_pieces').removeAttr('disabled')"    
+    response.js = "$('#discount').removeAttr('disabled')"    
+    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
+    
+    if not _icode:
+        response.js = "$('#btnadd').attr('disabled','disabled')"
+        return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))       
+    else:        
+        _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
+        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()        
+        if _sfile:               
+
+            if _icode.uom_value == 1:
+                response.js = "$('#no_table_pieces').attr('disabled','disabled')"
+                _on_balanced = _sfile.probational_balance
+                _on_transit = _sfile.stock_in_transit
+                _on_hand = _sfile.closing_stock      
+            else:
+                response.js = "$('#no_table_pieces').removeAttr('disabled')"                
+                _on_balanced = card(_icode.id, _sfile.probational_balance, _icode.uom_value)
+                _on_transit = card(_icode.id, _sfile.stock_in_transit, _icode.uom_value)
+                _on_hand = card(_icode.id, _sfile.closing_stock, _icode.uom_value)
+            response.js = "$('#btnadd').removeAttr('disabled')"
+            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
+            TBODY(TR(
+                TD(_icode.item_code),
+                TD(_icode.item_description.upper()),
+                TD(_icode.group_line_id.group_line_name),
+                TD(_icode.brand_line_code_id.brand_line_name),
+                TD(_icode.uom_value),
+                TD(_icode.selectivetax),
+                TD(_iprice.retail_price),
+                TD(locale.format('%.2F',_iprice.wholesale_price or 0, grouping = True)),
+                TD(_on_hand),
+                TD(_on_transit),
+                TD(_on_balanced)),_class="bg-info"),_class='table'))
+        else:
+            return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
+
+def validate_sales_return_transaction(form):        
+    _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
+    
+    if not _id:
+        # form.errors._id = CENTER(DIV(B('DANGER! '),'Item code does not exist or empty.',_class='alert alert-danger',_role='alert'))            
+        form.errors.item_code = 'Item code does not exist or empty.'
+        
+    elif not db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first():
+        form.errors.item_code =  'Item code does not exist in stock file'
+        
+        # form.errors.item_code =  CENTER(DIV(B('DANGER! '),'Item code does not exist in stock file',_class='alert alert-danger',_role='alert'))
+    # elif request.vars.item_code and request.vars.category_id == 3:
+    #     response.flash = 'RECORD ADDED'
+
+    else:
+        _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+        _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
+        _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()                                   
+        
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)
+        
+        if not _price:
+            form.errors.item_code = "Item code does'nt have price."
+        
+        if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
+            form.error.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
+                
+        # if _exist == request.vars.item_code and (request.vars.category_id != 3):
+        _excise_tax_amount = 0
+        _unit_price = 0
+        _total_excise_tax = 0
+        _selective_tax = _selective_tax_foc = 0
+        if _exist:
+            if int(request.vars.category_id) != 3:                
+                form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'                
+            else:
+                _unit_price = _excise_tax_amount or 0
+                _selective_tax_foc = _id.selectivetax or 0
+                _selective_tax = 0
+                # computation for excise tax foc
+                # _excise_tax_amount_foc = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                # _excise_tax_price_per_piece_foc = _excise_tax_amount_foc / _id.uom_value
+                # _total_excist_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+
+                # _selective_tax_foc = ) / _id.uom_value * int(_total_pcs)
+                
+            # form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))                    
+        else:
+            # computation for excise tax
+            _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+            _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+            _total_excise_tax += _excise_tax_price_per_piece * _total_pcs
+            _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+            _selective_tax = _id.selectivetax or 0
+            # print 'unit price ', _unit_price
+
+        # computation for price per unit
+        _price_per_piece = _unit_price / _id.uom_value
+        _total_amount = _total_pcs * _price_per_piece
+
+        if _id.uom_value == 1:
+            form.vars.pieces = 0
+                      
+        if _total_pcs == 0:
+            form.errors.quantity = 'Zero quantity not accepted.'
+
+        if int(form.vars.pieces) >= int(_id.uom_value):
+            form.errors.pieces = 'Pieces should not be more than UOM value.'
+            # form.errors.pieces = CENTER(DIV(B('DANGER! '),' Pieces value should be not more than uom value ' + str(int(_id.uom_value)),_class='alert alert-danger',_role='alert'))                       
+                    
+        # _unit_price = float(_price.retail_price) / int(_id.uom_value)
+        # _total = float(_unit_price) * int(_total_pcs)
+
+        if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
+            form.errors.quantity = 'Quantity should not be more than probational balance.'
+        
+        _stk_file.stock_in_transit += _total_pcs    
+        _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+        _stk_file.update_record()        
+        form.vars.item_code_id = _id.id
+        form.vars.selective_tax = _selective_tax
+        form.vars.selective_tax_foc = _selective_tax_foc
+        form.vars.total_pieces = _total_pcs
+        form.vars.price_cost = _unit_price
+        form.vars.total_amount = _total_amount
+      
+def sales_return_transaction_temporary():
+    form = SQLFORM.factory(
+        Field('item_code', 'string', length = 25, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
+        Field('quantity','integer', default = 0, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
+        Field('pieces','integer', default = 0, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
+        Field('discount_percentage', 'decimal(10,2)', default = 0, requires = IS_NOT_EMPTY(error_message='cannot be empty!')),
+        Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
+    if form.process( onvalidation = validate_sales_return_transaction).accepted:        
+        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
+        _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
+        db.Sales_Return_Transaction_Temporary.insert(
+            item_code_id = form.vars.item_code_id,
+            item_code = form.vars.item_code,
+            quantity = form.vars.quantity,
+            pieces = form.vars.pieces,
+            total_pieces = form.vars.total_pieces,
+            price_cost = form.vars.price_cost,
+            total_amount = form.vars.total_amount,
+            discount_percentage = form.vars.discount_percentage,
+            category_id = form.vars.category_id,
+            stock_source_id = session.stock_source_id,
+            selective_tax = form.vars.selective_tax,
+            selective_tax_foc = form.vars.selective_tax_foc,
+            ticket_no_id = session.ticket_no_id)        
+        if db(db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() != 0:            
+            response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
+        else:            
+            response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
+        
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    ctr = 0
+    row = []                
+    grand_total = 0
+    _selective_tax = _selective_tax_foc = 0
+    _div_tax = _div_tax_foc = DIV('')
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-warning'))
+    _query = db(db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Sales_Return_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Return_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Return_Transaction_Temporary.item_code_id)])
+    for n in _query:
+        ctr += 1      
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Sales_Return_Transaction_Temporary.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Sales_Return_Transaction_Temporary.id),'_data-qt':(n.Sales_Return_Transaction_Temporary.quantity), '_data-pc':(n.Sales_Return_Transaction_Temporary.pieces)})
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Sales_Return_Transaction_Temporary.id), **{'_data-id':(n.Sales_Return_Transaction_Temporary.id)})
+        btn_lnk = DIV(edit_lnk, dele_lnk)
+        _selective_tax += n.Sales_Return_Transaction_Temporary.selective_tax
+        _selective_tax_foc += n.Sales_Return_Transaction_Temporary.selective_tax_foc
+        if _selective_tax > 0.0 or _selective_tax_foc > 0.0:            
+            _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
+            _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
+            response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
+        else:
+            _div_tax = DIV('')
+            _div_tax_foc = DIV('')
+
+        grand_total += n.Sales_Return_Transaction_Temporary.total_amount
+        row.append(TR(
+            TD(ctr),
+            TD(n.Sales_Return_Transaction_Temporary.item_code),
+            TD(n.Item_Master.item_description.upper()),
+            TD(n.Sales_Return_Transaction_Temporary.category_id.mnemonic),
+            TD(n.Item_Master.uom_value),
+            TD(n.Sales_Return_Transaction_Temporary.quantity),
+            TD(n.Sales_Return_Transaction_Temporary.pieces),
+            TD(locale.format('%.2F',n.Sales_Return_Transaction_Temporary.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+            TD(locale.format('%.2F',n.Sales_Return_Transaction_Temporary.total_amount, grouping = True),_align = 'right', _style="width:120px;"),
+            TD(btn_lnk)))
+    body = TBODY(*row)        
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
+    table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
+    return dict(form = form, table = table, grand = grand_total)    
+
+def sales_return_transaction_temporary_delete():
+    _id = db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).select().first()    
+    _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()    
+    _stk_file.stock_in_transit -= _id.total_pieces    
+    _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+    _stk_file.update_record()        
+    db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).delete()    
+    response.flash = 'RECORD DELETED'
+    response.js = "$('#tblsot').get(0).reload()"
+
+def sales_return_transaction_table():  
+    ctr = 0
+    row = []                
+    _grand_total = 0
+    _total_amount = 0        
+    _total_excise_tax = 0
+    _selective_tax = _selective_tax_foc = 0
+    _div_tax = _div_tax_foc = DIV('')
+    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+        _query = db((db.Sales_Return_Transaction.sales_return_no_id == session.sales_return_no_id) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
+        _id = db(db.Sales_Order.id == session.sales_return_no_id).select().first()        
+    else:
+        _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
+        _id = db(db.Sales_Order.id == request.args(0)).select().first()
+
+    # _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-warning'))
+    for n in _query:
+        ctr += 1
+
+        # discount & grand total computation
+        _grand_total += float(n.Sales_Return_Transaction.total_amount or 0)
+        _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
+        _grand_total = float(_grand_total) - int(_discount)                
+        
+        # selective tax computation
+        _selective_tax += n.Sales_Return_Transaction.selective_tax or 0
+        _selective_tax_foc += n.Sales_Return_Transaction.selective_tax_foc or 0
+        if _selective_tax > 0.0 or _selective_tax_foc > 0.0:
+            _div_tax = DIV(H4('TOTAL SELECTIVE TAX: ',locale.format('%.2F', _selective_tax or 0, grouping = True)))
+            _div_tax_foc = DIV(H4('TOTAL SELECTIVE TAX FOC: ',locale.format('%.2F', _selective_tax_foc or 0, grouping = True)))
+        else:
+            _div_tax = DIV('')
+            _div_tax_foc = DIV('')
+
+        # ownership 
+        if auth.user_id != n.Sales_Return_Transaction.created_by:
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle disabled')            
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row',_class='btn btn-icon-toggle disabled')
+        else:
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle', _href=URL('sales','sales_return_edit_view', args = n.Sales_Return_Transaction.id, extension = False))
+            # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-icon-toggle delete', callback = URL(args = n.Sales_Return_Transaction.id, extension = False), **{'_data-id':(n.Sales_Return_Transaction.id)})
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-icon-toggle delete', callback = URL( args = n.Sales_Return_Transaction.id, extension = False), **{'_data-id':(n.Sales_Return_Transaction.id)})
+        
+        btn_lnk = DIV(edit_lnk, dele_lnk)
+        row.append(TR(
+            TD(ctr),
+            TD(n.Sales_Return_Transaction.item_code_id.item_code),
+            TD(n.Item_Master.item_description),
+            TD(n.Sales_Return_Transaction.category_id.mnemonic, _style = 'width:120px'),
+            TD(n.Sales_Return_Transaction.uom, _style = 'width:120px'),
+            TD(card(n.Sales_Return_Transaction.item_code_id, n.Sales_Return_Transaction.quantity, n.Sales_Return_Transaction.uom), _style = 'width:120px'),
+            TD(locale.format('%.2F',n.Sales_Return_Transaction.price_cost or 0, grouping = True), _align = 'right', _style = 'width:140px'),            
+            TD(locale.format('%.2F',n.Sales_Return_Transaction.total_amount or 0, grouping = True), _align = 'right', _style = 'width:140px'),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2F',_grand_total or 0, grouping = True)), _align = 'right', _style="width:120px;"),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(locale.format('%d',0 or 0, grouping = True), _align = 'right')),TD()))
+    table = TABLE(*[head, body, foot], _class='table ', _id = 'tblsot')
+    return dict(table = table)       
+
+def sales_return_edit_view():
+    _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()
+    _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()
+    _sf = db(db.Stock_File.item_code_id == _id.id).select().first()
+    _im = db(db.Item_Master.id == _id.item_code_id).select().first()
+    _qty = _id.quantity / _id.uom
+    _pcs = _id.quantity - _id.quantity / _id.uom * _id.uom
+    _total = 0
+    form = SQLFORM.factory(
+        Field('quantity', 'integer', default = _qty),
+        Field('pieces', 'integer', default = _pcs))
+    if form.process(onvalidation = validate_stock_in_transit).accepted:
+        _price_per_piece = _id.price_cost / _id.uom
+        _total_amount = form.vars.quantity * _price_per_piece
+        _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id, total_amount = _total_amount)
+        for n in db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).select():
+            _total += n.total_amount
+        _discount = float(_total) * int(_so.discount_percentage or 0) / 100
+        _total_amount_after_discount = float(_total) - int(_discount)
+        _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount)
+        _nsit = _sf.stock_in_transit + _qty
+        _sf.update_record(stock_in_transit = _nsit)
+        session.flash = 'RECORD UPDATED'
+        redirect(URL('sales_return_view', args = _so.id))
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    btn_back = A('RETURN', _class='btn btn-warning', _role='button', _href = URL('sales_return_view', args = _so.id))
+    return dict(form = form, btn_back = btn_back)    
+
+def sales_return_delete_view():
+    # initialization of variable    
+    _st = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()    
+    _so = db(db.Sales_Return.id == _st.sales_return_no_id).select().first()    
+    _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.location_code_id)).select().first()    
+    
+    # update the stock file table
+    _sf.stock_in_transit -= _st.quantity
+    _sf.probational_balance = _sf.closing_stock - _sf.stock_in_transit
+    _sf.update_record()
+    
+    # update the sales order transaction table
+    _st.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)    
+    
+    # generate re-computation in sales order transaction table
+    _total = 0
+    for n in db((db.Sales_Return_Transaction.sales_return_no_id == _st.sales_return_no_id) & (db.Sales_Return_Transaction.delete == False)).select():
+        _total += n.total_amount
+    _discount = float(_total) * int(_so.discount_percentage or 0) / 100
+    _total_amount_after_discount = float(_total) - int(_discount)    
+    
+    # update the sales order table
+    _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount)    
+    session.flash = 'RECORD DELETED'    
 # ----------  M A N A G E R ' S   G R I D   ----------
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_manager_grid():
@@ -799,6 +1350,13 @@ def sales_order_manager_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     for n in _query:       
+        if auth.has_membership(role = 'ROOT'):
+            edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_approved', args = n.id, extension = False))            
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))
+            prin_lnk = A(I(_class='fas fa-print'), _title="Print Sales Order", _type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_report_store_keeper', args = n.id, extension = False))  
+            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+
         if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
             if n.status_id == 4:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
@@ -824,7 +1382,7 @@ def sales_order_manager_grid():
         if auth.has_membership(role = 'ACCOUNT USERS'):
             if n.status_id == 8:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sale_order_manager_invoice_no_approved', args = n.id, extension = False))                            
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))                            
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))
                 clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')  
@@ -1000,50 +1558,6 @@ def sales_order_store_keeper_view():
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, _id = _id)
 
-def sales_order_transaction_table():
-    ctr = 0
-    row = []                
-    _grand_total = 0
-    _total_amount = 0        
-    _total_excise_tax = 0
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
-    for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select(orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
-        ctr += 1
-        _im = db(db.Item_Master.id == n.Sales_Order_Transaction.item_code_id).select().first()
-        _ip = db(db.Item_Prices.item_code_id == n.Sales_Order_Transaction.item_code_id).select().first()
-        _excise_tax_amount = float(_ip.retail_price) * float(_im.selectivetax or 0) / 100
-        _excise_tax_price_per_piece = float(_excise_tax_amount) / int(n.Sales_Order_Transaction.uom)
-        _total_excise_tax +=  float(_excise_tax_price_per_piece) * int(n.Sales_Order_Transaction.quantity)
-        _total_amount = int(n.Sales_Order_Transaction.quantity) * float(n.Sales_Order_Transaction.price_cost)
-        _grand_total += float(_total_amount)        
-        _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
-        _grand_total = float(_grand_total) - int(_discount)                
-        
-        if auth.user_id != n.Sales_Order_Transaction.created_by:
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')            
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-        else:
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sales_Order_Transaction.id))            
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sales_Order_Transaction.id))
-        btn_lnk = DIV(edit_lnk, dele_lnk)
-
-        row.append(TR(
-            TD(ctr),
-            TD(n.Sales_Order_Transaction.item_code_id.item_code),
-            TD(n.Item_Master.item_description),
-            TD(n.Sales_Order_Transaction.category_id.mnemonic, _style = 'width:120px'),
-            TD(n.Sales_Order_Transaction.uom, _style = 'width:120px'),
-            TD(card(n.Sales_Order_Transaction.item_code_id, n.Sales_Order_Transaction.quantity, n.Sales_Order_Transaction.uom), _style = 'width:120px'),
-            TD(locale.format('%.6F',n.Sales_Order_Transaction.price_cost or 0, grouping = True), _align = 'right', _style = 'width:140px'),            
-            TD(locale.format('%.6F',_total_amount or 0, grouping = True), _align = 'right', _style = 'width:140px'),
-            TD(btn_lnk)))
-    body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(H4('TOTAL SELECTIVE TAX: ',locale.format('%.2F',_total_excise_tax or 0, grouping = True)) ,_colspan = '2'),TD(H4('TOTAL AMOUNT'), _align = 'right', _colspan = '4'),TD(H4(locale.format('%.2F',_grand_total or 0, grouping = True)), _align = 'right', _style="width:120px;"),TD()))
-    foot += TFOOT(TR(TD(H4('DISCOUNT %'), _align = 'right', _colspan = '7'),TD(H4(locale.format('%d',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
-    table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
-    return dict(table = table)        
-
 def sales_order_manager_view():
     db.Sales_Order.sales_order_date.writable = False
     db.Sales_Order.dept_code_id.writable = False
@@ -1059,7 +1573,7 @@ def sales_order_manager_view():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process(onvalidation = validate_mngr_approved).accepted:
-        session.flash = 'RECORD UPDATED'
+        response.flash = 'RECORD UPDATED'
         redirect(URL('inventory', 'mngr_req_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
@@ -1075,8 +1589,7 @@ def sales_order_manager_view():
         grand_total += _total_amount
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sales_Order_Transaction.id))            
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sales_Order_Transaction.id))
-        btn_lnk = DIV(edit_lnk, dele_lnk)
-        
+        btn_lnk = DIV(edit_lnk, dele_lnk)        
         row.append(TR(
             TD(ctr),
             TD(n.Sales_Order_Transaction.item_code_id.item_code),
@@ -1095,7 +1608,8 @@ def sales_order_manager_approved_form():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _id.update_record(status_id = 9, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
     session.flash = 'SALES ORDER APPROVED'
-    response.js = "$('#tblso').get(0).reload()"
+    
+    # response.js = "$('#tblso').get(0).reload()"
 
 def sales_order_manager_rejected_form():    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -1110,8 +1624,7 @@ def sale_order_manager_delivery_note_approved_form():
     _skey += 1
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
     _id.update_record(status_id = 8, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,)    
-    session.flash = 'DELIVERY NOTE APPROVED'
-    
+    session.flash = 'DELIVERY NOTE APPROVED'        
 
 def sales_order_manager_approved():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -1141,7 +1654,7 @@ def sale_order_manager_delivery_note_rejected():
     session.flash = 'DELIVERY NOTE REJECTED'
     response.js = "$('#tblso').get(0).reload()"
 
-def sale_order_manager_invoice_no_approved():
+def sales_order_manager_invoice_no_approved():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'INV')).select().first()        
     _skey = _trns_pfx.current_year_serial_key
@@ -1163,7 +1676,14 @@ def sale_order_manager_invoice_no_form_approved():
     _skey = _trns_pfx.current_year_serial_key
     _skey += 1
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
-    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now,)    
+    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)    
+    _sot = db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select()
+    for n in _sot:
+        _sf = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
+        _closing_stock = _sf.closing_stock - n.quantity
+        _transit = _sf.stock_in_transit - n.quantity
+        _sf.update_record(closing_stock = _closing_stock, stock_in_transit = _transit, last_transfer_qty = n.quantity, last_transfer_date = request.now)
+
 
 # ----------    S E T T I N G S  F O R M    ----------
 @auth.requires_login()
@@ -1187,6 +1707,12 @@ def generate_sales_order_no():
     return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _value=_stk_req_no, _disabled = True))
 
 
+def generate_sales_return_no():
+    _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SRE')).select().first()    
+    _serial = _trans_prfx.current_year_serial_key + 1
+    _val_sales_return = str(_trans_prfx.prefix) + str(_serial)
+    return XML(INPUT(_type="text", _class="form-control", _id='sales_return_no', _name='sales_return_no', _value=_val_sales_return, _disabled = True))
+
 
 # ------- form id generator ----------
 def id_generator():    
@@ -1206,6 +1732,9 @@ def sales_session():
     session.dept_code_id = request.vars.dept_code_id
     session.stock_source_id = request.vars.stock_source_id
 
+def sales_return_session():
+    session.dept_code_id = request.vars.dept_code_id
+    session.location_code_id = request.vars.location_code_id
 
 # -----------------     R  E  P  O  R  T  S     -----------------
 
@@ -1226,6 +1755,9 @@ from functools import partial
 import os
 from reportlab.pdfgen import canvas
 
+# from reportlab.rl_config.TTFSearchPath.append(str(settings.BASE_DIR) + '/app/lib/reportlabs/fonts')
+# from pdfmetrics.registerFont(TTFont('Copperplate', 'Copperplate-Gothic-Bold.ttf'))
+
 import string
 from num2words import num2words
 
@@ -1243,13 +1775,15 @@ styleN = styles["BodyText"]
 styleH = styles['Heading1']
 _style = ParagraphStyle(
     name='BodyText',
-    fontSize=7,
+    fontSize=8,
 )
+styles.add(ParagraphStyle(name='Wrap', fontSize=8, wordWrap='LTR', firstLineIndent = 0,alignment = TA_LEFT))
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20)#, showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
+text_path = request.folder + 'static/fonts/reports/'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
 img.drawWidth = 3.25 * inch
@@ -1271,12 +1805,18 @@ def sales_invoice_footer(canvas, doc):
     # Footer    
 
     footer = Table([
-        ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS', '',locale.format('%.2f',_id.total_amount or 0, grouping = True)],
+        # ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS ONLY', '',locale.format('%.2f',_id.total_amount or 0, grouping = True)],
         [str(_id.created_by.first_name.upper()) + ' ' + str(_id.created_by.last_name.upper()) ,'',''],
-        [_id.stock_source_id.location_name,'',str(_id.delivery_note_no_prefix_id.prefix)+str(_id.delivery_note_no)],
+        [_id.stock_source_id.location_name,'',''],
         ['','',_id.customer_order_reference],
         ], colWidths='*')
-    footer.setStyle(TableStyle([('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))]))
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('SPAN',(0,0),(1,0)),
+        ('ALIGN',(2,0),(2,-1),'RIGHT'),
+        ('TOPPADDING',(0,0),(-1,-1),20),
+        ]))
     footer.wrap(doc.width, doc.bottomMargin)
     footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
 
@@ -1325,7 +1865,7 @@ def sales_order_report_store_keeper():
             ['SALES ORDER'],
             ['SALES ORDER NO:', str(n.transaction_prefix_id.prefix)+str(n.sales_order_no), 'DATE:',n.sales_order_date.strftime('%d-%m-%Y'), 'DUE DATE:', n.delivery_due_date],
             ['Department:', n.dept_code_id.dept_name,'Location Source:',n.stock_source_id.location_name,'Sales Man:', str(n.created_by.first_name.upper()+' '+str(n.created_by.last_name.upper()))],
-            ['Customer: ', str(n.customer_code_id.customer_name.upper()), 'Order Reference:',n.customer_order_reference.upper(),'Status: ',n.status_id.description ],
+            ['Customer: ', Paragraph(n.customer_code_id.customer_name.upper(), styles['Wrap']), 'Order Reference:',n.customer_order_reference.upper(),'Status: ',n.status_id.description ],
             ['Remarks:']]
     _so_tbl = Table(_so, colWidths=['*'])
     _so_tbl.setStyle(TableStyle([
@@ -1338,6 +1878,7 @@ def sales_order_report_store_keeper():
         ('BACKGROUND',(0,1),(-1,1),colors.gray),
         ('FONTSIZE',(0,1),(-1,1),9),
         ('FONTSIZE',(0,2),(5,-1),8),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
         ]))
     ctr = 0
     _grand_total = 0
@@ -1350,18 +1891,29 @@ def sales_order_report_store_keeper():
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
         _total_amount = int(t.Sales_Order_Transaction.quantity) * float(t.Sales_Order_Transaction.price_cost)
         _grand_total += _total_amount
-        _st.append([ctr,t.Item_Master.item_code, t.Item_Master.item_description, t.Sales_Order_Transaction.category_id.mnemonic, t.Sales_Order_Transaction.uom, _qty, locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), locale.format('%.2F',_total_amount or 0, grouping = True)])
+        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Sales_Order_Transaction.category_id.mnemonic, t.Sales_Order_Transaction.uom, _qty, locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), locale.format('%.2F',_total_amount or 0, grouping = True)])
         _st.append(['','','','','','','DISCOUNT:', locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
         _st.append(['','','','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[25,70,'*',30,30,50,70,70])
     _st_tbl.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('BACKGROUND',(0,0),(-1,0), colors.gray),
         ('FONTSIZE',(0,0),(-1,-1),8),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
         ('ALIGN',(6,1),(7,-1),'RIGHT')]))
+    
+    _ap = [[_id.created_by.first_name.upper() + ' ' + _id.created_by.last_name.upper(),'',_id.sales_order_approved_by.first_name.upper() + ' ' + _id.sales_order_approved_by.last_name.upper()],['Prepared by:','','Approved by:']]
+    _ap_tbl = Table(_ap, colWidths='*')
+    _ap_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('FONTSIZE',(0,0),(-1,-1),8),
+    ]))
     row.append(_so_tbl)
     row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
+    row.append(Spacer(1,9*cm))
+    row.append(_ap_tbl)
 
     doc.build(row, onFirstPage=sales_order_store_keeper_header_footer_report, onLaterPages = sales_order_store_keeper_header_footer_report)
 
@@ -1380,7 +1932,7 @@ def sales_order_delivery_note_report_store_keeper():
             ['DELIVERY NOTE NO:', str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no), 'DATE:',n.delivery_note_date_approved.strftime('%d-%m-%Y'), '', ],
             ['SALES ORDER NO:', str(n.transaction_prefix_id.prefix)+str(n.sales_order_no), 'DATE:',n.sales_order_date.strftime('%d-%m-%Y'), 'DUE DATE:', n.delivery_due_date],
             ['Department:', n.dept_code_id.dept_name,'Location Source:',n.stock_source_id.location_name,'Sales Man:', str(n.created_by.first_name.upper()+' '+str(n.created_by.last_name.upper()))],
-            ['Customer: ', str(n.customer_code_id.customer_name.upper()), 'Order Reference:',n.customer_order_reference.upper(),'Status: ',n.status_id.description ],
+            ['Customer: ', Paragraph(n.customer_code_id.customer_name.upper(), styles['Wrap']), 'Order Reference:',n.customer_order_reference.upper(),'Status: ',n.status_id.description ],
             ['Remarks:']]
     _so_tbl = Table(_so, colWidths=['*'])
     _so_tbl.setStyle(TableStyle([
@@ -1393,6 +1945,7 @@ def sales_order_delivery_note_report_store_keeper():
         ('BACKGROUND',(0,1),(-1,1),colors.gray),
         ('FONTSIZE',(0,1),(-1,1),9),
         ('FONTSIZE',(0,2),(5,-1),8),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
         ]))
     ctr = 0
     _grand_total = 0
@@ -1465,56 +2018,45 @@ def sales_order_delivery_note_report_store_keeper():
 def sales_order_report_account_user():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     for n in db(db.Sales_Order.id == request.args(0)).select():
+        _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
-            [str(n.customer_code_id.customer_account_no) + str('\n') + str(n.customer_code_id.customer_name.upper()) + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n')
-                + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')
-                + str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper()),'',request.now.strftime('%d-%m-%Y')],
-            ['','',''],
-            ['','',''],
-            ['','',n.dept_code_id.dept_name],
-            ['' ,'',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no)],
-            ['','',''],
+            # T("Hello World", language="it-it")
+            # ['SALES INVOICE ' + T("Are you sure you want to delete this object?", language="ar")],
+            ['SALES INVOICE'],
+            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':',n.customer_code_id.customer_account_type.description],             
+            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
+            ['','','','','Location', ':',n.stock_source_id.location_name],            
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','','',''],
+            ['','','','','','',''],             
             
             ]
-        # _so = [
-        #     ['SALES INVOICE'],
-        #     ['SALES INVOICE:', str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no), 'DATE:',n.sales_invoice_date_approved.strftime('%d-%m-%Y'), '', ''],
-        #     ['DELIVERY NOTE NO:', str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no), 'DATE:',n.delivery_note_date_approved.strftime('%d-%m-%Y'), '', ''],
-        #     ['SALES ORDER NO:', str(n.transaction_prefix_id.prefix)+str(n.sales_order_no), 'DATE:',n.sales_order_date.strftime('%d-%m-%Y'), 'DUE DATE:', n.delivery_due_date.strftime('%d-%m-%Y')],
-        #     ['Department:', n.dept_code_id.dept_name,'Location Source:',n.stock_source_id.location_name,'Sales Man:', str(n.created_by.first_name.upper()+' '+str(n.created_by.last_name.upper()))],
-        #     ['Customer: ', str(n.customer_code_id.customer_name.upper()), 'Order Reference:',n.customer_order_reference.upper(),'Status: ',n.status_id.description ],
-        #     ['Remarks:']]
-    _so_tbl = Table(_so, colWidths=['*'])
+    _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     _so_tbl.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        # ('SPAN',(0,0),(5,0)),
-        # ('ALIGN',(0,0),(0,0),'CENTER'),
-        ('FONTSIZE',(0,0),(-1,-1),8),
-        ('SPAN',(0,0),(0,-1)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,3),(2,-1)),
+        ('SPAN',(0,0),(6,0)),
+        ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('FONTNAME', (0, 0), (6, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(0,0),9),
+        ('FONTSIZE',(0,1),(6,1),8),                
+        ('FONTSIZE',(0,2),(6,-1),8),                
         ('VALIGN',(0,0),(-1,-1),'TOP'),
-        # ('TOPPADDING',(0,0),(0,0),5),
-        # ('BOTTOMPADDING',(0,0),(0,0),12),
-        # ('BACKGROUND',(0,1),(-1,1),colors.gray),
-        # ('FONTSIZE',(0,1),(-1,1),9),
-        # ('FONTSIZE',(0,2),(5,-1),8),
+        ('TOPPADDING',(0,0),(0,0),5),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0),
+        
         ]))
     ctr = 0
-    # _st = [['#','ITEM CODE','ITEM DESCRIPTION','CAT','UOM','QTY','UNIT PRICE','AMOUNT']]
-    _st = []
-    
+    _st = [['#','Item Code','Item Description','Cat','UOM','Qty','Unit Price','Discount','Net Price','Amount']]        
     _grand_total = 0
     _total_amount = 0        
     _total_excise_tax = 0    
     for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
-        ctr += 1
-        
-        _im = db(db.Item_Master.id == t.Sales_Order_Transaction.item_code_id).select().first()
-        _ip = db(db.Item_Prices.item_code_id == t.Sales_Order_Transaction.item_code_id).select().first()
-        _excise_tax_amount = float(_ip.retail_price) * float(_im.selectivetax or 0) / 100
-        _excise_tax_price_per_piece = float(_excise_tax_amount) / int(t.Sales_Order_Transaction.uom)
-        _total_excise_tax +=  float(_excise_tax_price_per_piece) * int(t.Sales_Order_Transaction.quantity)
-        _total_amount = int(t.Sales_Order_Transaction.quantity) * float(t.Sales_Order_Transaction.price_cost)
-        _grand_total += float(_total_amount)        
+        ctr += 1        
+        _grand_total += float(t.Sales_Order_Transaction.total_amount or 0)        
         _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
         _grand_total = float(_grand_total) - int(_discount)
 
@@ -1522,28 +2064,112 @@ def sales_order_report_account_user():
             _qty = t.Sales_Order_Transaction.quantity
         else:
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
-        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Sales_Order_Transaction.category_id.mnemonic, t.Sales_Order_Transaction.uom, _qty, locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), locale.format('%.2F', _total_amount or 0, grouping = True)])
-    _st.append(['','','','','','','DISCOUNT %:',locale.format('%d',_id.discount_percentage or 0, grouping = True)])
-    _st.append(['','TOTAL SELECTIVE TAX: '+ str(locale.format('%.2F',_total_excise_tax or 0, grouping = True)),'','','','','TOTAL AMOUNT:',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,60,70,70])
-    _st_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        # ('BACKGROUND',(0,0),(-1,0), colors.gray),
-        ('FONTSIZE',(0,0),(-1,-1),8),
-        ('VALIGN',(0,0),(7,-1),'TOP'),
-        # ('LINEABOVE', (0,-2), (-1,-2), .5, colors.black),
-        ('ALIGN',(6,0),(7,-1),'RIGHT'),
-    ]))
 
-    
+        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), 
+            t.Sales_Order_Transaction.category_id.mnemonic, 
+            t.Sales_Order_Transaction.uom, 
+            _qty, 
+            locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), 
+            locale.format('%.2F',t.Sales_Order_Transaction.discount_percentage or 0, grouping = True), 
+            locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True), 
+            locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
+    if not _id.total_selective_tax:
+        _selective_tax = _selective_tax_foc = ''
+    else:
+        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
+    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
+    _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
+    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
+    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50])
+    _st_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
+        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),        
+        ('TOPPADDING',(0,-3),(-1,-1),5),
+        ('BOTTOMPADDING',(0,-1),(-1,-1),5),
+        ('TOPPADDING',(0,-2),(-1,-2),0),
+        ('BOTTOMPADDING',(0,-3),(-2,-2),0),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
+        ('FONTSIZE',(0,0),(-1,1),7),
+        ('FONTSIZE',(0,1),(-1,-1),8),
+        # ('FONTSIZE',(0,-3),(2,-2),7),
+        ('VALIGN',(0,0),(9,-1),'TOP'),        
+        ('ALIGN',(6,0),(9,-1),'RIGHT'),
+        ('SPAN',(0,-4),(-1,-4)),
+        ('SPAN',(0,-1),(5,-1)),
+        ('SPAN',(0,-2),(5,-2)),
+        ('SPAN',(0,-3),(5,-3)),
+        ('SPAN',(6,-1),(7,-1)),
+        ('SPAN',(6,-2),(7,-2)),
+        ('SPAN',(6,-3),(7,-3)),
+        ('ALIGN',(0,-4),(-1,-4),'CENTER'),
+        ('TOPPADDING',(0,-4),(-1,-4),10),
+        ('BOTTOMPADDING',(0,-4),(-1,-4),10),
+
+    ]))    
 
     row.append(_so_tbl)
     row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
     row.append(Spacer(1,.7*cm))
+    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    wrds_trnls = [
+        ['-------------     NOTHING TO FOLLOWS     -------------'],
+        ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
+    wrds_tbld = Table(wrds_trnls, colWidths='*')
+    wrds_tbld.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (0,0), (0,1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('BOTTOMPADDING',(0,0),(0,0),30),        
+        ('LINEABOVE', (0,1), (0,1), .5, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,1), (0,1), .5, colors.black,None, (2,2)),
+        ('FONTSIZE',(0,0),(-1,-1),7)
+    ]))
 
-    doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer)
+    _others = [
+        ['Remarks',':',_id.remarks],
+        ['Delivery Note No.',':',str(_id.delivery_note_no_prefix_id.prefix)+str(_id.delivery_note_no)],
+        ['Delivery Note Date.',':',_id.delivery_note_date_approved.strftime('%d-%m-%Y')],        
+        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no)],
+        ['Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],
+        ['Customer Sales Order Ref. ',':',n.customer_order_reference],            
+        ]
+    _others_table = Table(_others, colWidths=[120,25,'*'])
+    _others_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('TOPPADDING',(0,0),(-1,-1),0),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0),
+    ]))
+    # row.append(Spacer(1,.7*cm))
+    row.append(_others_table)
 
+    _signatory = [
+        ['We hereby confirm receipt of this invoice.','',''],
+        ['Name and Signature of Customer','','Authorized Signatory']]
+    
+    _signatory_table = Table(_signatory, colWidths='*')
+    _signatory_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,1), (2,1), 'CENTER'),
+        ('TOPPADDING',(0,1),(2,1),20),
+        # ('BOTTOMPADDING',(0,0),(-1,-1),0),
+    ]))
+    row.append(Spacer(1,.7*cm))
+    row.append(_signatory_table)
+    doc.build(row)
+    # doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'

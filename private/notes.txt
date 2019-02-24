@@ -11,6 +11,17 @@ op: lar
 pa: 54193
 np: larrypas123
 
+import reshaper
+from bidi.algorithm import get_display
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.pdfbase.ttfonts import TTFont
+
+arabic_text = reshaper.reshape(u'العربية')
+arabic_text = get_display(arabic_text)
+pdfmetrics.registerFont(TTFont('Arabic-bold', '/path-to-your-arabic-font'))
+
 TRUNCATE TABLE "<table>" RESTART IDENTITY; // PostgreSQL
 
 TRUNCATE TABLE [<table>] GO // SQL Server

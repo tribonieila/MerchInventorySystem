@@ -20,7 +20,7 @@
                 },
                 callback: function (result) {
                     if (result) {
-                        ajax("{{=URL('sales','sales_order_delete_view')}}" + '/' + _id);
+                        ajax("{{=URL('sales','sales_return_delete_view')}}" + '/' + _id);
                         parent.fadeOut('slow');
                         location.reload();   
                     }

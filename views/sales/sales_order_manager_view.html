@@ -2,6 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">DETAILS</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','mngr_req_grid')}}";>BROWSE</a></li>
+            </ul>            
             <span class="card-title">SALES ORDER FOR APPROVAL</span>
         </div>
         <div class="card-body tab-content">
@@ -115,8 +119,6 @@
                                         {{ if _id.status_id == 4: }}
                                             <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_order_manager_approved_form', args = request.args(0))}}')">
                                             <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_order_manager_rejected_form', args = request.args(0))}}')">                                                                            
-
-
                                         {{ else: }}
                                             <input class="btn btn-success" type="submit" value="approved" disabled>
                                             <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            

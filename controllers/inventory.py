@@ -3059,8 +3059,8 @@ def stk_req_details_form():
             edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle disabled')            
         else:
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stk_req__trans_edit_form', args = k.Stock_Request_Transaction.id))
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = k.Stock_Request_Transaction.id), **{'_data-id':(k.Stock_Request_Transaction.id)})            
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stk_req__trans_edit_form', args = k.Stock_Request_Transaction.id, extension = False))
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = k.Stock_Request_Transaction.id), **{'_data-id':(k.Stock_Request_Transaction.id)})          
 
         btn_lnk = DIV(edit_lnk, dele_lnk)
         ctr += 1            

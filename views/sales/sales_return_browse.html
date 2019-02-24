@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class=""><a href="#" onclick=window.location="{{=URL('sales_return_form')}}";>+ ADD NEW</a></li>
+                    <li class="active"><a href="#">BROWSE</a></li>
+                </ul>
+                <span class="card-title">SALES RETURN</span>
+            </div>
+            <div class="card-body tab-content">            
+                {{=table}}
+         
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    $('.clear').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to clear this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('sales','sales_order_transaction_temporary_delete')}}" + '/'+ _id);
+                           
+                }
+    
+            }
+        })
+    });    
+</script>

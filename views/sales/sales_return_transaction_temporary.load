@@ -1,0 +1,145 @@
+<hr>
+{{=table}}
+{{=form.custom.begin}}
+<div class="row">    
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Item Code</label>
+            <div class="col-sm-8">                                
+                {{=form.custom.widget.item_code}}
+            </div>                           
+        </div>                        
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Quantity</label>
+            <div class="col-sm-6"> 
+                {{=form.custom.widget.quantity}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Pieces</label>
+            <div class="col-sm-6">                                
+                {{=form.custom.widget.pieces}}
+            </div>                           
+        </div>    
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Discount %</label>
+            <div class="col-sm-6">        
+                
+                {{=form.custom.widget.discount_percentage}}
+            </div>                           
+        </div>                                     
+    </div>                    
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Category</label>
+            <div class="col-sm-8"> 
+                {{=form.custom.widget.category_id}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-1">                        
+        <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+        
+    </div>                                              
+</div>
+{{=form.custom.end}}
+<div id = "_item_code_description"></div>      
+
+<script>
+$(document).ready(function(){
+    
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+    
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('sales_return_item_code_description')}}', ['item_code'], '_item_code_description');        
+        return false;
+    });
+    
+    $('#discount').change(function(){
+        var _g = {{=grand}}
+        var gt = 0;
+        var _d = $('#discount').val();
+        //_d = _g * _d / 100
+        // If x is Not a Number or less than one or greater than 10
+        if (isNaN(_d) || _d < 0 || _d > 1) {
+            text = "Input not valid";
+            $('#discount').val(0);
+        } else {
+            text = "Discount Added";
+            gt = _g - _d                
+            $('#grand_total').val(Number(gt.toFixed(2)).toLocaleString());
+
+        }
+        // ajax('{{=URL('sales','discount_session')}}',['discount']);
+
+        document.getElementById("error").innerHTML = text;
+    });
+
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$('.delete').click(function(){
+    var _id = $(this).attr('data-id');
+    bootbox.confirm({
+        size: "small",
+        message: "Would you like to delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('sales','sales_return_transaction_temporary_delete')}}" + '/'+ _id);
+                       
+            }
+
+        }
+    })
+});    
+
+</script>
+
+<script>
+var _id = $(this).attr('data-id');        
+var _qt = $(this).attr('data-qt');
+var _pc = $(this).attr('data-pc');
+var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
+$(document).on("click",".edit", function(){
+    var _id = $(this).attr('data-id');
+    var _qt = $(this).attr('data-qt');
+    var _pc = $(this).attr('data-pc');
+    var parent = $(this).parent("div").parent("td").parent("tr");
+    bootbox.alert({        
+        message: form,
+        callback: function() {
+            var qty = form.find(_qt);
+            var pcs = form.find(_pc);
+            var qty = form.find('input[name=quantity]').val();
+            var pcs = form.find('input[name=pieces]').val();
+            ajax("{{=URL('sales','sales_order_transaction_temporary_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+            $('#tblso').get(0).reload();
+        }
+    })
+});    
+
+</script>

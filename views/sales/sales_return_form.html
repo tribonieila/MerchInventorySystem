@@ -4,29 +4,26 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_browse')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('sales_return_browse')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">SALES ORDER FORM</span>
+            <span class="card-title">SALES RETURN FORM</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
-                {{=form.custom.begin}}	    
-
-                
-                
+                {{=form.custom.begin}}	                                    
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Sales Order No</label>
+                            <label class="col-sm-4 control-label">Sales Return No</label>
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
-                                <div id="_sales_order_no"></div>
+                                <div id="_sales_return_no"></div>
                             </div>                           
                         </div>                        
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Sales Date</label>
+                            <label class="col-sm-4 control-label">Sales Return Date</label>
                             <div class="col-sm-8"> {{import datetime}}
                                 <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                 <p class="help-block">readonly</p>                            
@@ -51,9 +48,9 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Location Source</label>
+                            <label class="col-sm-4 control-label">Destination</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_source_id}}   
+                                {{=form.custom.widget.location_code_id}}   
                             </div>
                         </div>                                           
                     </div>
@@ -110,7 +107,7 @@
                             <div class="col-sm-8">                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('sales_order_browse')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('sales_return_browse')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        
@@ -118,7 +115,7 @@
                     </div>
                 </div>
                 <div id = "order_panel">
-                    {{=LOAD('sales','sales_order_transaction_temporary.load', ajax = True, target = 'tblsot')}}
+                    {{=LOAD('sales','sales_return_transaction_temporary.load', ajax = True, target = 'tblsot')}}
                 </div>
             </div>          
         </div>
@@ -138,7 +135,7 @@ $(document).ready(function(){
     $('#order_panel').hide();
 
     $('#no_table_dept_code_id').change(function(){
-        ajax('{{=URL('generate_sales_order_no')}}', ['dept_code_id'], '_sales_order_no');     
+        ajax('{{=URL('generate_sales_return_no')}}', ['dept_code_id'], '_sales_return_no');     
         var ctr = this.value;
         if (ctr > 0) {
             request(1)
@@ -172,11 +169,11 @@ $(document).ready(function(){
 
     $('#btnproceed').click(function(){
         $('#order_panel').slideDown('slow');
-        ajax('{{=URL('sales','sales_session')}}', ['dept_code_id', 'stock_source_id']);
+        ajax('{{=URL('sales','sales_return_session')}}', ['dept_code_id', 'location_code_id']);
         $('#btnhelp').removeAttr('disabled');
         $("#item_code").focus();
         $("#no_table_dept_code_id").attr('disabled','disabled');
-        $("#no_table_stock_source_id").attr('disabled','disabled');
+        $("#no_table_location_code_id").attr('disabled','disabled');
         $("#no_table_customer_code_id").attr('disabled','disabled');
         $("#no_table_sales_order_date").attr('disabled','disabled');
         $("#no_table_customer_order_reference").attr('disabled','disabled');
@@ -188,7 +185,7 @@ $(document).ready(function(){
 
     $('#btnsubmit').click(function(){
         $("#no_table_dept_code_id").removeAttr('disabled');
-        $("#no_table_stock_source_id").removeAttr('disabled');
+        $("#no_table_location_code_id").removeAttr('disabled');
         $("#no_table_customer_code_id").removeAttr('disabled');
         $("#no_table_sales_order_date").removeAttr('disabled');
         $("#no_table_customer_order_reference").removeAttr('disabled');

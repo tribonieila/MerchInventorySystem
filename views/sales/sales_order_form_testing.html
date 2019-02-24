@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">{{=T("SALES INVOICE", language="ar")}}</span>
+        </div>
+        <div class="card-body tab-content">                 
+            <div class="form-group row" id="no_table_dept_code_id__row">
+                <label class="form-control-label col-sm-3" for="no_table_dept_code_id" id="no_table_dept_code_id__label">Dept Code Id</label>
+                <div class="col-sm-2">
+                    <select class="generic-widget form-control" id="no_table_dept_code_id" name="dept_code_id">
+                        {{ if auth.has_membership(role = 'FMCG'): }}
+                            <option value="3">03 - FMCG </option>
+                        {{ else: }}
+                            <option value="">Choose Department</option>
+                        {{ pass }}
+                        <option value="">Choose Department</option>
+                        <option value="1" disabled>01 - DIOR</option>
+                        <option value="2">02 - LOCAL FRANCHISE</option>
+                        <option value="3">03 - FMCG </option>
+                        <option value="4" disabled>04 - GENERAL PERFUMES</option>
+                        <option value="5">05 - LOCAL / TECHNICAL</option>
+                        <option value="6">06 - RETAIL FASHION</option>
+                        <option value="7">07 - SUPPLIES AND SERVICES</option>
+                    </select>
+                    <span class="help-block"></span>
+                </div>
+            </div>                                       
+            
+            <!-- <select class="form-control">
+                <option disabled>1</option>
+                <option>2</option>
+                <option disabled>3</option>
+                <option>4</option>
+                <option>5</option>
+              </select> -->
+        </div>
+    </div>
+</div>
