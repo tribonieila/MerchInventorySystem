@@ -128,6 +128,31 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
+
+var _id = $(this).attr('data-id');        
+var _qt = $(this).attr('data-qt');
+var _pc = $(this).attr('data-pc');
+var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
+$(document).on("click",".edit", function(){
+    
+    var _id = $(this).attr('data-id');
+    var _qt = $(this).attr('data-qt');
+    var _pc = $(this).attr('data-pc');
+    var parent = $(this).parent("div").parent("td").parent("tr");
+    bootbox.alert({        
+        message: form,
+        callback: function() {
+            var qty = form.find(_qt);
+            var pcs = form.find(_pc);
+            var qty = form.find('input[name=quantity]').val();
+            var pcs = form.find('input[name=pieces]').val();
+            ajax("{{=URL('sales','sales_order_transaction_temporary_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
+            
+        }
+    })
+});   
+</script>
+<script>
 $(document).ready(function(){    
     var str_ctr = 0
 

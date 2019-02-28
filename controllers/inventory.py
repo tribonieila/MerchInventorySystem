@@ -2650,38 +2650,6 @@ def itm_description():
     # else:       
     #     return CENTER(DIV("Item code no " , B(str(request.vars.item_code)), " doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
 
-def del_item():
-    itm = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()    
-    uom = db(db.Item_Master.id == itm.item_code_id).select().first()
-    total_pcs = int(itm.quantity) * int(uom.uom_value) + int(itm.pieces)  
-    stk = db((db.Stock_File.item_code_id == itm.item_code_id) & (db.Stock_File.location_code_id == db.Stock_Transaction_Temp.stock_source_id)).select(db.Stock_File.ALL).first()        
-    stk.stock_in_transit -= total_pcs
-    stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
-    stk.update_record()
-    db(db.Stock_Transaction_Temp.id == request.args(0)).delete()        
-    response.js = "$('#tblIC').get(0).reload()"
-
-    # response.js = "$('#tblIC').get(0).reload()"
-
-    # _balanced = float(session._grand_total) - float(itm.amount)
-    # session._grand_total = _balanced
-
-    # response.js = "web2py_component('#tblfoot').html(session._grand_total);"
-    # _sum = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
-    # _balanced = db(db.Stock_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(total).first()[total]
-
-    # _balanced = float(session.grand_total) - float(itm.amount)
-    # session.grand_total = _balanced    
-    # print 'total amount :: ', _balanced
-    # return session.grand_total
-    
-    # response.js = "web2py_component('#tblfoot').load(location.href + ' #tblfoot');"
-    # redirect(URL('inventory','itm_view'))
-
-    
-    # print 'after deleted', session.grand_total
-    # response.js = "web2py_component('#tblIC').get(0).reload();"
-    # $("#tblfoot").load(location.href + " #tblfoot");
 def _grand_total(e):    
     session.grand_total += e
     return session.grand_total
@@ -2985,8 +2953,8 @@ def stock_request_transaction_temporary_table():
             db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Transaction_Temp.item_code_id)]):
         ctr += 1            
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type=' button', _role=' button', _class='btn btn-icon-toggle edit', callback=URL( args = k.Stock_Transaction_Temp.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id),'_data-qt':(k.Stock_Transaction_Temp.quantity), '_data-pc':(k.Stock_Transaction_Temp.pieces)})            
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del',callback=URL('del_item', args = k.Stock_Transaction_Temp.id, extension = False))            
-        btn_lnk = DIV(edit_lnk, dele_lnk)
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle delete', callback=URL( args = k.Stock_Transaction_Temp.id, extension = False), **{'_data-id':(k.Stock_Transaction_Temp.id)})            
+        btn_lnk = DIV(dele_lnk)
         grand_total += float(k.Stock_Transaction_Temp.amount)
         row.append(TR(
             TD(ctr),
@@ -3010,6 +2978,38 @@ def push_to_session():
     session.stock_source_id = request.vars.stock_source_id
     session.stock_destination_id = request.vars.stock_destination_id
 
+def del_item():
+    itm = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()    
+    uom = db(db.Item_Master.id == itm.item_code_id).select().first()
+    total_pcs = int(itm.quantity) * int(uom.uom_value) + int(itm.pieces)  
+    stk = db((db.Stock_File.item_code_id == itm.item_code_id) & (db.Stock_File.location_code_id == db.Stock_Transaction_Temp.stock_source_id)).select(db.Stock_File.ALL).first()        
+    stk.stock_in_transit -= total_pcs
+    stk.probational_balance = int(stk.closing_stock) - int(stk.stock_in_transit)        
+    stk.update_record()
+    db(db.Stock_Transaction_Temp.id == request.args(0)).delete()        
+    response.js = "$('#tblIC').get(0).reload()"
+
+    # response.js = "$('#tblIC').get(0).reload()"
+
+    # _balanced = float(session._grand_total) - float(itm.amount)
+    # session._grand_total = _balanced
+
+    # response.js = "web2py_component('#tblfoot').html(session._grand_total);"
+    # _sum = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
+    # _balanced = db(db.Stock_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(total).first()[total]
+
+    # _balanced = float(session.grand_total) - float(itm.amount)
+    # session.grand_total = _balanced    
+    # print 'total amount :: ', _balanced
+    # return session.grand_total
+    
+    # response.js = "web2py_component('#tblfoot').load(location.href + ' #tblfoot');"
+    # redirect(URL('inventory','itm_view'))
+
+    
+    # print 'after deleted', session.grand_total
+    # response.js = "web2py_component('#tblIC').get(0).reload();"
+    # $("#tblfoot").load(location.href + " #tblfoot");
 
 def stock_request_transaction_temporary_table_edit():    
     _tmp = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
@@ -3022,7 +3022,7 @@ def stock_request_transaction_temporary_table_edit():
     else:
         _amount = float(_tmp.price_cost) * int(_total_pcs)
         _tmp.update_record(quantity = _qty, pieces = _pcs, qty = _total_pcs, amount = _amount)
-        response.js = "$('#tblIC').get(0).reload()"
+        # response.js = "$('#tblIC').get(0).reload()"
 
 # STOCK REQUEST FORM #
 
@@ -3188,6 +3188,7 @@ def stk_req_form():
     
     return dict()
 
+
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_del():
     _st = db(db.Stock_Request_Transaction.id == request.args(0)).select().first()       
@@ -3206,6 +3207,8 @@ def stk_req_del():
     _total_amount = float(_sr.total_amount) - float(_total)
     _sr.update_record(total_amount = _total_amount)
     _st.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)   
+    response.flash = 'RECORD DELETED'
+    response.js = "$('#tblIC').get(0).reload()"
     # print _sr.total_amount, _total, _total_amount    
     
 def validate_stock_in_transit(form):

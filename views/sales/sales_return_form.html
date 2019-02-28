@@ -31,10 +31,10 @@
                         </div>                    
                     </div>
                     <div class="col-md-4">
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label class="col-sm-4 control-label">Delivery Due Date</label>
                             <div class="col-sm-8">{{=form.custom.widget.delivery_due_date}}</div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 <div class="row">
@@ -74,7 +74,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Order Reference</label>
+                            <label class="col-sm-4 control-label">Sales Return Reference</label>
                             <div class="col-sm-8">{{=form.custom.widget.customer_order_reference}}</div>
                         </div>                 
                     </div>
@@ -111,13 +111,13 @@
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        
-                        </div>                        
+                        </div>                         
                     </div>
                 </div>
                 <div id = "order_panel">
                     {{=LOAD('sales','sales_return_transaction_temporary.load', ajax = True, target = 'tblsot')}}
                 </div>
-            </div>          
+            </div>           
         </div>
     </div>
 </div>

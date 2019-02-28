@@ -1,0 +1,33 @@
+{{=table}}
+
+<script>
+    
+        $('.delete').click(function(){
+            var _id = $(this).attr('data-id');
+            var parent = $(this).parent("div").parent("td").parent("tr");
+            bootbox.confirm({
+                size: "small",
+                message: "Are you sure you want to delete this record?",
+                buttons: {
+                    confirm: {
+                        label: "Yes",
+                        className: "btn-success"
+                    },
+                    cancel: {
+                        label: "No",
+                        className: "btn-danger"
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        ajax("{{=URL('sales','sales_order_delete_view')}}" + '/' + _id);
+                        parent.fadeOut('slow');
+                        location.reload();   
+                    }
+                }
+            })
+        });    
+    
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

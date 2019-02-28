@@ -19,14 +19,14 @@
                 <template>                                               
                 <el-tabs :tab-position="tabPosition" style="height: 100%;">
                         <el-tab-pane label="Stock Request"> 
-                            {{=table}}                            
+                            {{=table}}                             
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">
                             {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
  
                         </el-tab-pane>
                         <el-tab-pane label="Sales Return">
-                            <el-alert title="Sales Return" type="info" description="on progress" show-icon></el-alert>    
+                            {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
                         </el-tab-pane>                                             
                 </template>
             </div>
