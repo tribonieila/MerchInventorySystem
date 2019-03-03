@@ -2894,9 +2894,7 @@ def validate_item_code(form):
             # form.errors.quantity = CENTER(DIV(B('WARNING! '),' Quantity should not be more than probational balance ' + str(strr) ,_class='alert alert-danger',_role='alert')) 
 
         # stk = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select(db.Stock_File.ALL).first()        
-        _stk_file.stock_in_transit += _total_pcs    
-        _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-        _stk_file.update_record()    
+ 
         if not _stk_file.last_transfer_date:        
             # _remarks = 'LTD: ' + str(date.today().strftime("%d/%m/%Y")) + ' - QTY: ' + str(_card)
             _remarks = 'None' 
@@ -2923,6 +2921,8 @@ def stock_request_transaction_temporary_table():
         Field('pieces', 'integer', default = 0),
         Field('category_id', 'integer', default = 4))
     if form.process(onvalidation = validate_item_code).accepted:
+        _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
+        _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'
         db.Stock_Transaction_Temp.insert(
             item_code_id = form.vars.item_code_id,
@@ -2942,11 +2942,14 @@ def stock_request_transaction_temporary_table():
             response.js = "$('#btnsubmit').removeAttr('disabled');"
         else:
             response.js = "$('#btnsubmit').attr('disabled','disabled');"
+        _stk_file.stock_in_transit += form.vars.qty    
+        _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+        _stk_file.update_record()   
 
     elif form.errors:        
         table = TABLE(*[TR(v) for k, v in form.errors.items()])
         response.flash = XML(v)
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'), _class='bg-success'))
     for k in db(db.Stock_Transaction_Temp.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = db.Stock_Transaction_Temp.id, 
         left = [
             db.Item_Master.on(db.Item_Master.item_code == db.Stock_Transaction_Temp.item_code),
@@ -3154,28 +3157,43 @@ def item_help():
 
 def on_hand(e):
     _i = db(db.Item_Master.id == e).select().first()
-    _s = db(db.Stock_File.item_code_id == _i.id).select().first()
-    _outer_on_hand = int(_s.closing_stock) / int(_i.uom_value)
-    _pcs_on_hand = int(_s.closing_stock) - int(_outer_on_hand * _i.uom_value) 
-    _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_i.uom_value)
-    return _on_hand
+    if _i.uom_value == 1:
+        _closing = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _on_hand = _closing.closing_stock
+        return _on_hand
+    else:
+        _s = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _outer_on_hand = int(_s.closing_stock) / int(_i.uom_value)
+        _pcs_on_hand = int(_s.closing_stock) - int(_outer_on_hand * _i.uom_value) 
+        _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_i.uom_value)
+        return _on_hand
 
-def on_balance(e):
+def on_balance(e):    
     _i = db(db.Item_Master.id == e).select().first()
-    _s = db(db.Stock_File.item_code_id == _i.id).select().first()
-    _outer = int(_s.probational_balance) / int(_i.uom_value)        
-    _pcs = int(_s.probational_balance) - int(_outer * _i.uom_value)    
-    _on_balance = str(_outer) + ' ' + str(_pcs) + '/' +str(_i.uom_value)
-    return _on_balance
+    if _i.uom_value == 1:
+        _balance = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _on_balance = _balance.probational_balance
+        return _on_balance
+    else:
+        _s = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _outer = int(_s.probational_balance) / int(_i.uom_value)        
+        _pcs = int(_s.probational_balance) - int(_outer * _i.uom_value)    
+        _on_balance = str(_outer) + ' ' + str(_pcs) + '/' +str(_i.uom_value)
+        return _on_balance
 
 def on_transit(e):
     _i = db(db.Item_Master.id == e).select().first()
-    _s = db(db.Stock_File.item_code_id == _i.id).select().first()
-    _outer = int(_s.probational_balance) / int(_i.uom_value)
-    _outer_transit = int(_s.stock_in_transit) / int(_i.uom_value)   
-    _pcs_transit = int(_s.stock_in_transit) - int(_outer * _i.uom_value)
-    _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_i.uom_value)
-    return _on_transit
+    if _i.uom_value == 1:
+        _transit = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _on_transit = _transit.stock_in_transit
+        return _on_transit
+    else:
+        _s = db(db.Stock_File.item_code_id == _i.id).select().first()
+        _outer = int(_s.probational_balance) / int(_i.uom_value)
+        _outer_transit = int(_s.stock_in_transit) / int(_i.uom_value)   
+        _pcs_transit = int(_s.stock_in_transit) - int(_outer * _i.uom_value)
+        _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_i.uom_value)
+        return _on_transit
 
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_details_add_form():   
@@ -4967,7 +4985,7 @@ def stock_transaction_report():
 def stock_receipt_report():
     _id = request.args(0)
     _grand_total = 0
-    ctr = 0
+    ctr = 00,0
     _total = 0
     for s in db(db.Stock_Request.id == request.args(0)).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):        
         stk_req_no = [

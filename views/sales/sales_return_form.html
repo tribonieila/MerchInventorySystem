@@ -108,7 +108,7 @@
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('sales_return_browse')}}">abort</a>
-                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a>
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('sales','sales_return_help')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        
                         </div>                         
@@ -180,6 +180,7 @@ $(document).ready(function(){
         $("#no_table_sales_man_id").attr('disabled','disabled');
         $("#no_table_status_id").attr('disabled','disabled');
         $("#no_table_remarks").attr('disabled','disabled');
+        $("#btnproceed").attr('disabled','disabled');
         return false;
     });
 
@@ -195,7 +196,7 @@ $(document).ready(function(){
     });
 
     $('#btnAbort').click(function(){
-        ajax('{{=URL('sales','sales_order_form_abort')}}', ['ticket_no_id']);
+        ajax('{{=URL('sales','sales_return_form_abort')}}', ['ticket_no_id']);
     });
     function request(e){
         if (e == 1) {

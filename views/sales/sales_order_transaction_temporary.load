@@ -50,7 +50,7 @@
 </div>
 {{=form.custom.end}}
 <div id = "_item_code_description"></div>      
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
     
@@ -64,7 +64,7 @@ $(document).ready(function(){
     
     $('#no_table_item_code').change(function(){
         ajax('{{=URL('item_code_description')}}', ['item_code'], '_item_code_description');        
-        return false;
+       return false; 
     });
     
     $('#discount').change(function(){
@@ -86,35 +86,36 @@ $(document).ready(function(){
 
         document.getElementById("error").innerHTML = text;
     });
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({ 
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('sales','sales_order_transaction_temporary_delete')}}" + '/'+ _id);
+                        
+                }
+
+            }
+        })
+    });        
 
 });
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-<script>
-$('.delete').click(function(){
-    var _id = $(this).attr('data-id');
-    bootbox.confirm({
-        size: "small",
-        message: "Would you like to delete this record?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
-            },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
-            }
-        },
-        callback: function (result) {
-            if (result) {
-                ajax("{{=URL('sales','sales_order_transaction_temporary_delete')}}" + '/'+ _id);
-                       
-            }
 
-        }
-    })
-});    
+<script>
+
 </script>
 

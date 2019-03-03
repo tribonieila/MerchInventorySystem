@@ -24,3 +24,11 @@ if item selective = disabled discount
 
 
 IF CATEGORY IS P ALLOW DUPLICATE ITEMS
+
+# for item discount
+formula: 
+    net price = (unit price * (100 - discount)) / 100
+example:
+    unit price  =   130
+    discount    =   10 %
+    net price = ( 130 * (100 - 10)) / 100
