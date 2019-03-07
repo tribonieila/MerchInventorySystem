@@ -404,7 +404,7 @@ def item_code_description():
         _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
         if _sfile:               
             if _icode.uom_value == 1:                
-                response.js = "$('#no_table_pieces').attr('disabled','disabled');"                
+                response.js = "$('#no_table_pieces').attr('disabled','disabled'), $('#btnadd').removeAttr('disabled')"                
                 _on_balanced = _sfile.probational_balance
                 _on_transit = _sfile.stock_in_transit
                 _on_hand = _sfile.closing_stock                      
@@ -425,7 +425,7 @@ def item_code_description():
                 TD(locale.format('%.2F',_iprice.wholesale_price or 0, grouping = True)),
                 TD(_on_hand),
                 TD(_on_transit),
-                TD(_on_balanced)),_class="bg-info"),_class='table'))
+                TD(_on_balanced)),_class="bg-info"),_class='table'))            
         else:
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
 
@@ -574,7 +574,7 @@ def sales_order_transaction_temporary():
     grand_total = 0
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Discount'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     _query = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)])
     for n in _query:
         ctr += 1      
@@ -601,12 +601,13 @@ def sales_order_transaction_temporary():
             TD(n.Sales_Order_Transaction_Temporary.quantity),
             TD(n.Sales_Order_Transaction_Temporary.pieces),
             TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.discount_percentage or 0, grouping = True), _align = 'right', _style="width:120px;"),  
             TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
             TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount, grouping = True),_align = 'right', _style="width:120px;"),
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
-    foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, grand = grand_total)
 
@@ -646,11 +647,12 @@ def generate_total_amount(item, qty, pcs):
  
 @auth.requires_login()
 def sales_order_transaction_temporary_delete():
+
     _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()    
-    _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()    
-    _stk_file.stock_in_transit -= _id.total_pieces    
-    _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-    _stk_file.update_record()        
+    _s = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()    
+    _s.stock_in_transit -= _id.total_pieces
+    _s.probational_balance = int(_s.closing_stock) - int(_s.stock_in_transit)
+    _s.update_record()        
     db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()    
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblsot').get(0).reload()"
@@ -843,7 +845,7 @@ def sales_order_edit_view():
         Field('quantity', 'integer', default = _qty),
         Field('pieces', 'integer', default = _pcs))
     if form.process(onvalidation = validate_stock_in_transit).accepted:
-        _price_per_piece = _id.price_cost / _id.uom
+        _price_per_piece = _id.net_price / _id.uom
         _total_amount = form.vars.quantity * _price_per_piece
         _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id, total_amount = _total_amount)
         for n in db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select():
@@ -858,7 +860,7 @@ def sales_order_edit_view():
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'
     btn_back = A('RETURN', _class='btn btn-warning', _role='button', _href = URL('sales_order_view', args = _so.id))
-    return dict(form = form, btn_back = btn_back)
+    return dict(form = form, btn_back = btn_back, _id = _id)
 
 def validate_stock_in_transit(form):    
     _id = db(db.Sales_Order_Transaction.id == request.args(0)).select().first() # from sales order transaction table
@@ -869,7 +871,7 @@ def validate_stock_in_transit(form):
     _qty = int(request.vars.quantity) * int(_id.uom) + int(request.vars.pieces or 0)            
     if _qty >= _sf.closing_stock:        
         form.errors.quantity = 'Total quantity should not be more than the stock file. '
-    if _qty >= int(_im.uom_value):
+    if int(request.vars.pieces) >= int(_id.uom):
         form.errors.quantity = 'Total quantity should not be more than UOM value.'
     form.vars.quantity = _qty    
     _old_stock_in_transit = _sf.stock_in_transit - _id.quantity
@@ -928,7 +930,7 @@ def sales_order_transaction_table():
     _total_amount = 0        
     _total_excise_tax = 0
     _selective_tax = _selective_tax_foc = 0
-    _div_tax = DIV('')
+    _div_tax = _div_tax_foc =  DIV('')
     _id = db((db.Sales_Order.id == session.sales_order_no_id) & (db.Sales_Order.id == request.args(0))).select().first()
     if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
         _query = db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id))
@@ -1016,7 +1018,7 @@ def sales_return_sales_manager():
 
 def sales_return_sales_manager_approved():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    _id.update_record(status_id = 2, sales_return_date_approved = request.now, sales_return_approved_by = auth.user_id)
+    _id.update_record(status_id = 14, sales_return_date_approved = request.now, sales_return_approved_by = auth.user_id)
     response.js = "('#tblsrt').get(0).reload()"
     session.flash = 'SALES RETURN APPROVED'
     
@@ -1085,7 +1087,7 @@ def sales_return_accounts_form():
     
 def sales_return_accounts_form_approved():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    _query = db(db.Sales_Return_Transaction.sales_return_no_id == request.args(0)).select()    
+    _query = db(db.Sales_Order_Transaction.sales_return_no_id == request.args(0)).select()    
     _damaged_qty = 0
     for n in _query:
         _sf = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()                
@@ -1209,7 +1211,7 @@ def sales_return_form():
             total_selective_tax = _total_selective_tax, 
             total_selective_tax_foc = _total_foc)
         session.discount = 0
-        db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
+        db(db.Sales_Return_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
         response.flash = 'SAVING SALES RETURN NO ' + str(_skey) + '.'    
     elif form.errors:
         response.flash = 'ENTRY HAS ERROR'
@@ -1349,11 +1351,11 @@ def sales_return_transaction_temporary():
         Field('quantity','integer', default = 0),
         Field('pieces','integer', default = 0),
         Field('discount_percentage', 'decimal(10,2)', default = 0),
-        Field('category_id','reference Transaction_Item_Category', default = 1, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 1) | (db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
+        Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 1) | (db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
     if form.process( onvalidation = validate_sales_return_transaction).accepted:        
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
         _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
-        _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+        # _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
         db.Sales_Return_Transaction_Temporary.insert(
             item_code_id = form.vars.item_code_id,
             item_code = form.vars.item_code,
@@ -1374,9 +1376,9 @@ def sales_return_transaction_temporary():
         else:            
             response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
 
-        _stk_file.stock_in_transit += form.vars.total_pieces    
-        _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-        _stk_file.update_record()     
+        # _stk_file.stock_in_transit += form.vars.total_pieces    
+        # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+        # _stk_file.update_record()     
 
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -1425,10 +1427,10 @@ def sales_return_transaction_temporary():
 
 def sales_return_transaction_temporary_delete():
     _id = db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).select().first()    
-    _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()    
-    _stk_file.stock_in_transit -= _id.total_pieces    
-    _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-    _stk_file.update_record()        
+    # _stk_file = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()    
+    # _stk_file.stock_in_transit -= _id.total_pieces    
+    # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+    # _stk_file.update_record()        
     db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).delete()    
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblsot').get(0).reload()"
@@ -1437,7 +1439,7 @@ def sales_return_grid():
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):        
         _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
-        _query = db((db.Sales_Return.status_id == 2) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Return.status_id == 12) | (db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
@@ -1456,7 +1458,7 @@ def sales_return_grid():
             prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
 
         if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
-            if n.status_id == 2:
+            if n.status_id == 14:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_warehouse_form', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_approved', args = n.id, extension = False))
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_reject', args = n.id, extension = False))
@@ -1565,10 +1567,24 @@ def sales_return_transaction_table():
     table = TABLE(*[head, body, foot], _class='table ', _id = 'tblsot')
     return dict(table = table)       
 
+def validate_sales_return_edit_view(form):
+    _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()
+    _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()
+    _sf = db((db.Stock_File.item_code_id == _id.id) &(db.Stock_File.location_code_id == _so.location_code_id)).select().first()
+    _qty = int(request.vars.quantity) * int(_id.uom) + int(request.vars.pieces or 0)
+    if _qty >= _sf.closing_stock:
+        form.errors.quantity = 'Total quantity should not be more than the stock file.'
+    if int(request.vars.pieces) >= int(_id.uom):
+        form.errors.quantity = 'Total quantity should not be more than UOM value.'
+    form.vars.quantity = _qty
+    _old_stock_in_transit = _sf.stock_in_transit - _id.quantity
+    _old_probational_balance = _sf.closing_stock - _old_stock_in_transit
+    _sf.update_record(stock_in_transit = _old_stock_in_transit)
+
 def sales_return_edit_view():
     _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()
     _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()
-    _sf = db(db.Stock_File.item_code_id == _id.id).select().first()
+    _sf = db((db.Stock_File.item_code_id == _id.id) &(db.Stock_File.location_code_id == _so.location_code_id)).select().first()
     _im = db(db.Item_Master.id == _id.item_code_id).select().first()
     _qty = _id.quantity / _id.uom
     _pcs = _id.quantity - _id.quantity / _id.uom * _id.uom
@@ -1576,8 +1592,8 @@ def sales_return_edit_view():
     form = SQLFORM.factory(
         Field('quantity', 'integer', default = _qty),
         Field('pieces', 'integer', default = _pcs))
-    if form.process(onvalidation = validate_stock_in_transit).accepted:
-        _price_per_piece = _id.price_cost / _id.uom
+    if form.process(onvalidation = validate_sales_return_edit_view).accepted:
+        _price_per_piece = _id.net_price / _id.uom
         _total_amount = form.vars.quantity * _price_per_piece
         _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id, total_amount = _total_amount)
         for n in db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).select():
@@ -1905,19 +1921,6 @@ def sales_order_manager_view():
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, _id = _id)
 
-def sales_order_manager_approved_form():
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _id.update_record(status_id = 9, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
-    session.flash = 'SALES ORDER APPROVED'
-    
-    # response.js = "$('#tblso').get(0).reload()"
-
-def sales_order_manager_rejected_form():    
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _id.update_record(status_id = 3, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
-    session.flash = 'SALES ORDER REJECTED'
-    response.js = "$('#tblso').get(0).reload()"
-
 def sale_order_manager_delivery_note_approved_form():    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
@@ -2078,7 +2081,7 @@ def sales_return_session():
     session.location_code_id = request.vars.location_code_id
 
 def sales_return_help():
-    print session.dept_code_id
+    # print session.dept_code_id
     row = []
     head = THEAD(TR(TH('Item Code'),TH('Description'),TH('Department'),TH('Supplier'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance')))    
     for n in db(db.Item_Master.dept_code_id == session.dept_code_id).select(db.Item_Master.ALL, db.Item_Prices.ALL, join = db.Item_Master.on(db.Item_Master.id == db.Item_Prices.item_code_id)):
@@ -2132,18 +2135,18 @@ import inflect
 w=inflect.engine()
 MaxWidth_Content = 530
 styles = getSampleStyleSheet()
-styleN = styles["BodyText"]
-# styleN = styles['Normal']
+styles.leading = 24
+styleB = styles["BodyText"]
+styleN = styles['Normal']
 styleH = styles['Heading1']
-_style = ParagraphStyle(
-    name='BodyText',
-    fontSize=8,
-)
+_style = ParagraphStyle('Courier',fontName="Courier", fontSize=8, leading = 10)
+_table_heading = ParagraphStyle('Courier',fontName="Courier", fontSize=7, leading = 10)
 styles.add(ParagraphStyle(name='Wrap', fontSize=8, wordWrap='LTR', firstLineIndent = 0,alignment = TA_LEFT))
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20)#, showBoundary=1)
+# doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
 text_path = request.folder + 'static/fonts/reports/'
 img = Image(logo_path)
@@ -2158,66 +2161,211 @@ _limage.hAlign = 'CENTER'
 
 
 merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
-def sales_invoice_footer(canvas, doc):
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    (_whole, _frac) = (int(_id.total_amount), locale.format('%.2f',_id.total_amount or 0, grouping = True))
-    
+def sales_invoice_footer(canvas, doc):    
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()    
 
-    canvas.saveState() 
-    # Footer    
-
-    footer = Table([
-        # ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS ONLY', '',locale.format('%.2f',_id.total_amount or 0, grouping = True)],
-        [str(_id.created_by.first_name.upper()) + ' ' + str(_id.created_by.last_name.upper()) ,'',''],
-        [_id.stock_source_id.location_name,'',''],
-        ['','',_id.customer_order_reference],
-        ], colWidths='*')
-    footer.setStyle(TableStyle([
+    # Header 'Stock Request Report'
+    for n in db(db.Sales_Order.id == request.args(0)).select():
+        _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
+        _so = [
+            ['SALES INVOICE'],
+            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
+            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
+            ['','','','','Location', ':',n.stock_source_id.location_name],       
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','','',''],
+            ['','','','','','','']]
+    header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
+    header.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,3),(2,-1)),
+        ('SPAN',(0,0),(6,0)),
+        ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
+        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTSIZE',(0,1),(6,1),8),                
+        ('FONTSIZE',(0,2),(6,-1),8),                
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('TOPPADDING',(0,0),(0,0),5),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0)]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
-        ('SPAN',(0,0),(1,0)),
-        ('ALIGN',(2,0),(2,-1),'RIGHT'),
-        ('TOPPADDING',(0,0),(-1,-1),20),
-        ]))
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
     footer.wrap(doc.width, doc.bottomMargin)
-    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
 
     # Release the canvas
     canvas.restoreState()
+
 
 def sales_order_store_keeper_header_footer_report(canvas, doc):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
 
     # Header 'Stock Request Report'
-    header = Table([[img]], colWidths='*')
+    for n in db(db.Sales_Order.id == request.args(0)).select():
+        _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
+        _so = [
+            ['SALES ORDER'],
+            ['Sales Order No. ', ':',str(n.transaction_prefix_id.prefix)+str(n.sales_order_no),'','Sales Order Date ',':',n.sales_order_date.strftime('%d-%m-%Y')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
+            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
+            ['','','','','Location', ':',n.stock_source_id.location_name],       
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','','',''],
+            ['','','','','','','']]
+
+    header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        # ('GRID',(0,0),(0,0),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('ALIGN', (0,0), (0,0), 'CENTER')]))
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,3),(2,-1)),
+        ('SPAN',(0,0),(6,0)),
+        ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
+        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTSIZE',(0,1),(6,1),8),                
+        ('FONTSIZE',(0,2),(6,-1),8),                
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('TOPPADDING',(0,0),(0,0),5),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0)]))
     header.wrapOn(canvas, doc.width, doc.topMargin)
-    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .1 * inch)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
 
 
     # Footer
-    # today = date.today()
-    
-    footer = Table([ 
-        # ['Received by:','Delivered by:'],
-        # ['',''],
-        [merch,''],['',today.strftime("%A %d. %B %Y, %I:%M%p ")]], colWidths=[None])
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
     footer.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        # ('FONTSIZE',(0,0),(-1,1),8),
-        ('FONTSIZE',(1,1),(1,1),8),
-        # ('ALIGN',(0,0),(-1,1),'CENTER'),
-        ('ALIGN',(1,1),(1,1),'RIGHT'),
-        ('LINEABOVE',(0,1),(1,1),0.25, colors.black)
-        ]))
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
     footer.wrap(doc.width, doc.bottomMargin)
-    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
 
     # Release the canvas
     canvas.restoreState()
+
+def sales_order_delivery_note_footer_report(canvas, doc):
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+
+    # Header 'Stock Request Report'
+    for n in db(db.Sales_Order.id == request.args(0)).select():
+        _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
+        _so = [
+            ['DELIVERY NOTE'],
+            ['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
+            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
+            ['','','','','Location', ':',n.stock_source_id.location_name],       
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','','',''],
+            ['','','','','','','']]
+
+    header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,3),(2,-1)),
+        ('SPAN',(0,0),(6,0)),
+        ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
+        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTSIZE',(0,1),(6,1),8),                
+        ('FONTSIZE',(0,2),(6,-1),8),                
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('TOPPADDING',(0,0),(0,0),5),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0)]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+
+
+    # Footer
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
+
+    # Release the canvas
+    canvas.restoreState()
+
+def sales_return_accounts_header_footer_report(canvas, doc):
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+
+    # Header 'Stock Request Report'
+    for n in db(db.Sales_Return.id == request.args(0)).select():
+        _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
+        _so = [
+            ['SALES RETURN'],
+            ['Sales Return No. ', ':',str(n.transaction_prefix_id.prefix)+str(n.sales_return_no),'','Sales Return Date ',':',n.sales_return_date.strftime('%d-%m-%Y')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Sales Return'],             
+            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
+            ['','','','','Location', ':',n.location_code_id.location_name],       
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','','',''],
+            ['','','','','','','']]
+
+    header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,3),(2,-1)),
+        ('SPAN',(0,0),(6,0)),
+        ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
+        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTSIZE',(0,1),(6,1),8),                
+        ('FONTSIZE',(0,2),(6,-1),8),                
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('TOPPADDING',(0,0),(0,0),5),
+        ('BOTTOMPADDING',(0,0),(0,0),12),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0)]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+
+
+    # Footer
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
+
+    # Release the canvas
+    canvas.restoreState()
+
 
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
@@ -2261,8 +2409,8 @@ def sales_order_report_store_keeper():
         ('FONTSIZE',(0,0),(-1,-1),8),
     ]))    
 
-    row.append(_so_tbl)
-    sales_order_table_reports()
+    # row.append(_so_tbl)
+    # sales_order_table_reports()
     row.append(Spacer(1,.5*cm))
     sales_order_transaction_table_reports()
     row.append(Spacer(1,.7*cm))
@@ -2283,47 +2431,41 @@ def sales_order_delivery_note_report_store_keeper():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _so = [['DELIVERY NOTE'],['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')]]
-    _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])
-    _so_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('SPAN',(0,0),(6,0)),
-        ('ALIGN',(0,0),(0,0),'CENTER'),
-        ('FONTNAME', (0, 0), (6, -1), 'Courier'),      
-        ('FONTSIZE',(0,0),(0,0),9),
-        ('FONTSIZE',(0,1),(6,1),8),   
-        ('TOPPADDING',(0,0),(0,0),5),
-        ('BOTTOMPADDING',(0,0),(0,0),12),
-        ('TOPPADDING',(0,1),(6,-1),0),
-        ('BOTTOMPADDING',(0,1),(6,-1),0),
-        ('VALIGN',(0,0),(-1,-1),'TOP')]))
-          
-    _others = [
-        ['Remarks',':',_id.remarks,'For Merch & Partners Co. WLL.'],
-        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),''],
-        ['Sales Order Date',':',_id.sales_order_date.strftime('%d-%m-%Y'),''],
-        ['Customer Sales Order Ref. ',':',n.customer_order_reference,'Authorized Signatory'],            
-        ['Customer Acknowledgement:','','',''],
-        ['Received the above items in good order and sound condition.','','',''],
-        ['','','','For ' + str(_id.customer_code_id.customer_name)],
-        ['','','','(Name and Signature)']
-        ]
-    _others_table = Table(_others, colWidths=[130,25,'*'])
+
+    _others = [        
+        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],        
+        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
+    _others_table = Table(_others, colWidths=['*',25,'*',25,'*',25,'*'])
     _others_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('TOPPADDING',(0,0),(-1,-1),0),
         ('BOTTOMPADDING',(0,0),(-1,-1),0),
-        ('BOTTOMPADDING',(0,3),(3,3),10),
-        ('LINEBELOW', (0,3), (3,3), 0.25, colors.black,None, (2,2)),       
-        ('ALIGN',(3,0),(3,-1),'CENTER'),
-        ('SPAN',(0,4),(3,4)),
-        ('SPAN',(0,5),(3,5)),
-        ('ALIGN',(0,4),(3,4),'CENTER'),
-        ('TOPPADDING',(0,4),(3,4),10),        
-        ('ALIGN',(0,5),(3,5),'CENTER'),
-        ('BOTTOMPADDING',(0,5),(3,5),10),
-        ('TOPPADDING',(3,7),(3,7),20),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+    ]))
+
+    _acknowledge = [['Customer Acknowledgement: Received the above items in good order and sound condition.']]
+    _acknowledge_table = Table(_acknowledge, colWidths='*')
+    _acknowledge_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8)]))
+
+    _signatory = [
+        ['','For ' + str(_id.customer_code_id.customer_name.upper()),'','For Merch & Partners Co. WLL',''],
+        ['','','','',''],
+        ['','Name and Signature of Customer','','Authorized Signatory','']]
+    
+    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
+    _signatory_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING',(0,1),(1,1),30),
+        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
     _prt_ctr = db(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0)).select().first()
@@ -2334,46 +2476,79 @@ def sales_order_delivery_note_report_store_keeper():
         _prt_ctr.printer_counter += 1
         ctr = _prt_ctr.printer_counter
         db.Sales_Order_Transaction_Report_Counter.update_or_insert(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
-    _customer = [["-------------     CUSTOMER'S COPY     -------------"],["print count: " + str(ctr)]]        
-    _accounts = [["-------------     ACCOUNT'S COPY     -------------"],["print count: " + str(ctr)]] 
-    _pos =      [["-------------     STORE'S COPY     -------------"],["print count: " + str(ctr)]] 
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
 
-    _c_tbl = Table(_customer, colWidths='*')
+    _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
     _p_tbl = Table(_pos, colWidths='*')
 
-    _c_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _a_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _p_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-
-    row.append(_so_tbl)
-    sales_order_table_reports()
-    row.append(Spacer(1,.5*cm))
+    _c_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _a_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _p_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
     row.append(_others_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_acknowledge_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_signatory_table)
     row.append(_c_tbl)
     row.append(PageBreak())
     
-    row.append(_so_tbl)
-    sales_order_table_reports()
-    row.append(Spacer(1,.5*cm))
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
     row.append(_others_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_acknowledge_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_signatory_table)
     row.append(_a_tbl)
     row.append(PageBreak())
 
-    row.append(_so_tbl)
-    sales_order_table_reports()
-    row.append(Spacer(1,.5*cm))
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
     row.append(_others_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_acknowledge_table)
+    row.append(Spacer(1,.2*cm))
+    row.append(_signatory_table)
     row.append(_p_tbl)
     row.append(PageBreak())
 
-    doc.build(row, onFirstPage=sales_order_store_keeper_header_footer_report, onLaterPages = sales_order_store_keeper_header_footer_report)
+    doc.build(row, onFirstPage=sales_order_delivery_note_footer_report, onLaterPages = sales_order_delivery_note_footer_report, canvasmaker=PageNumCanvas)
 
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
@@ -2396,29 +2571,29 @@ def sales_return_report_account_user():
             ['','','','','','',''],             
             
             ]
-    _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
-    _so_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('SPAN',(0,3),(2,-1)),
-        ('SPAN',(0,0),(6,0)),
-        ('ALIGN',(0,0),(0,0),'CENTER'),        
-        ('FONTNAME', (0, 0), (6, -1), 'Courier'),        
-        ('FONTSIZE',(0,0),(0,0),9),
-        ('FONTSIZE',(0,1),(6,1),8),                
-        ('FONTSIZE',(0,2),(6,-1),8),                
-        ('VALIGN',(0,0),(-1,-1),'TOP'),
-        ('TOPPADDING',(0,0),(0,0),5),
-        ('BOTTOMPADDING',(0,0),(0,0),12),
-        ('TOPPADDING',(0,1),(6,-1),0),
-        ('BOTTOMPADDING',(0,1),(6,-1),0),
+    # _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
+    # _so_tbl.setStyle(TableStyle([
+    #     # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+    #     ('SPAN',(0,3),(2,-1)),
+    #     ('SPAN',(0,0),(6,0)),
+    #     ('ALIGN',(0,0),(0,0),'CENTER'),        
+    #     ('FONTNAME', (0, 0), (6, -1), 'Courier'),        
+    #     ('FONTSIZE',(0,0),(0,0),9),
+    #     ('FONTSIZE',(0,1),(6,1),8),                
+    #     ('FONTSIZE',(0,2),(6,-1),8),                
+    #     ('VALIGN',(0,0),(-1,-1),'TOP'),
+    #     ('TOPPADDING',(0,0),(0,0),5),
+    #     ('BOTTOMPADDING',(0,0),(0,0),12),
+    #     ('TOPPADDING',(0,1),(6,-1),0),
+    #     ('BOTTOMPADDING',(0,1),(6,-1),0),
         
-        ]))
+    #     ]))
     
     ctr = 0
-    _st = [['#','Item Code','Item Description','Cat','UOM','Qty','Unit Price','Discount','Net Price','Amount']]        
+    _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount']]        
     _grand_total = 0
     _total_amount = 0        
-    _total_excise_tax = 0    
+    _total_excise_tax = 0      
     for t in db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id)):
         ctr += 1        
         _grand_total += float(t.Sales_Return_Transaction.total_amount or 0)        
@@ -2434,9 +2609,13 @@ def sales_return_report_account_user():
             _net_price = 'FOC'
         else:
             _net_price = locale.format('%.2F',t.Sales_Return_Transaction.net_price or 0, grouping = True)
+        if t.Sales_Return_Transaction.category_id != 4:
+            _category = t.Sales_Return_Transaction.category_id.mnemonic
+        else:
+            _category = ''            
         _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), 
-            t.Sales_Return_Transaction.category_id.mnemonic, 
             t.Sales_Return_Transaction.uom, 
+            _category,             
             _qty, 
             locale.format('%.2F',t.Sales_Return_Transaction.price_cost or 0, grouping = True), 
             locale.format('%.2F',t.Sales_Return_Transaction.discount_percentage or 0, grouping = True), 
@@ -2449,56 +2628,30 @@ def sales_return_report_account_user():
         _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))            
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
-    _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
+
     _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
     _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50])
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),        
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,1), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-3),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('TOPPADDING',(0,-2),(-1,-2),0),
         ('BOTTOMPADDING',(0,-3),(-2,-2),0),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
-        ('FONTSIZE',(0,0),(-1,1),8),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
+        ('FONTNAME', (0, -1), (9, -1), 'Courier-Bold', 12),                
+        ('FONTSIZE',(0,0),(-1,1),7),
         ('FONTSIZE',(0,1),(-1,-1),8),
-        # ('FONTSIZE',(0,-3),(2,-2),7),
         ('VALIGN',(0,0),(9,-1),'TOP'),        
-        ('ALIGN',(6,0),(9,-1),'RIGHT'),
-        ('SPAN',(0,-4),(-1,-4)),
-        ('SPAN',(0,-1),(5,-1)),
-        ('SPAN',(0,-2),(5,-2)),
-        ('SPAN',(0,-3),(5,-3)),
-        ('SPAN',(6,-1),(7,-1)),
-        ('SPAN',(6,-2),(7,-2)),
-        ('SPAN',(6,-3),(7,-3)),
-        ('ALIGN',(0,-4),(-1,-4),'CENTER'),
-        ('TOPPADDING',(0,-4),(-1,-4),10),
-        ('BOTTOMPADDING',(0,-4),(-1,-4),10),
-
-    ]))    
-
-
-    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
-    wrds_trnls = [
-        ['-------------     NOTHING TO FOLLOWS     -------------'],
-        ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
-    wrds_tbld = Table(wrds_trnls, colWidths='*')
-    wrds_tbld.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('ALIGN', (0,0), (0,1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
-        ('BOTTOMPADDING',(0,0),(0,0),30),        
-        ('LINEABOVE', (0,1), (0,1), .5, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,1), (0,1), .5, colors.black,None, (2,2)),
-        ('FONTSIZE',(0,0),(-1,-1),7)
-    ]))
+        ('ALIGN',(5,0),(9,-1),'RIGHT'),
+    ]))      
 
     _others = [
         ['Remarks',':',_id.remarks],
@@ -2516,17 +2669,19 @@ def sales_return_report_account_user():
     
 
     _signatory = [
-        ['We hereby confirm receipt of this sales return.','For Merch & Partners Co. WLL'],
-        ['Name and Signature of Customer','Authorized Signatory']]
+        ['','We hereby confirm receipt of this sales return.','','For Merch & Partners Co. WLL',''],
+        ['','','','',''],
+        ['','Name and Signature of Customer','','Authorized Signatory','']]
     
-    _signatory_table = Table(_signatory, colWidths='*')
+    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
     _signatory_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
-        ('ALIGN', (0,0), (1,1), 'CENTER'),
-        ('TOPPADDING',(0,1),(1,1),25),
-        # ('BOTTOMPADDING',(0,0),(-1,-1),0),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING',(0,1),(1,1),30),
+        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
     _prt_ctr = db(db.Sales_Return_Transaction_Report_Counter.sales_return_transaction_no_id == request.args(0)).select().first()
@@ -2537,49 +2692,75 @@ def sales_return_report_account_user():
         _prt_ctr.printer_counter += 1
         ctr = _prt_ctr.printer_counter
         db.Sales_Return_Transaction_Report_Counter.update_or_insert(db.Sales_Return_Transaction_Report_Counter.sales_return_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
-    _customer = [["-------------     CUSTOMER'S COPY     -------------"],["print count: " + str(ctr)]]        
-    _accounts = [["-------------     ACCOUNT'S COPY     -------------"],["print count: " + str(ctr)]] 
-    _pos =      [["-------------     STORE'S COPY     -------------"],["print count: " + str(ctr)]] 
 
-    _c_tbl = Table(_customer, colWidths='*')
+
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+
+    _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
     _p_tbl = Table(_pos, colWidths='*')
 
-    _c_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _a_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _p_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
+    _c_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _a_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _p_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.5*cm))
     row.append(_others_table)
     row.append(Spacer(1,.7*cm))
     row.append(_signatory_table)
     row.append(_c_tbl)
     row.append(PageBreak())
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.5*cm))
     row.append(_others_table)
     row.append(Spacer(1,.7*cm))
     row.append(_signatory_table)
     row.append(_a_tbl)
     row.append(PageBreak())
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.5*cm))
     row.append(_others_table)
     row.append(Spacer(1,.7*cm))
     row.append(_signatory_table)
     row.append(_p_tbl)
     row.append(PageBreak())
-
-    doc.build(row)
+    
+    doc.build(row, onFirstPage=sales_return_accounts_header_footer_report, onLaterPages = sales_return_accounts_header_footer_report, canvasmaker=PageNumCanvas)
     # doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
@@ -2588,6 +2769,7 @@ def sales_return_report_account_user():
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def sales_order_report_account_user():
+    row = []
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
@@ -2604,7 +2786,7 @@ def sales_order_report_account_user():
             ]
     _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     _so_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,3),(2,-1)),
         ('SPAN',(0,0),(6,0)),
         ('ALIGN',(0,0),(0,0),'CENTER'),        
@@ -2621,7 +2803,7 @@ def sales_order_report_account_user():
         ]))
     
     ctr = 0
-    _st = [['#','Item Code','Item Description','Cat','UOM','Qty','Unit Price','Discount','Net Price','Amount']]        
+    _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount']]        
     _grand_total = 0
     _total_amount = 0        
     _total_excise_tax = 0    
@@ -2640,14 +2822,20 @@ def sales_order_report_account_user():
             _net_price = 'FOC'
         else:
             _net_price = locale.format('%.2F',t.Sales_Order_Transaction.net_price or 0, grouping = True)
-        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), 
-            t.Sales_Order_Transaction.category_id.mnemonic, 
+        if t.Sales_Order_Transaction.category_id != 4:
+            _category = t.Sales_Order_Transaction.category_id.mnemonic
+        else:
+            _category = ''
+
+        _st.append([ctr,Paragraph(t.Item_Master.item_code,style = _style), t.Item_Master.brand_line_code_id.brand_line_name+ '\n' + t.Item_Master.item_description, 
             t.Sales_Order_Transaction.uom, 
-            _qty, 
+            _category,             
+            _qty,
             locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), 
             locale.format('%.2F',t.Sales_Order_Transaction.discount_percentage or 0, grouping = True), 
             _net_price,
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
+        # _st.append(['','','','','','','','','',''])
     if not _id.total_selective_tax:
         _selective_tax = _selective_tax_foc = ''
     else:
@@ -2655,60 +2843,38 @@ def sales_order_report_account_user():
         _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
-    _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
+    # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
     _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
     _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50])
+    _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),        
+        # ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        # ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,1), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-3),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('TOPPADDING',(0,-2),(-1,-2),0),
         ('BOTTOMPADDING',(0,-3),(-2,-2),0),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
+        ('FONTNAME', (0, -1), (9, -1), 'Courier-Bold', 12),                
         ('FONTSIZE',(0,0),(-1,1),7),
         ('FONTSIZE',(0,1),(-1,-1),8),
-        # ('FONTSIZE',(0,-3),(2,-2),7),
         ('VALIGN',(0,0),(9,-1),'TOP'),        
-        ('ALIGN',(6,0),(9,-1),'RIGHT'),
-        ('SPAN',(0,-4),(-1,-4)),
-        ('SPAN',(0,-1),(5,-1)),
-        ('SPAN',(0,-2),(5,-2)),
-        ('SPAN',(0,-3),(5,-3)),
-        ('SPAN',(6,-1),(7,-1)),
-        ('SPAN',(6,-2),(7,-2)),
-        ('SPAN',(6,-3),(7,-3)),
-        ('ALIGN',(0,-4),(-1,-4),'CENTER'),
-        ('TOPPADDING',(0,-4),(-1,-4),10),
-        ('BOTTOMPADDING',(0,-4),(-1,-4),10),
-
+        ('ALIGN',(5,0),(9,-1),'RIGHT'),
     ]))    
 
-    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
-    wrds_trnls = [
-        ['-------------     NOTHING TO FOLLOWS     -------------'],
-        ['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS']] # inflect
-    wrds_tbld = Table(wrds_trnls, colWidths='*')
-    wrds_tbld.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('ALIGN', (0,0), (0,1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
-        ('BOTTOMPADDING',(0,0),(0,0),30),        
-        ('LINEABOVE', (0,1), (0,1), .5, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,1), (0,1), .5, colors.black,None, (2,2)),
-        ('FONTSIZE',(0,0),(-1,-1),7)
-    ]))
-
-    _others = [
-        ['Remarks',':',_id.remarks, '','Customer Sales Order Ref.',':',n.customer_order_reference],
+    _others = [        
         ['Delivery Note No.',':',str(_id.delivery_note_no_prefix_id.prefix)+str(_id.delivery_note_no), '','Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no)],
-        ['Delivery Note Date.',':',_id.delivery_note_date_approved.strftime('%d-%m-%Y'), '','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')]]
+        ['Delivery Note Date.',':',_id.delivery_note_date_approved.strftime('%d-%m-%Y'), '','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],
+        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
     _others_table = Table(_others, colWidths=['*',25,'*',25,'*',25,'*'])
     _others_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
@@ -2716,21 +2882,24 @@ def sales_order_report_account_user():
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('TOPPADDING',(0,0),(-1,-1),0),
         ('BOTTOMPADDING',(0,0),(-1,-1),0),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
     ]))
     # row.append(Spacer(1,.7*cm))    
 
     _signatory = [
-        ['We hereby confirm receipt of this invoice.','For Merch & Partners Co. WLL'],
-        ['Name and Signature of Customer','Authorized Signatory']]
+        ['','We hereby confirm receipt of this invoice.','','For Merch & Partners Co. WLL',''],
+        ['','','','',''],
+        ['','Name and Signature of Customer','','Authorized Signatory','']]
     
-    _signatory_table = Table(_signatory, colWidths='*')
+    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
     _signatory_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
-        ('ALIGN', (0,0), (1,1), 'CENTER'),
-        ('TOPPADDING',(0,1),(1,1),25),
-        # ('BOTTOMPADDING',(0,0),(-1,-1),0),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING',(0,1),(1,1),30),
+        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
     _prt_ctr = db(db.Sales_Invoice_Transaction_Report_Counter.sales_invoice_transaction_no_id == request.args(0)).select().first()
@@ -2743,50 +2912,78 @@ def sales_order_report_account_user():
         db.Sales_Invoice_Transaction_Report_Counter.update_or_insert(db.Sales_Invoice_Transaction_Report_Counter.sales_invoice_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
 
 
-    _customer = [["-------------     CUSTOMER'S COPY     -------------"],["print count: " + str(ctr)]]        
-    _accounts = [["-------------     ACCOUNT'S COPY     -------------"],["print count: " + str(ctr)]] 
-    _pos =      [["-------------     STORE'S COPY     -------------"],["print count: " + str(ctr)]] 
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
 
-    _c_tbl = Table(_customer, colWidths='*')
+    _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
     _p_tbl = Table(_pos, colWidths='*')
 
-    _c_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _a_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
-    _p_tbl.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'),('FONTSIZE',(0,0),(-1,-1),7),('FONTNAME', (0, 0), (-1, -1), 'Courier')]))
+    _c_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _a_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _p_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
+
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))    
+    row.append(Spacer(1,.5*cm))    
     row.append(_others_table)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
+    # row.append(Spacer(.1,.2*cm))    
     row.append(_c_tbl)
     row.append(PageBreak())
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))    
+    row.append(Spacer(1,.5*cm))    
     row.append(_others_table)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
+    # row.append(Spacer(.1,.2*cm))    
     row.append(_a_tbl)
     row.append(PageBreak())
 
-    row.append(_so_tbl)
-    row.append(Spacer(1,.5*cm))
     row.append(_st_tbl)
-    row.append(Spacer(1,.7*cm))    
+    row.append(Spacer(1,.5*cm))    
     row.append(_others_table)
-    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
+    # row.append(Spacer(.1,.2*cm))    
     row.append(_p_tbl)
     row.append(PageBreak())
 
-    doc.build(row)
-    # doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer)
+    # doc.build(row)
+    doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer, canvasmaker=PageNumCanvas)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
@@ -2806,7 +3003,7 @@ def sales_order_table_reports():
             ]
     _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     _so_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,1),(2,-1)),
         ('FONTNAME', (0, 0), (6, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),                
@@ -2816,14 +3013,14 @@ def sales_order_table_reports():
         ]))
     return row.append(_so_tbl)
 
-
 def sales_order_transaction_table_reports():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
+
     ctr = 0
-    _st = [['#','Item Code','Item Description','Cat','UOM','Qty','Unit Price','Discount','Net Price','Amount']]        
+    _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount']]        
     _grand_total = 0
     _total_amount = 0        
-    _total_excise_tax = 0    
+    _total_excise_tax = 0      
     for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1        
         _grand_total += float(t.Sales_Order_Transaction.total_amount or 0)        
@@ -2839,64 +3036,55 @@ def sales_order_transaction_table_reports():
             _net_price = 'FOC'
         else:
             _net_price = locale.format('%.2F',t.Sales_Order_Transaction.net_price or 0, grouping = True)
-        _st.append([
-            ctr, 
-            t.Item_Master.item_code, 
-            str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), 
-            t.Sales_Order_Transaction.category_id.mnemonic, 
+        if t.Sales_Order_Transaction.category_id != 4:
+            _category = t.Sales_Order_Transaction.category_id.mnemonic
+        else:
+            _category = ''            
+        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), 
             t.Sales_Order_Transaction.uom, 
+            _category,             
             _qty, 
             locale.format('%.2F',t.Sales_Order_Transaction.price_cost or 0, grouping = True), 
             locale.format('%.2F',t.Sales_Order_Transaction.discount_percentage or 0, grouping = True), 
             _net_price, 
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
-    
     if not _id.total_selective_tax:
         _selective_tax = _selective_tax_foc = ''
     else:
         _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))            
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
-    _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
+
     _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
     _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50])
+    _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),        
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,1), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-3),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('TOPPADDING',(0,-2),(-1,-2),0),
         ('BOTTOMPADDING',(0,-3),(-2,-2),0),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
+        ('FONTNAME', (0, -1), (9, -1), 'Courier-Bold', 12),                
         ('FONTSIZE',(0,0),(-1,1),7),
         ('FONTSIZE',(0,1),(-1,-1),8),
-        # ('FONTSIZE',(0,-3),(2,-2),7),
         ('VALIGN',(0,0),(9,-1),'TOP'),        
-        ('ALIGN',(6,0),(9,-1),'RIGHT'),
-        ('SPAN',(0,-4),(-1,-4)),
-        ('SPAN',(0,-1),(5,-1)),
-        ('SPAN',(0,-2),(5,-2)),
-        ('SPAN',(0,-3),(5,-3)),
-        ('SPAN',(6,-1),(7,-1)),
-        ('SPAN',(6,-2),(7,-2)),
-        ('SPAN',(6,-3),(7,-3)),
-        ('ALIGN',(0,-4),(-1,-4),'CENTER'),
-        ('TOPPADDING',(0,-4),(-1,-4),10),
-        ('BOTTOMPADDING',(0,-4),(-1,-4),10),
-    ]))
+        ('ALIGN',(5,0),(9,-1),'RIGHT'),
+    ]))    
     return row.append(_st_tbl)
 
 def delivery_note_transaction_table_reports():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     ctr = _total_qty = 0
-    _st = [['#','Item Code','Item Description','Cat','UOM','Qty']]        
+    _st = [['#','Item Code','Item Description','UOM','Cat','Qty']]        
 
     _total_amount = 0        
     _total_excise_tax = 0    
@@ -2908,33 +3096,97 @@ def delivery_note_transaction_table_reports():
             _qty = t.Sales_Order_Transaction.quantity
         else:
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
-
-        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description),t.Sales_Order_Transaction.category_id.mnemonic, t.Sales_Order_Transaction.uom, _qty])
-    if not _id.total_selective_tax:
-        _selective_tax = _selective_tax_foc = ''
-    else:
-        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
-    _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','',''])
-    _st.append(['','','Sum of Qty','',':',_total_qty])
-    _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50])
+        if t.Sales_Order_Transaction.category_id != 4:
+            _category = t.Sales_Order_Transaction.category_id.mnemonic
+        else:
+            _category = ''        
+        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Sales_Order_Transaction.uom,_category, _qty])
+        if not _id.total_selective_tax:
+            _selective_tax = _selective_tax_foc = ''
+        else:
+            _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
+            _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
+    _st.append(['','','-------------     NOTHING TO FOLLOWS     -------------','','',''])
+    _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,70], repeatRows = 1)
     _st_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),        
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),                
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)), 
+        ('LINEBELOW', (0,1), (-1,-2), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-1),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
-        # ('FONTSIZE',(0,0),(-1,1),7),
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('VALIGN',(0,0),(5,-1),'TOP'),        
-        ('ALIGN',(0,-1),(5,-1),'RIGHT'),
-        ('SPAN',(0,-2),(5,-2)),
-        ('ALIGN',(0,-2),(5,-2),'CENTER'),
-        ('TOPPADDING',(0,-2),(-5,-2),10),
-        ('BOTTOMPADDING',(0,-2),(-5,-2),10),
+        ('ALIGN',(5,1),(5,-1),'RIGHT'),
+        ('ALIGN',(5,0),(5,0),'CENTER'),
+        ('ALIGN',(2,-1),(2,-1),'RIGHT'),
     ]))
     return row.append(_st_tbl)
 
+########################################################################
+class PageNumCanvas(canvas.Canvas):
+    """
+    http://code.activestate.com/recipes/546511-page-x-of-y-with-reportlab/
+    http://code.activestate.com/recipes/576832/
+    """
+ 
+    #----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs):
+        """Constructor"""
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self.pages = []
+ 
+    #----------------------------------------------------------------------
+    def showPage(self):
+        """
+        On a page break, add information to the list
+        """
+        self.pages.append(dict(self.__dict__))
+        self._startPage()
+ 
+    #----------------------------------------------------------------------
+    def save(self):
+        """
+        Add the page number to each page (page x of y)
+        """
+        page_count = len(self.pages)
+ 
+        for page in self.pages:
+            self.__dict__.update(page)
+            self.draw_page_number(page_count)
+            canvas.Canvas.showPage(self)
+ 
+        canvas.Canvas.save(self)
+ 
+    #----------------------------------------------------------------------
+    def draw_page_number(self, page_count):
+        """        Add the page number        """
+        page = []
+        _location = ''
+        _page_count = page_count / 3
+        _page_number = self._pageNumber
+        if _page_count > 1:            
+            if _page_number == 1:
+                _location = "-------------     CUSTOMER'S COPY     -------------"
+                _page_number = 1
+            elif _page_number == 3:
+                _location = "-------------     ACCOUNT'S COPY     -------------"
+                _page_number = 1
+            elif _page_number == 5:
+                _location = "-------------     WAREHOUSE'S COPY     -------------"
+                _page_number = 1
+            else:
+                _page_number = 2
+                _location = ''
+        else:
+            _page_number = 1
+        # page = [["Page"],[" of "]]
+        # paget = Table(page, colWidths='*')
+        # paget.setStyle(TableStyle([('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))]))
+        # row.append(page)
+        page = "Page %s of %s" % (_page_number, _page_count)        
+        self.setFont("Courier-Bold", 8)
+        self.drawRightString(148*mm, 45*mm, _location)
+        self.drawRightString(115*mm, 35*mm, page)
+ 

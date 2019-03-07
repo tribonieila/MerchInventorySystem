@@ -32,3 +32,5 @@ example:
     unit price  =   130
     discount    =   10 %
     net price = ( 130 * (100 - 10)) / 100
+
+limit the items in printing, invoice and sales return only

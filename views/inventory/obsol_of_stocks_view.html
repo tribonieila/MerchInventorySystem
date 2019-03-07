@@ -1,0 +1,138 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">OBSOLESCENCE OF STOCKS</span>
+        </div>
+        <div class="card-body tab-content">                                            
+            <div class="form-horizontal">   
+                {{=form.custom.begin}}	                                    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Obsolescence Stocks No</label>
+                            <div class="col-sm-8">                                
+                                <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.obsolescence_stocks_no}}" readonly >                                
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Obsolescence Date</label>
+                            <div class="col-sm-8"> 
+                                <input type="text" class="form-control" value="{{=_id.obsolescence_stocks_date}}" readonly >                                
+                            </div>
+                        </div>                                            
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sales Man</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.created_by.first_name.upper()}} {{=_id.created_by.last_name.upper()}} " readonly>
+                            </div>
+                        </div>
+                    </div>                      
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.dept_code_id.dept_code}} - {{=_id.dept_code_id.dept_name}}" readonly>
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.location_code_id.location_name}}" readonly>
+                            </div>
+                        </div>                                           
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Customer</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.account_code_id.account_name}}" readonly>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Warehouse Stock From</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.warehouse_stock_qty_id.description}}" readonly>
+                            </div>    
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>    
+                        </div>                                               
+                    </div>                    
+                </div>
+    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                        </div>                                               
+                    </div>   
+                    <div class="col-md-4">
+                 
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">                                
+                                <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                {{=form.custom.end}}
+                            </div>        
+                        </div>                        
+                    </div>
+                </div>
+                <div id = "order_panel">
+                    {{=table}}
+                    <!-- {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True)}} -->
+                </div>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','obsol_of_stocks_delete_view')}}" + '/'+ _id);                                        
+                }
+            }
+        })
+    });   
+})
+</script>

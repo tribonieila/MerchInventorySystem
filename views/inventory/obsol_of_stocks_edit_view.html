@@ -4,9 +4,9 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">VIEW EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_browse')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">SALES ORDER FORM</span>
+            <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -24,12 +24,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Pieces</label>
                             <div class="col-sm-8"> 
-                                {{ if _id.uom == 1: }}
-                                    <input type="text" class="form-control" value="0" readonly>
-                                {{ else: }}
-                                    {{=form.custom.widget.pieces}}
-                                {{ pass }}
-                                
+                                {{=form.custom.widget.pieces}}
                             </div>
                         </div>                    
                     </div>
