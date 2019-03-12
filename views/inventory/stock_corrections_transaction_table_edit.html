@@ -1,0 +1,43 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('account_grid')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">STOCK CORRECTIONS (+/-)</span>
+        </div>
+        <div class="card-body tab-content">                                            
+            <div class="form-horizontal">   
+                {{=form.custom.begin}}	                    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Quantity</label>
+                            <div class="col-sm-8">                                
+                               {{=form.custom.widget.quantity}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Pieces</label>
+                            <div class="col-sm-8"> 
+                                {{=form.custom.widget.pieces}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">                            
+                            <div class="col-sm-8">{{=form.custom.submit}}{{=btn_back}}</div>
+                        </div>
+                    </div>
+                </div>
+                {{=form.custom.end}}
+                
+            </div>          
+        </div>
+    </div>
+</div>
+

@@ -42,7 +42,17 @@ for page in pages:
     canvas.setPageSize((page.BBox[2], page.BBox[3]))
     canvas.doForm(makerl(canvas, page))
     canvas.showPage()
-    
+
+{{if form.errors:}}    
+<ul>
+    {{for fieldname in form.errors:}}
+        <li>{{=form.errors[fieldname]}}</li>
+    {{pass}}
+</ul>
+{{form.errors.clear()}}
+{{pass}}
+
+
 Edit static/web2py.js search for /*helper for flash messages*/
 
 and add this command:

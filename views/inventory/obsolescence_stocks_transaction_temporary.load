@@ -57,9 +57,9 @@ $(document).ready(function(){
        return false; 
     });
     
-
     $('.delete').click(function(){
         var _id = $(this).attr('data-id');
+        var parent = $(this).parent("div").parent("td").parent("tr");
         bootbox.confirm({ 
             size: "small",
             message: "Would you like to delete this record?",
@@ -75,13 +75,12 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('sales','sales_order_transaction_temporary_delete')}}" + '/'+ _id);
-                        
-                }
+                    ajax("{{=URL('inventory','del_obsol_stocks')}}" + '/'+ _id);
+                    parent.fadeOut('slow'); 
+                }   
 
             }
         })
     });        
-
 });
 </script>

@@ -4,7 +4,7 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('account_grid')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
@@ -76,12 +76,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id == 15: }}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
-                                {{ else: }}
-                                    {{=form.custom.widget.status_id}}
-                                {{ pass }}
-                                
+                                <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
                             </div>    
                         </div>                                               
                     </div>                    
@@ -100,13 +95,14 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                        
-                                {{ if _id.status_id == 15: }}        
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
+                            <div class="col-sm-8">                                
+                                {{ if _id.status_id == 2: }}
+                                    <input class="btn btn-primary" type="submit" value="approved" disabled>                                
+                                    <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>reject</a>
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
-                                {{ pass }}
-                                
+                                    <input class="btn btn-primary" type="submit" value="approved" id="btnsubmit">
+                                    <input class="btn btn-danger" type="submit" value="reject" id="btnrejected">                                                                                                                                   
+                                {{ pass }}                                                                
                                 {{=form.custom.end}}
                             </div>        
                         </div>                        
@@ -114,7 +110,6 @@
                 </div>
                 <div id = "order_panel">
                     {{=table}}
-                    <!-- {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True)}} -->
                 </div>
             </div>          
         </div>
@@ -124,27 +119,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    $('.delete').click(function(){
-        var _id = $(this).attr('data-id');
-        bootbox.confirm({
-            size: "small",
-            message: "Would you like to delete this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    ajax("{{=URL('inventory','obsol_of_stocks_delete_view')}}" + '/'+ _id);                                        
-                }
-            }
-        })
-    });   
-})
+    $('#btnsubmit').click(function(){
+        ajax('{{=URL('inventory','obsol_grid_view_approved', args = request.args(0))}}')
+        location.reload();
+    });
+    $('#btnrejected').click(function(){
+        ajax('{{=URL('inventory','obsol_grid_view_rejected', args = request.args(0))}}')
+        location.reload();
+    });
+
+});
 </script>

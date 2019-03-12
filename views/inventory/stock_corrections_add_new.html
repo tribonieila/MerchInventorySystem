@@ -1,0 +1,184 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li><a href="#" onclick=window.location="{{=URL('stock_corrections')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">STOCK CORRECTIONS (+/-)</span>
+        </div>
+        <div class="card-body tab-content" >         
+            {{=form.custom.begin}}	
+            <div class="form-horizontal">   
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Corrections No</label>
+                            <div class="col-sm-8">      
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <div id="_stk_gen_no"></div>
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                <input type="text" class="form-control" id="stock_corrections_date" name = "stock_corrections_date" value="{{=datetime.date.today()}}">
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.dept_code_id}}
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.location_code_id}}
+                            </div>
+                        </div>                                           
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Adjustment Type</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.adjustment_type}}                                         
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">
+                        <!-- <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Adjustment Code</label>
+                            <div class="col-sm-8">
+                                <div id="adjustment_code"></div>
+                            </div>
+                        </div>                     -->
+                    </div>        
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.status_id}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">  
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">
+                                <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
+                                <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_corrections')}}">abort</a>
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>
+                                
+                            </div>                            
+                        </div>                    
+                    </div>
+                </div>
+            </div>   
+            {{=form.custom.end}}            
+            <div id = "request_panel">
+                {{=LOAD('inventory','stock_corrections_transaction_temporary.load', ajax = True, target = 'tmptbl')}}
+            </div>                       
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    var str_ctr = 0
+    $('#btnsubmit').attr('disabled','disabled');
+    $('#btnhelp').attr('disabled','disabled');
+    $('#btnrequest').attr('disabled','disabled');
+    $('#request_panel').hide();   
+    $('#Stock_Corrections_dept_code_id').change(function(){
+        ajax('{{=URL('gen_stock_corrections')}}',['dept_code_id'], '_stk_gen_no');        
+        var ctr = this.value;        
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }                            
+        return false;  
+    });
+    $('#Stock_Corrections_adjustment_type').change(function(){
+        var ctr = this.value;              
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }       
+        return false;
+    });
+    $('#Stock_Corrections_location_code_id').change(function(){
+        ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
+        var ctr = this.value;        
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr == '') {
+            request(0)
+        }       
+        return false;
+    });
+
+    $('#btnsubmit').click(function(){
+        $('#Stock_Corrections_dept_code_id').removeAttr('disabled');
+        $('#Stock_Corrections_adjustment_type').removeAttr('disabled');
+        $('#stock_corrections_date').removeAttr('disabled');
+        $('#Stock_Corrections_location_code_id').removeAttr('disabled');
+        $('#Stock_Corrections_status_id').removeAttr('disabled');
+        ajax('{{=URL('stock_corrections_add_new')}}', ['dept_code_id','adjustment_type','stock_corrections_date','location_code_id', 'status_id']);        
+    });
+
+    $('#btnrequest').click(function(){
+        $('#request_panel').slideDown('slow');
+        $('#no_table_item_code').focus();                
+        $('#btnhelp').removeAttr('disabled');        
+        ajax('{{=URL('stock_corrections_session')}}',['dept_code_id','location_code_id','adjustment_type']);
+        $('#Stock_Corrections_dept_code_id').attr('disabled','disabled');
+        $('#Stock_Corrections_adjustment_type').attr('disabled','disabled');
+        $('#Stock_Corrections_stock_adjustment_date').attr('disabled','disabled');
+        $('#Stock_Corrections_location_code_id').attr('disabled','disabled');
+        $('#btnrequest').attr('disabled','disabled');
+        $('#Stock_Corrections_status_id').attr('disabled','disabled');
+        return false;
+    }); 
+
+    function request(e){
+
+        if (e == 1) {
+            str_ctr += e;
+        } else {
+            str_ctr -= 1;
+        }
+        // console.log(e, str_ctr);
+        // if $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
+          
+        var loc = $('#Stock_Corrections_location_code_id').val();
+        var dept = $('#Stock_Corrections_dept_code_id').val();        
+        var adj = $('#Stock_Corrections_adjustment_type').val(); 
+        if (str_ctr >= 3) {
+            if (dept != '' && adj != '' && loc != '') {
+                $('#btnrequest').removeAttr('disabled');               
+            } else {
+                $('#btnrequest').attr('disabled','disabled');
+            }
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }       
+    }
+});
+</script>

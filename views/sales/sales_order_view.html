@@ -170,10 +170,10 @@
                             <div class="col-sm-8">                                
                                 {{ if (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9): }}
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>                                
-                                    <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel</a>
+                                    <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
-                                    <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel</a>                        
+                                    <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel sales order</a>                         -->
                                                                                                
                                 {{ pass }}
                                 <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
@@ -189,3 +189,4 @@
         </div>
     </div>
 </div>
+

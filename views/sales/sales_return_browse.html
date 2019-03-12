@@ -19,6 +19,7 @@
 <script>
     $('.clear').click(function(){
         var _id = $(this).attr('data-id');
+        var parent = $(this).parent("div").parent("td").parent("tr");
         bootbox.confirm({
             size: "small",
             message: "Would you like to clear this record?",
@@ -34,8 +35,8 @@
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('sales','sales_order_transaction_temporary_delete')}}" + '/'+ _id);
-                           
+                    ajax("{{=URL('sales','sales_return_archived')}}" + '/'+ _id);
+                    parent.fadeOut('slow'); 
                 }
     
             }

@@ -1,0 +1,31 @@
+{{=table}}
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+        $('.delete').click(function(){
+            var _id = $(this).attr('data-id');
+            var parent = $(this).parent("div").parent("td").parent("tr");
+            bootbox.confirm({
+                size: "small",
+                message: "Are you sure you want to delete this record?",
+                buttons: {
+                    confirm: {
+                        label: "Yes",
+                        className: "btn-success"
+                    },
+                    cancel: {
+                        label: "No",
+                        className: "btn-danger"
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        ajax("{{=URL('inventory','stock_corrections_transaction_table_delete')}}" + '/' + _id);
+                        parent.fadeOut('slow');                        
+                    }
+                }
+            })
+        });   
+});
+</script>    

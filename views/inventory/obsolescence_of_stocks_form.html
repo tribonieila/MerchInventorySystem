@@ -58,7 +58,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Customer</label>
+                            <label class="col-sm-4 control-label">Account's</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.account_code_id}}
                             </div>
@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <div id = "order_panel">
-                    {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True)}}
+                    {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True, target = 'tblSOT')}}
                 </div>
             </div>          
         </div>
@@ -116,7 +116,6 @@
 <script>
 $(document).ready(function(){    
     var str_ctr = 0
-
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
@@ -200,33 +199,6 @@ $(document).ready(function(){
         } else {
             $('#btnproceed').attr('disabled','disabled');
         }
-    }
-        
+    }        
 });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-<script>
-
-var _id = $(this).attr('data-id');        
-var _qt = $(this).attr('data-qt');
-var _pc = $(this).attr('data-pc');
-var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
-$(document).on("click",".edit", function(){
-    
-    var _id = $(this).attr('data-id');
-    var _qt = $(this).attr('data-qt');
-    var _pc = $(this).attr('data-pc');
-    var parent = $(this).parent("div").parent("td").parent("tr");
-    bootbox.alert({        
-        message: form,
-        callback: function() {
-            var qty = form.find(_qt);
-            var pcs = form.find(_pc);
-            var qty = form.find('input[name=quantity]').val();
-            var pcs = form.find('input[name=pieces]').val();
-            ajax("{{=URL('sales','sales_order_transaction_temporary_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
-            
-        }
-    })
-});   
 </script>
