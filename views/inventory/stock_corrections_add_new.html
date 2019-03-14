@@ -6,7 +6,7 @@
                 <li class="active"><a href="#">+ ADD NEW</a></li>
                 <li><a href="#" onclick=window.location="{{=URL('stock_corrections')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">STOCK CORRECTIONS (+/-)</span>
+            <span class="card-title">STOCK CORRECTIONS</span>
         </div>
         <div class="card-body tab-content" >         
             {{=form.custom.begin}}	
@@ -51,19 +51,19 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Adjustment Type</label>
+                            <label class="col-sm-4 control-label">Stock Quantity From</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.adjustment_type}}                                         
+                                {{=form.custom.widget.stock_quantity_from_id}}                                         
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-6">
-                        <!-- <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Adjustment Code</label>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Quantity To</label>
                             <div class="col-sm-8">
-                                <div id="adjustment_code"></div>
+                                {{=form.custom.widget.stock_quantity_to_id}}                                         
                             </div>
-                        </div>                     -->
+                        </div>                    
                     </div>        
                 </div>
                 <div class="row">
@@ -77,17 +77,29 @@
                     </div>
                     <div class="col-md-6">  
                         <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.remarks}}
+                            </div>                            
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-6">  
+                        <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                 <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_corrections')}}">abort</a>
-                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>
-                                
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>                                
                             </div>                            
                         </div>                    
                     </div>
                 </div>
+                
             </div>   
             {{=form.custom.end}}            
             <div id = "request_panel">
@@ -136,20 +148,21 @@ $(document).ready(function(){
 
     $('#btnsubmit').click(function(){
         $('#Stock_Corrections_dept_code_id').removeAttr('disabled');
-        $('#Stock_Corrections_adjustment_type').removeAttr('disabled');
+        $('#Stock_Corrections_stock_location_from_id').removeAttr('disabled');
+        $('#Stock_Corrections_stock_location_to_id').removeAttr('disabled');
         $('#stock_corrections_date').removeAttr('disabled');
         $('#Stock_Corrections_location_code_id').removeAttr('disabled');
         $('#Stock_Corrections_status_id').removeAttr('disabled');
-        ajax('{{=URL('stock_corrections_add_new')}}', ['dept_code_id','adjustment_type','stock_corrections_date','location_code_id', 'status_id']);        
+        ajax('{{=URL('stock_corrections_add_new')}}', ['dept_code_id','stock_location_from_id','stock_location_to_id','stock_corrections_date','location_code_id', 'status_id']);        
     });
 
     $('#btnrequest').click(function(){
         $('#request_panel').slideDown('slow');
         $('#no_table_item_code').focus();                
         $('#btnhelp').removeAttr('disabled');        
-        ajax('{{=URL('stock_corrections_session')}}',['dept_code_id','location_code_id','adjustment_type']);
+        ajax('{{=URL('stock_corrections_session')}}',['dept_code_id','location_code_id','stock_quantity_from_id']);
         $('#Stock_Corrections_dept_code_id').attr('disabled','disabled');
-        $('#Stock_Corrections_adjustment_type').attr('disabled','disabled');
+        $('#Stock_Corrections_stock_location_from_id').attr('disabled','disabled');
         $('#Stock_Corrections_stock_adjustment_date').attr('disabled','disabled');
         $('#Stock_Corrections_location_code_id').attr('disabled','disabled');
         $('#btnrequest').attr('disabled','disabled');
@@ -169,9 +182,9 @@ $(document).ready(function(){
           
         var loc = $('#Stock_Corrections_location_code_id').val();
         var dept = $('#Stock_Corrections_dept_code_id').val();        
-        var adj = $('#Stock_Corrections_adjustment_type').val(); 
-        if (str_ctr >= 3) {
-            if (dept != '' && adj != '' && loc != '') {
+        // var adj = $('#Stock_Corrections_adjustment_type').val(); 
+        if (str_ctr >= 2) {
+            if (dept != '' && loc != '') {
                 $('#btnrequest').removeAttr('disabled');               
             } else {
                 $('#btnrequest').attr('disabled','disabled');
@@ -180,5 +193,28 @@ $(document).ready(function(){
             $('#btnrequest').attr('disabled','disabled');
         }       
     }
+
+    function preventDupes( select, index) {
+        var options = select.options, len = options.length;
+        while (len--) {
+            options [ len ].disabled = false;
+        }
+        select.options[index].disabled = true;
+        if ( index === select.selectedIndex ) {
+            alert('You\'ve already selected the item "' + select.options[index].text + '".\n\nPlease choose another.');
+            this.selectedIndex = 0;
+        }
+    }
+
+    var stock_quantity_from_id = select = document.getElementById('Stock_Corrections_stock_quantity_from_id');
+    var stock_quantity_to_id = select = document.getElementById('Stock_Corrections_stock_quantity_to_id');
+
+    stock_quantity_from_id.onchange = function(){
+        preventDupes.call(this, stock_quantity_to_id, this.selectedIndex );
+    };
+
+    stock_quantity_to_id.onchange = function() {
+        preventDupes.call(this, stock_quantity_from_id, this.selectedIndex);
+    };    
 });
 </script>

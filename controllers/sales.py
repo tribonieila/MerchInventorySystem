@@ -446,7 +446,7 @@ def validate_sales_order_transaction(form):
     else:
         _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
-        _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Order_Transaction_Temporary.item_code).first()                                   
+        _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Order_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Order_Transaction_Temporary.item_code).first()                                   
 
         if _id.uom_value == 1:
             form.vars.pieces = 0
@@ -465,20 +465,13 @@ def validate_sales_order_transaction(form):
         _total_excise_tax = _net_price = _total_excise_tax_foc = 0
         _selective_tax = _selective_tax_foc =  0       
         _total_amount = 0
-        if _exist:
-            if int(request.vars.category_id) != 3:                
-                form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'                
-            else:
-                # _unit_price = _excise_tax_amount or 0                                
-                # computation for excise tax foc
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
-                _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
-
-                # _stk_file.stock_in_transit += _total_pcs    
-                # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-                # _stk_file.update_record()                    
+        if _exist:            
+            form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'           
+            # computation for excise tax foc
+            _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+            _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
+            _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+            _unit_price = float(_price.wholesale_price) + _excise_tax_amount
 
             # form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))                    
         else:
@@ -493,7 +486,6 @@ def validate_sales_order_transaction(form):
                 # _stk_file.stock_in_transit += _total_pcs    
                 # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
                 # _stk_file.update_record()    
-                
             else:
                 _selective_tax_foc = 0
                 # computation for excise tax
@@ -1285,7 +1277,7 @@ def validate_sales_return_transaction(form):
     else:
         _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
-        _exist = db((db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Sales_Return_Transaction_Temporary.item_code).first()                                   
+        _exist = db((db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Return_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Return_Transaction_Temporary.item_code).first()                                   
         
         _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)
         
@@ -1298,17 +1290,16 @@ def validate_sales_return_transaction(form):
         # if _exist == request.vars.item_code and (request.vars.category_id != 3):
         _excise_tax_amount = 0
         _unit_price = 0
-        _total_excise_tax = _total_amount = 0
+        _total_excise_tax = _net_price= _total_amount = 0
         _selective_tax = _selective_tax_foc = _total_excist_tax_foc = 0
         if _exist:
-            if int(request.vars.category_id) != 3:                
-                form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'
-            else:
-                # computation for excise tax foc
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
-                _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+            form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'            
+            # computation for excise tax foc
+            _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+            _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
+            _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+            _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+
         else:
             if int(request.vars.category_id) == 3:
                 _unit_price = 0
@@ -1449,13 +1440,14 @@ def sales_return_transaction_temporary_delete():
     response.js = "$('#tblsot').get(0).reload()"
 
 def sales_return_grid():
+    _query = db(db.Sales_Return).select(orderby = ~db.Sales_Return.id)
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):        
         _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
         _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Return.status_id == 12) | (db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
-    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
     for n in _query:
         if auth.has_membership(role = 'ROOT'):
             edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_mngr_grid', args = n.id, extension = False))        
@@ -1499,7 +1491,7 @@ def sales_return_grid():
 
         btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, prin_lnk, clea_lnk)
         row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
-            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
+            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblsrt')
     return dict(table = table)    
@@ -1678,7 +1670,7 @@ def sales_order_manager_grid():
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Order.status_id == 8) | (db.Sales_Order.status_id == 7)).select(orderby = ~db.Sales_Order.id)
     row = []
-    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
+    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     for n in _query:       
         if auth.has_membership(role = 'ROOT'):
             edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
@@ -1739,7 +1731,7 @@ def sales_order_manager_grid():
             _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
             _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
         row.append(TR(TD(n.sales_order_date),TD(_sales),TD(_note),TD(_inv),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
-            TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+            TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),TD(n.status_id.description),
             TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblso')
@@ -2378,8 +2370,6 @@ def sales_return_accounts_header_footer_report(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
-
-
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_report_store_keeper():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -2436,7 +2426,6 @@ def sales_order_report_store_keeper():
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
     return pdf_data
-
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_delivery_note_report_store_keeper():
@@ -3136,6 +3125,282 @@ def delivery_note_transaction_table_reports():
     ]))
     return row.append(_st_tbl)
 
+def stock_corrections_header_footer_reports(canvas, doc):
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+    _id = db(db.Stock_Corrections.id == request.args(0)).select().first()
+    
+    # Header 'Stock Corrections Report'
+    for n in db(db.Stock_Corrections.id == request.args(0)).select():
+        _sh = [
+            [_limage],
+            ['STOCK CORRECTIONS'],
+            ['Stock Corrections No.',':',str(n.stock_corrections_id.prefix)+str(n.stock_corrections_no),'','Stock Corrections Date',':',n.stock_corrections_date.strftime('%d-%m-%Y')],
+            ['Department',':',n.dept_code_id.dept_name,'','Stock Quantity From',':',n.stock_quantity_from_id.description],
+            ['Location',':',n.location_code_id.location_name,'','Stock Quantity To',':',n.stock_quantity_to_id.description]
+        ]
+    header = Table(_sh, colWidths=['*',20,'*',10,'*',20,'*'])
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,0),(-1,0)),
+        ('SPAN',(0,1),(-1,1)),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        ('ALIGN',(0,1),(-1,1),'CENTER'),        
+        ('FONTNAME',(0,0),(6,-1),'Courier'),
+        ('FONTSIZE',(0,1),(6,-1),8),
+        ('TOPPADDING',(0,1),(6,1),5),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0),
+        ('FONTSIZE',(0,1),(6,1),15),
+        ('FONTNAME',(0,1),(6,1),'Courier-Bold',12),
+        ('BOTTOMPADDING',(0,1),(6,1),12)]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+
+    # Footer
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
+
+    # Release the canvas
+    canvas.restoreState()
+
+def stock_corrections_transaction_table_reports():
+    _id = db(db.Stock_Corrections.id == request.args(0)).select().first()
+    ctr = 0
+    _sc = [['#','Item Code','Description','UOM','Quantity']]
+    for n in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == request.args(0)).select(orderby = ~db.Stock_Corrections_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Corrections_Transaction.item_code_id)):
+        ctr += 1
+        if n.Stock_Corrections_Transaction.uom == 1:
+            _qty = n.Stock_Corrections_Transaction.quantity
+        else:
+            _qty = card(n.Stock_Corrections_Transaction.item_code_id, n.Stock_Corrections_Transaction.quantity, n.Stock_Corrections_Transaction.uom)
+        _sc.append([ctr,n.Stock_Corrections_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),n.Stock_Corrections_Transaction.uom, _qty])
+    _sc.append(['','','----------  NOTHING TO FOLLOWS   ----------','',''])
+    _sc_tbl = Table(_sc, colWidths=[20,60,'*',50,50], repeatRows = 1)
+    _sc_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
+        ('TOPPADDING',(0,-1),(-1,-1),15),
+        
+        ('FONTNAME',(0,0),(-1,-1),'Courier'),
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,-1), (-1,-1), 'CENTER'),
+        ('VALIGN',(0,0),(4,-1),'TOP'),
+        # ('SPAN',(0,-1),(-1,-1)),
+        ]))    
+
+    _remarks = [['Remarks',':',_id.remarks]]
+    _remarks_table = Table(_remarks, colWidths=[120,25,'*'])
+    _remarks_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('TOPPADDING',(0,0),(-1,-1),0),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0),        
+    ]))
+
+    _signatory = [
+        ['','Requested by:','','Approved by:',''],
+        ['',str(_id.created_by.first_name.upper()) + str(' ') + str(_id.created_by.last_name.upper()),'',str(_id.approved_by.first_name.upper() + str(' ') + str(_id.approved_by.last_name.upper())),''],
+        ['','Name and Signature','','Name and Signature','']]
+
+    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
+    _signatory_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BOTTOMPADDING',(0,0),(-1,0),30),
+        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
+    ]))
+
+    row.append(_sc_tbl)    
+    row.append(Spacer(1,.7*cm))
+    row.append(_remarks_table) 
+    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.7*cm))
+    row.append(_signatory_table)    
+    
+    doc.build(row, onFirstPage=stock_corrections_header_footer_reports, onLaterPages = stock_corrections_header_footer_reports)
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    return pdf_data
+
+def obslo_stock_header_footer_reports(canvas, doc):
+    # Save the state of our canvas so we can draw on it
+    canvas.saveState()
+    _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
+    
+    # Header 'Stock Corrections Report'
+    for n in db(db.Obsolescence_Stocks.id == request.args(0)).select():
+        _sh = [
+            [_limage],
+            ['STOCK ISSUE VOUCHER'],
+            ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date.strftime('%d-%m-%Y')],
+            ['Department',':',n.dept_code_id.dept_name,'','Account Code',':',n.account_code_id.account_code],
+            ['Location',':',n.location_code_id.location_name,'','Account Name',':',n.account_code_id.account_name],
+            ['Stock Quantity From',':',n.stock_type_id.description,'','','','']
+        ]
+    header = Table(_sh, colWidths=['*',20,'*',10,'*',20,'*'])
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,0),(-1,0)),
+        ('SPAN',(0,1),(-1,1)),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        ('ALIGN',(0,1),(-1,1),'CENTER'),        
+        ('FONTNAME',(0,0),(6,-1),'Courier'),
+        ('FONTSIZE',(0,1),(6,-1),8),
+        ('TOPPADDING',(0,1),(6,1),5),
+        ('TOPPADDING',(0,1),(6,-1),0),
+        ('BOTTOMPADDING',(0,1),(6,-1),0),
+        ('FONTSIZE',(0,1),(6,1),15),
+        ('FONTNAME',(0,1),(6,1),'Courier-Bold',12),
+        ('BOTTOMPADDING',(0,1),(6,1),12)]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+
+    # Footer
+    _page = [['']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
+
+    # Release the canvas
+    canvas.restoreState()
+
+def obslo_stock_transaction_table_reports():
+    _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
+    ctr = 0
+    _sc = [['#','Item Code','Description','UOM','Quantity']]
+    for n in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)).select(orderby = ~db.Obsolescence_Stocks_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id)):
+        ctr += 1
+        if n.Obsolescence_Stocks_Transaction.uom == 1:
+            _qty = n.Obsolescence_Stocks_Transaction.quantity
+        else:
+            _qty = card(n.Obsolescence_Stocks_Transaction.item_code_id, n.Obsolescence_Stocks_Transaction.quantity, n.Obsolescence_Stocks_Transaction.uom)
+        _sc.append([ctr,n.Obsolescence_Stocks_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),n.Obsolescence_Stocks_Transaction.uom, _qty])
+    _sc.append(['','','----------  NOTHING TO FOLLOWS   ----------','',''])
+    _sc_tbl = Table(_sc, colWidths=[20,60,'*',50,50], repeatRows = 1)
+    _sc_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
+        ('TOPPADDING',(0,-1),(-1,-1),15),
+        
+        ('FONTNAME',(0,0),(-1,-1),'Courier'),
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,-1), (-1,-1), 'CENTER'),
+        ('VALIGN',(0,0),(4,-1),'TOP'),
+        # ('SPAN',(0,-1),(-1,-1)),
+        ]))    
+
+    _remarks = [['Remarks',':',_id.remarks]]
+    _remarks_table = Table(_remarks, colWidths=[120,25,'*'])
+    _remarks_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('TOPPADDING',(0,0),(-1,-1),0),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0),        
+    ]))
+
+    _signatory = [
+        ['','Requested by:','','Approved by:',''],
+        ['',str(_id.created_by.first_name.upper()) + str(' ') + str(_id.created_by.last_name.upper()),'',str(_id.obsolescence_stocks_approved_by.first_name.upper() + str(' ') + str(_id.obsolescence_stocks_approved_by.last_name.upper())),''],
+        ['','Name and Signature','','Name and Signature','']]
+
+    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
+    _signatory_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BOTTOMPADDING',(0,0),(-1,0),30),
+        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
+    ]))
+
+    _prt_ctr = db(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0)).select().first()
+    if not _prt_ctr:
+        ctr = 1
+        db.Stock_Issue_Transaction_Report_Counter.insert(stock_issue_transaction_no_id = request.args(0), printer_counter = ctr)
+    else:
+        _prt_ctr.printer_counter += 1
+        ctr = _prt_ctr.printer_counter
+        db.Stock_Issue_Transaction_Report_Counter.update_or_insert(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
+
+
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+
+    _a_tbl = Table(_accounts, colWidths='*')
+    _p_tbl = Table(_pos, colWidths='*')
+
+    _a_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+    _p_tbl.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
+        ('FONTSIZE',(0,0),(1,-1),8),
+        ('FONTSIZE',(2,0),(2,0),7),
+        ('FONTNAME', (2, 0), (2, 0), 'Courier'),
+        ('FONTNAME', (1, 0), (1, 0), 'Courier-Bold'),
+        ('TOPPADDING',(0,0),(-1,-1),11),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)
+        ]))
+
+    row.append(_sc_tbl)    
+    row.append(Spacer(1,.7*cm))
+    row.append(_remarks_table) 
+    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.7*cm))
+    row.append(_signatory_table)    
+    row.append(_a_tbl)
+    row.append(PageBreak())    
+
+    
+    row.append(_sc_tbl)    
+    row.append(Spacer(1,.7*cm))
+    row.append(_remarks_table) 
+    row.append(Spacer(1,.7*cm))
+    row.append(Spacer(1,.7*cm))
+    row.append(_signatory_table)    
+    row.append(_p_tbl)
+    row.append(PageBreak())    
+
+    doc.build(row, onFirstPage=obslo_stock_header_footer_reports, onLaterPages = obslo_stock_header_footer_reports, canvasmaker=PageNumCanvas2)
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    return pdf_data
+
 ########################################################################
 class PageNumCanvas(canvas.Canvas):
     """
@@ -3190,6 +3455,68 @@ class PageNumCanvas(canvas.Canvas):
                 _page_number = 1
             else:
                 _page_number = 2
+                _location = ''
+        else:
+            _page_number = 1
+        # page = [["Page"],[" of "]]
+        # paget = Table(page, colWidths='*')
+        # paget.setStyle(TableStyle([('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))]))
+        # row.append(page)
+        page = "Page %s of %s" % (_page_number, _page_count)        
+        self.setFont("Courier-Bold", 8)
+        self.drawRightString(148*mm, 45*mm, _location)
+        self.drawRightString(115*mm, 35*mm, page)
+ 
+class PageNumCanvas2(canvas.Canvas):
+    """
+    http://code.activestate.com/recipes/546511-page-x-of-y-with-reportlab/
+    http://code.activestate.com/recipes/576832/
+    """
+ 
+    #----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs):
+        """Constructor"""
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self.pages = []
+ 
+    #----------------------------------------------------------------------
+    def showPage(self):
+        """
+        On a page break, add information to the list
+        """
+        self.pages.append(dict(self.__dict__))
+        self._startPage()
+ 
+    #----------------------------------------------------------------------
+    def save(self):
+        """
+        Add the page number to each page (page x of y)
+        """
+        page_count = len(self.pages)
+ 
+        for page in self.pages:
+            self.__dict__.update(page)
+            self.draw_page_number(page_count)
+            canvas.Canvas.showPage(self)
+ 
+        canvas.Canvas.save(self)
+ 
+    #----------------------------------------------------------------------
+    def draw_page_number(self, page_count):
+        """        Add the page number        """
+        page = []
+        _location = ''
+        _page_count = page_count / 2
+        _page_number = self._pageNumber
+        if _page_count > 1:            
+            if _page_number == 1:
+                _location = "-------------     ACCOUNT'S COPY     -------------"
+                _page_number = 1
+            elif _page_number == 2:
+                _location = "-------------     WAREHOUSE'S COPY     -------------"
+                _page_number = 1
+            else:
+                _page_number = 1
                 _location = ''
         else:
             _page_number = 1

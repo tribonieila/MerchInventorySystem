@@ -14,7 +14,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Obsolescence Stocks No</label>
+                            <label class="col-sm-4 control-label">Stock Issue No</label>
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                 <div id="_obsol_stocks_no"></div>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Obsolescence Date</label>
+                            <label class="col-sm-4 control-label">Stock Issue Date</label>
                             <div class="col-sm-8"> {{import datetime}}
                                 <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                 <p class="help-block">readonly</p>                            
@@ -58,7 +58,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Account's</label>
+                            <label class="col-sm-4 control-label">Account Code</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.account_code_id}}
                             </div>
@@ -70,8 +70,8 @@
 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Warehouse Stock From</label>
-                            <div class="col-sm-8">{{=form.custom.widget.warehouse_stock_qty_id}}</div>    
+                            <label class="col-sm-4 control-label">Stock Type</label>
+                            <div class="col-sm-8">{{=form.custom.widget.stock_type_id}}</div>    
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -133,7 +133,7 @@ $(document).ready(function(){
         return false;
     });
 
-    $('#no_table_warehouse_stock_qty_id').change(function(){
+    $('#no_table_stock_type_id').change(function(){
         var ctr = this.value;
         if (ctr > 0) {
             request(1)
@@ -155,13 +155,13 @@ $(document).ready(function(){
 
     $('#btnproceed').click(function(){
         $('#order_panel').slideDown('slow');
-        ajax('{{=URL('inventory','obsol_session')}}', ['dept_code_id', 'location_code_id', 'warehouse_stock_qty_id']);
+        ajax('{{=URL('inventory','obsol_session')}}', ['dept_code_id', 'location_code_id', 'stock_type_id']);
         $('#btnhelp').removeAttr('disabled');
         $("#item_code").focus();
         $("#no_table_dept_code_id").attr('disabled','disabled');
         $("#no_table_location_code_id").attr('disabled','disabled');
         $("#no_table_account_code_id").attr('disabled','disabled');
-        $("#no_table_warehouse_stock_qty_id").attr('disabled','disabled');
+        $("#no_table_stock_type_id").attr('disabled','disabled');
         $("#no_table_status_id").attr('disabled','disabled');
         $("#no_table_remarks").attr('disabled','disabled');
         $("#btnproceed").attr('disabled','disabled');
@@ -171,16 +171,16 @@ $(document).ready(function(){
     $('#btnsubmit').click(function(){
         $("#no_table_dept_code_id").removeAttr('disabled');
         $("#no_table_location_code_id").removeAttr('disabled');
-        $("#no_table_warehouse_stock_qty_id").removeAttr('disabled');
+        $("#no_table_stock_type_id").removeAttr('disabled');
         $("#no_table_account_code_id").removeAttr('disabled');        
         $("#no_table_sales_man_id").removeAttr('disabled');
         $("#no_table_status_id").removeAttr('disabled');
         $("#no_table_remarks").removeAttr('disabled');
     });
 
-    // $('#btnAbort').click(function(){
-    //     ajax('{{=URL('sales','sales_order_form_abort')}}', ['ticket_no_id']);
-    // });
+    $('#btnAbort').click(function(){
+        ajax('{{=URL('inventory','obsol_abort')}}', ['ticket_no_id']);
+    });
     function request(e){
         if (e == 1) {
             str_ctr += e;        
@@ -189,7 +189,7 @@ $(document).ready(function(){
         }     
         var d = $('#no_table_dept_code_id').val();        
         var l = $('#no_table_location_code_id').val(); 
-        var w = $('#no_table_warehouse_stock_qty_id').val();               
+        var w = $('#no_table_stock_type_id').val();               
         if (str_ctr >= 2) {
             if ( d != '' && l != '') {
                 $('#btnproceed').removeAttr('disabled');

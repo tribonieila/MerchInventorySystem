@@ -4,7 +4,7 @@
 {{=form.custom.begin}}
 <div class="form-horizontal">   
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-3">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Item Code</label>
                 <div id="_dept_code_id"></div>
@@ -13,37 +13,21 @@
                 </div>
             </div>   
         </div>
-        <div class="col-md-1">
+        <div class="col-md-3">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Quantity</label>
                 <div class="col-sm-8">{{=form.custom.widget.quantity}}</div>
             </div>   
         </div>
-        <div class="col-md-1">
+        <div class="col-md-3">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Pieces</label>
                 <div class="col-sm-8">
                     {{=form.custom.widget.pieces}}                                        
                 </div>
             </div>   
-        </div>       
+        </div>               
         <div class="col-md-3">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">From Stock Loc.</label>
-                <div class="col-sm-8">                    
-                    {{=form.custom.widget.stock_location_from_id}}
-                </div>
-            </div>   
-        </div>        
-        <div class="col-md-3">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">To Stock Loc.</label>
-                <div class="col-sm-8">                    
-                    {{=form.custom.widget.stock_location_to_id}}
-                </div>
-            </div>   
-        </div>          
-        <div class="col-md-1">
             <input class="btn btn-success" type="submit" value="ADD" >
         </div>            
     </div>
@@ -63,7 +47,7 @@ $(document).ready(function(){
         $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
         $('#Stock_Adjustment_location_code_id').removeAttr('disabled');                    
         $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');                    
-        ajax('{{=URL('stock_corrections_item_description')}}',['item_code', 'location_code_id', 'adjustment_type', 'dept_code_id'], '_stk_adj_desc');                   
+        ajax('{{=URL('stock_corrections_item_description')}}',['item_code', 'location_code_id', 'dept_code_id'], '_stk_adj_desc');                   
         $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');          
@@ -80,29 +64,6 @@ $(document).ready(function(){
     $('#del').click(function(){
         $('#tmptbl').get(0).reload();
     });
-
-    function preventDupes( select, index) {
-        var options = select.options, len = options.length;
-        while (len--) {
-            options [ len ].disabled = false;
-        }
-        select.options[index].disabled = true;
-        if ( index === select.selectedIndex ) {
-            alert('You\'ve already selected the item "' + select.options[index].text + '".\n\nPlease choose another.');
-            this.selectedIndex = 0;
-        }
-    }
-
-    var stock_location_from_id = select = document.getElementById('no_table_stock_location_from_id');
-    var stock_location_to_id = select = document.getElementById('no_table_stock_location_to_id');
-
-    stock_location_from_id.onchange = function(){
-        preventDupes.call(this, stock_location_to_id, this.selectedIndex );
-    };
-
-    stock_location_to_id.onchange = function() {
-        preventDupes.call(this, stock_location_from_id, this.selectedIndex);
-    };
 
     $('.delete').click(function(){
         var _id = $(this).attr('data-id');

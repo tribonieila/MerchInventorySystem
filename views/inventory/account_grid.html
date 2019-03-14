@@ -12,7 +12,7 @@
                     <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
                     <!-- <li class="active"><a href="#">BROWSE</a></li> -->
                 </ul>
-                <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
+                <span class="card-title">ACCOUNT'S WORKFLOW</span>
             </div>
             <div class="card-body tab-content">
                  
@@ -80,7 +80,7 @@ var Main = {
     },
     data() {
         return {
-        {{import locale}}
+        {{import locale}} 
         delimiters: ['{%','%}'],
         options: [ {{for l in db(db.Location).select():}}
             {

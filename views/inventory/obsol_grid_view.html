@@ -14,7 +14,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Obsolescence Stocks No</label>
+                            <label class="col-sm-4 control-label">Stock Issue No</label>
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.obsolescence_stocks_no}}" readonly >                                
                             </div>                           
@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Obsolescence Date</label>
+                            <label class="col-sm-4 control-label">Stock Issue Date</label>
                             <div class="col-sm-8"> 
                                 <input type="text" class="form-control" value="{{=_id.obsolescence_stocks_date}}" readonly >                                
                             </div>
@@ -56,9 +56,9 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Customer</label>
+                            <label class="col-sm-4 control-label">Account Code</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.account_code_id.account_name}}" readonly>
+                                <input type="text" class="form-control" value="{{=_id.account_code_id.account_code}} - {{=_id.account_code_id.account_name}}" readonly>
                             </div>
                         </div>                    
                     </div>
@@ -66,9 +66,9 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Warehouse Stock From</label>
+                            <label class="col-sm-4 control-label">Stock Type</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.warehouse_stock_qty_id.description}}" readonly>
+                                <input type="text" class="form-control" value="{{=_id.stock_type_id.description}}" readonly>
                             </div>    
                         </div>
                     </div>
@@ -96,7 +96,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                {{ if _id.status_id == 2: }}
+                                {{ if _id.status_id == 15: }}
                                     <input class="btn btn-primary" type="submit" value="approved" disabled>                                
                                     <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>reject</a>
                                 {{ else: }}
