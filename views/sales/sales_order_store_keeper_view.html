@@ -126,7 +126,7 @@
                                             <a class="btn btn-info" id="btncdn" role="button" href="{{=URL('inventory','str_kpr_grid')}}">create delivery note & print</a>                                                                  
                                         {{ else: }}                                        
                                             <input class="btn btn-primary" type="submit" value="submit" disabled>
-                                            <input class="btn btn-warning" type="submit" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
+                                            <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
                                             <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print" disabled>                                                                            
 
                                         {{ pass }}

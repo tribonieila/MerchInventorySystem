@@ -12,7 +12,8 @@
                     <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
                     <!-- <li class="active"><a href="#">BROWSE</a></li> -->
                 </ul>
-                <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
+                <!-- <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span> -->
+                <span class="card-title">STORE KEEPER WORKFLOW</span>
             </div>
             <div class="card-body tab-content">
                  
@@ -28,7 +29,11 @@
                         <el-tab-pane label="Sales Return">
                             {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
                         </el-tab-pane>                                             
-                </template>
+                        <el-tab-pane label="Purchase Request">
+                            {{=LOAD('procurement','purchase_request_grid.load', ajax = True)}}
+                        </el-tab-pane>                           
+  
+                    </template>
             </div>
         </div>                
     </div>

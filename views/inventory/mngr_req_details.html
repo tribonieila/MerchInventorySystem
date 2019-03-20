@@ -115,9 +115,15 @@
                     <div class="col-md-6">  
                       <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                                                                                
-                                <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')">
-                                <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}')">                                                                
+                            <div class="col-sm-8">           
+                                {{ if _id.srn_status_id == 2: }}
+                                    <input class="btn btn-success" type="submit" value="approved" disabled>
+                                    <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                
+                                {{ else: }}
+                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')">
+                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}')">                                                                
+
+                                {{ pass }}
                             </div>                            
                         </div>                    
                     </div>

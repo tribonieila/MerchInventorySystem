@@ -1,18 +1,19 @@
 {{extend 'layout.html'}}
-<div class="col-md-12">
-    <div class="card card-underline">
-        <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li><a href="#" onclick=window.location="{{=URL('stock_corrections_add_new')}}";>+ ADD NEW</a></li>
-                <li class="active"><a href="#" >BROWSE</a></li>                    
-            </ul>
-            <span class="card-title">STOCK CORRECTIONS</span>
-        </div>
-        <div class="card-body tab-content">         
-            {{=table}}
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class=""><a href="#" onclick=window.location="{{=URL('purchase_request_form')}}";>+ ADD NEW</a></li>
+                    <li class="active"><a href="#">BROWSE</a></li>
+                </ul>
+                <span class="card-title">PURCHASE REQUEST</span>
+            </div>
+            <div class="card-body tab-content">            
+                {{=table}}
+          
+            </div>
         </div>
     </div>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
@@ -34,12 +35,12 @@
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('inventory','stock_corrections_archived')}}" + '/'+ _id);
+                    ajax("{{=URL('procurement','purchase_request_archived')}}" + '/'+ _id);
                     parent.fadeOut('slow'); 
+                           
                 }
     
             }
         })
     });    
 </script>
-

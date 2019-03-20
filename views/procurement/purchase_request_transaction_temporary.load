@@ -26,16 +26,15 @@
             </div>                           
         </div>    
     </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Discount %</label>
-            <div class="col-sm-6">        
-                
-                {{=form.custom.widget.discount_percentage}}
-            </div>                           
-        </div>                                     
-    </div>                    
     <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Most Recent Cost</label>
+            <div class="col-sm-4"> 
+                <div id = "_most_recent_cost"></div>
+            </div>
+        </div>                    
+    </div>                   
+    <div class="col-md-2">
         <div class="form-group">
             <label class="col-sm-4 control-label">Category</label>
             <div class="col-sm-8"> 
@@ -63,7 +62,8 @@ $(document).ready(function(){
     });
     
     $('#no_table_item_code').change(function(){
-        ajax('{{=URL('sales_return_item_code_description')}}', ['item_code'], '_item_code_description');        
+        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
         return false;
     });
     
@@ -109,36 +109,12 @@ $('.delete').click(function(){
         },
         callback: function (result) {
             if (result) {
-                ajax("{{=URL('sales','sales_return_transaction_temporary_delete')}}" + '/'+ _id);                       
+                ajax("{{=URL('procurement','purchase_request_transaction_temporary_delete')}}" + '/'+ _id);
+                       
             }
 
         }
     })
 });    
  
-</script>
-
-<script>
-var _id = $(this).attr('data-id');        
-var _qt = $(this).attr('data-qt');
-var _pc = $(this).attr('data-pc');
-var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
-$(document).on("click",".edit", function(){
-    var _id = $(this).attr('data-id');
-    var _qt = $(this).attr('data-qt');
-    var _pc = $(this).attr('data-pc');
-    var parent = $(this).parent("div").parent("td").parent("tr");
-    bootbox.alert({        
-        message: form,
-        callback: function() {
-            var qty = form.find(_qt);
-            var pcs = form.find(_pc);
-            var qty = form.find('input[name=quantity]').val();
-            var pcs = form.find('input[name=pieces]').val();
-            ajax("{{=URL('sales','sales_order_transaction_temporary_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
-            $('#tblso').get(0).reload();
-        }
-    })
-});    
-
 </script>
