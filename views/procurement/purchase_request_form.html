@@ -56,7 +56,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Supplier Reference No.</label>
+                            <label class="col-sm-4 control-label">Supplier Proporma Invoice</label>
                             <div class="col-sm-8">{{=form.custom.widget.supplier_reference_order}}</div>
                         </div>                             
                     </div>    
@@ -69,10 +69,8 @@
                                 {{=form.custom.widget.supplier_code_id}}                                
                             </div>
                             <div class="col-sm-1">                              
-                                <a class="btn btn-default" id="btnDetails" role="button" href="#"><i class="fa fa-info-circle"></i></a>  
-                                
+                                <a class="btn btn-icon-toggle" id="btnDetails" role="button" href="#"><i class="fa fa-info-circle"></i></a>                                  
                             </div>
-
                         </div>      
                     </div>
                     <div class="col-md-4">
@@ -114,7 +112,9 @@
                     </div>
                 </div>
     
-
+                <div id="example-container" style="display:none">
+                    {{=LOAD('procurement','payment_details.load', ajax = True)}}
+                     </div>
                 <div id = "order_panel">
                     {{=LOAD('procurement','purchase_request_transaction_temporary.load', ajax = True, target = 'tblPrt')}}
                 </div>
@@ -124,12 +124,37 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    $('#btnDetails').click(function(){
-        bootbox.alert({
-            size: "small",
-            message: "{{=LOAD('procurement','payment_details.load', ajax = True)}}"
-        })
-    });    
+$(document).ready(function() {
+   $('#btnDetails').on('click', function(){
+      var container = $('#example-container').clone();
+    //   container.find('table').attr('id', 'example');
+
+      var box = bootbox.dialog({
+        show: false,        
+        message: container.html(),
+        // title: "DataTables in a Bootbox",
+        buttons: {
+          ok: {
+            label: "OK",
+            className: "btn-primary",
+            callback: function() {
+              console.log('OK Button');
+            }
+          },
+          cancel: {
+            label: "Cancel",
+            className: "btn-default"
+          }
+        }
+      });
+      
+      box.on("shown.bs.modal", function() {
+         $('#example').DataTable(); 
+      });
+      
+      box.modal('show'); 
+   });
+});
 </script>
 <script src="{{=URL('static','js/cascade.js')}}"></script>
 <script type="text/javascript">

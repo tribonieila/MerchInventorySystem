@@ -1,0 +1,199 @@
+[data-toggle='date-selector'] {
+  cursor: pointer;
+}
+[data-toggle='date-selector']:hover .glyphicon-calendar {
+  font-weight: bold;
+}
+#date-selector {
+  z-index: 1000;
+  background-color: #ffffff;
+  margin-top: 5px;
+  position: absolute;
+  width: 300px;
+  border: #ccc 1px solid;
+  padding: 10px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0px 0px 8px 1px #cccccc;
+  -moz-box-shadow: 0px 0px 8px 1px #cccccc;
+  box-shadow: 0px 0px 8px 1px #cccccc;
+}
+#date-selector table {
+  margin-bottom: 0px;
+}
+#date-selector th {
+  background-color: #ecf5ec;
+}
+#date-selector th,
+#date-selector td {
+  text-align: center;
+}
+#date-selector .selected-day {
+  font-weight: bold;
+  background-color: #f5f7d3;
+}
+#date-selector .not-current-month {
+  color: #808080;
+}
+#date-selector td:hover:not(.not-current-month) {
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #f5f7d3;
+}
+#date-selector .today {
+  color: white;
+  background-color: lightslategrey;
+  font-weight: bold;
+}
+#date-selector .control-bar {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+#date-selector .control-bar button {
+  width: 25px;
+  height: 25px;
+}
+#date-selector .control-bar .previous-buttons {
+  float: left;
+  width: 75px;
+}
+#date-selector .control-bar .previous-buttons button:last-child {
+  margin-left: 5px;
+}
+#date-selector .control-bar .previous-buttons button:last-child span {
+  margin-left: -2px;
+}
+#date-selector .control-bar .next-buttons {
+  float: right;
+  width: 75px;
+}
+#date-selector .control-bar .next-buttons button {
+  float: right;
+}
+#date-selector .control-bar .next-buttons button:last-child {
+  margin-right: 5px;
+}
+#date-selector .control-bar .next-buttons button:last-child span {
+  margin-left: 2px;
+}
+#date-selector .control-bar .center-text {
+  margin: 0 auto;
+  width: 150px;
+  text-align: center;
+}
+.editable-header-table table,
+.editable-body-table table,
+.editable-footer-table table {
+  margin-bottom: 0px;
+  table-layout: fixed;
+}
+.editable-header-table .alignment-right,
+.editable-body-table .alignment-right,
+.editable-footer-table .alignment-right {
+  text-align: right;
+}
+.editable-header-table .alignment-center,
+.editable-body-table .alignment-center,
+.editable-footer-table .alignment-center {
+  text-align: center;
+}
+.editable-header-table .tree-node,
+.editable-body-table .tree-node,
+.editable-footer-table .tree-node {
+  margin-left: 8px;
+  margin-right: 5px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.editable-header-table .tree-node.tree-node-expand,
+.editable-body-table .tree-node.tree-node-expand,
+.editable-footer-table .tree-node.tree-node-expand {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 9px solid #666666;
+}
+.editable-header-table .tree-node.tree-node-expand:hover,
+.editable-body-table .tree-node.tree-node-expand:hover,
+.editable-footer-table .tree-node.tree-node-expand:hover {
+  border-left-color: black;
+}
+.editable-header-table .tree-node.tree-node-collapse,
+.editable-body-table .tree-node.tree-node-collapse,
+.editable-footer-table .tree-node.tree-node-collapse {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 9px solid #666666;
+}
+.editable-header-table .tree-node.tree-node-collapse:hover,
+.editable-body-table .tree-node.tree-node-collapse:hover,
+.editable-footer-table .tree-node.tree-node-collapse:hover {
+  border-top-color: black;
+}
+.editable-header-table td,
+.editable-body-table td,
+.editable-footer-table td {
+  vertical-align: middle !important;
+}
+.editable-header-table table.no-borders,
+.editable-body-table table.no-borders,
+.editable-footer-table table.no-borders {
+  border: none !important;
+}
+.editable-header-table table.no-borders th,
+.editable-body-table table.no-borders th,
+.editable-footer-table table.no-borders th,
+.editable-header-table table.no-borders td,
+.editable-body-table table.no-borders td,
+.editable-footer-table table.no-borders td {
+  border: none !important;
+}
+.editable-header-table table.no-borders thead > tr,
+.editable-body-table table.no-borders thead > tr,
+.editable-footer-table table.no-borders thead > tr {
+  text-decoration: underline;
+  background-color: inherit !important;
+}
+.editable-header-table .sorted-ascending {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid black;
+}
+.editable-header-table .sorted-descending {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid black;
+}
+.editable-header-table th.sortable {
+  cursor: pointer;
+}
+.editable-header-table thead > tr {
+  background-color: #ecf5ec;
+}
+.editable-body-table {
+  overflow-y: auto;
+}
+.editable-body-table table.table-hover tr {
+  cursor: pointer;
+}
+.editable-body-table table.table-hover tr:hover > td {
+  background-color: #f5f7d3;
+}
+.editable-body-table td.tree-column > div,
+.editable-body-table td.delete-column > div {
+  display: inline-block;
+}
+.editable-body-table .row-delete button.close {
+  float: none;
+  font-size: inherit;
+  opacity: 0.4;
+  background-color: inherit;
+  margin-right: 5px;
+}
+.editable-footer-table button.new-row {
+  font-size: 12px;
+}

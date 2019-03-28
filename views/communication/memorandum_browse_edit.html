@@ -1,0 +1,61 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('memorandum_browse')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">MEMORANDUM FORM</span>
+        </div>
+        <div class="card-body tab-content">			
+            {{=form.custom.begin}}	
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Memorandum No</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" value="{{=_id.memorandum_no}}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Date</label>
+                    <div class="col-sm-8">
+                        {{=form.custom.widget.memorandum_date}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Subject</label>
+                    <div class="col-sm-8">
+                        {{=form.custom.widget.memorandum_subject}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Memorandum From</label>
+                    <div class="col-sm-8">
+                        {{=form.custom.widget.memorandum_from}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Memorandum To</label>
+                    <div class="col-sm-8">
+                        {{=form.custom.widget.memorandum_to}}
+                    </div>
+                </div>                    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Attached</label>
+                    <div class="col-sm-8">
+                        {{=form.custom.widget.attached}}
+                    </div>
+                </div>                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label>
+                    <div class="col-sm-8">
+                        {{=form.custom.submit}}
+                    </div>
+                </div>
+            </div>	
+            {{=form.custom.end}}
+        </div>        
+    </div>
+</div>
+

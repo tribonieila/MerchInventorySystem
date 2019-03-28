@@ -1,0 +1,54 @@
+{{extend 'layout.html'}}
+<!-- <link href="https://cdn.fancygrid.com/fancy.min.css" rel="stylesheet"> -->
+<script src="https://cdn.fancygrid.com/fancy.min.js"></script>
+
+<div id="container"></div>
+
+<script>
+var data = [ {{ for n in db(db.Purchase_Request_Transaction_Recieved_Temporary).select():}}  
+  {item_code: '{{=n.item_code_id.item_code}}', category:'{{=n.category_id.mnemonic}}', quantity: '{{=n.quantity}}', pieces: '{{=n.pieces}}'},
+  {{ pass }}
+];
+
+document.addEventListener("DOMContentLoaded", function() {
+  new FancyGrid({
+    renderTo: 'container',    
+    width: 500,
+    height: 400,
+    data: data,
+    trackOver: true,
+    selModel: 'rows',
+    defaults: {
+      type: 'string',
+      width: 75,
+      resizable: true,
+      sortable: true,
+      editable: true
+    },
+    clicksToEdit: 1,
+    columnLines: false,
+    columnClickData: true,    
+    columns: [{
+      index: 'item_code',      
+      title: 'Item Code',
+      type: 'string',
+      width: 100
+    },{
+      index: 'category',
+      title: 'Category',
+      type: 'string',
+      width: 100
+    },{
+      index: 'quantity',
+      title: 'Quantity',
+      type: 'number',
+      width: 100
+    },{
+      index: 'pieces',
+      title: 'Pieces',
+      type: 'number',
+      width: 100
+    }]
+  });
+});
+</script>

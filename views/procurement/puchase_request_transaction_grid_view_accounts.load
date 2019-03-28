@@ -1,0 +1,102 @@
+{{=table}}
+<hr>
+{{=form2.custom.begin}}
+<div class="row">    
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Item Code</label>
+            <div class="col-sm-8">                                
+                {{=form2.custom.widget.item_code}}
+            </div>                           
+        </div>                        
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Quantity</label>
+            <div class="col-sm-6"> 
+                {{=form2.custom.widget.quantity}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Pieces</label>
+            <div class="col-sm-6">                                
+                {{=form2.custom.widget.pieces}}
+            </div>                           
+        </div>    
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Most Recent Cost</label>
+            <div class="col-sm-4"> 
+                <div id = "_most_recent_cost"></div>
+            </div>
+        </div>                    
+    </div>                   
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Category</label>
+            <div class="col-sm-8"> 
+                {{=form2.custom.widget.category_id}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-1">                        
+        <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+        
+    </div>                                              
+</div>
+{{=form2.custom.end}}
+<div id = "_item_code_description"></div>      
+
+<script>
+$(document).ready(function(){
+    
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+    
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
+        return false;
+    });
+    
+    
+
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$('.delete').click(function(){
+    var _id = $(this).attr('data-id');
+    bootbox.confirm({
+        size: "small",
+        message: "Would you like to delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('procurement','purchase_request_transaction_temporary_delete')}}" + '/'+ _id);
+                       
+            }
+
+        }
+    })
+});    
+ 
+</script>

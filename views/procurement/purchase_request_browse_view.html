@@ -53,10 +53,10 @@
                                 <input type="text" class="form-control" value="{{=_id.location_code_id.location_code}} - {{=_id.location_code_id.location_name}}" readonly>
                             </div>
                         </div>                                           
-                    </div>
+                    </div> 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Supplier Reference No.</label>
+                            <label class="col-sm-4 control-label">Supplier Proporma Invoice</label>
                             <div class="col-sm-8">
                                 <input type="text" class="form-control" value="{{=_id.supplier_reference_order}}" readonly>
                             </div>
@@ -88,7 +88,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.status_id}}
+                                {{ if _id.status_id != 19:}}
+                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
+                                {{ else: }}
+                                    {{=form.custom.widget.status_id}}
+                                {{ pass }}
+                                
                             </div>
                         </div>                   
                     </div>    
@@ -107,8 +112,13 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                                
-                                <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                            <div class="col-sm-8">    
+                                {{ if _id.status_id != 19:}}                                    
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>                                    
+                                {{ else: }}
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                {{ pass }}
+
                                 {{=form.custom.end}}
                             </div>        
                         </div>  

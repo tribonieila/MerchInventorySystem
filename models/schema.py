@@ -105,7 +105,6 @@ db.define_table('Transaction_Prefix',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = '%(prefix)s')
 
-
 db.define_table('Product',
     Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION', writable = False),
     # Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
@@ -323,7 +322,6 @@ db.define_table('Sub_Group_Line',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = '%(group_line_code)s')
 
-
 # msg.flash = Incomplete Informatin
 db.define_table('Brand_Classification',
     Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION', writable = False),
@@ -424,7 +422,6 @@ db.define_table('Location',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
     
-
 db.define_table('Gender',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
@@ -636,7 +633,6 @@ db.define_table('Stock_File',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
-
 
 db.define_table('Adjustment_Type',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
@@ -973,7 +969,6 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
 
-
 db.define_table('Sales_Return',       
     Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_return_no', 'integer', default = 0, writable = False),
@@ -1044,16 +1039,6 @@ db.define_table('Sales_Return_Transaction_Temporary',
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
-
-# db.define_table('Warehouse_Stocks_Quantity',
-#     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
-#     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
-#     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
-#     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-#     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
-#     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
-#     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
-
 
 db.define_table('Master_Account',
     Field('account_code','string', length = 15),
@@ -1286,6 +1271,44 @@ db.define_table('Purchase_Request_Transaction_Temporary',
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
 
+db.define_table('Purchase_Request_Transaction_Received',
+    Field('purchase_request_no_id','reference Purchase_Request',ondelete = 'NO ACTION',writable = False),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('uom','integer', default = 0),    
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default = 0),        
+    Field('total_pieces','integer', default = 0),
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Purchase_Request_Transaction_Accounts',
+    Field('purchase_request_no_id','reference Purchase_Request',ondelete = 'NO ACTION',writable = False),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(10,6)', default = 0), #compute = lambda p: p['qty'] * p['price_cost']
+    Field('total_amount','decimal(10,6)', default = 0, compute = lambda t: t['price_cost'] / t['uom'] * t['quantity']),
+    Field('average_cost','decimal(10,4)', default = 0),
+    Field('sale_cost', 'decimal(10,2)', default = 0),
+    Field('wholesale_price', 'decimal(10,2)', default = 0),
+    Field('retail_price', 'decimal(10,2)',default = 0),
+    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('discount_percentage', 'decimal(10,2)',default =0),
+    Field('net_price', 'decimal(10,2)',default =0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),
+    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
+    Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),            
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Purchase_Receipt_Transaction_Header',
     Field('location_code', 'integer'),    
     Field('trn_type', 'integer'),
@@ -1395,6 +1418,82 @@ db.define_table('Stock_Issue_Transaction_Report_Counter',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+
+#---------- C O M M U N I C A T I O N  S c h e m a -------
+
+db.define_table('Communication_Tranx_Prefix',    
+    Field('prefix', length = 10, requires = [IS_UPPER(), IS_NOT_EMPTY()]), 
+    Field('prefix_name','string', length = 30, requires = [IS_UPPER(), IS_NOT_EMPTY()]),    
+    Field('serial_key', 'integer', default = 0),
+    Field('prefix_key','string', length = 10, requires = [IS_UPPER(), IS_NOT_EMPTY()]), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = '%(prefix)s')
+
+db.define_table('Incoming_Mail',
+    Field('mail_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('incoming_mail_no', 'string', length = 25, writable = False),
+    Field('mail_date','date', default = request.now),
+    Field('mail_sender','string', length = 50),
+    Field('mail_subject','string', length = 50),
+    Field('attached','upload'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Outgoing_Mail',
+    Field('mail_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('outgoing_mail_no', 'string', length = 25, writable = False),
+    Field('mail_date','date', default = request.now),
+    Field('mail_sender','string', length = 50),
+    Field('mail_addressee','string', length = 50),
+    Field('mail_subject','string', length = 50),
+    Field('postage','decimal(10,2)', default = 0),    
+    Field('attached','upload'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Circular',
+    Field('circular_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),   
+    Field('circular_no','string', length = 25, writable = False),
+    Field('circular_date','date', default = request.now),
+    Field('circular_addressee', 'string', length = 50),    
+    Field('circular_subject','string', legnth = 50),
+    Field('attached','upload'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Memorandum',
+    Field('memorandum_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),
+    Field('memorandum_no','string', length = 25, writable = False),
+    Field('memorandum_date','date', default = request.now),
+    Field('memorandum_from', 'string', length = 50),
+    Field('memorandum_to', 'string', length = 50),
+    Field('memorandum_subject','string', legnth = 50),
+    Field('attached','upload'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Fax',
+    Field('fax_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),
+    Field('fax_no','string', length = 25, writable = False),
+    Field('fax_date','date', default = request.now),
+    Field('fax_from', 'string', length = 50),
+    Field('fax_to', 'string', length = 50),
+    Field('fax_subject','string', legnth = 50),
+    Field('attached','upload'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 from num2words import num2words
 

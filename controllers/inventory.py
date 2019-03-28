@@ -2092,6 +2092,7 @@ def recst_mas():
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class = 'table table-hover')
     return dict(form = form, table = table)
+
 @auth.requires_login()
 def recst_add_form(): # to remove
     form = SQLFORM(db.Record_Status)
@@ -2102,6 +2103,7 @@ def recst_add_form(): # to remove
     else:
         response.flash = 'PLEASE FILL OUT THE FORM'
     return dict(form = form)
+
 @auth.requires_login()
 def recst_edit_form():
     db.Record_Status.id.readable = False
@@ -2127,6 +2129,7 @@ def sec_mas():
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table table-striped')    
     return dict(table = table)
+
 @auth.requires_login()
 def sec_add_form():
     pre = db(db.Prefix_Data.prefix_key == 'SEC').select().first()
@@ -4435,7 +4438,9 @@ def stock_adjustment_browse_details_edit():
 def stock_adjustment_manager():
     return dict()
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+def inventory_manager():
+    return dict()
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY') | auth.has_membership('ROOT'))
 def stock_request_manager_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-danger'))
@@ -4466,10 +4471,10 @@ def stock_request_manager_grid():
     table = TABLE(*[head, body], _class = 'table', _id = 'tblsr')
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT') | auth.has_membership('INVENTORY'))
 def stock_adjustment_manager_grid():
     row = []        
-    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action')))  
+    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action'), _class='bg-danger'))  
     for i in db(db.Stock_Adjustment.archive == False).select(orderby = ~db.Stock_Adjustment.stock_adjustment_no):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_manager_details', args = i.id, extension = False))
         appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
@@ -6543,15 +6548,15 @@ def reprint():
         for l in db((db.Stock_File.item_code_id == r.Stock_Request_Transaction.item_code_id) & (db.Stock_File.location_code_id == r.Stock_Request.stock_destination_id)).select(db.Stock_File.closing_stock, db.Stock_File.location_code_id, groupby = db.Stock_File.location_code_id | db.Stock_File.closing_stock):
             print '<item code> ', r.Stock_Request_Transaction.item_code_id, '.location code', l.closing_stock
     return locals()
-def test():
-    
+
+def test():    
     elements = []
     # Make heading for each column and start data list
     column1Heading = "COLUMN ONE HEADING"
     column2Heading = "COLUMN TWO HEADING"
     # Assemble data for each column using simple loop to append it into data list
     data = [[column1Heading,column2Heading]]
-    for i in range(1,100):
+    for i in range(1,5):
         data.append([str(i),str(i)])
 
     tableThatSplitsOverPages = Table(data, [6 * cm, 6 * cm], repeatRows=1)

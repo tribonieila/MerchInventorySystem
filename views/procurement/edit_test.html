@@ -1,0 +1,57 @@
+{{extend 'layout.html'}}
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="grid.css"/>
+    <script type="application/javascript" src="bootstrap-editable-grid.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.0/less.min.js"></script>
+
+<div id="demo">grid</div>
+
+<script type="text/javascript" src="{{=URL('static','js/editable-grid/bootstrap-editable-grid.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static','js/editable-grid/editable_grid.min.js')}}"></script>
+<script>
+(function (el) {
+    var myGrid = new Grid({
+    el: el, // selector
+    columns: [ // columns
+      {
+          id: 'a',
+          title: 'a',
+          width: '33.3%'
+      },
+      {
+          id: 'b',
+          title: 'b',
+          width: '33.3%',
+          alignment: 'right',
+          titleAlignment: 'center'
+      },
+      {
+          id: 'c',
+          title: 'c',
+          width: '33.3%',
+          alignment: 'center',
+          titleAlignment: 'right'
+      }
+    ],
+    data: [ // tabular data
+      {
+          id: 'id-1',
+          a: 'a',
+          b: 'b',
+          c: 'c'
+      },
+      {
+          id: 'id-2',
+          a: 'a',
+          b: 'b',
+          c: 'c'
+      }
+    ]
+});
+myGrid.render();
+});
+
+</script>

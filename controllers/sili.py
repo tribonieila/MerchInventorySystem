@@ -21,7 +21,6 @@ def labuyo_edit_form():
     if form.process().accepted:
         session.flash = 'FORM UPDATED'
         redirect(URL('sili','labuyo'))
-
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'
     return dict(form = form)

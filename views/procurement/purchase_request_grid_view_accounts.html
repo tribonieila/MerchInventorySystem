@@ -123,7 +123,7 @@
     
                 <hr>
                 <div id = "order_panel">
-                    {{=LOAD('procurement','puchase_request_transaction_browse_view.load', ajax = True, args = request.args(0))}}
+                    {{=LOAD('procurement','puchase_request_transaction_grid_view_accounts.load', ajax = True, args = request.args(0), target = 'tblTA')}}
                 </div>
             </div>          
         </div>

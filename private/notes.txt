@@ -11,6 +11,15 @@ op: lar
 pa: 54193
 np: larrypas123
 
+def register_bottle():
+  tasters = range(10)
+  form=SQLFORM.factory(db.bottle,*[Field('taster%i'%i, db.auth_user,label=T('Taster #%i'%i)) for i in tasters])
+  if form.accepts(request,session):
+    bottle_id = \db.bottle.insert(**db.bottle._filter_fields(form.vars))
+   for i in tasters:
+     if 'taster%i'%i in form.vars:
+       db.taster.insert(auth_user=form.vars...
+
 import reshaper
 from bidi.algorithm import get_display
 from reportlab.platypus import SimpleDocTemplate, Paragraph
@@ -18,7 +27,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.ttfonts import TTFont
 
-arabic_text = reshaper.reshape(u'العربية')
+arabic_text = reshaper.reshape(u'العربية')Com
 arabic_text = get_display(arabic_text)
 pdfmetrics.registerFont(TTFont('Arabic-bold', '/path-to-your-arabic-font'))
 
@@ -515,96 +524,3 @@ $(function () {
 </script>
 <!-- end -->
 
-<script>
-    var _id = $(this).attr('data-id');        
-    var _qt = $(this).attr('data-qt');
-    var _pc = $(this).attr('data-pc');
-    var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
-    $(document).on("click", ".edit", function() {
-        
-        var _id = $(this).attr('data-id');        
-        var _qt = $(this).attr('data-qt');
-        var _pc = $(this).attr('data-pc');        
-        var parent = $(this).parent("div").parent("td").parent("tr");
-        // console.log(_id, _qt, _pc);
-        bootbox.alert({
-            message: form,
-            callback: function() {
-                var qty = form.find(_qt);
-                var pcs = form.find(_pc);
-                // var qty = form.find('input[name=quantity]').val(_qt);
-                // var pcs = form.find('input[name=pieces]').val(_pc);
-                // parent.fadeOut('slow');   
-                ajax("{{=URL('inventory','test_up')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
-                $('#tblIC').get(0).reload();
-                // return false;               
-                // parent.fadeIn('slow');                   
-            }
-        });
-    });
-</script>
-
-                <div id = "_stk_adj_desc"></div>
-            
-            
-                {{=form2.custom.begin}}                   
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Item Code</label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.item_code_id}}
-                            </div>
-                        </div>   
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">
-                                Quantity
-                            </label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.quantity}}
-                            </div>
-                        </div>   
-                    </div>
-                
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Pieces</label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.pieces}}
-                            </div>
-                        </div>   
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Average Cost</label>
-                            <div class="col-sm-8">
-                                <div id="average_cost"></div>
-                                
-                                
-                            </div>
-                        </div>   
-                    </div>    
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Category</label>                            
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.category_id}}
-                            </div>
-                        </div>   
-                    </div>
-                    <div class="col-md-1">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">            
-                            <input class="btn btn-success" type="button" onclick="btnsubmit();" value="Add">
-                            </div>
-                        </div>        
-                    </div>            
-                </div>
-                <hr>
-                
-                {{=form2.custom.end}}
-                
-                <div id = "_stk_adj_tbl"></div>       

@@ -1,0 +1,109 @@
+{{extend 'layout.html'}}
+
+<table class="table table-hover table-bordered" id="mydata">
+    <thead class="colorBlue">
+        <tr>
+            <th>S.NO</th>
+            <th>ROLE NAME</th>
+            <th>ACTION</th>
+        </tr>
+    </thead>
+    <tbody id="content"></tbody>
+</table>
+
+<script>
+    var roleList=[
+        { "Id": "0", "name":"designer"  },
+        { "Id": "1","name":"programmer" }
+    ];
+    
+    $(document).ready(function () {
+        empRoles()
+    });
+
+    function empRoles() {
+        for (var i = 0; i < roleList.length; i++) {
+            var table = '<tr  id="' + roleList[i].Id + '"><td>' + (i + 1) + '</td><td class="roleName" id="name' + i + '">' + roleList[i].name + '</td><td><button  class="btn edit btn-info btn-sm" id="edit' + i + '"><i class="fa fa-pencil"></i>Edit</button><button  class="btn update btn-success btn-sm" id="update' + i + '"><i class="fa fa-floppy-o"></i>Update</button><button class="btn dlt btn-danger btn-sm" onclick="deleteRow(this)" data-dismiss="modal" id="dlt' + i + '"><i class="fa fa-trash-o"></i>Delete</button><button class="btn editCancel btn-danger btn-sm" id="editCancel' + i + '" ><i class="fa fa-times"></i>Cancel</button></td><tr>';
+            $('#content').append(table);
+            editUpdate();              
+        }
+    }
+
+    function editUpdate() {
+        //$('.rowInput').hide();
+        $('.update').hide();
+        $('.editCancel').hide();
+    }
+
+    $(document).on('click', ".edit", function (e) {
+        var editId = $(this).attr('id');
+        e.stopPropagation();
+
+        $("#" + editId).hide();
+    
+        var number = editId.replace("edit", "");
+        $("#dlt" + number).hide();
+        $("#update" + number).show();
+        $("#editCancel" + number).show();
+
+        var currentTD = $(this).parents('tr').attr('id');
+
+        var rowId = $("#" + currentTD +" "+"td.roleName");
+        var existingRoleName = rowId.text();
+        var updateRoleName = rowId.html('<input type="text" class="inputVal" value="'+ existingRoleName + '" >');
+        
+    });
+
+    $(document).on('click', ".update", function (e) {
+        var updatedBy = $("#userName").text();
+
+        var updateId = $(this).attr('id');
+        e.stopPropagation();
+        $("#" + updateId).hide();
+        var number = updateId.replace("update", "");
+        $("#editCancel" + number).hide();
+        $("#dlt" + number).show();
+        $("#edit" + number).show();
+
+        var currentTD = $(this).parents('tr').attr('id');
+        var a = $("#" + currentTD + " " + "td.roleName");
+        var rowVal = $("#" + currentTD +" "+"td.roleName input").val();
+        
+        a.text(rowVal);
+        var id = $(this).closest('tr').attr('id');
+        var name = $(this).parents('tr').find(':nth-child(2)').html();
+        var Roles = { name: name, role_id: id, updated_by:updatedBy };
+        var ajxObj = { oRoles: Roles };
+        $.ajax({
+            type: 'POST',
+            url: "/Admin/RoleUpdate",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(ajxObj),
+            dataType: 'json',
+            success: function (response) {
+                $(".roleCreated").html("Role Updated successfully!");
+                $('.roleCreated').show();
+                setTimeout(function () {
+                    $('.roleCreated').hide();
+                }, 1500);
+                // empRoles()
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            }
+        });
+    });
+
+    $(document).on('click', ".editCancel", function () {debugger
+        var cancelId = $(this).attr('id');
+        $("#" + cancelId).hide();
+        var number = cancelId.replace("editCancel", "");
+        $("#update" + number).hide();
+        $("#edit" + number).show();
+        $("#dlt" + number).show();
+        var currentTD = $(this).parents('tr').attr('id');
+        var rowId = $("#" + currentTD + " " + ".inputVal");
+        var existingRoleName = rowId.val();
+        var updateRoleName = rowId.html('<td>' + existingRoleName + '</td>');
+    });
+</script>

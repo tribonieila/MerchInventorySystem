@@ -201,7 +201,7 @@
 								<li><a href="{{=URL('inventory','sec_mas')}}" ><span class="title">Section</span></a></li>
 								<li><a href="{{=URL('inventory','stat_mas')}}" ><span class="title">Item Status</span></a></li>
 								<li><a href="{{=URL('inventory','recst_mas')}}" ><span class="title">Record Status</span></a></li>
-								<li><a href="{{=URL('inventory','stock_n_sale_status')}}" ><span class="title">Stock/Sale Status</span></a></li>
+								<li><a href="{{=URL('inventory','stock_n_sale_status')}}" ><span class="title">Workflow Status</span></a></li>
 								<li><a href="{{=URL('inventory','itmcoll_mas')}}" ><span class="title">Item Collection</span></a></li>
 								<li><a href="{{=URL('inventory','itm_typ_mas')}}" ><span class="title">Item Type</span></a></li>
 								<li><a href="{{=URL('inventory','itmsze_mas')}}" ><span class="title">Item Size</span></a></li>								
@@ -267,9 +267,18 @@
 				<li><a href="http://128.1.2.2:8080"><div class="gui-icon"><i class="md fas fa-calculator"></i></div><span class="title">POS</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-briefcase"></i></div><span class="title">OFFICE ADMINISTRATION</span></a>
 					<ul>
-						<li><a href="{{=URL('sales', 'customer_category_grid')}}" ><span class="title">Communication</span></a></li>
-						<li><a href="{{=URL('sales', 'customer_account_type_grid')}}" ><span class="title">Insurance</span></a></li>
-						<li><a href="{{=URL('sales', 'customer_group_code_grid')}}" ><span class="title">Mailing List</span></a></li>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);"><span class="title">Communication</span></a>
+							<ul>
+								<li><a href="{{=URL('communication', 'incoming_mail_browse')}}" ><span class="title">Incoming Mail</span></a></li>		
+								<li><a href="{{=URL('communication', 'outgoing_mail_browse')}}" ><span class="title">Outgoing Mail</span></a></li>		
+								<li><a href="{{=URL('communication', 'circular_browse')}}" ><span class="title">Circular</span></a></li>
+								<li><a href="{{=URL('communication', 'memorandum_browse')}}" ><span class="title">Memorandom</span></a></li>
+								<li><a href="{{=URL('communication', 'fax_browse')}}" ><span class="title">Fax</span></a></li>
+								
+							</ul>
+						</li>
+						<li><a href="{{=URL('communication', 'communication_tranx_prefix')}}" ><span class="title">Settings</span></a></li>
 					</ul>
 
 				</li>
@@ -321,37 +330,8 @@
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
-				<li><a><div class="gui-icon"><i class="md fas fa-pallet"></i></div><span class="title">ITEM MASTER</span></a>
-					<ul>
-						<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Beauty Division</span></a></li>
-						<li><a href="{{=URL('inventory','fmcg_grid')}}" ><span class="title">FMCG Division</span></a></li>
-						<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Retail Division</span></a></li>
-						<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Supply & Perfumes Div</span></a></li>
-					</ul>
-			
-				</li>
-				<li><a><div class="gui-icon"><i class="md fas fa-database"></i></div><span class="title">MASTER DATA</span></a>
-					<ul>
-						<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Product</span></a></li>
-						<li><a href="{{=URL('inventory','subprod_mas')}}" ><span class="title">Sub-Product</span></a></li>
-						<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Supplier</span></a></li>
-						<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Group Line</span></a></li>
-						<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
-						<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
-						<li><a href="{{=URL('inventory','frgtype_mas')}}" ><span class="title">Fragrance Type</span></a></li>
-						<li><a href="{{=URL('inventory','itmcol_mas')}}" ><span class="title">Item Color</span></a></li>			
-					</ul>	
-				</li>				
-				<li>
-					<a><div class="gui-icon"><i class="md fas fa-exchange-alt"></i></div><span class="title">TRANSACTION</span></a>
-					<ul>
-						<li><a href="stk_req_add_form"><span class="title">Stock Request</span></a></li>
-						<li><a href="#"><span class="title">Stock Transfer</span></a></li>
-						<li><a href="#"><span class="title">Stock Receipt</span></a></li>
-						<li><a href="#"><span class="title">Adjustment (+/-)</span></a></li>			
-					</ul>
-				</li>			
-				<li><a><div class="gui-icon"><i class="md fas fa-file"></i></div><span class="title">REPORTS</span></a></li>
+				<li><a href="{{=URL('inventory', 'inventory_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY BACK OFFICE')):}}

@@ -1,0 +1,100 @@
+{{extend 'layout.html'}}
+
+<div class="container text-center">
+        <button id="btn-show" class="btn btn-primary">Show Dialog</button>
+      </div>
+      <div id="example-container" style="display:none">
+         <table class="display" cellspacing="0" width="100%">
+           <thead>
+             <tr>
+               <th>Name</th>
+               <th>Position</th>
+               <th>Office</th>
+               <th>Age</th>
+               <th>Start date</th>
+               <th>Salary</th>
+             </tr>
+           </thead>
+         
+           <tfoot>
+             <tr>
+               <th>Name</th>
+               <th>Position</th>
+               <th>Office</th>
+               <th>Age</th>
+               <th>Start date</th>
+               <th>Salary</th>
+             </tr>
+           </tfoot>
+         
+           <tbody>
+             <tr>
+               <td>Tiger Nixon</td>
+               <td>System Architect</td>
+               <td>Edinburgh</td>
+               <td>61</td>
+               <td>2011/04/25</td>
+               <td>$320,800</td>
+             </tr>
+             <tr>
+               <td>Garrett Winters</td>
+               <td>Accountant</td>
+               <td>Tokyo</td>
+               <td>63</td>
+               <td>2011/07/25</td>
+               <td>$170,750</td>
+             </tr>
+             <tr>
+               <td>Ashton Cox</td>
+               <td>Junior Technical Author</td>
+               <td>San Francisco</td>
+               <td>66</td>
+               <td>2009/01/12</td>
+               <td>$86,000</td>
+             </tr>
+             <tr>
+               <td>Cedric Kelly</td>
+               <td>Senior Javascript Developer</td>
+               <td>Edinburgh</td>
+               <td>22</td>
+               <td>2012/03/29</td>
+               <td>$433,060</td>
+             </tr>             
+           </tbody>
+         </table>
+      </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function() {
+   $('#btn-show').on('click', function(){
+      var container = $('#example-container').clone();
+      container.find('table').attr('id', 'example');
+
+      var box = bootbox.dialog({
+        show: false,        
+        message: container.html(),
+        title: "DataTables in a Bootbox",
+        buttons: {
+          ok: {
+            label: "OK",
+            className: "btn-primary",
+            callback: function() {
+              console.log('OK Button');
+            }
+          },
+          cancel: {
+            label: "Cancel",
+            className: "btn-default"
+          }
+        }
+      });
+      
+      box.on("shown.bs.modal", function() {
+         $('#example').DataTable(); 
+      });
+      
+      box.modal('show'); 
+   });
+});
+</script>
