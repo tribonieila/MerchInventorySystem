@@ -11,6 +11,39 @@ op: lar
 pa: 54193
 np: larrypas123
 
+lpstat -p -d
+lpr -P "MyPrinterName" filename.pdf
+Generic-PostScript # printer name
+
+Issue
+What options can I specify when starting Acrobat/Adobe Reader from the command line?
+Solutions (resolution Method)
+You can use Acrobat/Adobe Reader command-line operations as is, but it is not a supported feature. We do not provide information on the use of technical support. Please understand it before hand.
+The following command list is an example of Adobe Reader, but if you use Acrobat, use Acrobat.exe instead of Acrord32.exe.
+-Acrord32.exe filename
+View PDF files in Adobe Reader
+
+Startup options
+/n: Start Acrobat application as another instance when you are already running Acrobat
+/s: start acrobat without displaying the splash screen
+/o: Launch acrobat without displaying the Open file dialog
+/h: Start Acrobat but do not display it (only load it in memory)
+
+-Acrord32.exe/p filename
+print PDF files in Adobe Reader
+-Acrord32.exe/t path Printername drivername portname
+Start Adobe Reader and print a PDF file without displaying the Print dialog box and exit Adobe Reader
+
+Printing options
+Path: File path
+Printername: Printer Name
+DriverName: Printer driver name (checked with printer properties)
+PortName: Printer port name (do not include the letter "/")
+#---- sales invoice & sales return automatic print ----#
+def sales_order_report_account_user() # sales invoice
+
+os.system(acrobat_path + " /p /h " + self.options.dest_name)
+
 def register_bottle():
   tasters = range(10)
   form=SQLFORM.factory(db.bottle,*[Field('taster%i'%i, db.auth_user,label=T('Taster #%i'%i)) for i in tasters])

@@ -2812,7 +2812,7 @@ def sales_return_report_account_user():
     return pdf_data
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
-def sales_order_report_account_user():
+def sales_order_report_account_user(): # print direct to printer
     row = []
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     for n in db(db.Sales_Order.id == request.args(0)).select():
@@ -3282,6 +3282,7 @@ def stock_corrections_transaction_table_reports():
     doc.build(row, onFirstPage=stock_corrections_header_footer_reports, onLaterPages = stock_corrections_header_footer_reports)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
+    # os.startfile(tmpfilename,'print')
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 

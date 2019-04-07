@@ -19,9 +19,8 @@
             <div class="card-body tab-content">
                 <template>                         
                     <el-tabs :tab-position="tabPosition" style="height: 100%;">
-                        <el-tab-pane label="Stock Request">                            
-                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}
-                                                    
+                        <el-tab-pane label="Stock Request">    
+                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}                                                    
                         </el-tab-pane>
                         <el-tab-pane label="Sales Order">
                             {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}

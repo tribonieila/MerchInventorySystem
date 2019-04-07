@@ -42,8 +42,12 @@
             </div>
         </div>                    
     </div>
-    <div class="col-md-1">                        
-        <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+    <div class="col-md-1">          
+        {{ if _id.status_id == 18: }}              
+            <input class="btn btn-primary" type="submit" value="add" id="btnadd" disabled>
+        {{ else: }}
+            <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+        {{ pass }}
         
     </div>                                              
 </div>

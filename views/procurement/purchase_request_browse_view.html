@@ -88,10 +88,10 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id != 19:}}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
+                                {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}
+                                    {{=form.custom.widget.status_id}}                                    
                                 {{ else: }}
-                                    {{=form.custom.widget.status_id}}
+                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>    
                                 {{ pass }}
                                 
                             </div>
@@ -113,10 +113,10 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">    
-                                {{ if _id.status_id != 19:}}                                    
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>                                    
+                                {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}                                    
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">                                    
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
                                 {{ pass }}
 
                                 {{=form.custom.end}}

@@ -9,7 +9,7 @@
                 <div>
                     <!-- Nav tabs -->
                     <ul class="nav nav-pills" role="tablist">
-                      <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request</a></li>
+                      <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db(db.Purchase_Request.status_id==20).count()}}</span></a></li>
                       <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt </a></li>
                       <li role="presentation"><a href="#purchase_order" aria-controls="purchase_order" role="tab" data-toggle="tab">Purchase Order</a></li>
                       <li role="presentation"><a href="#purchase_return" aria-controls="purchase_return" role="tab" data-toggle="tab">Purchase Return</a></li>

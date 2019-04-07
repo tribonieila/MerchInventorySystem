@@ -1285,12 +1285,14 @@ db.define_table('Purchase_Request_Transaction_Received',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
-db.define_table('Purchase_Request_Transaction_Accounts',
+db.define_table('Purchase_Request_Transaction_Ordered', #Purchase_Request_Transaction_Accounts
     Field('purchase_request_no_id','reference Purchase_Request',ondelete = 'NO ACTION',writable = False),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
-    Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
+    Field('quantity','integer', default = 0),
+    Field('pieces','integer', default = 0),        
+    Field('total_pieces','integer', default = 0),
     Field('price_cost', 'decimal(10,6)', default = 0), #compute = lambda p: p['qty'] * p['price_cost']
     Field('total_amount','decimal(10,6)', default = 0, compute = lambda t: t['price_cost'] / t['uom'] * t['quantity']),
     Field('average_cost','decimal(10,4)', default = 0),

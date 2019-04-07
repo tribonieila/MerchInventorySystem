@@ -3658,8 +3658,28 @@ def str_kpr_grid_gen_stk_trn():
         session.flash = "STOCK TRANSACTION ALREADY PROCESSED"
 
 
+# ----------------------------------------------------------------------------
+# ------------    S T O C K  R E Q U E S T  A P P R O V A L    ---------------
+# ----------------------------------------------------------------------------
+@auth.requires_login()
+def stock_request_approved():
+    _id = db(db.Stock_Request.id == request.args(0)).select().first()
+    if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
+        _id.update_record(srn_status_id = 2, stock_request_date_approved = request.now, stock_request_approved_by = auth.user_id)
+        session.flash = 'STOCK REQUEST NO ' + str(_id.stock_request_no) +' APPROVED'
+        response.js = "$('#tblsr').get(0).reload()"
 
-# MANAGER 
+# ----------------------------------------------------------------------------
+# ------------    S T O C K  R E Q U E S T  R E J E C T E D    ---------------
+# ----------------------------------------------------------------------------
+@auth.requires_login()
+def stock_request_rejected():
+    _id = db(db.Stock_Request.id == request.args(0)).select().first()
+    if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
+        _id.update_record(srn_status_id = 3, updated_by = auth.user_id, updated_on = request.now)
+        session.flash = 'STOCK REQUEST NO ' + str(_id.stock_request_no) +' REJECTED'
+        response.js = "$('#tblsr').get(0).reload()"
+
 @auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def mngr_req_grid():
 
@@ -4440,6 +4460,7 @@ def stock_adjustment_manager():
 
 def inventory_manager():
     return dict()
+
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY') | auth.has_membership('ROOT'))
 def stock_request_manager_grid():
     row = []
@@ -4452,8 +4473,8 @@ def stock_request_manager_grid():
             reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', callback = URL('mngr_btn_archive', args = n.id, extension = False))            
         else:
-            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle', callback = URL('mngr_btn_aprvd', args = n.id, extension = False))
-            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle', callback = URL('mngr_btn_reject', args = n.id, extension = False))
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle', callback = URL('stock_request_approved', args = n.id, extension = False))
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle', callback = URL('stock_request_rejected', args = n.id, extension = False))
             clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
         
         btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, clea_lnk)        
@@ -4504,9 +4525,7 @@ def stock_adjustment_manager_grid():
     body = TBODY(*row)    
     table = TABLE(*[head, body],  _class='table', _id='tbladj')    
     return dict(table = table)
-
-    
-
+   
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_request_tool():
     
@@ -6549,7 +6568,11 @@ def reprint():
             print '<item code> ', r.Stock_Request_Transaction.item_code_id, '.location code', l.closing_stock
     return locals()
 
+
 def test():    
+    from reportlab.pdfbase import pdfdoc    
+    pdfdoc.PDFCatalog.OpenAction = '<</S/JavaScript/JS(this.print\({bUI:true,bSilent:true,bShrinkToFit:true}\);)>>'
+    import subprocess, sys, os    
     elements = []
     # Make heading for each column and start data list
     column1Heading = "COLUMN ONE HEADING"
@@ -6570,6 +6593,74 @@ def test():
     # doc.build(Story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)    
     doc.build(elements)
     pdf_data = open(tmpfilename,"rb").read()
-    os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
+    os.unlink(tmpfilename)    
     return pdf_data 
+    
+
+def pdfprint():
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    c = canvas.Canvas("C:\\Temp\\Test.pdf", pagesize=A4, bottomup=0)    
+    c.setFont('Helvetica', 14)
+    c.drawString(10, 20, 'Hello World!')
+    c.save()
+    # /t <filename> <printername> <drivername> <portname> - Print the file the specified printer.
+    # AcroRd32.exe /N /T PdfFile PrinterName [ PrinterDriver [ PrinterPort ] ]
+    # Generic-PostScript: lpd://128.1.2.199:515/PASSTHRU    
+    # os.system('"/usr/bin/acroread" /n/t/s/o/h/p "C:\\Temp\\test.pdf"')       # C:\web2py\applications\MerchERP\private
+    os.system('"/usr/bin/acroread" /h/p "C:\\Temp\\Test.pdf"')       # C:\web2py\applications\MerchERP\private
+    # os.system('"/usr/bin/acroread" /n/t/p/h /home/larry/Documents/test.pdf "Generic-PostScript[lpd://128.1.2.199:515/PASSTHRU[515]]"' )        
+    # os.system('lpr -P Generic-PostScript /home/larry/Documents/test.pdf')
+    # C:\web2py\applications\MerchERP\private
+
+def pdfprint3():
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    c = canvas.Canvas("C:\Temp\Test.pdf", pagesize=A4, bottomup=0)    
+    c.setFont('Helvetica', 14)
+    c.drawString(10, 20, 'Hello World!')
+    c.save()
+    os.system('"C:\Program Files\Adobe\Reader 11.0\Reader\AcroRd32.exe" /t "C:\Temp\Test.pdf"')       # C:\web2py\applications\MerchERP\private
+
+def pdfprint4():
+    import subprocess
+    tempfilename = "C:\Temp\Test.pdf"
+    acrobatexe = "C:\Program Files\Adobe\Acrobat 11.0\Reader\AcroRd32.exe"
+    subprocess.call([acrobatexe, "/t", tempfilename, "EPSON AL-M7000 Advanced"])
+    os.unlink(tempfilename)
+
+def pdfprint5():
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    c = canvas.Canvas("C:\\Temp\\Test.pdf", pagesize=A4, bottomup=0)    
+    c.setFont('Helvetica', 14)
+    c.drawString(10, 20, 'Hello World!')
+    c.save()  
+    os.system('"C:\\Program Files (x86)\\Google\Chrome\\Application\\chrome.exe" --kiosk --kiosk-printing --disable-print-preview C:\\Temp\\Test.pdf')
+
+
+def pdfprint2():
+    import requests
+    from subprocess import Popen, PIPE
+
+    message = 'print this...'
+
+    cmd = '/usr/bin/lpr -P {}'.format(self.printer_name)
+    proc = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+    response = requests.get(html.unescape(message['body']), stream=True)
+    for block in response.iter_content(1024):
+        proc.stdin.write(block)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+    print exit_code    
+
+# Adobe acrobat has (or at least used to have) a parameter "/t", which made it open, print and exit. By using it, you can call acrobat reader and wait for it to exit, and then delete the file.
+
+# Untested code:
+
+# >>> import subprocess
+# # You will have to figure out where your Acrobate reader is located, can be found in the registry:
+# >>> acrobatexe = "C:\Program Files\Adobe\Acrobat 4.0\Reader\AcroRd32.exe"  
+# >>> subprocess.call([acrobatexe, "/t", tempfilename, "My Windows Printer Name"])
+# >>> os.unlink(tempfilename)

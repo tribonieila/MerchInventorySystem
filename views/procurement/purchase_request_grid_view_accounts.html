@@ -108,7 +108,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                         
-                                {{ if _id.status_id == 4: }}
+                                {{ if _id.status_id == 18: }}
                                     <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}')">
                                     <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}')">                                                                            
                                 {{ else: }}
