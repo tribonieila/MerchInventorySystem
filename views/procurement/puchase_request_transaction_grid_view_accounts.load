@@ -1,12 +1,18 @@
 {{=table}}
 <hr>
+<div id = "divItm">
 {{=form2.custom.begin}}
 <div class="row">    
     <div class="col-md-2">
         <div class="form-group">
             <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">                                
-                {{=form2.custom.widget.item_code}}
+            <div class="col-sm-8">         
+                {{ if _pr.status_id == 18: }}
+                    <input type="text" class="form-control" disabled>
+                {{ else: }}
+                    {{=form2.custom.widget.item_code}}
+                {{ pass }}
+                
             </div>                           
         </div>                        
     </div>
@@ -43,7 +49,7 @@
         </div>                    
     </div>
     <div class="col-md-1">          
-        {{ if _id.status_id == 18: }}              
+        {{ if _pr.status_id == 18: }}              
             <input class="btn btn-primary" type="submit" value="add" id="btnadd" disabled>
         {{ else: }}
             <input class="btn btn-primary" type="submit" value="add" id="btnadd">
@@ -53,7 +59,7 @@
 </div>
 {{=form2.custom.end}}
 <div id = "_item_code_description"></div>      
-
+</div>
 <script>
 $(document).ready(function(){
     

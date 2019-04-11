@@ -1,0 +1,24 @@
+{{extend 'layout.html'}}
+<link rel="stylesheet" href="{{=URL('static','js/lou-multi-select-57fb8d3/css/multi-select.css')}}"/>	
+<select multiple="multiple" id="my-select" name="my-select[]">
+    {{ for x in db(db.Purchase_Request.status_id == 17).select(): }}
+    <option value='{{=x.id}}'>{{=x.purchase_request_no_prefix_id.prefix}}{{=x.purchase_request_no}}</option>
+    {{ pass }}
+</select>
+<h1> {{=hello}} subi</h1>
+<script src="{{=URL('static','js/lou-multi-select-57fb8d3/js/jquery.multi-select.js')}}" type="text/javascript"></script>
+<script>
+    $('#my-select').multiSelect({
+        afterSelect: function(values){
+            var myJSON = JSON.parse(values);
+
+            // alert("Select value: "+values);
+            ajax('{{=URL('procurement','addselect')}}' + '/' +  myJSON ); 
+            console.log('Selected: ', myJSON);
+        },
+        afterDeselect: function(values){
+            console.log('Deselect: ', values);
+        }
+    })
+    
+</script>

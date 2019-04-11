@@ -1,0 +1,14 @@
+{{=table}}
+<input class="btn btn-primary" type="submit" value="consolidate" id="btnConsolidate">
+<script>
+    $(document).ready(function(){
+        $(".btnCheckBox").click(function(e){     
+            var value = $(this).closest('tr').find('input:checkbox').val();
+            if (this.checked) {
+                console.log('check ', value);
+            } else {
+                console.log('uncheck ', value);
+            }
+        });
+    });
+</script>

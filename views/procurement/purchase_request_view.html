@@ -1,0 +1,108 @@
+{{=form.custom.begin}}	                                    
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Purchase Order No</label>
+            <div class="col-sm-8">                                
+                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>                
+            </div>                           
+        </div>                        
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Purchase Order Date</label>
+            <div class="col-sm-8"> {{import datetime}}
+                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
+                <p class="help-block">readonly</p>                            
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">ETA</label>
+            <div class="col-sm-8">{{=form.custom.widget.estimated_time_of_arrival}}</div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Department</label>
+            <div class="col-sm-8">
+                    {{=form.custom.widget.dept_code_id}}
+            </div>
+        </div>            
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Location Source</label>
+            <div class="col-sm-8">
+                {{=form.custom.widget.location_code_id}}   
+            </div>
+        </div>                                           
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Supplier Proporma Invoice</label>
+            <div class="col-sm-8">{{=form.custom.widget.supplier_reference_order}}</div>
+        </div>                             
+    </div>    
+</div>       
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Supplier Code</label>
+            <div class="col-sm-7">
+                {{=form.custom.widget.supplier_code_id}}                                
+            </div>
+            <div class="col-sm-1">                              
+                <a class="btn btn-icon-toggle" id="btnDetails" role="button" href="#"><i class="fa fa-info-circle"></i></a>                                  
+            </div>
+        </div>      
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Currency</label>
+            <div class="col-sm-8">
+                <div id = "_supplier_code_currency"></div>
+            </div>
+        </div>                   
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Status</label>
+            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+        </div>                   
+    </div>    
+</div>         
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Mode of Shipment</label>
+            <div class="col-sm-8">{{=form.custom.widget.mode_of_shipment}}</div>
+        </div>             
+
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Remarks</label>
+            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+        </div>             
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8">                                
+                
+                <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
+                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request_browse')}}">abort</a>
+                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>
+                
+            </div>        
+        </div>  
+    </div>
+</div>
+{{=form.custom.end}}
+    

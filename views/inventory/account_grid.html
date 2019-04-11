@@ -33,8 +33,8 @@
                         <el-tab-pane label="Corrections">
                             {{=LOAD('inventory','stock_corrections.load', ajax = True, target = 'tblcor')}}
                         </el-tab-pane>                                                 
-                        <el-tab-pane label="Purchase Request">
-                            {{=LOAD('procurement','purchase_request_grid.load', ajax = True)}}
+                        <el-tab-pane label="Purchase Receipt">
+                            {{=LOAD('procurement','puchase_receipt_browse.load', ajax = True)}}
                         </el-tab-pane>                                                 
 
                 </template>

@@ -13,7 +13,7 @@
                     <!-- <li class="active"><a href="#">BROWSE</a></li> -->
                 </ul>
                 <!-- <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span> -->
-                <span class="card-title">STORE KEEPER WORKFLOW</span>
+                <span class="card-title">WAREHOUSE WORKFLOW</span>
             </div>
             <div class="card-body tab-content">
                  
@@ -28,9 +28,12 @@
                         <el-tab-pane label="Sales Return">
                             {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
                         </el-tab-pane>                                             
-                        <el-tab-pane label="Purchase Request">
-                            {{=LOAD('procurement','purchase_request_grid.load', ajax = True)}}
-                        </el-tab-pane>                           
+                        <el-tab-pane label="Purchase Order">
+                            {{=LOAD('procurement','purchase_ordered_warehouse_grid.load', ajax = True)}}
+                        </el-tab-pane>              
+                        <el-tab-pane label="Purchase Receipt">
+                            
+                        </el-tab-pane>                                        
   
                     </template>
             </div>

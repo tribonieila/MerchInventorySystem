@@ -52,6 +52,54 @@ def register_bottle():
    for i in tasters:
      if 'taster%i'%i in form.vars:
        db.taster.insert(auth_user=form.vars...
+# consolidation 
+
+<link rel="stylesheet" href="{{=URL('static','js/lou-multi-select-57fb8d3/css/multi-select.css')}}"/>	
+
+    <div class="col-md-6>
+        <select multiple="multiple" id="my-select" name="my-select[]">
+            {{ for x in db(db.Purchase_Request.status_id == 17).select(): }}
+            <option value='{{=x.id}}'>{{=x.purchase_order_no_prefix_id.prefix}}{{=x.purchase_order_no}} - {{=x.supplier_code_id.supp_code}}</option>
+            {{ pass }}
+        </select>
+
+    </div>
+    <br>
+    <input class="btn btn-primary" type="submit" id="btnProceed" value="proceed">
+    
+    
+    <br>
+    <br>
+    <div id = "proceed">
+        {{=form}}
+    </div>
+
+
+<script src="{{=URL('static','js/lou-multi-select-57fb8d3/js/jquery.multi-select.js')}}" type="text/javascript"></script>
+<script>
+    $('#my-select').multiSelect({
+        selectableHeader: "<div class='custom-header'>Selectable PO</div>",
+        selectionHeader: "<div class='custom-header'>Selected PO</div>",
+        afterSelect: function(values){
+            var myJSON = JSON.parse(values);
+            ajax('{{=URL('procurement','selected_po')}}' + '/' +  myJSON ); 
+        },
+        afterDeselect: function(values){
+            var myJSON = JSON.parse(values);
+            ajax('{{=URL('procurement','deselected_po')}}' + '/' +  myJSON ); 
+        }
+    })
+    
+</script>
+<script>
+    $(document).ready(function(){
+        $("#proceed").hide();
+        $("#btnProceed").click(function(){
+             $("#proceed").slideDown('slow');
+             return false;
+        });
+    });
+</script>
 
 import reshaper
 from bidi.algorithm import get_display

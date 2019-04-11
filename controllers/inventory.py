@@ -190,6 +190,7 @@ def validate_supplier_id(form):
 
 @auth.requires_login()
 def suplr_forw_form():
+    _id = db(db.Supplier_Master.id == request.args(0)).select().first()
     row = []
     ctr = 0
     form = SQLFORM.factory(
@@ -206,7 +207,7 @@ def suplr_forw_form():
         row.append(TR(TD(ctr),TD(n.forwarder_code_id.forwarder_code, ' - ' , n.forwarder_code_id.forwarder_name),TD(n.status_id.status)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table')
-    return dict(form = form, table = table)
+    return dict(form = form, table = table, _id=_id)
 
 
 @auth.requires_login()
@@ -2683,14 +2684,6 @@ def itm_description():
     # else:       
     #     return CENTER(DIV("Item code no " , B(str(request.vars.item_code)), " doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
 
-def _grand_total(e):    
-    session.grand_total += e
-    return session.grand_total
-def gt():
-    print request.vars.ticket_no_id
-def d():
-    print 'delete', request.args(0)
-    
 def itm_view():    
     row = []
     uom_value = 0

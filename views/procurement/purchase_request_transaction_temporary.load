@@ -38,7 +38,8 @@
         <div class="form-group">
             <label class="col-sm-4 control-label">Category</label>
             <div class="col-sm-8"> 
-                {{=form.custom.widget.category_id}}
+                <div id="_category_id"></div>
+                
             </div>
         </div>                    
     </div>
@@ -61,12 +62,14 @@ $(document).ready(function(){
             }, 1);
     });
     
-    $('#no_table_item_code').change(function(){
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
-        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
+        ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
         return false;
     });
-    
+
+   
     $('#discount').change(function(){
         var _g = {{=grand}}
         var gt = 0;

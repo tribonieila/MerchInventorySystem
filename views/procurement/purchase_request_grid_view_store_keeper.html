@@ -96,24 +96,29 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                                <label class="col-sm-4 control-label">Remarks</label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.widget.remarks}}
-                                </div>
-                            </div>             
-                        </div>
-                    <div class="col-md-4">
+                            <label class="col-sm-4 control-label">Mode of Shipment</label>
+                            <div class="col-sm-8"><input type="text" class="form-control" value="{{=_id.mode_of_shipment}}" readonly></div>
+                        </div>                          
                     </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.remarks}}
+                            </div>
+                        </div>             
+                    </div>
+
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                         
                                 {{ if _id.status_id == 17: }}
-                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}')">
-                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}')">                                                                            
+                                    <input class="btn btn-success" type="submit" value="submit" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}')">
+                                    <input class="btn btn-warning" type="submit" value="abort" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}')">                                                                            
                                 {{ else: }}
-                                    <input class="btn btn-success" type="submit" value="approved" disabled>
-                                    <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
+                                    <input class="btn btn-success" type="submit" value="submit" disabled>
+                                    <input class="btn btn-warning" type="submit" value="abort" disabled>                                                                            
                                 {{ pass }}                                            
                                 {{=form.custom.end}}
                             </div>        
