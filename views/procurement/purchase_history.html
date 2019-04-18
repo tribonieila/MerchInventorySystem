@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request_grid_view_inventory_manager')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">PURCHASE HISTORY</span>
+        </div>
+        <div class="card-body tab-content">   
+            <table class="table table-bordered">
+                <thead class="bg-success">
+                    <tr>
+                        <th>
+                            Department
+                        </th>
+                        <th>
+                            Supplier Code
+                        </th>
+                        <th>
+                            Purchase Budget
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            {{=_sm.dept_code_id.dept_name}}
+                        </td>
+                        <td>
+                            {{=_sm.supp_code}} - {{=_sm.supp_name}}
+                        </td>
+                        <td>{{import locale}}
+                            {{=locale.format('%.2F',_sm.purchase_budget or 0, grouping = True)}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>            
+            {{=table}}
+        </div>
+    </div>
+</div>

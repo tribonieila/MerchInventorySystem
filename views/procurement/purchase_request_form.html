@@ -65,12 +65,12 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Supplier Code</label>
-                            <div class="col-sm-7">
+                            <div class="col-sm-8">
                                 {{=form.custom.widget.supplier_code_id}}                                
                             </div>
-                            <div class="col-sm-1">                                                              
-                                <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="#"><i class="fa fa-history"></i></a>                                  
-                            </div>
+                            <!-- <div class="col-sm-1">                                                              
+                                <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="{{=URL('procurement','purchase_history', args = request.args(0))}}"><i class="fa fa-history"></i></a>                                  
+                            </div> -->
                         </div>      
                     </div>
                     <div class="col-md-4">
@@ -220,7 +220,8 @@ $(document).ready(function(){
         $("#no_table_dept_code_id").attr('disabled','disabled');                
         $("#no_table_location_code_id").attr('disabled','disabled');
         $("#no_table_supplier_reference_order").attr('disabled','disabled');
-        $("#no_table_estimated_time_of_arrival").attr('disabled','disabled');
+        $("#no_table_estimated_time_of_arrival").attr('disabled','disabled');        
+        $("#no_table_mode_of_shipment").attr('disabled','disabled');
         $("#no_table_supplier_code_id").attr('disabled','disabled');
         $("#no_table_status_id").attr('disabled','disabled');
         $("#no_table_remarks").attr('disabled','disabled');

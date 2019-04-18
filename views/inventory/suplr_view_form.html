@@ -66,9 +66,9 @@
                                 <td>Sales Account</td>
                                 <td>Status</td>
                             </tr>
-                            <tr>
-                                <td>{{=_sm.currency_id}}</td>
-                                <td>{{=_sm.purchase_budget}}</td>
+                            <tr>{{import locale}}
+                                <td>{{=_sm.currency_id.description}}</td>
+                                <td>{{=locale.format('%.2F',_sm.purchase_budget or 0, grouping = True)}}</td>
                                 <td>{{=_sm.supplier_ib_account}}</td>
                                 <td>{{=_sm.supplier_purchase_account}}</td>
                                 <td>{{=_sm.supplier_sales_account}}</td>

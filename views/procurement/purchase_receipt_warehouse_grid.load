@@ -1,0 +1,15 @@
+{{=table}}
+<a class="btn btn-primary" id="btnCon" href="{{=URL('procurement','purchase_receipt_warehouse_grid_consolidate', extension = False)}}" role="button">consolidate</a>
+<script>
+    $(document).ready(function(){
+        $('#btnCon').attr('disabled','disabled');        
+        $(".checkbox").click(function(e){     
+            var value = $(this).closest('tr').find('input:checkbox').val();
+            if (this.checked) {                
+                ajax("{{=URL('procurement','selected_po')}}" + '/'+ value);
+            } else {
+                ajax("{{=URL('procurement','deselected_po')}}" + '/'+ value);
+            }
+        });        
+    });
+</script>

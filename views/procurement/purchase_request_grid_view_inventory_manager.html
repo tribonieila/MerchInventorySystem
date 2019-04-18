@@ -1,4 +1,5 @@
 {{extend 'layout.html'}}
+
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
@@ -74,7 +75,7 @@
                                 <input type="text" class="form-control" value="{{=_id.supplier_code_id.supp_code}} - {{=_id.supplier_code_id.supp_name}}" readonly>                                
                             </div>    
                             <div class="col-sm-1">                                                              
-                                <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="#"><i class="fa fa-history"></i></a>                                  
+                                <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="{{=URL('procurement','purchase_history', args = request.args(0))}}"><i class="fa fa-history"></i></a>                                  
                             </div>                                          
                         </div>      
                     </div>
@@ -109,22 +110,31 @@
                         </div>                         
         
                     </div>                    
-
-                    <div class="col-md-8">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea>
+                                <!-- <div id="IDremarks"></div> -->
+                            </div>
+                        </div>                         
+        
+                    </div>   
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-6 control-label"></label>
                             <div class="col-sm-6">                         
                                 {{ if _id.status_id == 20: }}
-                                    <input class="btn btn-danger" type="submit" value="forecast">      
-                                    <input class="btn btn-info" type="submit" value="budget">      
+                                    <!-- <input class="btn btn-danger" type="button" value="forecast">      
+                                    <input class="btn btn-info" type="button" value="budget">       -->
         
                                     <input class="btn btn-success" type="button" id="btnSubmit" value="approved" onclick="document.location='{{=URL('inventory','inventory_manager')}}'">
                                     <input class="btn btn-warning" type="submit" value="reject">                       
-                                    <input class="btn btn-primary" type="button" id="btnRemarks" value="remarks">                                    
+                                    <!-- <input class="btn btn-primary" type="button" id="btnRemarks" value="remarks">                                     -->
                                 {{ else: }}
                                     <input class="btn btn-success" type="button" value="approved" disabled>
                                     <input class="btn btn-warning" type="button" value="reject" disabled>                            
-                                    <input class="btn btn-primary" type="button" value="remarks" disabled>                                                                                    
+                                    <!-- <input class="btn btn-primary" type="button" value="remarks" disabled>                                                                                     -->
                                 {{ pass }}                                            
                                 {{=form.custom.end}}
                             </div>        
@@ -143,14 +153,59 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    $(document).on("click", "#btnDetails", function(e) {
-        bootbox.alert("Purchase History!", function() {                
-        });
-    });
+    // $(document).on("click", "#btnDetails", function(e) {
+    //     bootbox.dialog("Supplier Code History!", {
+    //         "label":"Click me!"
+    //     });
+    // });
+    var result = $("#ElementID").val();
     $(document).on("click", "#btnRemarks", function(e) {
-        bootbox.alert("Remarks Here", function() {                
-        });
+        bootbox.dialog({
+            // title: "This is a prompt with a textarea!",
+            message: '<div class="row"><div class="form-group"><textarea class="form-control" rows="3"></textarea></div></div>' ,
+            callback: function (result) {                
+                console.log(result);
+                ajax('{{=URL('procurement','post_remarks', args = request.args(0))}}', ['result'],'IDremarks');     
+            }
+        });    
     });
+
+    $('.alert-custom').click(function() {
+bootbox.dialog({
+      title: "This is a form in a modal.",
+      message: '<div class="row">  ' +
+      '<div class="col-md-12"> ' +
+      '<form class="form-horizontal"> ' +
+      '<div class="form-group"> ' +
+      '<label class="col-md-4 control-label" for="name">Name</label> ' +
+      '<div class="col-md-4"> ' +
+      '<input id="name" name="name" type="text" placeholder="Your name" class="form-control input-md"> ' +
+      '<span class="help-block">Here goes your name</span> </div> ' +
+      '</div> ' +
+      '<div class="form-group"> ' +
+      '<label class="col-md-4 control-label" for="awesomeness">How awesome is this?</label> ' +
+      '<div class="col-md-4"> <div class="radio"> <label for="awesomeness-0"> ' +
+      '<input type="radio" name="awesomeness" id="awesomeness-0" value="Really awesome" checked="checked"> ' +
+      'Really awesome </label> ' +
+      '</div><div class="radio"> <label for="awesomeness-1"> ' +
+      '<input type="radio" name="awesomeness" id="awesomeness-1" value="Super awesome"> Super awesome </label> ' +
+      '</div> ' +
+      '</div> </div>' +
+      '</form> </div>  </div>',
+              buttons: {
+                success: {
+                  label: "Save",
+                  className: "btn-success",
+                  callback: function () {
+                    var name = $('#name').val();
+                    var answer = $("input[name='awesomeness']:checked").val()
+                    $('.Example').show().html("Hello " + name + ". You've chosen <b>" + answer + "</b").fadeOut(5000);
+                  }
+                }
+              }
+            }
+        );
+   })
 
 </script>
 <script>
