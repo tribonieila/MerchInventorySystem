@@ -106,7 +106,7 @@ def outgoing_mail_browse():
     _skey += 1    
     _usr_f = str(auth.user.first_name.upper())
     _usr_l = str(auth.user.last_name.upper())
-    _ckey = 'MP' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]    
+    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]    
     form = SQLFORM(db.Outgoing_Mail)
     if form.process(onvalidation = validate_outgoing_mail).accepted:
         _pre.update_record(serial_key = _skey)        

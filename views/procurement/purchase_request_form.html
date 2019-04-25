@@ -4,7 +4,7 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('purchase_request_browse')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request_transaction')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">PURCHASE REQUEST FORM</span>
         </div>
@@ -66,7 +66,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Supplier Code</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.supplier_code_id}}                                
+                                {{=form.custom.widget.supplier_code_id}}
                             </div>
                             <!-- <div class="col-sm-1">                                                              
                                 <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="{{=URL('procurement','purchase_history', args = request.args(0))}}"><i class="fa fa-history"></i></a>                                  
@@ -76,9 +76,12 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Currency</label>
-                            <div class="col-sm-8">
-                                <div id = "_supplier_code_currency"></div>
+                            <div class="col-sm-3"><div id = "_supplier_code_currency"></div></div>
+                            <label class="col-sm-2 control-label">Trade Terms</label>
+                            <div class="col-sm-3">
+                                {{=form.custom.widget.trade_terms_id}}
                             </div>
+
                         </div>                   
                     </div>
                     <div class="col-md-4">
@@ -100,7 +103,10 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                            <div class="col-sm-8">
+                                <!-- {{=form.custom.widget.remarks}} -->
+                                <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea>
+                            </div>
                         </div>             
                     </div>
                     <div class="col-md-4">
@@ -117,7 +123,7 @@
                         </div>  
                     </div>
                 </div>
-    
+                
                 <div id="example-container" style="display:none">
                     {{=LOAD('procurement','payment_details.load', ajax = True)}}
                      </div>
@@ -202,7 +208,8 @@ $(document).ready(function(){
     });
 
     $('#no_table_supplier_code_id').change(function(){       
-        ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency');        
+        ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
+        ajax('{{=URL('generate_supplier_trade_terms')}}', ['supplier_code_id'], '_supplier_trade_terms');        
         var ctr = this.value;
         if (ctr > 0) {
             request(1)
@@ -234,6 +241,7 @@ $(document).ready(function(){
         $("#no_table_location_code_id").removeAttr('disabled');
         $("#no_table_customer_code_id").removeAttr('disabled');        
         $("#no_table_supplier_reference_order").removeAttr('disabled');
+        $("#no_table_mode_of_shipment").removeAttr('disabled');
         $("#no_table_estimated_time_of_arrival").removeAttr('disabled');
         $("#no_table_supplier_code_id").removeAttr('disabled');
         $("#no_table_status_id").removeAttr('disabled');

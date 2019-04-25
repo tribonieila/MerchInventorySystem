@@ -5,11 +5,12 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request_browse')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.open="{{=URL('procurement','purchase_request_browse')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">INSURANCE PROPOSAL DETAILS FORM</span>
         </div>
         <div class="card-body tab-content">
+            
             <div class="form-horizontal">
                 {{=form.custom.begin}}
                 <div class="row">
@@ -17,7 +18,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Mail No</label>
                             <div class="col-sm-8">
-                                
+                                <input type="text" class="form-control" value="{{=_ckey}}" readonly>
                             </div>
                         </div>
                     </div>
@@ -76,8 +77,9 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Purchase Order No.</label>
-                            <div class="col-sm-8">                                
+                            <div class="col-sm-8">   
                                 
+                                <input type="text" class="form-control" value="{{=_id.purchase_order_no_prefix_id.prefix}}{{=_id.purchase_order_no}}" readonly>
                             </div>
                         </div>
         
@@ -92,8 +94,7 @@
                     </div>                                     
                 </div>   
                 {{=form.custom.end}}
-            </div>
-            
+            </div>            
         </div>
     </div>
 </div>

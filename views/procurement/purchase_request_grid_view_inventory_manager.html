@@ -70,12 +70,11 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Supplier Code</label>
-                            <div class="col-sm-7">
-                                <!-- <a href="https://www.w3schools.com">{{=_id.supplier_code_id.supp_code}} - {{=_id.supplier_code_id.supp_name}}</a> -->
+                            <div class="col-sm-7">                                             
                                 <input type="text" class="form-control" value="{{=_id.supplier_code_id.supp_code}} - {{=_id.supplier_code_id.supp_name}}" readonly>                                
                             </div>    
                             <div class="col-sm-1">                                                              
-                                <a class="btn btn-icon-toggle btn-success btn-lg" id="btnDetails" title = "Purchase History" role="button" href="{{=URL('procurement','purchase_history', args = request.args(0))}}"><i class="fa fa-history"></i></a>                                  
+                                <a target="_blank" title = "Purchase History" href="{{=URL('procurement','purchase_history', args = request.args(0))}}"><i class="fa fa-history"></i></a>                                
                             </div>                                          
                         </div>      
                     </div>
@@ -114,7 +113,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea>
+                                <textarea class="form-control" rows="3" id="remarks" name="remarks">{{=_id.remarks}}</textarea>
                                 <!-- <div id="IDremarks"></div> -->
                             </div>
                         </div>                         
@@ -128,8 +127,8 @@
                                     <!-- <input class="btn btn-danger" type="button" value="forecast">      
                                     <input class="btn btn-info" type="button" value="budget">       -->
         
-                                    <input class="btn btn-success" type="button" id="btnSubmit" value="approved" onclick="document.location='{{=URL('inventory','inventory_manager')}}'">
-                                    <input class="btn btn-warning" type="submit" value="reject">                       
+                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])">
+                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}', ['remarks'])">                         
                                     <!-- <input class="btn btn-primary" type="button" id="btnRemarks" value="remarks">                                     -->
                                 {{ else: }}
                                     <input class="btn btn-success" type="button" value="approved" disabled>
@@ -153,11 +152,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    // $(document).on("click", "#btnDetails", function(e) {
-    //     bootbox.dialog("Supplier Code History!", {
-    //         "label":"Click me!"
-    //     });
-    // });
+    $('.btn').click(function(){          
+        onclick=document.location="{{=URL('inventory','inventory_manager')}}";
+        return false;
+    });
     var result = $("#ElementID").val();
     $(document).on("click", "#btnRemarks", function(e) {
         bootbox.dialog({

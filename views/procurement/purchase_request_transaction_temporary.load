@@ -85,7 +85,7 @@ $(document).ready(function(){
             $('#grand_total').val(Number(gt.toFixed(2)).toLocaleString());
 
         }
-        // ajax('{{=URL('sales','discount_session')}}',['discount']);
+        ajax('{{=URL('procurement','discount_session')}}',['discount']);
 
         document.getElementById("error").innerHTML = text;
     });

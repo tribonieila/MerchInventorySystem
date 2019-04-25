@@ -22,9 +22,9 @@
                         <el-tab-pane label="Purchase Receipt">
                             {{=LOAD('procurement','purchase_receipt_warehouse_grid.load', ajax = True)}}
                         </el-tab-pane>                             
-                        <el-tab-pane label="Purchase Order">
-                            {{=LOAD('procurement','purchase_ordered_warehouse_grid.load', ajax = True)}}
-                        </el-tab-pane>              
+                        <!-- <el-tab-pane label="Purchase Receipt">
+                            {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidated.load', ajax = True)}}
+                        </el-tab-pane>               -->
                         <el-tab-pane label="Stock Request"> 
                             {{=table}}                             
                         </el-tab-pane>
