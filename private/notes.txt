@@ -9,7 +9,7 @@ merch4658666
 T.force('it-it')
 op: lar 
 pa: 54193
-np: larrypas123
+np: larrypass123
 
 lpstat -p -d
 lpr -P "MyPrinterName" filename.pdf
@@ -43,6 +43,9 @@ PortName: Printer port name (do not include the letter "/")
 def sales_order_report_account_user() # sales invoice
 
 os.system(acrobat_path + " /p /h " + self.options.dest_name)
+
+$('#foreign_amount').val(Number(fa.toFixed(2)).toLocaleString());
+$('#local_amount').val(Number(la.toFixed(2)).toLocaleString());
 
 def register_bottle():
   tasters = range(10)

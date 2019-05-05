@@ -23,14 +23,13 @@
                       <div role="tabpanel" class="tab-pane active" id="purchase_request">                        
                         {{=LOAD('procurement','purchase_request_grid.load', ajax = True, target = 'PRtbl')}}
                       </div> 
+                      <div role="tabpanel" class="tab-pane" id="purchase_order">
+                        {{=LOAD('procurement','purchase_order_grid.load', ajax = True, target = 'POtbl')}}
+                      </div>
 
                       <div role="tabpanel" class="tab-pane" id="purchase_receipt">
                             <br>
                             <div class="alert alert-success" role="alert">purchase receipt on progress...</div>
-                      </div>
-                      <div role="tabpanel" class="tab-pane" id="purchase_order">
-                            <br>
-                            <div class="alert alert-success" role="alert">purchase order on progress...</div>
                       </div>
                       <div role="tabpanel" class="tab-pane" id="purchase_return">
                             <br>

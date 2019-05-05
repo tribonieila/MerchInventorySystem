@@ -6,7 +6,7 @@
                     <li class=""><a href="#" onclick=window.location="{{=URL('purchase_request_form')}}";>+ ADD NEW</a></li>
                     <li class="active"><a href="#">BROWSE</a></li>
                 </ul>
-                <span class="card-title">PURCHASE REQUEST</span>
+                <span class="card-title">PURCHASE ORDER</span>
             </div>
             <div class="card-body tab-content">            
                 {{=table}}
@@ -17,9 +17,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    $('#generate').click(function(){        
-        location.reload();
-    });
     $('.clear').click(function(){
         var _id = $(this).attr('data-id');
         var parent = $(this).parent("div").parent("td").parent("tr");

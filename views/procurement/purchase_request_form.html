@@ -4,7 +4,7 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request_transaction')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">PURCHASE REQUEST FORM</span>
         </div>
@@ -41,17 +41,13 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Department</label>
-                            <div class="col-sm-8">
-                                    {{=form.custom.widget.dept_code_id}}
-                            </div>
+                            <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
                         </div>            
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Location Source</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.location_code_id}}   
-                            </div>
+                            <div class="col-sm-8">{{=form.custom.widget.location_code_id}}</div>
                         </div>                                           
                     </div>
                     <div class="col-md-4">
@@ -116,7 +112,7 @@
                                 
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request_browse')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        

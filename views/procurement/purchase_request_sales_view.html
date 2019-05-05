@@ -14,7 +14,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Purchase Order No</label>
+                            <label class="col-sm-4 control-label">Purchase Request No</label>
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" value="{{=_id.purchase_request_no_prefix_id.prefix}}{{=_id.purchase_request_no}}" readonly>                                
                             </div>                           
@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Purchase Order Date</label>
+                            <label class="col-sm-4 control-label">Purchase Request Date</label>
                             <div class="col-sm-8"> 
                                 <input type="text" class="form-control" value="{{=_id.purchase_request_date}}" readonly>
                             </div>
@@ -85,8 +85,7 @@
                                 <div>
                                     <label class="col-sm-2 control-label">Trade Terms</label>
                                     <div class="col-sm-3">
-                                        <input type="text" class="form-control" value="{{=_id.trade_terms_id}}" readonly>
-                                        
+                                        <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>                                        
                                     </div>
                                 </div>
                             </div>                   

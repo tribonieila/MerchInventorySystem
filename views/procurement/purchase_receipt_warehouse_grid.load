@@ -1,5 +1,5 @@
 {{=table}}
-<a class="btn btn-primary" id="btnCon" href="{{=URL('procurement','purchase_receipt_warehouse_grid_consolidate', extension = False)}}" role="button">consolidate</a>
+
 <a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">process</a>
 <script>
     $(document).ready(function(){

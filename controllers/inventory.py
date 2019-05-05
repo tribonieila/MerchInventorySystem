@@ -136,6 +136,22 @@ def subprod_edit_form():
         response.flash = 'PLEASE FILL OUT THE FORM'
     return dict(form = form, ctr_val = ctr_val.subproduct_code)
 
+# ---- Exchange Rate Value  -----
+@auth.requires_login()
+def currency_exchange():
+    form = SQLFORM(db.Currency_Exchange)
+    if form.process().accepted:
+        response.flash = 'RECORD SAVE'
+    elif form.errors:
+        response.flash = 'ENTRY HAS ERRORS'
+    head = THEAD(TR(TH('#'),TH('Currency'),TH('Exchange Rate'),TH('Status')))
+    ctr = 0
+    for n in db().select(db.Currency_Exchange.ALL):
+        ctr += 1
+        row.append(TR(TD(ctr),TD(n.currency_id.mnemonic),TD(n.exchange_rate_value),TD(n.status_id.status)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(form = form, table = table)
 
 # ---- Supplier Master  -----
 # @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE'))
@@ -170,23 +186,6 @@ def suplr_mas():
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody], _class = 'table table-striped')
     return dict(table = table)
-
-# def gensup():
-#     x = 10000
-#     for s in db(db.Supplier_Master).select(orderby = db.Supplier_Master.id):
-#         x += 1
-#         s.update_record(supp_code = x)
-#     return locals()
-
-def validate_supplier_id(form):    
-    _id = db(db.Supplier_Master.supp_code == request.vars.supplier_id).select().first()
-    print request.vars.supplier_id
-    if _id:
-        print 'True'
-        form.vars.supplier_id = _id.id
-    else:
-        print 'False'
-        form.errors._id = DIV('error')        
 
 @auth.requires_login()
 def suplr_forw_form():

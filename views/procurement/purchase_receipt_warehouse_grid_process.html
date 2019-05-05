@@ -6,12 +6,11 @@
                 <li class="active"><a href="#">EDIT</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">PURCHASE ORDERED FORM</span>
+            <span class="card-title">PURCHASE RECEIPT FORM</span>
         </div>
         <div class="card-body tab-content">                                            
-            <div class="form-horizontal">   
-                {{=form}}
-        
+            <div class="form-horizontal">                   
+                {{=form}}        
             </div>
             <hr>
             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new.load',ajax = True)}}
@@ -19,3 +18,34 @@
     </div>
 </div>
 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$('.cut').click(function(){
+    var _id = $(this).attr('data-id');
+    var _pr = $(this).attr('data-pr');
+    bootbox.confirm({
+        size: "small",
+        message: "Would you like to remove this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {                
+                ajax("{{=URL('procurement','cut_purchase_order_transaction')}}" + '/'+ _id+ '/' + _pr );
+                location.reload();
+                       
+            }
+
+        }
+    })
+});    
+ 
+</script>

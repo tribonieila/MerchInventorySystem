@@ -114,7 +114,7 @@ def outgoing_mail_browse():
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
     row = []
-    thead = THEAD(TR(TH('Date'),TH('Mail No.'),TH('Sender'),TH('Subject'),TH('Address'),TH('Postage'),TH('Attached'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Date'),TH('Mail No.'),TH('Sender'),TH('Subject'),TH('Address'),TH('Postage'),TH('Attached'),TH('Action')))
     _query = db(db.Outgoing_Mail).select(orderby = ~db.Outgoing_Mail.created_on)
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
@@ -122,6 +122,7 @@ def outgoing_mail_browse():
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
         row.append(TR(
+            TD(n.id),
             TD(n.mail_date),
             TD(n.outgoing_mail_no),
             TD(n.mail_sender),
