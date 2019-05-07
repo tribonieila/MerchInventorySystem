@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">VIEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
+        </div>
+        <div class="card-body tab-content">                                            
+            {{=table}}
+            <br>
+            {{=ttable}}
+        </div>
+    </div>
+</div>

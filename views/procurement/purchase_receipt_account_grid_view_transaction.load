@@ -1,4 +1,21 @@
+{{=form3.custom.begin}}
+
+<table class="table">
+    <thead>
+        <tr class="bg-success">
+            <th>Landed Cost</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Discount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{=form3.custom.widget.landed_cost}}</td><td>{{=form3.custom.widget.other_charges}}</td><td>{{=form3.custom.widget.custom_duty_charges}}</td><td>{{=form3.custom.widget.other_discount}}</td>
+        </tr>
+    </tbody>
+</table>
+{{=form3.custom.end}}
 {{=form}}
+<hr>
+{{=_table}}
 <hr>
 <div id = "divItm">
 {{=form2.custom.begin}}
@@ -70,7 +87,9 @@ $(document).ready(function(){
         return false;
     });
     
-    
+    $('#btnSubmit').click(function(){
+        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}',['landed_cost', 'other_charges','custom_duty_charges','other_discount']);
+    });
 
 });
 </script>
