@@ -3,16 +3,13 @@
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
+            <span class="card-title">ITEM PRICES FORM</span>
         </div>
         <div class="card-body tab-content">                                            
-            {{=table}}
-            <br>
             {{=form}}
-
         </div>
     </div>
 </div>

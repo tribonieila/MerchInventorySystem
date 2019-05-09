@@ -54,3 +54,42 @@
     </div>                                              
 </div>
 {{=form.custom.end}}
+<hr>
+<div id = "_item_code_description"></div> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+
+$(document).ready(function(){
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('procurement','warehouse_new_item')}}', ['item_code'], '_item_code_description');     
+        return false;
+    });
+    $('.del').click(function(){
+        var _id2 = $(this).attr('data-2id');    
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to remove this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                
+                    ajax("{{=URL('procurement','consolidated_remove')}}" + '/'+ _id2);
+                    location.reload();
+                        
+                }
+
+            }
+        })
+    });    
+
+});
+</script>

@@ -1,0 +1,123 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">ITEM MASTER FORM</span>
+        </div>
+        <div class="card-body tab-content">           
+            <div class="form-horizontal">
+                {{=form.custom.begin}}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Item Code</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="item_no" name = "item_no" value="{{=_id.item_code}}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Description En.</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.item_description}}
+                            </div>
+                        </div>
+                    </div>        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Description Ar.</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.item_description_ar}}
+                            </div>
+                        </div>
+                    </div>        
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Supplier Item Reference</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.supplier_item_ref}}
+                            </div>
+                        </div>
+                    </div>            
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">International Barcode</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.int_barcode}}
+                            </div>
+                        </div>
+                    </div>        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Local Barcode</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.loc_barcode}}
+                            </div>
+                        </div>
+                    </div>                                             
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Purchase Point</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.purchase_point}}
+                            </div>
+                        </div>
+                    </div>            
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Selective Tax</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.selectivetax}}
+                            </div>
+                        </div>
+                    </div>        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Vat Percentage</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.vatpercentage}}
+                            </div>
+                        </div>
+                    </div>                                             
+                </div> 
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Purchase Point</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.purchase_point}}
+                            </div>
+                        </div>
+                    </div>            
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Selective Tax</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.selectivetax}}
+                            </div>
+                        </div>
+                    </div>        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Vat Percentage</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.vatpercentage}}
+                            </div>
+                        </div>
+                    </div>                                             
+                </div>                                 
+                {{=form.custom.end}}
+            </div>                                 
+            
+        </div>
+    </div>
+</div>
