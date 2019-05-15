@@ -8,11 +8,46 @@
             </ul>
             <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
         </div>
-        <div class="card-body tab-content">                                            
+        <div class="card-body tab-content">                                      
             {{=table}}
             <br>
+            
             {{=form}}
-
+            {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new_item.load', ajax = True, args = request.args(0))}}
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<script>
+
+$(document).ready(function(){
+    $('#btnRefresh').click(function(){
+        location.reload();
+    });
+    $('#btnDraft').click(function(){
+        var _id2 = $(this).attr('data-2id');    
+        bootbox.confirm({
+            size: "small",
+            message: "Save as a draft record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                
+                    location.replace("{{=URL('inventory','str_kpr_grid')}}")                                                              
+                }
+            }
+        })
+    });    
+
+});
+</script>    

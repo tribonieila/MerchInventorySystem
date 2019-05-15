@@ -1,11 +1,12 @@
-{{=table}}
-{{=form.custom.begin}}
+
+<hr>
+{{=form2.custom.begin}}
 <div class="row">    
     <div class="col-md-2">
         <div class="form-group">
             <label class="col-sm-4 control-label">Item Code</label>
             <div class="col-sm-8">         
-                    {{=form.custom.widget.item_code}}                                
+                {{=form2.custom.widget.new_item_code}}                                
             </div>                           
         </div>                        
     </div>
@@ -13,7 +14,7 @@
         <div class="form-group">
             <label class="col-sm-4 control-label">Description</label>
             <div class="col-sm-8">         
-                    {{=form.custom.widget.item_description}}                                
+                {{=form2.custom.widget.item_description}}                                
             </div>                           
         </div>                        
     </div>
@@ -21,7 +22,7 @@
         <div class="form-group">
             <label class="col-sm-4 control-label">UOM</label>
             <div class="col-sm-8">         
-                    {{=form.custom.widget.uom}}                                
+                {{=form2.custom.widget.uom}}                                
             </div>                           
         </div>                        
     </div>
@@ -29,7 +30,7 @@
         <div class="form-group">
             <label class="col-sm-6 control-label">Quantity</label>
             <div class="col-sm-6"> 
-                {{=form.custom.widget.quantity}}
+                {{=form2.custom.widget.quantity}}
             </div>
         </div>                    
     </div>
@@ -37,7 +38,7 @@
         <div class="form-group">
             <label class="col-sm-6 control-label">Pieces</label>
             <div class="col-sm-6">                                
-                {{=form.custom.widget.pieces}}
+                {{=form2.custom.widget.pieces}}
             </div>                           
         </div>    
     </div>                
@@ -45,26 +46,28 @@
         <div class="form-group">
             <label class="col-sm-4 control-label">Category</label>
             <div class="col-sm-8"> 
-                {{=form.custom.widget.category_id}}
+                {{=form2.custom.widget.category_id}}
             </div>
         </div>                    
     </div>
     <div class="col-md-1">          
-            <input class="btn btn-primary" type="submit" value="add" id="btnadd">                        
+            <input class="btn btn-primary" type="submit" value="add" id="BtnAdd">                        
     </div>                                              
 </div>
-{{=form.custom.end}}
+{{=form2.custom.end}}
 <hr>
 <div id = "_item_code_description"></div> 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
- 
+
 $(document).ready(function(){
-    $('#no_table_item_code').change(function(){
-        ajax('{{=URL('procurement','warehouse_new_item')}}', ['item_code'], '_item_code_description');     
+
+    $('#no_table_new_item_code').change(function(){
+        ajax('{{=URL('procurement','warehouse_add_new_item', args = request.args(0))}}', ['new_item_code'], '_item_code_description');     
         return false;
     });
+
     $('.del').click(function(){
         var _id2 = $(this).attr('data-2id');    
         bootbox.confirm({
@@ -82,7 +85,7 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {                
-                    ajax("{{=URL('procurement','consolidated_remove')}}" + '/'+ _id2);
+                    ajax("{{=URL('procurement','consolidated_remove_new_item')}}" + '/'+ _id2);
                     location.reload();
                         
                 }
