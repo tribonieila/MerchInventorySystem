@@ -10,11 +10,37 @@
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
+
                 {{=table}}
                 <hr>
+                {{=form3.custom.begin}}
+
+                <table class="table">
+                    <thead>
+                        <tr class="bg-success">
+                            <th style="width:180px;">Suppler/Acct Code</th><th style="width:350px;">Supplier Name</th><th>Exchange Rate</th><th>Landed Cost</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Discount</th><th>Selective Tax</th><th>Supplier Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{=form3.custom.widget.supplier_account_code}}</td><td id="_supplier_code_id"></td><td>{{=form3.custom.widget.exchange_rate}}</td><td>{{=form3.custom.widget.landed_cost}}</td><td>{{=form3.custom.widget.other_charges}}</td><td>{{=form3.custom.widget.custom_duty_charges}}</td><td>{{=form3.custom.widget.other_discount}}</td><td>{{=form3.custom.widget.selective_tax}}</td><td>{{=form3.custom.widget.supplier_invoice}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                {{=form3.custom.end}}      
+                
                 {{=LOAD('procurement','purchase_receipt_account_grid_view_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    $('#no_table_supplier_account_code').change(function(){
+        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');     
+    });
+    $('#btnValidate').click(function(){
+        location.reload();
+    });
+</script>

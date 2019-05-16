@@ -193,7 +193,8 @@ db.define_table('Supplier_Master',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(supp_code)s')
 
 db.define_table('Supplier_Bank',
-    Field('supplier_id', 'reference Supplier_Master', ondelete = 'NO ACTION', label = 'Supplier', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier')),    Field('bank_name', 'string'),
+    Field('supplier_id', 'reference Supplier_Master', ondelete = 'NO ACTION', label = 'Supplier', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier')),    
+    Field('bank_name', 'string'),
     Field('account_no', 'string', length = 50),
     Field('bank_name', 'string', length = 50),
     Field('beneficiary_name', 'string', length = 50),
@@ -1442,6 +1443,7 @@ db.define_table('Purchase_Receipt',
     Field('purchase_receipt_date_approved','date', writable = False),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
+    
     Field('mode_of_shipment','string',length = 25, requires = IS_IN_SET(['BY AIR','BY SEA','BY LAND'], zero = 'Choose Type')),
     Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
     Field('supplier_reference_order','string', length = 25),
@@ -1460,7 +1462,7 @@ db.define_table('Purchase_Receipt',
     Field('exchange_rate','decimal(10,2)', default = 0.0),
     Field('selective_tax','decimal(10,2)', default = 0.0, label = 'Selective Tax'),
     Field('supplier_invoice','string', length = 25),
-
+    Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
     Field('remarks', 'text'),                   

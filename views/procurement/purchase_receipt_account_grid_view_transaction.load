@@ -1,18 +1,4 @@
-{{=form3.custom.begin}}
 
-<table class="table">
-    <thead>
-        <tr class="bg-success">
-            <th>Exchange Rate</th><th>Landed Cost</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Discount</th><th>Selective Tax</th><th>Supplier Invoice</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{=form3.custom.widget.exchange_rate}}</td><td>{{=form3.custom.widget.landed_cost}}</td><td>{{=form3.custom.widget.other_charges}}</td><td>{{=form3.custom.widget.custom_duty_charges}}</td><td>{{=form3.custom.widget.other_discount}}</td><td>{{=form3.custom.widget.selective_tax}}</td><td>{{=form3.custom.widget.supplier_invoice}}</td>
-        </tr>
-    </tbody>
-</table>
-{{=form3.custom.end}}
 {{=form}}
 <hr>
 {{=_table}}
@@ -80,7 +66,6 @@ $(document).ready(function(){
         $("#no_table_item_code").val(withoutSpaces);
             }, 1);
     });
-    
     $('#no_table_item_code').change(function(){
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
@@ -88,7 +73,7 @@ $(document).ready(function(){
     });
     
     $('#btnSubmit').click(function(){
-        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}',['landed_cost', 'other_charges','custom_duty_charges','other_discount']);
+        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}',['landed_cost', 'other_charges','custom_duty_charges','other_discount','exchange_rate','selective_tax','supplier_invoice','supplier_account_code']);
     });
 
 });
