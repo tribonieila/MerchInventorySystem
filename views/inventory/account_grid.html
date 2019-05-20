@@ -36,6 +36,10 @@
                         <el-tab-pane label="Purchase Receipt">
                             {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}
                         </el-tab-pane>                                                 
+                        <el-tab-pane label="Direct Purchase Receipt">
+                            {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}
+                        </el-tab-pane>                                                 
+
 
                 </template>
             </div>

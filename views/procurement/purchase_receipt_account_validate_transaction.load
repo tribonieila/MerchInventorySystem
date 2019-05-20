@@ -1,0 +1,189 @@
+{{=form3.custom.begin}}
+
+<table class="table">
+    <thead>
+        <tr class="bg-success">
+            <th style="width:180px;">Suppler/Acct Code</th><th style="width:350px;">Supplier/Account Name</th><th>Exchange Rate</th><th>Landed Cost Rate</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Trade Terms</th><th>Selective Tax</th><th>Supplier Invoice</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{=form3.custom.widget.supplier_account_code}}</td>
+            <td id="_supplier_code_id"></td>
+            <td>{{=form3.custom.widget.exchange_rate}}</td>
+            <td>{{=form3.custom.widget.landed_cost}}</td>
+            <td>{{=form3.custom.widget.other_charges}}</td>
+            <td>{{=form3.custom.widget.custom_duty_charges}}</td>
+            <td>{{=form3.custom.widget.trade_terms_id}}</td>
+            <td>{{=form3.custom.widget.selective_tax}}</td>
+            <td>{{=form3.custom.widget.supplier_invoice}}</td>
+        </tr>
+    </tbody>
+</table>
+
+{{=form3.custom.end}}   
+{{=form}}
+<hr>
+{{=_table}}
+<hr>
+<div id = "divItm">
+{{=form2.custom.begin}}
+<div class="row">    
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Item Code</label>
+            <div class="col-sm-8">         
+                    {{=form2.custom.widget.item_code}}
+
+                
+            </div>                           
+        </div>                        
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Quantity</label>
+            <div class="col-sm-6"> 
+                {{=form2.custom.widget.quantity}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Pieces</label>
+            <div class="col-sm-6">                                
+                {{=form2.custom.widget.pieces}}
+            </div>                           
+        </div>    
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Most Recent Cost</label>
+            <div class="col-sm-4"> 
+                <div id = "_most_recent_cost"></div>
+            </div>
+        </div>                    
+    </div>                   
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Category</label>
+            <div class="col-sm-8"> 
+                {{=form2.custom.widget.category_id}}
+            </div>
+        </div>                    
+    </div>
+    <div class="col-md-1">          
+            <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+        
+    </div>                                              
+</div>
+{{=form2.custom.end}}
+<div id = "_item_code_description"></div>      
+</div>
+<script>
+$(document).ready(function(){
+    
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
+        return false;
+    });
+    
+    $('#btnSubmit').click(function(){
+        ajax('{{=URL('procurement','purchase_receipt_account_validate_transaction', args=request.args(0))}}',['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code']);
+    });
+
+    $('#btnValidate').click(function(){    
+        location.reload();        
+    });
+
+
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$('#btnAbort').click(function(){
+    var _id = $(this).attr('data-id');
+    bootbox.confirm({
+        size: "small",
+        message: "Abort the process?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax('{{=URL('procurement','purchase_receipt_account_abort_transaction', args=request.args(0))}}');                     
+                location.reload();
+            } 
+        }
+    })
+});    
+$('.delete').click(function(){
+    var _id = $(this).attr('data-id');
+    bootbox.confirm({
+        size: "small",
+        message: "Delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('procurement','purchase_receipt_transaction_delete')}}" + '/'+ _id);
+                location.reload();
+            }
+
+        }
+    })
+});    
+ $('.del').click(function(){
+    var _idd = $(this).attr('data-ct');
+    bootbox.confirm({
+        size: "small",
+        message: "Delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);
+                location.reload();
+            }
+
+        }
+    })
+});    
+</script>
+<script>
+    $('#no_table_supplier_account_code').change(function(){
+        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');     
+    });
+
+</script>

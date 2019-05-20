@@ -23,7 +23,15 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{{=form3.custom.widget.supplier_account_code}}</td><td id="_supplier_code_id"></td><td>{{=form3.custom.widget.exchange_rate}}</td><td>{{=form3.custom.widget.landed_cost}}</td><td>{{=form3.custom.widget.other_charges}}</td><td>{{=form3.custom.widget.custom_duty_charges}}</td><td>{{=form3.custom.widget.other_discount}}</td><td>{{=form3.custom.widget.selective_tax}}</td><td>{{=form3.custom.widget.supplier_invoice}}</td>
+                            <td><input type="text" class="form-control" value="None" disabled></td>
+                            <td><input type="text" class="form-control" value="None" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
+                            <td><input type="text" class="form-control" value="0.0" disabled></td>
                         </tr>
                     </tbody>
                 </table>
@@ -35,12 +43,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    $('#no_table_supplier_account_code').change(function(){
-        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');     
-    });
-    $('#btnValidate').click(function(){
-        location.reload();
-    });
-</script>
