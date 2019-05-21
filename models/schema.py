@@ -1458,6 +1458,7 @@ db.define_table('Purchase_Receipt',
     Field('selective_tax','decimal(10,6)', default = 0.0, label = 'Selective Tax'),
     Field('supplier_invoice','string', length = 25),
     Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
+    Field('supplier_account_code_description', 'string', length = 50),
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
     # Field('remarks', 'text'),                   
