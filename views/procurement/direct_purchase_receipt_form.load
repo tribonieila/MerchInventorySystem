@@ -1,0 +1,244 @@
+ 
+                {{=form.custom.begin}}	                                    
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Purchase Receipt No</label>
+                            <div class="col-sm-8">                                                                
+                                <div id="_purchase_receipt_no"></div>
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Purchase Receipt Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >                                                      
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Purchase Order No</label>
+                            <div class="col-sm-8">{{=form.custom.widget.purchase_order_no}}</div>
+                        </div> 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">{{=form.custom.widget.dept_code_id}}</div>
+                        </div>            
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location Source</label>
+                            <div class="col-sm-8">{{=form.custom.widget.location_code_id}}</div>
+                        </div>                                           
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Supplier Proporma Invoice</label>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_reference_order}}</div>
+                        </div>                             
+                    </div>    
+                </div>       
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Supplier Code</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.supplier_code_id}}
+                            </div>
+                        </div>      
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Currency</label>
+                            <div class="col-sm-3"><div id = "_supplier_code_currency"></div></div>
+                            <label class="col-sm-2 control-label">Trade Terms</label>
+                            <div class="col-sm-3">
+                                {{=form.custom.widget.trade_terms_id}}
+                            </div>
+
+                        </div>                   
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
+                        </div>                   
+                    </div>    
+                </div>         
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Mode of Shipment</label>
+                            <div class="col-sm-8">{{=form.custom.widget.mode_of_shipment}}</div>
+                        </div>             
+
+                    </div> 
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">
+                                <!-- {{=form.custom.widget.remarks}} -->
+                                <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea>
+                            </div>
+                        </div>             
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">                                
+                                
+                                <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>
+                                {{=form.custom.end}}
+                            </div>        
+                        </div>  
+                    </div>
+                </div>                
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function() {
+   $('#btnDetails').on('click', function(){
+      var container = $('#example-container').clone();
+    //   container.find('table').attr('id', 'example');
+
+      var box = bootbox.dialog({
+        show: false,        
+        message: container.html(),
+        // title: "DataTables in a Bootbox",
+        buttons: {
+          ok: {
+            label: "OK",
+            className: "btn-primary",
+            callback: function() {
+              console.log('OK Button');
+            }
+          },
+          cancel: {
+            label: "Cancel",
+            className: "btn-default"
+          }
+        }
+      });
+      
+      box.on("shown.bs.modal", function() {
+         $('#example').DataTable(); 
+      });
+      
+      box.modal('show'); 
+   });
+});
+</script>
+<script src="{{=URL('static','js/cascade.js')}}"></script>
+<script type="text/javascript">
+jQuery(document).ready(function($){
+    var data = [ {{for d in db(db.Department.status_id == 1).select(db.Department.ALL, orderby = db.Department.id):}}
+        // { text: 'Choose Department', value = 0 },
+        { text: '{{=d.dept_code}} - {{=d.dept_name}}', value:'{{=d.id}}',
+            children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL, orderby = db.Supplier_Master.id):}}
+                { text: '{{=p.supp_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
+            ],
+        }, {{pass}}
+    ];
+    $('#no_table_dept_code_id').cascadingSelect({
+        subSelects: ['#no_table_supplier_code_id'],
+        data: data 
+    });
+});
+</script>
+<script type="text/javascript">
+$(document).ready(function(){    
+
+    var str_ctr = 0
+
+    $('#btnsubmit').attr('disabled','disabled');
+    $('#btnhelp').attr('disabled','disabled');
+    $('#btnproceed').attr('disabled','disabled');
+    $('#selective_tax').hide();
+    $('#order_panel').hide();
+
+    $('#no_table_dept_code_id').change(function(){
+        ajax('{{=URL('generate_purchase_request_no')}}', ['dept_code_id'], '_purchase_order_no');          
+        var ctr = this.value;
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr = '') {
+            request(0)
+        }
+        return false;
+    });
+
+    $('#no_table_supplier_code_id').change(function(){       
+        ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
+        ajax('{{=URL('generate_supplier_trade_terms')}}', ['supplier_code_id'], '_supplier_trade_terms');        
+        var ctr = this.value;
+        if (ctr > 0) {
+            request(1)
+        } else if (ctr = '') {
+            request(0)
+        }                
+        return false;
+    });
+
+    $('#btnproceed').click(function(){
+        $('#order_panel').slideDown('slow');
+        ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id']);
+        $('#btnhelp').removeAttr('disabled');
+        $("#item_code").focus();
+        $("#no_table_dept_code_id").attr('disabled','disabled');                
+        $("#no_table_location_code_id").attr('disabled','disabled');
+        $("#no_table_supplier_reference_order").attr('disabled','disabled');
+        $("#no_table_estimated_time_of_arrival").attr('disabled','disabled');        
+        $("#no_table_mode_of_shipment").attr('disabled','disabled');
+        $("#no_table_supplier_code_id").attr('disabled','disabled');
+        $("#no_table_status_id").attr('disabled','disabled');
+        $("#no_table_remarks").attr('disabled','disabled');
+        $("#btnproceed").attr('disabled','disabled');
+        return false;
+    });
+
+    $('#btnsubmit').click(function(){
+        $("#no_table_dept_code_id").removeAttr('disabled');
+        $("#no_table_location_code_id").removeAttr('disabled');
+        $("#no_table_customer_code_id").removeAttr('disabled');        
+        $("#no_table_supplier_reference_order").removeAttr('disabled');
+        $("#no_table_mode_of_shipment").removeAttr('disabled');
+        $("#no_table_estimated_time_of_arrival").removeAttr('disabled');
+        $("#no_table_supplier_code_id").removeAttr('disabled');
+        $("#no_table_status_id").removeAttr('disabled');
+        $("#no_table_remarks").removeAttr('disabled');
+    });
+
+    $('#btnAbort').click(function(){
+        ajax('{{=URL('procurement','procurement_request_form_abort')}}', ['ticket_no_id']);
+    });
+    function request(e){
+        if (e == 1) {
+            str_ctr += e;
+        } else {
+            str_ctr -= 1;
+        }
+        var d = $('#no_table_dept_code_id').val();
+        // var l = $('#no_table_stock_source_id').val();
+        var c = $('#supplier_code_id').val();
+        if (str_ctr >= 2) {
+            if ( d != '' && c != '') {
+                $('#btnproceed').removeAttr('disabled');
+            } else {
+                $('#btnproceed').attr('disabled','disabled');
+            }
+        } else {
+            $('#btnproceed').attr('disabled','disabled');
+        }
+    }
+});
+
+</script>
