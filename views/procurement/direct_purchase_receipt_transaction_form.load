@@ -28,7 +28,7 @@
     </div>
     <div class="col-md-3">
         <div class="form-group">
-            <label class="col-sm-6 control-label">Supplier Cost</label>
+            <label class="col-sm-6 control-label">Most Recent Cost</label>
             <div class="col-sm-4"> 
                 <div id = "_most_recent_cost"></div>
             </div>
@@ -77,7 +77,7 @@ $(document).ready(function(){
         var la = $('#local_amount').val();        
         text = "Discount Added";
         fa = (_g * (100 - _d)) / 100
-        la = fa * {{=_foc.exchange_rate_value}}        
+        la = fa * 3.65
         $('#foreign_amount').val(Number(fa.toFixed(2)).toLocaleString());
         $('#local_amount').val(Number(la.toFixed(2)).toLocaleString());
         ajax('{{=URL('procurement','discount_session')}}',['discount']);
@@ -91,6 +91,7 @@ $(document).ready(function(){
 <script>
 $('.delete').click(function(){
     var _id = $(this).attr('data-id');
+    var parent = $(this).parent("div").parent("td").parent("tr");
     bootbox.confirm({
         size: "small",
         message: "Would you like to delete this record?",
@@ -106,8 +107,9 @@ $('.delete').click(function(){
         },
         callback: function (result) {
             if (result) {
-                ajax("{{=URL('procurement','purchase_request_transaction_temporary_delete')}}" + '/'+ _id);
-                       
+                
+                ajax("{{=URL('procurement','direct_purchase_transaction_delete')}}" + '/'+ _id);
+                parent.fadeOut('slow');
             }
 
         }

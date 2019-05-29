@@ -2688,7 +2688,7 @@ def sales_return_report_account_user():
         ('TOPPADDING',(0,-3),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('TOPPADDING',(0,-2),(-1,-2),0),
-        ('BOTTOMPADDING',(0,-3),(-2,-2),0),
+        ('BOTTOMPADDING',(0,-3),(-2,-2),0), 
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
         ('FONTNAME', (0, -1), (9, -1), 'Courier-Bold', 12),                
         ('FONTSIZE',(0,0),(-1,1),7),

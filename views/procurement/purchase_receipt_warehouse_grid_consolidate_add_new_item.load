@@ -28,6 +28,24 @@
     </div>
     <div class="col-md-2">
         <div class="form-group">
+            <label class="col-sm-4 control-label">Prod. Date</label>
+            <div class="col-sm-8">         
+                {{=form2.custom.widget.production_date}}                                
+            </div>                           
+        </div>                        
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Exp. Date</label>
+            <div class="col-sm-8">         
+                {{=form2.custom.widget.expiration_date}}                                
+            </div>                           
+        </div>                        
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
             <label class="col-sm-6 control-label">Quantity</label>
             <div class="col-sm-6"> 
                 {{=form2.custom.widget.quantity}}

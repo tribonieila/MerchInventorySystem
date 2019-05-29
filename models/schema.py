@@ -1391,6 +1391,8 @@ db.define_table('Purchase_Receipt_Transaction_Consolidated',
     Field('uom','integer', default = 0),        
     Field('purchase_ordered_quantity', 'integer', default = 0), # ordered consolidated
     Field('difference_quantity', 'integer', default = 0),
+    Field('production_date', 'datetime', default = request.now),
+    Field('expiration_date', 'datetime', default = request.now),
     # delete
     Field('price_cost', 'decimal(15,6)', default = 0),
     Field('total_amount','decimal(15,6)', default = 0),
@@ -1425,6 +1427,8 @@ db.define_table('Purchase_Receipt_Transaction_Consolidated_New_Item',
     Field('pieces','integer', default = 0),
     Field('total_pieces','integer', default = 0),
     Field('uom','integer', default = 0),    
+    Field('production_date', 'datetime', default = request.now),
+    Field('expiration_date', 'datetime', default = request.now),
     Field('delete', 'boolean', default = False),    
     Field('selected','boolean', default = False), 
     Field('consolidated','boolean', default = False),                
@@ -1461,7 +1465,7 @@ db.define_table('Purchase_Receipt',
     Field('supplier_account_code_description', 'string', length = 50),
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-    # Field('remarks', 'text'),                   
+    Field('remarks', 'text'),                   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
     # Field('selected','boolean', default = False), 
     # Field('consolidated','boolean', default = False),
@@ -1508,6 +1512,19 @@ db.define_table('Purchase_Receipt_Transaction',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+db.define_table('Purchase_Batch_Cost', # Except short and excess
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('purchase_receipt_date', 'datetime', default = request.now), # from purchase receipt date
+    Field('batch_cost', 'decimal(10,2)', default = 0), # landed  cost
+    Field('supplier_price','decimal(15,6)', default = 0), # invoice price from manoj     
+    Field('batch_quantity', 'integer', default = 0), # manoj
+    Field('batch_production_date','datetime', default = request.now), # hakim entry
+    Field('batch_expiry_date','datetime', default = request.now), # hakim entry
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Direct_Purchase_Receipt',    
     Field('purchase_receipt_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('purchase_receipt_no', 'integer', writable = False),    
@@ -1516,23 +1533,27 @@ db.define_table('Direct_Purchase_Receipt',
     Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),    
     Field('supplier_reference_order','string', length = 25),
     Field('mode_of_shipment','string',length = 25, requires = IS_IN_SET(['BY AIR','BY SEA','BY LAND'], zero = 'Choose Type')),
-    Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-    Field('total_amount','decimal(15,4)', default = 0),    # total net amount
-    Field('total_amount_after_discount','decimal(15,4)', default = 0),    
+    Field('location_code_id','reference Location', ondelete = 'NO ACTION', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+    Field('total_amount','decimal(15,4)', default = 0, writable = False),    # total net amount
+    Field('total_amount_after_discount','decimal(15,4)', default = 0, writable = False),    
+
     Field('exchange_rate','decimal(10,6)', default = 0, required = True),
     Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
+
     Field('landed_cost','decimal(10,6)', default = 0),
     Field('other_charges','decimal(10,6)', default = 0),    
     Field('custom_duty_charges','decimal(10,6)', default = 0),        
     Field('selective_tax','decimal(10,6)', default = 0.0, label = 'Selective Tax'),
     Field('supplier_invoice','string', length = 25),
     Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
-    Field('supplier_account_code_description', 'string', length = 50),
+    Field('supplier_account_code_description', 'string', length = 25, writable = False),
+
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
     Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),    
-    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
-    Field('received','boolean', default = False),
-    Field('archives', 'boolean', default = False),   
+    Field('remarks', 'text'),
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Stock_Status.id == 18), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
+    Field('received','boolean', default = False, writable = False),
+    Field('archives', 'boolean', default = False, writable = False),   
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1541,9 +1562,12 @@ db.define_table('Direct_Purchase_Receipt',
 db.define_table('Direct_Purchase_Receipt_Transaction',
     Field('purchase_receipt_no_id','reference Direct_Purchase_Receipt',ondelete = 'NO ACTION',writable = False),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('item_code', 'string', length = 25), 
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0), # manoj
-    Field('uom','integer', default = 0),    
+    Field('pieces','integer', default = 0),    
+    Field('uom','integer', default = 0),
+    Field('total_pieces','integer', default = 0),
     Field('price_cost', 'decimal(15,6)', default = 0),
     Field('total_amount','decimal(15,6)', default = 0),
     Field('average_cost','decimal(15,4)', default = 0),
@@ -1556,7 +1580,8 @@ db.define_table('Direct_Purchase_Receipt_Transaction',
     Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'), 
     Field('excessed','boolean',default = False),
     Field('remarks','string', length = 50),
-    Field('delete', 'boolean', default = False),    
+    Field('delete', 'boolean', default = False),  
+    Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),

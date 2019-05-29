@@ -37,13 +37,9 @@
                             {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}
                         </el-tab-pane>                                                 
                         <el-tab-pane label="Direct Purchase Receipt">
-                            <el-tabs :tab-position="tabPosition" style="height: 100%;">                
-                                <el-tab-pane label="+ Add New">
-                                    {{=LOAD('procurement','direct_purchase_receipt_form.load', ajax = True)}}
-                                </el-tab-pane>    
-                                <el-tab-pane label="Browse">
-                                    {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}
-                                </el-tab-pane>                                                                           
+                            <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ ADD NEW</a>
+                            <br/><br/>
+                            {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}
                         </el-tab-pane>                                                 
 
 
