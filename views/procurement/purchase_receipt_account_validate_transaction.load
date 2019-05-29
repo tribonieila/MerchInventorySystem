@@ -4,7 +4,7 @@
 <table class="table">
     <thead>
         <tr class="bg-success">
-            <th style="width:180px;">Suppler/Acct Code</th><th style="width:350px;">Supplier/Account Name</th><th>Exchange Rate</th><th>Landed Cost Rate</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Trade Terms</th><th>Selective Tax</th><th>Supplier Invoice</th>
+            <th style="width:180px;">Suppler/Acct Code</th><th style="width:250px;">Supplier/Account Name</th><th style="width:150px;">Currency</th><th>Exchange Rate</th><th>Landed Cost Rate</th><th>Other Charges</th><th>Custom Duty Charges</th><th style="width:150px;">Trade Terms</th><th>Selective Tax</th><th>Supplier Invoice</th>
         </tr>
     </thead>
     <tbody>
@@ -12,6 +12,7 @@
             <tr>
                 <td><input type="text" class="form-control" value="{{=_pr.supplier_account_code}}" readonly></td>
                 <td><input type="text" class="form-control" value="{{=_pr.supplier_account_code_description}}" readonly></td>
+                <td><input type="text" class="form-control" value="{{=_pr.currency_id.mnemonic}}" readonly></td>
                 <td><input type="text" class="form-control" value="{{=_pr.exchange_rate}}" readonly></td>
                 <td><input type="text" class="form-control" value="{{=_pr.landed_cost}}" readonly></td>
                 <td><input type="text" class="form-control" value="{{=_pr.other_charges}}" readonly></td>
@@ -25,8 +26,9 @@
             <tr>
                 <td>{{=form3.custom.widget.supplier_account_code}}</td>
                 <td id="_supplier_code_id"></td>
+                <td>{{=form3.custom.widget.currency_id}}</td>
                 <td>{{=form3.custom.widget.exchange_rate}}</td>
-                <td>{{=form3.custom.widget.landed_cost}}</td>
+                <td>{{=form3.custom.widget.flanded_cost}}</td>
                 <td>{{=form3.custom.widget.other_charges}}</td>
                 <td>{{=form3.custom.widget.custom_duty_charges}}</td>
                 <td>{{=form3.custom.widget.trade_terms_id}}</td>
@@ -112,7 +114,7 @@ $(document).ready(function(){
     });
     
     $('#btnSubmit').click(function(){
-        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}' ,['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code']);
+        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}', ['flanded_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code']);
     });
 
     $('#btnValidate').click(function(){    
