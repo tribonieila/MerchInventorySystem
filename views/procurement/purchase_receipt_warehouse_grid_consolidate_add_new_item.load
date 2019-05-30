@@ -1,79 +1,35 @@
-
 <hr>
 {{=form2.custom.begin}}
-<div class="row">    
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">         
-                {{=form2.custom.widget.new_item_code}}                                
-            </div>                           
-        </div>                        
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Description</label>
-            <div class="col-sm-8">         
-                {{=form2.custom.widget.item_description}}                                
-            </div>                           
-        </div>                        
-    </div>
-    <div class="col-md-1">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">UOM</label>
-            <div class="col-sm-8">         
-                {{=form2.custom.widget.uom}}                                
-            </div>                           
-        </div>                        
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Prod. Date</label>
-            <div class="col-sm-8">         
-                {{=form2.custom.widget.production_date}}                                
-            </div>                           
-        </div>                        
-    </div>
-
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Exp. Date</label>
-            <div class="col-sm-8">         
-                {{=form2.custom.widget.expiration_date}}                                
-            </div>                           
-        </div>                        
-    </div>
-
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Quantity</label>
-            <div class="col-sm-6"> 
-                {{=form2.custom.widget.quantity}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Pieces</label>
-            <div class="col-sm-6">                                
-                {{=form2.custom.widget.pieces}}
-            </div>                           
-        </div>    
-    </div>                
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Category</label>
-            <div class="col-sm-8"> 
-                {{=form2.custom.widget.category_id}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-1">          
-            <input class="btn btn-primary" type="submit" value="add" id="BtnAdd">                        
-    </div>                                              
-</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item Code</th>
+            <th>Description</th>
+            <th>UOM</th>
+            <th>Prod. Date</th>
+            <th>Exp. Date</th>
+            <th>Quantity</th>
+            <th>Pieces</th>
+            <th>Category</th>
+            <th></th>                        
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{=form2.custom.widget.new_item_code}}</td>
+            <td>{{=form2.custom.widget.item_description}} </td>
+            <td>{{=form2.custom.widget.uom}}</td>
+            <td>{{=form2.custom.widget.production_date}}</td>
+            <td>{{=form2.custom.widget.expiration_date}}</td>
+            <td>{{=form2.custom.widget.quantity}}</td>
+            <td>{{=form2.custom.widget.pieces}}</td>
+            <td>{{=form2.custom.widget.category_id}}</td>
+            <td><input class="btn btn-primary" type="submit" value="add" id="BtnAdd">   </td>            
+        </tr>
+    </tbody>
+</table>
 {{=form2.custom.end}}
-<hr>
+
 <div id = "_item_code_description"></div> 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

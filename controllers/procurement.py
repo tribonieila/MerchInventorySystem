@@ -867,68 +867,95 @@ def validate_accounts_new_item(form):
         form.errors.item_code = 'already exist'
     else:
         form.vars.item_code = _id
+def find_dupl():
+    fd = db.Item_Master
+    count = fd.id.count()
+    # rtn = db(fd.id>0).select(fd.f1_name, fd.f2_name, fd.f3_name, count, groupby=fd.f1_name|fd.f2_name|fd.f3_name, having=count>1)
+
+    rtn = db(fd.id>0).select(fd.item_code, count, groupby = fd.item_code, orderby = fd.item_code)
+    return dict(rtn = rtn)
+
+def insert_item():
+    db.Item_Master.insert(item_description = 'A1')
 
 def purchase_receipt_account_new_item_form():
     _id = db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.id == request.args(0)).select().first()
     _dp = db(db.Department.id == session.dept_code_id).select().first()
     _dv = db(db.Division.id == _dp.div_code_id).select().first()
     # print 'session', session.dept_code_id, session.supplier_code_id,session.location_code_id    
-    form = SQLFORM.factory(
-        Field('item_description', 'string', length = 50, label = 'Description', default = _id.item_description, requires = [IS_LENGTH(50),IS_UPPER()]),    
-        Field('item_description_ar', 'string', length = 50, label = 'Arabic Name', requires = [IS_LENGTH(50), IS_UPPER()]),
-        Field('supplier_item_ref', 'string', length = 20, requires = [IS_LENGTH(20) ,IS_UPPER(), IS_NOT_IN_DB(db, 'Item_Master.supplier_item_ref')]),   #unique
-        Field('int_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.int_barcode')]), #unique
-        Field('loc_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.loc_barcode')]), #unique
-        Field('purchase_point', 'integer', default = 40),
-        Field('ib', 'decimal(10,2)', default = 0),
-        Field('uom_value', 'integer', default = int(_id.uom)),    
-        Field('uom_id', 'reference UOM', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose UOM Pack Size')),
-        Field('supplier_uom_value', 'integer'),
-        Field('supplier_uom_id', 'reference UOM', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose UOM Pack Size')),
-        Field('weight_value', 'integer'),
-        Field('weight_id', 'reference Weight', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Weight.id, '%(mnemonic)s', zero = 'Choose Weight')),
-        Field('type_id', 'reference Item_Type',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Item_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), # saleable/non-saleable => item_type_id    
-        Field('selectivetax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
-        Field('vatpercentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),    
-        Field('division_id', 'reference Division', ondelete = 'NO ACTION',default = int(_dv.id), requires = IS_IN_DB(db, db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
-        Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',default = int(session.dept_code_id), requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-        Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', default = int(session.supplier_code_id), requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
-        Field('product_code_id','reference Product', ondelete = 'NO ACTION',label = 'Product Code',requires = IS_IN_DB(db, db.Product.id,'%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
-        Field('subproduct_code_id', 'reference SubProduct', ondelete = 'NO ACTION',label = 'SubProduct', requires = IS_IN_DB(db, db.SubProduct.id, '%(subproduct_code)s - %(subproduct_name)s', zero = 'Choose SubProduct')),
-        Field('group_line_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id,'%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line Code')),
-        Field('brand_line_code_id','reference Brand_Line', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Brand_Line.id,'%(brand_line_code)s - %(brand_line_name)s', zero = 'Choose Brand Line')),
-        Field('brand_cls_code_id','reference Brand_Classification',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Brand_Classification.id,'%(brand_cls_code)s - %(brand_cls_name)s', zero = 'Choose Brand Classification')),
-        Field('section_code_id', 'reference Section',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Section.id, '%(section_code)s - %(section_name)s', zero = 'Choose Section')),
-        Field('size_code_id','reference Item_Size', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Size.id, '%(description)s', zero = 'Choose Size')),    
-        Field('gender_code_id','reference Gender', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Gender.id,'%(description)s', zero = 'Choose Gender')),
-        Field('fragrance_code_id','reference Fragrance_Type',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Fragrance_Type.id, '%(description)s', zero = 'Choose Fragrance Code')),
-        Field('color_code_id','reference Color_Code',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Color_Code.id, '%(description)s', zero = 'Choose Color')),
-        Field('collection_code_id','reference Item_Collection', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Collection.id, '%(description)s', zero = 'Choose Collection')),
-        Field('made_in_id','reference Made_In', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Made_In.id, '%(description)s', zero = 'Choose Country')),
-        Field('item_status_code_id','reference Status',ondelete = 'NO ACTION', default = 1, requires = IS_IN_DB(db, db.Status.id, '%(status)s', zero = 'Choose Status')))
+    # db.Item_Master.item_code.requires = [IS_LENGTH(15),IS_NOT_IN_DB(db, 'Item_Master.item_code')]
+
+    ctr = db(db.Item_Master).count()
+    ctr = ctr + 1
+    ctr = str(ctr).rjust(5,'0')    
+    form = SQLFORM(db.Item_Master)
+        # Field('division_id', 'reference Division', requires = IS_IN_DB(db, db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
+        # Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+        # Field('item_description', 'string', label = 'Description', requires = IS_UPPER()),    
+        # Field('item_description_ar', 'string', label = 'Arabic Name', requires = IS_UPPER()),
+        # Field('supplier_item_ref', 'string', length = 20, requires = [IS_LENGTH(20) ,IS_UPPER(), IS_NOT_IN_DB(db, 'Item_Master.supplier_item_ref')]),   #unique
+        # Field('int_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.int_barcode')]), #unique
+        # Field('loc_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.loc_barcode')]), #unique
+        # Field('purchase_point', 'integer', default = 40),
+        # Field('uom_value', 'integer', default = 1),
+        # Field('uom_id', 'reference UOM', default = 1,requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose UOM Text')),
+        # Field('supplier_uom_value', 'integer', default = 1),
+        # Field('supplier_uom_id', 'reference UOM', requires = IS_IN_DB(db, db.UOM.id, '%(description)s', zero = 'Choose Supplier UOM') ),
+        # Field('weight_value', 'integer'),
+        # Field('weight_id', 'integer', 'reference Weight', requires = IS_IN_DB(db, db.Weight.id, '%(description)s', zero = 'Choose Weight')),
+        # Field('type_id', 'reference Item_Type', requires = IS_IN_DB(db, db.Item_Type.id, '%(description)s', zero = 'Choose Type')), # saleable/non-saleable
+        # Field('selectivetax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
+        # Field('vatpercentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),    
+        # Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
+        # Field('product_code_id','reference Product', label = 'Product Code',requires = IS_IN_DB(db, db.Product.id,'%(product_code)s - %(product_name)s', zero = 'Choose Product Code')),
+        # Field('subproduct_code_id', 'reference SubProduct', label = 'SubProduct', requires = IS_IN_DB(db, db.SubProduct.id, '%(subproduct_code)s - %(subproduct_name)s', zero = 'Choose SubProduct')),
+        # Field('group_line_id','reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id,'%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line Code')),
+        # Field('brand_line_code_id','reference Brand_Line', requires = IS_IN_DB(db, db.Brand_Line.id,'%(brand_line_code)s - %(brand_line_name)s', zero = 'Choose Brand Line')),
+        # Field('brand_cls_code_id','reference Brand_Classification', requires = IS_IN_DB(db, db.Brand_Classification.id,'%(brand_cls_code)s - %(brand_cls_name)s', zero = 'Choose Brand Classification')),
+        # Field('section_code_id', 'reference Section', requires = IS_IN_DB(db, db.Section.id, '%(section_name)s', zero = 'Choose Section')),
+        # Field('size_code_id','reference Item_Size', requires = IS_IN_DB(db, db.Item_Size.id, '%(description)s', zero = 'Choose Size')),    
+        # Field('gender_code_id','reference Gender', requires = IS_IN_DB(db, db.Gender.id,'%(description)s', zero = 'Choose Gender')),
+        # Field('fragrance_code_id','reference Fragrance_Type', requires = IS_IN_DB(db, db.Fragrance_Type.id, '%(description)s', zero = 'Choose Fragrance Code')),
+        # Field('color_code_id','reference Color_Code', requires = IS_IN_DB(db, db.Color_Code.id, '%(description)s', zero = None)),
+        # Field('collection_code_id','reference Item_Collection', requires = IS_IN_DB(db, db.Item_Collection.id, '%(description)s', zero = 'Choose Collection')),
+        # Field('made_in_id','reference Made_In', requires = IS_IN_DB(db, db.Made_In.id, '%(description)s', zero = 'Choose Country')),
+        # Field('item_status_code_id','reference Status', default = 1, requires = IS_IN_DB(db, db.Status.id, '%(status)s', zero = 'Choose Status')))
     if form.process().accepted:
+        
+        # ctr = db(db.Item_Master).count()
+        # ctr = ctr + 1
+        # ctr = str(ctr).rjust(5,'0')          
+        # fnd = db(db.Supplier_Master.id == form.vars.supplier_code_id).select(db.Supplier_Master.supp_code).first()
+        # itm_code = fnd.supp_code[-5:]+ctr
+        # Field('most_recent_cost', 'decimal(10,4)', default = 0.0),
+        # Field('average_cost', 'decimal(10,4)', default = 0.0),
+        # Field('most_recent_landed_cost', 'decimal(10,4)', default =0.0),
+        # Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+        # Field('opening_average_cost', 'decimal(10,4)', default = 0.0),
+        # Field('last_issued_date', 'date', default = request.now),
+        # Field('wholesale_price', 'decimal(10,2)', default = 0.0),
+        # Field('retail_price', 'decimal(10,2)',default = 0.0),
+        # Field('vansale_price', 'decimal(10,2)',default = 0.0),
+        # Field('reorder_qty', 'integer', default = 0.0),        
+        # Field('item_status_code_id','reference Status',ondelete = 'NO ACTION', default = 1, requires = IS_IN_DB(db, db.Status.id, '%(status)s', zero = 'Choose Status')))
+    
         response.flash = 'RECORD UPDATED'
-        # db.Item_Master.insert(
-        #     item_code = request.vars.item_code
-        # )
         # fnd = db(db.Supplier_Master.id == request.vars.supplier_code_id).select(db.Supplier_Master.supp_code).first()
         # itm_code = fnd.supp_code[-5:]+ctr
-        # print 'request: ', request.vars.item_code, form.vars.item_description,form.vars.item_description_ar,form.vars.supplier_item_ref,
+        # print 'request: ', form.vars.item_code, form.vars.most_recent_landed_cost #, form.vars.item_description,form.vars.item_description_ar,form.vars.supplier_item_ref, form.vars.most_recent_landed_cost
         # form.vars.int_barcode,form.vars.loc_barcode,form.vars.purchase_point,
         # form.vars.ib,form.vars.uom_value,form.vars.uom_id,form.vars.supplier_uom_value,form.vars.supplier_uom_id,form.vars.weight_value,form.vars.weight_id,form.vars.type_id,form.vars.selective_tax,form.vars.vat_percentage,  
 
         # print 'item code ', request.vars.item_code, request.vars.item_description
-        # db.Item_Master.insert(item_code = itm_code,
-        # print 'error'
-        #     item_description = request.vars.item_description
-            # item_description_ar = form.vars.item_description_ar)
+        # db.Item_Master.insert(
+        #     item_code = form.vars.item_code) 
+            # item_description = form.vars.item_description,
+            # item_description_ar = form.vars.item_description_ar,
             # supplier_item_ref = form.vars.supplier_item_ref,
             # int_barcode = form.vars.int_barcode,
             # loc_barcode = form.vars.loc_barcode,
             # purchase_point = form.vars.purchase_point,
-
             # ib = form.vars.ib,
-
             # uom_value = form.vars.uom_value,
             # uom_id = form.vars.uom_id,
             # supplier_uom_value = form.vars.supplier_uom_value,
@@ -937,11 +964,10 @@ def purchase_receipt_account_new_item_form():
             # weight_id = form.vars.weight_id,
             # type_id = form.vars.type_id,
             # selective_tax = form.vars.selective_tax,
-            # vat_percentage = form.vars.vat_percentage)
-
+            # vat_percentage = form.vars.vat_percentage,
             # division_id = form.vars.division_id, 
             # dept_code_id = form.vars.dept_code_id,             
-            # supplier_code_id = form.vars.supplier_code_id)
+            # supplier_code_id = form.vars.supplier_code_id,
             # product_code_id = form.vars.product_code_id,
             # subproduct_code_id = form.vars.subproduct_code_id,
             # group_line_id = form.vars.group_line_id,
@@ -955,12 +981,26 @@ def purchase_receipt_account_new_item_form():
             # collection_code_id = form.vars.collection_code_id,
             # made_in_id = form.vars.made_in_id,
             # item_status_code_id = form.vars.item_status_code_id)
+        # _im = db(db.Item_Master.item_code == form.vars.item_code).select().first()
+        # db.Item_Prices.insert(
+        #     item_code_id = _im.id,
+        #     most_recent_cost = form.most_recent_cost,
+        #     average_cost = form.vars.average_cost,
+        #     most_recent_landed_cost = form.vars.most_recent_landed_cost,
+        #     currency_id = form.vars.currency_id,
+        #     opening_average_cost = form.vars.opening_average_cost,
+        #     last_issued_date = form.vars.last_issued_date,
+        #     wholesale_price = form.vars.wholesale_price,
+        #     retail_price = form.vars.retail_price,
+        #     vansale_price = form.vars.vansale_price,
+        #     reorder_price = form.vars.reorder_price
+        # )
         
         # _item_code = db(db.Item_Master.item_code == str(request.vars.item_code)).select(db.Item_Master.ALL).first()
         # print 'item code > ', _item_code.id
         
         # session._item_code = _item_code.id       
-        redirect(URL('procurement','purchase_receipt_account_new_item_prices_form'))
+        # redirect(URL('procurement','purchase_receipt_account_new_item_prices_form'))
         
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -2702,7 +2742,7 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
                 TD(INPUT(_type='text', _class='form-control date', _id = 'expiration_date', _name='expiration_date', _value = request.now.strftime("%Y-%m-%d")), _style="width:120px;"),
                 TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= m.quantity, _align = 'right'), _style="width:120px;"),
                 TD(_mpcs, _align = 'right', _style="width:120px;"),
-                TD(btn_lnk),_class='text-danger danger'))     
+                TD(btn_lnk),_class='text-success'))     
         else:
             trow.append(TR(
                 TD(ctr),
@@ -2714,9 +2754,9 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
                 TD(INPUT(_type='text', _class='form-control date', _id = 'expiration_date', _name='expiration_date', _value = request.now.strftime("%Y-%m-%d")), _style="width:120px;"),                
                 TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= m.quantity, _align = 'right'), _style="width:120px;"),
                 TD(_mpcs, _align = 'right', _style="width:120px;"),
-                TD(btn_lnk),_class='text-danger'))     
+                TD(btn_lnk),_class='text-primary'))     
 
-    trow.append(TR(TD(),TD(),TD(),TD(INPUT(_id='btnDraft', _type='button', _value='save as draft',_class='btn btn-primary')),TD(INPUT(_id='btnRefresh', _type='button', _value='refresh',_class='btn btn-primary')),TD(INPUT(_id='btnSubmit', _type='submit', _value='submit',_class='btn btn-success')),TD(INPUT(_type='button', _value='abort', _class='btn btn-danger')),TD(INPUT(_type='button', _value='print', _class='btn btn-warning'))))                   
+    trow.append(TR(TD(),TD(),TD(),TD(INPUT(_id='btnDraft', _type='button', _value='save as draft',_class='btn btn-primary')),TD(INPUT(_id='btnRefresh', _type='button', _value='refresh',_class='btn btn-primary')),TD(INPUT(_id='btnSubmit', _type='submit', _value='submit',_class='btn btn-success')),TD(),TD()))                   
     tbody = TBODY(*trow)
     form = FORM(TABLE(*[thead, tbody], _class= 'table', _id='PTtbl'))
     if form.accepts(request, session):
@@ -2749,7 +2789,7 @@ def validate_purchase_receipt_add_new_item(form2):
     _not_exist = db(db.Item_Master.item_code == request.vars.new_item_code).select().first()
     if not _not_exist:        
         _query = db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)       
-        _query &= db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _not_exist.id
+        # _query &= db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _not_exist.id
         _query &= db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code == str(request.vars.new_item_code)
         _query &= db.Purchase_Receipt_Transaction_Consolidated_New_Item.category_id == request.vars.category_id
         _exist = db(_query).select().first()
@@ -2815,6 +2855,8 @@ def purchase_receipt_warehouse_grid_consolidate_add_new_item():
         )    
         response.flash = 'RECORD SAVE'
         session.ticket_no = session.ticket_no_id
+        response.js = "$('#PTtbl').get(0).reload()"
+        
     elif form2.errors:
         response.flash = 'FORM HAS ERROR'
     row = []
@@ -2840,7 +2882,8 @@ def purchase_receipt_warehouse_grid_consolidate_add_new_item():
 def warehouse_add_new_item():
     _icode = db(db.Item_Master.item_code == request.vars.new_item_code).select().first()
     if _icode:
-        response.js = "$('#no_table_item_description').attr('disabled','disabled'), $('#no_table_uom').attr('disabled','disabled')"
+        _des = str(_icode.item_description.upper())        
+        response.js = "$('#no_table_uom').attr('disabled','disabled');$('#no_table_item_description').attr('disabled','disabled');"
         return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'))),
         TBODY(TR(
             TD(_icode.item_code),
@@ -3462,7 +3505,7 @@ def purchase_request_reports():
 def warehouse_receipt_reports():
     # _id = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
     _id = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
-    _list = ', '.join([str(_id.purchase_order_no_id.purchase_order_no_prefix_id.prefix)+str(i.purchase_order_no_id.purchase_order_no) for i in db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select()])
+    _list = ', '.join([str(_id.purchase_order_no_id.purchase_order_no_prefix_id.prefix)+str(i.purchase_order_no_id.purchase_order_no) for i in db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_order_no_id, groupby = db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_order_no_id)])
     _header = [
         ['WAREHOUSE PURCHASE RECEIPT'],
         ['Purchase Receipt No.',':',str(_id.purchase_receipt_no_id.purchase_receipt_no_prefix_id.prefix)+str(_id.purchase_receipt_no_id.purchase_receipt_no),'','Purchase Receipt Date',':',_id.purchase_receipt_no_id.purchase_receipt_date_approved],        
