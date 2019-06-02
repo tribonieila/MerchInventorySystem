@@ -464,8 +464,6 @@ def purchase_receipt_account_validate_transaction(): # .load
             TD(_pcs, _align = 'right', _style="width:120px;"),
             TD(INPUT(_class='form-control', _type='numbers', _id = 'price_cost', _style="text-align:right;", _name='price_cost', _value= locale.format('%.6F',_pot.price_cost or 0, grouping = True)),  _style="width:120px;"),
             TD(locale.format('%.6F',_total_amount or 0, grouping = True),_style="text-align:right;"),TD(),TD(btn_lnk)))        
-    
-
         for x in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.item_code_id == n.Purchase_Receipt_Transaction_Consolidated.item_code_id) & (db.Purchase_Receipt_Transaction.excessed == False)).select():                        
             if x.quantity != n.Purchase_Receipt_Transaction_Consolidated.quantity:
                 ctr += 1                      
@@ -594,18 +592,16 @@ def purchase_receipt_account_validate_transaction(): # .load
                         quantity = str('{:,d}'.format(abs(_total_pcs))),
                         uom = request.vars['uom'][x],
                         price_cost = float(request.vars['price_cost'][x].replace(',','')),
-                        excessed = True)
-                                                    
+                        excessed = True)                                                    
             elif int(request.vars['_cquantity'][x]) < int(_total_pcs): # updated or insert to purchase receipt transaction                            
-                    _total_pcs = int(request.vars['_cquantity'][x]) - int(_total_pcs) 
-                    _category_id = 5
+                    _total_pcs = int(request.vars['_cquantity'][x]) - int(_total_pcs)                     
                     
                     db.Purchase_Receipt_Transaction.update_or_insert(
                         purchase_receipt_no_id_consolidated = request.args(0),
                         purchase_receipt_no_id = _pr.id,
                         item_code_id = request.vars['item_code_id'][x],
                         # category_id = request.vars['category_id'][x],                    
-                        category_id = _category_id,
+                        category_id = 5,
                         uom = request.vars['uom'][x],
                         quantity = str('{:,d}'.format(abs(_total_pcs))),
                         price_cost = float(request.vars['price_cost'][x].replace(',','')),
@@ -618,10 +614,29 @@ def purchase_receipt_account_validate_transaction(): # .load
                     _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()                    
                     _prwc.update_record(status_id = 17)
                     _prowc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
-                    _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _prowc.id).select(db.Purchase_Receipt_Transaction_Consolidated.item_code_id == request.vars['item_code_id'][x]).last()
+                    _prtc = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _prowc.id) & (db.Purchase_Receipt_Transaction_Consolidated.item_code_id == int(request.vars['item_code_id'][x]))).select().last()
                     _diff = int(request.vars['_cquantity'][x]) - int(_total_pcs)
-                    _prtc.updated_record(difference_quantity = _diff, selected = False, consolidated = False, status_id = 17, partial = True)
-            
+                    print 'prtc', _diff, _prtc.difference_quantity, _prtc.selected, _prtc.consolidated, _prtc.status_id, _prtc.partial
+                    _prtc.updated_record(
+                        difference_quantity = int(_diff), 
+                        selected = False, 
+                        consolidated = False, 
+                        status_id = 17, 
+                        partial = True)        
+                    # _po = db(db.Purchase_Order.id == _prowc.purchase_order_no_id).select().first()
+                    # _po.update_record(
+                    #     status_id = x,
+                    #     selected = False,
+                    #     consolidated = False,
+                    #     partial = True
+                    # )
+                    # for p in db(db.Purchase_Order_Transaction.purchase_order_no_id == _po.id).select():
+                    #     p.update_record(
+                    #         item_code_id = x,
+                    #     )
+
+
+                    # print 'purchase order no: ', _prowc.id, _prowc.purchase_order_no_id
             elif int(request.vars['_cquantity'][x]) == int(_total_pcs): # updated or insert to purchase receipt transaction                            
                 db.Purchase_Receipt_Transaction.update_or_insert(
                     purchase_receipt_no_id_consolidated = request.args(0),
@@ -653,7 +668,7 @@ def purchase_receipt_account_validate_transaction(): # .load
 
                 _itm_prc = db(db.Item_Prices.item_code_id == request.vars['item_code_id'][x]).select().first()
                 _ave_cst = (int(_stk_fil.opening_stock) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'][x])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity'][x]))
-                print float(_ave_cst)
+                
                 _itm_prc.update_record(
                     # average_cost = float(_ave_cst),
                     last_issued_date = request.now,
@@ -714,15 +729,15 @@ def purchase_receipt_account_validate_transaction(): # .load
 
     form3 = SQLFORM.factory(
         Field('exchange_rate','decimal(10,6)', default = 0, required = True),
-        Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
-        Field('flanded_cost','decimal(10,6)', default = 0),
-        Field('other_charges','decimal(10,6)', default = 0),    
-        Field('custom_duty_charges','decimal(10,6)', default = 0),            
-        Field('selective_tax','decimal(10,6)', default = 0.0, label = 'Selective Tax'),
-        Field('supplier_invoice','string', length = 25),
-        Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),        
-        Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-        Field('discount_percentage', 'decimal(10,2)',default =0)) # on hold structure
+        Field('trade_terms_id', 'reference Supplier_Trade_Terms', required = True, ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
+        Field('flanded_cost','decimal(10,6)', required = True, default = 0),
+        Field('other_charges','decimal(10,6)', required = True, default = 0),    
+        Field('custom_duty_charges','decimal(10,6)', required = True, default = 0),            
+        Field('selective_tax','decimal(10,6)', required = True, default = 0.0, label = 'Selective Tax'),
+        Field('supplier_invoice','string', required = True, length = 25),
+        Field('supplier_account_code', 'string', required = True,length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),        
+        Field('currency_id', 'reference Currency', required = True, ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+        Field('discount_percentage', 'decimal(10,2)', required = True,default =0)) # on hold structure
     if form3.process().accepted:
         response.flash = 'RECORD SAVE'
     elif form3.errors:
@@ -3715,8 +3730,8 @@ def purchase_receipt_reports():
     ]))    
 
     _addl = [
-        ['Landed Cost','Purchase Value','Exchange Rate','Selective Tax'],
-        [locale.format('%.6F',_pr.landed_cost or 0, grouping = True),locale.format('%.6F',_purchase_value or 0, grouping = True),locale.format('%.6F',_pr.exchange_rate or 0, grouping = True),locale.format('%.6F',_pr.selective_tax or 0, grouping = True)],
+        ['Landed Cost','Purchase Value','Currency','Exchange Rate','Selective Tax'],
+        [locale.format('%.6F',_pr.landed_cost or 0, grouping = True),locale.format('%.6F',_purchase_value or 0, grouping = True),_pr.currency_id.description,locale.format('%.6F',_pr.exchange_rate or 0, grouping = True),locale.format('%.6F',_pr.selective_tax or 0, grouping = True)],
         ['Remarks',_pr.remarks,'','']]
     _addl_table = Table(_addl, colWidths='*')
     _addl_table.setStyle(TableStyle([
