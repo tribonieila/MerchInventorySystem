@@ -643,6 +643,23 @@ def purchase_receipt_account_validate_transaction(): # .load
                     batch_quantity = _batch_quantity,
                     batch_production_date = request.vars['production_date'][x],
                     batch_expiry_date = request.vars['expiration_date'][x])
+                
+                _stk_fil = db((db.Stock_File.item_code_id == request.vars['item_code_id'][x]) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+                _tot_stk = int(_stk_fil.opening_stock) + int(request.vars['quantity'][x])
+                _stk_fil.update_record(
+                    closing_stock = _tot_stk,
+                    last_transfer_qty = int(request.vars['quantity'][x])
+                )
+
+                _itm_prc = db(db.Item_Prices.item_code_id == request.vars['item_code_id'][x]).select().first()
+                _ave_cst = (int(_stk_fil.opening_stock) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'][x])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity'][x]))
+                print float(_ave_cst)
+                _itm_prc.update_record(
+                    # average_cost = float(_ave_cst),
+                    last_issued_date = request.now,
+                    updated_by = auth.user_id,
+                    updated_on = request.now
+                )
             elif int(request.vars['category_id'][x]) == 1:
                 # print 'damages goes here'
                 db.Purchase_Receipt_Transaction.update_or_insert(
@@ -656,6 +673,12 @@ def purchase_receipt_account_validate_transaction(): # .load
                     consolidated = True, 
                     total_amount = _price_per_piece * int(request.vars['_cquantity'][x]),
                     received = True)                  
+                _dmg_stk = db((db.Stock_File.item_code_id == request.vars['item_code_id'][x]) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+                _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(request.vars['_cquantity'][x])
+                _dmg_stk.update_record(
+                    damaged_stock_qty = _tot_dmg
+                )
+
         
         redirect(URL('procurement','purchase_receipt_account_grid_view_validate', args = _pr.id))
         
@@ -876,7 +899,13 @@ def find_dupl():
     return dict(rtn = rtn)
 
 def insert_item():
-    db.Item_Master.insert(item_description = 'A1')
+    form = SQLFORM(db.Item_Master)
+    if form.process().accepted:
+        response.flash = 'save'
+    elif form.errors:
+        response.flash = 'error'
+    return dict(form = form)
+
 
 def purchase_receipt_account_new_item_form():
     _id = db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.id == request.args(0)).select().first()
@@ -888,7 +917,13 @@ def purchase_receipt_account_new_item_form():
     ctr = db(db.Item_Master).count()
     ctr = ctr + 1
     ctr = str(ctr).rjust(5,'0')    
-    form = SQLFORM(db.Item_Master)
+    db.Item_Master.item_code.default = _id.item_code
+    db.Item_Master.item_description.default = _id.item_description
+    db.Item_Master.uom_value.default = _id.uom
+    db.Item_Master.division_id.default = _dv.id
+    db.Item_Master.dept_code_id.default = _dp.id
+    db.Item_Master.item_status_code_id.default = 1
+    form = SQLFORM.factory(db.Item_Master, db.Item_Prices)
         # Field('division_id', 'reference Division', requires = IS_IN_DB(db, db.Division.id,'%(div_code)s - %(div_name)s', zero = 'Choose Division'), label='Division Code'),
         # Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         # Field('item_description', 'string', label = 'Description', requires = IS_UPPER()),    
@@ -947,60 +982,62 @@ def purchase_receipt_account_new_item_form():
         # form.vars.ib,form.vars.uom_value,form.vars.uom_id,form.vars.supplier_uom_value,form.vars.supplier_uom_id,form.vars.weight_value,form.vars.weight_id,form.vars.type_id,form.vars.selective_tax,form.vars.vat_percentage,  
 
         # print 'item code ', request.vars.item_code, request.vars.item_description
-        # db.Item_Master.insert(
-        #     item_code = form.vars.item_code) 
-            # item_description = form.vars.item_description,
-            # item_description_ar = form.vars.item_description_ar,
-            # supplier_item_ref = form.vars.supplier_item_ref,
-            # int_barcode = form.vars.int_barcode,
-            # loc_barcode = form.vars.loc_barcode,
-            # purchase_point = form.vars.purchase_point,
-            # ib = form.vars.ib,
-            # uom_value = form.vars.uom_value,
-            # uom_id = form.vars.uom_id,
-            # supplier_uom_value = form.vars.supplier_uom_value,
-            # supplier_uom_id = form.vars.supplier_uom_id,
-            # weight_value = form.vars.weight_value,
-            # weight_id = form.vars.weight_id,
-            # type_id = form.vars.type_id,
-            # selective_tax = form.vars.selective_tax,
-            # vat_percentage = form.vars.vat_percentage,
-            # division_id = form.vars.division_id, 
-            # dept_code_id = form.vars.dept_code_id,             
-            # supplier_code_id = form.vars.supplier_code_id,
-            # product_code_id = form.vars.product_code_id,
-            # subproduct_code_id = form.vars.subproduct_code_id,
-            # group_line_id = form.vars.group_line_id,
-            # brand_line_code_id = form.vars.brand_line_code_id,
-            # brand_cls_code_id = form.vars.brand_cls_code_id,            
-            # section_code_id = form.vars.section_code_id,
-            # size_code_id = form.vars.size_code_id,
-            # gender_code_id = form.vars.gender_code_id,
-            # fragrance_code_id = form.vars.fragrance_code_id,
-            # color_code_id = form.vars.color_code_id,
-            # collection_code_id = form.vars.collection_code_id,
-            # made_in_id = form.vars.made_in_id,
-            # item_status_code_id = form.vars.item_status_code_id)
-        # _im = db(db.Item_Master.item_code == form.vars.item_code).select().first()
-        # db.Item_Prices.insert(
-        #     item_code_id = _im.id,
-        #     most_recent_cost = form.most_recent_cost,
-        #     average_cost = form.vars.average_cost,
-        #     most_recent_landed_cost = form.vars.most_recent_landed_cost,
-        #     currency_id = form.vars.currency_id,
-        #     opening_average_cost = form.vars.opening_average_cost,
-        #     last_issued_date = form.vars.last_issued_date,
-        #     wholesale_price = form.vars.wholesale_price,
-        #     retail_price = form.vars.retail_price,
-        #     vansale_price = form.vars.vansale_price,
-        #     reorder_price = form.vars.reorder_price
-        # )
-        
+        db.Item_Master.insert(
+            item_code = form.vars.item_code,
+            item_description = form.vars.item_description,
+            item_description_ar = form.vars.item_description_ar,
+            supplier_item_ref = form.vars.supplier_item_ref,
+            int_barcode = form.vars.int_barcode,
+            loc_barcode = form.vars.loc_barcode,
+            purchase_point = form.vars.purchase_point,
+            ib = form.vars.ib,
+            uom_value = form.vars.uom_value,
+            uom_id = form.vars.uom_id,
+            supplier_uom_value = form.vars.supplier_uom_value,
+            supplier_uom_id = form.vars.supplier_uom_id,
+            weight_value = form.vars.weight_value,
+            weight_id = form.vars.weight_id,
+            type_id = form.vars.type_id,
+            selective_tax = form.vars.selective_tax,
+            vat_percentage = form.vars.vat_percentage,
+            division_id = form.vars.division_id, 
+            dept_code_id = form.vars.dept_code_id,             
+            supplier_code_id = form.vars.supplier_code_id,
+            product_code_id = form.vars.product_code_id,
+            subproduct_code_id = form.vars.subproduct_code_id,
+            group_line_id = form.vars.group_line_id,
+            brand_line_code_id = form.vars.brand_line_code_id,
+            brand_cls_code_id = form.vars.brand_cls_code_id,            
+            section_code_id = form.vars.section_code_id,
+            size_code_id = form.vars.size_code_id,
+            gender_code_id = form.vars.gender_code_id,
+            fragrance_code_id = form.vars.fragrance_code_id,
+            color_code_id = form.vars.color_code_id,
+            collection_code_id = form.vars.collection_code_id,
+            made_in_id = form.vars.made_in_id,
+            item_status_code_id = form.vars.item_status_code_id)
+        _im = db(db.Item_Master.item_code == form.vars.item_code).select().first()
+        db.Item_Prices.insert(
+            item_code_id = _im.id,
+            most_recent_cost = form.vars.most_recent_cost,
+            average_cost = form.vars.average_cost,
+            most_recent_landed_cost = form.vars.most_recent_landed_cost,
+            currency_id = form.vars.currency_id,
+            opening_average_cost = form.vars.opening_average_cost,
+            last_issued_date = form.vars.last_issued_date,
+            wholesale_price = form.vars.wholesale_price,
+            retail_price = form.vars.retail_price,
+            vansale_price = form.vars.vansale_price,
+            reorder_qty = form.vars.reorder_qty
+        )
+        _ni = db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.id == request.args(0)).select().first()
+        _ni.update_record(item_code_id = _im.id, new_item = False, received = True)
         # _item_code = db(db.Item_Master.item_code == str(request.vars.item_code)).select(db.Item_Master.ALL).first()
         # print 'item code > ', _item_code.id
         
         # session._item_code = _item_code.id       
-        # redirect(URL('procurement','purchase_receipt_account_new_item_prices_form'))
+        redirect(URL('procurement','account_grid'))
+        
         
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -3696,7 +3733,9 @@ def purchase_receipt_reports():
     _row_2 = [['#','Item Code','Item Description','Qty.','MR Cost','Inv Price','VAR%', 'Total']]
     for n in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.excessed != True)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction.item_code_id)):
         ctr_2 += 1
+        _inv_price = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.item_code_id == n.Purchase_Receipt_Transaction.item_code_id)).select().first()
         _price_cost = n.Purchase_Receipt_Transaction.price_cost / n.Purchase_Receipt_Transaction.uom
+        _var = float(n.Purchase_Receipt_Transaction.price_cost) - float(_inv_price.price_cost)
         _total_amount =  float(_price_cost) * n.Purchase_Receipt_Transaction.quantity
         _row_2.append([
             ctr_2,
@@ -3704,7 +3743,8 @@ def purchase_receipt_reports():
             n.Item_Master.item_description,
             card(n.Purchase_Receipt_Transaction.quantity,n.Purchase_Receipt_Transaction.uom),
             locale.format('%.2F',n.Purchase_Receipt_Transaction.price_cost or 0, grouping = True),
-            0, 0,
+            locale.format('%.2F',_inv_price.price_cost or 0, grouping = True), 
+            locale.format('%.2F',_var or 0, grouping = True), 
             locale.format('%.2F',_total_amount or 0, grouping = True),
             
         ])
@@ -3742,7 +3782,8 @@ def purchase_receipt_reports():
             n.Purchase_Receipt_Transaction.item_code_id.item_code,
             n.Item_Master.item_description,
             card(n.Purchase_Receipt_Transaction.quantity,n.Purchase_Receipt_Transaction.uom),
-            0,0])
+            locale.format('%.2F',n.Purchase_Receipt_Transaction.wholesale_price or 0, grouping = True),
+            locale.format('%.2F',n.Purchase_Receipt_Transaction.retail_price or 0, grouping = True)])
     _table_3 = Table(_row_3, colWidths=[20,70,'*',50,50,50])
     _table_3.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),

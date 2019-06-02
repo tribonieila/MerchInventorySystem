@@ -497,12 +497,12 @@ db.define_table('Color_Code',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Item_Master',
-    Field('item_code', 'string', length = 15, label = 'Item Code', requires = [IS_LENGTH(15),IS_NOT_IN_DB(db, 'Item_Master.item_code')]),
+    Field('item_code', 'string', length = 15, label = 'Item Code'), #requires = [IS_LENGTH(15),IS_NOT_IN_DB(db, 'Item_Master.item_code')]),
     Field('item_description', 'string', length = 50, label = 'Description', requires = [IS_LENGTH(50),IS_UPPER()]),    
     Field('item_description_ar', 'string', length = 50, label = 'Arabic Name', requires = [IS_LENGTH(50), IS_UPPER()]),
-    Field('supplier_item_ref', 'string', length = 20, requires = [IS_LENGTH(20) ,IS_UPPER(), IS_NOT_IN_DB(db, 'Item_Master.supplier_item_ref')]),   #unique
-    Field('int_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.int_barcode')]), #unique
-    Field('loc_barcode', 'string', length = 20, requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.loc_barcode')]), #unique
+    Field('supplier_item_ref', 'string', length = 20), #requires = [IS_LENGTH(20) ,IS_UPPER(), IS_NOT_IN_DB(db, 'Item_Master.supplier_item_ref')]),   #unique
+    Field('int_barcode', 'string', length = 20), #requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.int_barcode')]), #unique
+    Field('loc_barcode', 'string', length = 20), #requires = [IS_LENGTH(20), IS_UPPER(), IS_NOT_IN_DB(db,'Item_Master.loc_barcode')]), #unique
     Field('purchase_point', 'integer', default = 40),
     Field('ib', 'decimal(10,2)', default = 0),
     Field('uom_value', 'integer'),    
@@ -726,7 +726,7 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))
 
 db.define_table('Item_Prices',
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',writable = False, requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
     Field('most_recent_cost', 'decimal(10,4)', default = 0),
     Field('average_cost', 'decimal(10,4)', default = 0),
     Field('most_recent_landed_cost', 'decimal(10,4)', default =0),
