@@ -1762,7 +1762,14 @@ def item_master_prices():
         return CENTER(DIV(B('INFO! '),'Grrrrr! No item price record.',_class='alert alert-info',_role='alert'))
 
 def item_master_stocks():
-    return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+    row = []
+    head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
+    for n in db(db.Stock_File.item_code_id == request.args(0)).select():
+        row.append(TR(TD(n.item_code_id.item_code), TD(n.location_code_id.location_name),TD(n.opening_stock),TD(n.closing_stock),TD(n.previous_year_closing_stock),TD(n.stock_in_transit)))
+    body = TBODY(*[row])
+    table = TABLE(*[head, body], _class='table')
+    return DIV(table)
+    # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 def item_master_batch_info():    
     return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 def item_master_sales_quantity():
