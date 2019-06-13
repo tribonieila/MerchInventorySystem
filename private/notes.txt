@@ -796,4 +796,81 @@ $(function () {
             </div>
 
             {{=form.custom.end}} 
-                             
+
+
+    $('.quantity').change(function(){        
+
+        console.log(this.value, $('.pieces').val());
+
+    });
+
+    $('.pieces').change(function(){        
+        console.log(this.value);
+    });
+
+    $('.price_cost').change(function(){        
+        console.log(this.value);
+    });
+
+    $('#discount').change(function(){        
+        calculate();
+    });
+
+    $('#no_table_exchange_rate').change(function(){        
+        calculate();
+    });
+
+    function calculate(){   
+        var _total_pieces = 0;
+        var _price_cost = 0;
+        var _total_amount = 0;
+        var _total_net_amount = 0;
+        var _qty = parseInt($('.quantity').val()); 
+        var _uom = parseInt($('.uom').val()); 
+        var _pcs = parseInt($('.pieces').val());
+        var _pc = parseInt($('.price_cost').val());
+        var _tn = parseInt($('._total_net_amount').val());
+        _total_pieces = _qty * _uom + _pcs        
+        _price_cost = _pc / _uom
+        _total_amount = _price_cost * _total_pieces        
+        console.log(_qty, _uom , _pcs);
+        $('.total_amount').val(Number(_total_amount.toFixed(6)).toLocaleString());
+        _tot_net_amount = Number($('#total_amount').val()) + Number($('#total_amount_3').val())
+        $('#total_net_amount').val(Number(_tot_net_amount.toFixed(6)).toLocaleString());
+
+        $('#foreign_total_amount').val(
+            $('#total_net_amount').val() * (100 - Number($('#discount').val())) / 100
+        );
+
+        $('#local_total_amount').val(
+            Number($('#foreign_total_amount').val()) * Number($('#no_table_exchange_rate').val())
+        );
+        
+    }
+
+    function calculate_3(){   
+        var _total_pieces = 0;
+        var _price_cost = 0;
+        var _total_amount = 0;
+        var _total_net_amount = 0;
+        var _qty = $('#quantity_3').val(); 
+        var _uom = $('#uom_3').val(); 
+        var _pcs = $('#pieces_3').val();
+        var _pc = $('#price_cost_3').val();
+        var _tn = $('#_total_net_amount_3').val();
+        var _dis = $('#discount').val();
+        _total_pieces = _qty * _uom + Number(_pcs)        
+        _price_cost = _pc / _uom
+        _total_amount = _price_cost * _total_pieces
+    
+        $('#total_amount_3').val(Number(_total_amount.toFixed(2)).toLocaleString());
+        _tot_net_amount = Number($('#total_amount').val()) + Number($('#total_amount_3').val())
+        $('#total_net_amount').val(Number(_tot_net_amount.toFixed(6)).toLocaleString());
+        $('#foreign_total_amount').val(
+            $('#total_net_amount').val() * (100 - Number($('#discount').val())) / 100
+        );
+        $('#local_total_amount').val(
+            Number($('#foreign_total_amount').val()) * Number($('#no_table_exchange_rate').val())
+        );
+        
+    }    

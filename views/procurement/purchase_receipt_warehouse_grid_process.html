@@ -21,31 +21,49 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-$('.cut').click(function(){
-    var _id = $(this).attr('data-id');
-    var _pr = $(this).attr('data-pr');
-    bootbox.confirm({
-        size: "small",
-        message: "Would you like to remove this record?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
-            },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
-            }
-        },
-        callback: function (result) {
-            if (result) {                
-                ajax("{{=URL('procurement','cut_purchase_order_transaction')}}" + '/'+ _id+ '/' + _pr );
-                location.reload();
-                       
-            }
 
-        }
-    })
-});    
+    $('#pieces').change(function(){       
+        var u = $('#uom').val(); 
+        var p = $('#pieces').val();        
+        ajax("{{=URL('procurement','warehouse_validation')}}" + '/' + u + '/' + p );
+        
+    });
+    $('.cut').click(function(){
+        var _id = $(this).attr('data-id');
+        var _pr = $(this).attr('data-pr');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to remove this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                
+                    ajax("{{=URL('procurement','cut_purchase_order_transaction')}}" + '/'+ _id+ '/' + _pr );
+                    location.reload();
+                        
+                }
+
+            }
+        })
+    });    
+
+    function exceeds(){
+        bootbox.alert({
+            size: "small",
+            message: "Pieces value already exceed. \n Reset to zero.",
+            callback: function(){ 
+                $('#pieces').val(0);
+                // location.reload();
+            }
+        });        
+    }
  
 </script>

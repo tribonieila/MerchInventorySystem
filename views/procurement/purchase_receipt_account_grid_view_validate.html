@@ -12,7 +12,7 @@
             <div class="form-horizontal">   
                 {{=table}}
                 <hr>                
-                {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0))}}
+                {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), )}}
             </div>
         </div>
     </div>

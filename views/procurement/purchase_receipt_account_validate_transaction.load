@@ -113,7 +113,9 @@ $(document).ready(function(){
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
         return false;
-    });
+    }); 
+
+    
 
     $('#btnSubmit').click(function(){
         ajax('{{=URL('procurement','other_charges', args=request.args(0))}}', ['flanded_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id']);
