@@ -3381,11 +3381,19 @@ def help_request():
     return dict(table = table)
 
 def ok():
-    for x in request.vars['quantity']:
-        print x
+    row = 0
+    _len = len(request.vars['price_cost'])
+    for x in request.vars['price_cost']:        
+        _pieces = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
+        _price_cost = float(request.vars['price_cost'][row]) / int(request.vars['uom'][row])
+        _total_amount = float(_price_cost) * int(_pieces)
+        print 'pieces ', _pieces, _price_cost, _total_amount        
+        row += 1
+    response.js = "$('.total_amount').text('hello')"
+        
     # print 'nice', request.vars['quantity'][0], request.vars['pieces'][0], request.vars['uom'][0], request.vars['price_cost'][0]
     
-    response.js = "console.log('wow');"
+    response.js = "console.log('nice');"
 
 # ------- form id generator ----------
 @auth.requires_login()
