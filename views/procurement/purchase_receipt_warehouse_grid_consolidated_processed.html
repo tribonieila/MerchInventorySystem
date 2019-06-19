@@ -24,10 +24,15 @@
 <script>
 
 $(document).ready(function(){
+
+        
     $('#btnRefresh').click(function(){
         location.reload();
     });
-    $('#btnDraft').click(function(){
+    function save(){
+        console.log('save draft');
+    }
+    $('#btnDrafts').click(function(){
         var _id2 = $(this).attr('data-2id');    
         bootbox.confirm({
             size: "small",
@@ -43,7 +48,7 @@ $(document).ready(function(){
                 }
             },
             callback: function (result) {
-                if (result) {                
+                if (result) {                                    
                     location.replace("{{=URL('inventory','str_kpr_grid')}}")                                                              
                 }
             }
@@ -52,3 +57,16 @@ $(document).ready(function(){
 
 });
 </script>    
+<script>
+    function errAlert(){
+        bootbox.alert({
+            size: "small",
+            message: "Pieces value already exceed. \n Reset to zero.",
+            callback: function(){ 
+                $('.pieces').val(0);
+                // location.reload();
+            }
+        });        
+    }
+
+</script>

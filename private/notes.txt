@@ -40,6 +40,32 @@ print PDF files in Adobe Reader
 -Acrord32.exe/t path Printername drivername portname
 Start Adobe Reader and print a PDF file without displaying the Print dialog box and exit Adobe Reader
 
+$('#no_table_other_charges, #no_table_custom_duty_charges, #no_table_landed_cost, #discount').change(function(){
+        
+        addcomputed();
+    });
+
+    function addcomputed(){
+        var _addcomputed = 0
+
+        var _lan = $('#no_table_landed_cost').val();
+        var _cus = $('#no_table_custom_duty_charges').val();
+        var _oth = $('#no_table_other_charges').val();
+
+        var _ton = $('#total_net_amount').val();
+        var _dis = $('#discount').val();        
+        var _for = $('#foreign_total_amount').val();
+        var _loc = $('#local_total_amount').val();
+
+        _for = (parseFloat(_ton) * (100 - parseInt(_dis))) / 100
+        _loc = parseFloat(_for) * parseFloat(_lan)
+        _addcomputed = parseFloat(_loc) + parseFloat(_oth) + parseFloat(_cus) 
+        $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
+        $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());          
+        //$('#local_total_amount').html(_addcomputed);
+        console.log(_for,_loc, _addcomputed, );
+    }
+    
 Printing options
 Path: File path
 Printername: Printer Name

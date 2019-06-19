@@ -1,107 +1,66 @@
 
-{{=form3.custom.begin}}
 
-<table class="table">
-    <thead>
-        <tr class="bg-success">
-            <th>Location</th><th style="width:180px;">Suppler/Acct Code</th><th style="width:250px;">Supplier/Account Name</th><th style="width:150px;">Currency</th><th>Exchange Rate</th><th>Landed Cost Rate</th><th>Other Charges</th><th>Custom Duty Charges</th><th style="width:150px;">Trade Terms</th><th>Selective Tax</th><th>Supplier Invoice</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{ if _pr: }}
-            <tr>
-                <td><input type="text" class="form-control" value="{{=_pr.location_code_id}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.supplier_account_code}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.supplier_account_code_description}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.currency_id.mnemonic}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.exchange_rate}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.landed_cost}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.other_charges}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.custom_duty_charges or 0}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.trade_terms_id.trade_terms}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.selective_tax}}" readonly></td>
-                <td><input type="text" class="form-control" value="{{=_pr.supplier_invoice}}" readonly></td>
-            </tr>
 
-        {{ else: }}
-            <tr>
-                <td>{{=form3.custom.widget.location_code_id}}</td>
-                <td>{{=form3.custom.widget.supplier_account_code}}</td>
-                <td id="_supplier_code_id"></td>
-                <td>{{=form3.custom.widget.currency_id}}</td>
-                <td>{{=form3.custom.widget.exchange_rate}}</td>
-                <td>{{=form3.custom.widget.flanded_cost}}</td>
-                <td>{{=form3.custom.widget.other_charges}}</td>
-                <td>{{=form3.custom.widget.custom_duty_charges}}</td>
-                <td>{{=form3.custom.widget.trade_terms_id}}</td>
-                <td>{{=form3.custom.widget.selective_tax}}</td>
-                <td>{{=form3.custom.widget.supplier_invoice}}</td>
-            </tr>
+    {{=form}}
 
-        {{ pass }}
-    </tbody>
-</table>
 
-{{=form3.custom.end}}   
-{{=form}}
-<hr>
-{{=_table}}
-<hr>
-<div id = "divItm">
-{{=form2.custom.begin}}
-<div class="row">    
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">         
-                    {{=form2.custom.widget.item_code}}
 
-                
-            </div>                           
-        </div>                        
+    <hr>
+
+    {{=form2.custom.begin}}
+    <div class="row">    
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Item Code</label>
+                <div class="col-sm-8">         
+                        {{=form2.custom.widget.item_code}}
+
+                    
+                </div>                           
+            </div>                        
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-6 control-label">Quantity</label>
+                <div class="col-sm-6"> 
+                    {{=form2.custom.widget.quantity}}
+                </div>
+            </div>                    
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-6 control-label">Pieces</label>
+                <div class="col-sm-6">                                
+                    {{=form2.custom.widget.pieces}}
+                </div>                           
+            </div>    
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label class="col-sm-6 control-label">Most Recent Cost</label>
+                <div class="col-sm-4"> 
+                    <div id = "_most_recent_cost"></div>
+                </div>
+            </div>                    
+        </div>                   
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Category</label>
+                <div class="col-sm-8"> 
+                    {{=form2.custom.widget.category_id}}
+                </div>
+            </div>                    
+        </div>
+        <div class="col-md-1">          
+                <input class="btn btn-primary" type="submit" value="add" id="btnadd">            
+        </div>                                              
     </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Quantity</label>
-            <div class="col-sm-6"> 
-                {{=form2.custom.widget.quantity}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Pieces</label>
-            <div class="col-sm-6">                                
-                {{=form2.custom.widget.pieces}}
-            </div>                           
-        </div>    
-    </div>
-    <div class="col-md-3">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Most Recent Cost</label>
-            <div class="col-sm-4"> 
-                <div id = "_most_recent_cost"></div>
-            </div>
-        </div>                    
-    </div>                   
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Category</label>
-            <div class="col-sm-8"> 
-                {{=form2.custom.widget.category_id}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-1">          
-            <input class="btn btn-primary" type="submit" value="add" id="btnadd">
-        
-    </div>                                              
-</div>
-{{=form2.custom.end}}
-<div id = "_item_code_description"></div>      
-</div>
+    {{=form2.custom.end}}
+    <div id = "_item_code_description"></div>      
+
+
 <script>
-$(document).ready(function(){    
+
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();
@@ -113,22 +72,21 @@ $(document).ready(function(){
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
         return false;
-    }); 
+    });    
 
-    
+    $('#btnSubmit').click(function(){        
+        ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount','total_net_amount','foreign_total_amount']);        
+    });   
 
-    $('#btnSubmit').click(function(){
-        ajax('{{=URL('procurement','other_charges', args=request.args(0))}}', ['flanded_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id']);
+    $('#btnadd').click(function(){
+        $( "#POTtbl" ).load(window.location.href + " #POTtbl" );
     });
-
-    $('#btnValidate').click(function(){    
-        location.reload();        
-    });
-});
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
+
+
 $('#btnAbort').click(function(){
     var _id = $(this).attr('data-id');
     bootbox.confirm({
@@ -201,9 +159,69 @@ $('.delete').click(function(){
     })
 });    
 </script>
+
 <script>
-    $('#no_table_supplier_account_code').change(function(){
-        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');     
+
+    $('#discount').change(function(){
+        var _addcomputed = 0
+
+        var _lan = $('#no_table_landed_cost').val();
+        var _cus = $('#no_table_custom_duty_charges').val();
+        var _oth = $('#no_table_other_charges').val();
+
+        var _ton = $('#total_net_amount').val();
+        var _dis = $('#discount').val();        
+        var _for = $('#foreign_total_amount').val();
+        var _loc = $('#local_total_amount').val();
+
+        _for = (parseFloat(_ton) * (100 - parseInt(_dis))) / 100
+        _loc = parseFloat(_for) * parseFloat(_lan)
+        _addcomputed = parseFloat(_loc) + parseFloat(_oth) + parseFloat(_cus) 
+        $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
+        $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());   
     });
+    function computed(i, q, u, p, r){     
+        var _lnd = $('#no_table_landed_cost').val();
+        var _otc = $('#no_table_other_charges').val();
+        var _cus = $('#no_table_custom_duty_charges').val();
+        var _gt = 0;
+        var _loc = 0;
+        var _discount = 0;
+        var _dis = $('#discount').val();
+        var inputs = document.getElementsByName('total_amount');             
+        for(var x = 0; x < i.length; x++){
+            if (parseInt(u[x]) <= parseInt(p[x])){
+                // console.log('error');
+                errAlert();
+            } 
+
+            var _p = parseInt(q[x]) * parseInt(u[x]) + parseInt(p[x])
+            var _c = parseFloat(r[x]) / parseInt(u[x])
+            var _a = _p * parseFloat(_c)
+            inputs[x].value = _a.toFixed(3);
+            _gt = _gt + _a
+            _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
+            _loc = (parseFloat(_discount) * parseFloat(_lnd)) + (parseFloat(_otc) + parseFloat(_cus))
+        }        
+        $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
+        $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
+        $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
+                          
+    }
+
+    function errAlert(){
+        bootbox.alert({
+            size: "small",
+            message: "Pieces value already exceed. \n Reset to zero.",
+            callback: function(){ 
+                $('.pieces').val(0);
+                // location.reload();
+            }
+        });        
+    }
+
+
+
+
 
 </script>

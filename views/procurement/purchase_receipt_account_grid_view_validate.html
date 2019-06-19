@@ -11,9 +11,128 @@
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
                 {{=table}}
+                <hr>
+                <div class="form-horizontal">
+                        {{=form3.custom.begin}}        
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Location</label>
+                                        <div class="col-sm-8">{{=form3.custom.widget.location_code_id}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Supplier/Acct Code</label>
+                                        <div class="col-sm-8">{{=form3.custom.widget.supplier_account_code}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">                    
+                                        <label class="col-sm-4 control-label">Supplier/Account Name</label>
+                                        <div class="col-sm-8"><div id = "_supplier_code_id"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Currency</label>
+                                        <div class="col-sm-8">{{=form3.custom.widget.currency_id}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Trade Terms</label>
+                                        <div class="col-sm-8">{{=form3.custom.widget.trade_terms_id}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">                    
+                                        <label class="col-sm-4 control-label">Supplier Invoice</label>
+                                        <div class="col-sm-8">{{=form3.custom.widget.supplier_invoice}}</div>
+                                    </div>
+                                </div>
+                            </div>   
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Exchange Rate</label>
+                                        <div class="col-sm-4">{{=form3.custom.widget.exchange_rate}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Landed Cost Rate</label>
+                                        <div class="col-sm-4">{{=form3.custom.widget.landed_cost}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">                    
+                                        <label class="col-sm-4 control-label">Other Charges</label>
+                                        <div class="col-sm-4">{{=form3.custom.widget.other_charges}}</div>
+                                    </div>
+                                </div>
+                            </div>          
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Custom Duty Charges</label>
+                                        <div class="col-sm-4">{{=form3.custom.widget.custom_duty_charges}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Selective Tax</label>
+                                        <div class="col-sm-4">{{=form3.custom.widget.selective_tax}}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="col-sm-4 control-label"></label>
+                                    <div class="col-sm-4"><input class="btn btn-primary" type="button" value="Proceed" id="btnProceed"></div>
+                                    
+                                </div>
+                            </div>                 
+                        {{=form3.custom.end}}
+                    </div>
+            </div>
+            <div id = "TrnxDetails">
                 <hr>                
-                {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), )}}
+                {{ if db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
+                    {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}
+                {{ else: }}
+                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0),vars = request.vars.location_code_id, target = 'PRTCNItbl')}}
+                {{ pass }}            
+    
             </div>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function(){
+
+    $('#TrnxDetails').hide();
+    $('#btnProceed').attr('disabled','disabled');
+
+    $('#no_table_supplier_account_code, #no_table_trade_terms_id').change(function(){
+        if ($('#no_table_supplier_account_code').val() && $('#no_table_trade_terms_id').val()) {
+            $('#btnProceed').removeAttr('disabled');                 
+        } else {
+            $('#btnProceed').attr('disabled','disabled');
+            // $('#TrnxDetails').slideUp('slow');            
+        }        
+    });
+    
+    $('#btnProceed').click(function(){
+        $('#TrnxDetails').show();
+        // $('#btnProceed').removeAttr('disabled');     
+       
+    });
+    $('#no_table_supplier_account_code').change(function(){        
+        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
+    });
+
+  
+});
+</script>

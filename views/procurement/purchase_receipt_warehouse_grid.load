@@ -1,7 +1,7 @@
 {{=table}}
 
 <a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">process</a>
-<script>
+<script>    
     $(document).ready(function(){
         $('#btnCon').attr('disabled','disabled');        
         $(".checkbox").click(function(e){     

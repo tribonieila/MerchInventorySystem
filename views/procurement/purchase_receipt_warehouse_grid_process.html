@@ -6,14 +6,15 @@
                 <li class="active"><a href="#">EDIT</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">PURCHASE RECEIPT FORM</span>
+            <span class="card-title">GENERATE PURCHASE RECEIPT</span>
         </div>
         <div class="card-body tab-content">                                            
-            <div class="form-horizontal">                   
+            <div class="form-horizontal">    
+                {{=table}}               
                 {{=form}}        
             </div>
-            <hr>
-            {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new.load',ajax = True, args = request.args(0))}}
+            <!-- <hr>
+            {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new.load',ajax = True, args = request.args(0))}} -->
         </div>
     </div>
 </div>
@@ -21,13 +22,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-
-    $('#pieces').change(function(){       
-        var u = $('#uom').val(); 
-        var p = $('#pieces').val();        
-        ajax("{{=URL('procurement','warehouse_validation')}}" + '/' + u + '/' + p );
-        
-    });
+$(document).ready(function(){
+    
     $('.cut').click(function(){
         var _id = $(this).attr('data-id');
         var _pr = $(this).attr('data-pr');
@@ -55,7 +51,7 @@
         })
     });    
 
-    function exceeds(){
+    function errAlert(){
         bootbox.alert({
             size: "small",
             message: "Pieces value already exceed. \n Reset to zero.",
@@ -65,5 +61,17 @@
             }
         });        
     }
- 
+
+    function exitPage(){
+        bootbox.alert({
+            size: "small",
+            message: "Exit Form",
+            callback: function(){ 
+                console.log('exit');
+                // $('#pieces').val(0);
+                // location.reload();
+            }
+        });         
+    }
+});
 </script>
