@@ -11,7 +11,8 @@
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
                 {{=table}}
-                <hr>
+               
+                {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
                 <div class="form-horizontal">
                         {{=form3.custom.begin}}        
                             <div class="row">
@@ -94,14 +95,15 @@
                                 </div>
                             </div>                 
                         {{=form3.custom.end}}
-                    </div>
+                </div>
+                {{ pass }}
             </div>
             <div id = "TrnxDetails">
                 <hr>                
                 {{ if db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
                     {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}
                 {{ else: }}
-                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0),vars = request.vars.location_code_id, target = 'PRTCNItbl')}}
+                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl')}}
                 {{ pass }}            
     
             </div>
@@ -111,22 +113,29 @@
 
 <script>
 $(document).ready(function(){
+    {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
+        $('#TrnxDetails').hide();
+        $('#btnProceed').attr('disabled','disabled');
 
-    $('#TrnxDetails').hide();
-    $('#btnProceed').attr('disabled','disabled');
+    {{ else: }}
+        $('#TrnxDetails').show();
 
+    {{ pass }}
     $('#no_table_supplier_account_code, #no_table_trade_terms_id').change(function(){
         if ($('#no_table_supplier_account_code').val() && $('#no_table_trade_terms_id').val()) {
             $('#btnProceed').removeAttr('disabled');                 
         } else {
+            
             $('#btnProceed').attr('disabled','disabled');
+            
             // $('#TrnxDetails').slideUp('slow');            
         }        
     });
     
     $('#btnProceed').click(function(){
+        // ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
         $('#TrnxDetails').show();
-        // $('#btnProceed').removeAttr('disabled');     
+        $('#btnProceed').attr('disabled','disabled');  
        
     });
     $('#no_table_supplier_account_code').change(function(){        

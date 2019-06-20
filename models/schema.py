@@ -1470,7 +1470,7 @@ db.define_table('Purchase_Receipt',
     Field('total_amount','decimal(15,4)', default = 0),    # total net amount
     Field('total_amount_after_discount','decimal(15,4)', default = 0),    
     Field('exchange_rate','decimal(10,6)', default = 0),
-    Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
+    Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
     Field('landed_cost','decimal(10,6)', default = 0),
     Field('other_charges','decimal(10,6)', default = 0),    
     Field('custom_duty_charges','decimal(10,6)', default = 0),        
@@ -1543,30 +1543,33 @@ db.define_table('Purchase_Batch_Cost', # Except short and excess
 db.define_table('Direct_Purchase_Receipt',    
     Field('purchase_receipt_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('purchase_receipt_no', 'integer', writable = False),    
+    Field('purchase_receipt_date', 'date', default = request.now, writable = False),    
     Field('purchase_order_no', 'string', length = 25),    
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-    Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),    
-    Field('supplier_reference_order','string', length = 25),
-    Field('mode_of_shipment','string',length = 25, requires = IS_IN_SET(['BY AIR','BY SEA','BY LAND'], zero = 'Choose Type')),
     Field('location_code_id','reference Location', ondelete = 'NO ACTION', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+    Field('supplier_reference_order','string', length = 25),    
+    Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),    
+    Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),        
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Stock_Status.id == 18), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
+    Field('mode_of_shipment','string',length = 25, requires = IS_IN_SET(['BY AIR','BY SEA','BY LAND'], zero = 'Choose Type')),
+    Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
+
     Field('total_amount','decimal(15,4)', default = 0, writable = False),    # total net amount
     Field('total_amount_after_discount','decimal(15,4)', default = 0, writable = False),    
 
     Field('exchange_rate','decimal(10,6)', default = 0, required = True),
-    Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
-
+    
     Field('landed_cost','decimal(10,6)', default = 0),
     Field('other_charges','decimal(10,6)', default = 0),    
     Field('custom_duty_charges','decimal(10,6)', default = 0),        
     Field('selective_tax','decimal(10,6)', default = 0.0, label = 'Selective Tax'),
     Field('supplier_invoice','string', length = 25),
-    Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
+    
     Field('supplier_account_code_description', 'string', length = 25, writable = False),
-
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
-    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),    
+    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),    
     Field('remarks', 'text'),
-    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Stock_Status.id == 18), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
+    
     Field('received','boolean', default = False, writable = False),
     Field('archives', 'boolean', default = False, writable = False),   
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),

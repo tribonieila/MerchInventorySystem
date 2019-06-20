@@ -75,7 +75,8 @@
     });    
 
     $('#btnSubmit').click(function(){        
-        ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount','total_net_amount','foreign_total_amount']);        
+        ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
+        location.reload();
     });   
 
     $('#btnadd').click(function(){
@@ -180,7 +181,25 @@ $('.delete').click(function(){
         $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
         $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());   
     });
-    function computed(i, q, u, p, r){     
+
+    function compute(i, q, u, p, r){
+        console.log('compute');
+        var a = 0;
+        var _gt = 0;
+        var _lnd = $('#no_table_landed_cost').val();
+        var _dis = $('#discount').val();
+        var _p = parseInt(q) * parseInt(u) + parseInt(p)
+        var _c = parseInt(r) / parseInt(u)
+        var _a = _p * parseFloat(_c);
+        _gt = _gt + _a
+        _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
+        _loc = (parseFloat(_discount) * parseFloat(_lnd))
+        $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
+        $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
+        $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
+    }
+
+    function computed(i, q, u, p, r){           
         var _lnd = $('#no_table_landed_cost').val();
         var _otc = $('#no_table_other_charges').val();
         var _cus = $('#no_table_custom_duty_charges').val();
@@ -188,7 +207,11 @@ $('.delete').click(function(){
         var _loc = 0;
         var _discount = 0;
         var _dis = $('#discount').val();
+        var _p = 0;
+        var _c = 0;
+        var _a = 0;
         var inputs = document.getElementsByName('total_amount');             
+        console.log(i);
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
                 // console.log('error');
@@ -201,11 +224,13 @@ $('.delete').click(function(){
             inputs[x].value = _a.toFixed(3);
             _gt = _gt + _a
             _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
-            _loc = (parseFloat(_discount) * parseFloat(_lnd)) + (parseFloat(_otc) + parseFloat(_cus))
+            _loc = (parseFloat(_discount) * parseFloat(_lnd)) // + (parseFloat(_otc) + parseFloat(_cus))
+            
         }        
         $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
         $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
+        
                           
     }
 
