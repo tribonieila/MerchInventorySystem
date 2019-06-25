@@ -474,6 +474,7 @@ def landed_cost_validation():
 
 def validate_account_transaction():
     row = 0
+    print request.vars['item_code_id']
     for x in request.vars['item_code_id']:
         _pieces = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
         _price_cost = float(request.vars['price_cost'][row]) / int(request.vars['uom'][row])
@@ -2475,7 +2476,7 @@ def selected_po():
     #     # response.js = "$('#btnCon').removeAttr('disabled');"
     # # _supplier = session.supplier
     # # print _supplier, counter
-    
+
     for n in db(db.Purchase_Order_Transaction.purchase_order_no_id == request.args(0)).select():        
         n.update_record(selected = True, updated_by = auth.user_id, updated_on = request.now)        
 
@@ -2711,24 +2712,40 @@ def purchase_receipt_warehouse_grid_process():
         # _prowc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == _pr.id).select().first()
         for x in xrange(ctr):
             _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
-            # print '_pr: ', _pr.id
-            _item_code_id = int(request.vars['item_code_id'][x])
-            # _total_pieces = int(request.vars['quantity'][x]) * int(request.vars['uom'][x]) + int(request.vars['pieces'][x])     
-          
+            if int(ctr) <= 1:
+                _item_code_id = int(request.vars['item_code_id'])
+                _prt = db(db.Purchase_Order_Transaction.item_code_id == _item_code_id).select().first()                  
+                db.Purchase_Receipt_Transaction_Consolidated.insert(                    
+                    purchase_receipt_no_id = int(_pr.id),
+                    item_code_id = _item_code_id, #int(request.vars['item_code_id'][x]),
+                    category_id = int(request.vars['category_id']),
+                    uom = int(request.vars['uom']),
+                    # quantity = _total_pieces,                    
+                    # production_date = str(request.vars['production_date'][x]), 
+                    # expiration_date = str(request.vars['expiration_date'][x]), 
+                    purchase_ordered_quantity = int(request.vars['qty']),
+                    price_cost = _prt.price_cost,
+                    total_amount = _prt.total_amount)                
+            else:
+                _item_code_id = int(request.vars['item_code_id'][x])
+
+                # _total_pieces = int(request.vars['quantity'][x]) * int(request.vars['uom'][x]) + int(request.vars['pieces'][x])     
+                                
+                _prt = db(db.Purchase_Order_Transaction.item_code_id == _item_code_id).select().first()  
                 
-            _prt = db(db.Purchase_Order_Transaction.item_code_id == _item_code_id).select().first()  
+                db.Purchase_Receipt_Transaction_Consolidated.insert(                    
+                    purchase_receipt_no_id = int(_pr.id),
+                    item_code_id = _prt.item_code_id, #int(request.vars['item_code_id'][x]),
+                    category_id = int(request.vars['category_id'][x]),
+                    uom = int(request.vars['uom'][x]),
+                    # quantity = _total_pieces,                    
+                    # production_date = str(request.vars['production_date'][x]), 
+                    # expiration_date = str(request.vars['expiration_date'][x]), 
+                    purchase_ordered_quantity = int(request.vars['qty'][x]),
+                    price_cost = _prt.price_cost,
+                    total_amount = _prt.total_amount)
             
-            db.Purchase_Receipt_Transaction_Consolidated.insert(                    
-                purchase_receipt_no_id = int(_pr.id),
-                item_code_id = int(request.vars['item_code_id'][x]),
-                category_id = int(request.vars['category_id'][x]),
-                uom = int(request.vars['uom'][x]),
-                # quantity = _total_pieces,                    
-                # production_date = str(request.vars['production_date'][x]), 
-                # expiration_date = str(request.vars['expiration_date'][x]), 
-                purchase_ordered_quantity = int(request.vars['qty'][x]),
-                price_cost = _prt.price_cost,
-                total_amount = _prt.total_amount)
+
 
         response.flash = 'PURCHASE RECEIPT GENERATED'  
     
@@ -3389,19 +3406,29 @@ def warehouse_validation():
     _u = int(request.args(0)) - 1    
     if _u < int(request.args(1)):    
         response.js = "jQuery(exceeds())"            
+def validate_consolidated_processed_quantity():
+    print request.vars['quantity'][x]
 
 def validate_consolidated_processed():
     row = 0    
-    print request.vars['item_code'], request.vars['uom'], request.vars['pieces']
+    if isinstance(request.vars['_id'], list):
+        for x in request.vars['pieces']:
+            print request.vars['quantity'][row]
+            row +=1
+    else:
+        print 'not list'
+
     # _len = len(request.vars['item_code'])
-    for x in request.vars['item_code']:                
-        if int(request.vars['uom'][row]) <= int(request.vars['pieces'][row]):
-            # print 'error', request.vars['pieces'][row]
-            response.js = "jQuery(errAlert())"
-        else:
-            row = 0
-            # print 'no error', request.vars['pieces'][row]
-        row += 1
+    
+    # print request.vars['item_code'], request.vars['_id']
+    # for x in request.vars['item_code']:                
+    #     if int(request.vars['uom'][row]) <= int(request.vars['pieces'][row]):
+    #         # print 'error', request.vars['pieces'][row]
+    #         response.js = "jQuery(errAlert())"
+    #     else:
+    #         row = 0
+    #         # print 'no error', request.vars['pieces'][row]
+    #     row += 1
 
 def purchase_receipt_warehouse_grid_consolidated_processed():
     row =  []
@@ -3440,17 +3467,17 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
         if t.Purchase_Receipt_Transaction_Consolidated.uom == 1:
             _pcs = INPUT(_type='number', _class='form-control', _value = 0, _disabled = True), INPUT(_type='number', _class='form-control', _id = 'pieces', _name='pieces',_value = 0, _hidden = True)           
         else:
-            _pcs = INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces',_value = _pcs, _onchange = "ajax('/procurement/validate_consolidated_processed', ['item_code','uom','pieces']); return false")                       
+            _pcs = INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces',_value = _pcs, _onchange = "ajax('/procurement/validate_consolidated_processed', ['_id','item_code','uom','pieces']); return false")                                   
         _qty = t.Purchase_Receipt_Transaction_Consolidated.quantity / t.Purchase_Receipt_Transaction_Consolidated.uom
         trow.append(TR(
-            TD(ctr),
+            TD(ctr, INPUT(_type='number', _id='_id', _name='_id', _value = ctr, _hidden = True)),
             TD(t.Item_Master.item_code, INPUT(_type='text', _id='item_code', _name='item_code', _value=t.Item_Master.item_code, _hidden=True)),
             TD(t.Item_Master.item_description),
             TD(t.Purchase_Receipt_Transaction_Consolidated.uom, INPUT(_type='text', _id='uom', _name='uom', _value=t.Purchase_Receipt_Transaction_Consolidated.uom, _hidden=True)),
             TD(t.Purchase_Receipt_Transaction_Consolidated.category_id.description),
             TD(INPUT(_type='text', _class='form-control date', _id = 'production_date', _name='production_date', _value = t.Purchase_Receipt_Transaction_Consolidated.production_date), _style="width:120px;"),
             TD(INPUT(_type='text', _class='form-control date', _id = 'expiration_date', _name='expiration_date', _value = t.Purchase_Receipt_Transaction_Consolidated.expiration_date), _style="width:120px;"),
-            TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _align = 'right'), _style="width:120px;"),
+            TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _onchange = "ajax('/procurement/validate_consolidated_processed_quantity',['_id', 'item_code', 'uom', 'pieces', 'quantity'])", _align = 'right'), _style="width:120px;"),
             TD(_pcs, _align = 'right', _style="width:120px;"),
             TD(btn_lnk)))
     for m in db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.partial == False) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False)).select():        
@@ -4619,7 +4646,7 @@ def purchase_receipt_reports():
         # ('ALIGN',(6,-5),(6,-1),'LEFT'),
     ]))    
 
-    _row_4 = [['Note: Kindly check this GRV for clarity and notify Accounts of any discrepancy immediately']]
+    _row_4 = [['Note: Kindly check this Purchase Receipt for clarity and notify Accounts of any discrepancy immediately']]
     _table_4 = Table(_row_4)
     _table_4.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
@@ -4666,10 +4693,11 @@ def document_register_report():
     _header = [
         ['D1 REGISTER'],
         ['Reference No.',':', _id.document_register_no,'' ,'Date',':',_id.document_register_date],
+        # ['Location',':',_id.location_code_id.location_name],
         ['FINANCE MANAGER'],
         ['Merch & Partners W.L.L.,'],
         ['Doha-Qatar'],
-        ['Order No. ' + str(_list) + ' ' + str(_id.location_code_id.location_name)],
+        ['Order No. ' + str(_list)],
         ['Enclosed please find the following documents:-'],
         ['Suppliers Invoice No.: ' + str(_id.invoice_no) + ' dated ' + str(_id.invoice_date)],
         ['Value: QR ' + str(locale.format('%.3F',_id.total_amount_in_qr or 0, grouping = True))],

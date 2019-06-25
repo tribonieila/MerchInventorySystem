@@ -9,7 +9,7 @@
             <span class="card-title">PURCHASE RECEIPT FORM</span>
         </div>
         <div class="card-body tab-content">                                            
-                <div class="form-horizontal">
+                <!-- <div class="form-horizontal">
     
                         <div class="row">
                             <div class="col-md-4">
@@ -91,8 +91,9 @@
                             </div>
                         </div>                 
                     
-                </div>
-                
+                </div> -->
+                {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}                                   
+
                   
         </div>
     </div>
