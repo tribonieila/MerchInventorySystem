@@ -1,0 +1,110 @@
+{{extend 'layout.html'}}
+    <div class="col-md-12">
+        <div class="card card-underline"> 
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">VIEW</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('document_register_grid')}}";>BROWSE</a></li>
+                </ul>
+                <span class="card-title">D1 REGISTER</span>
+            </div>
+            <div class="card-body tab-content">          
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Register No.</label>
+                                <div class="col-sm-8">{{=_id.document_register_no}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Register Date.</label>
+                                <div class="col-sm-8">{{=_id.document_register_date}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Supplier</label>
+                                <div class="col-sm-8">{{=_id.supplier_code_id.supp_name}}</div>
+                            </div>
+                        </div>        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Invoice No</label>
+                                <div class="col-sm-8">{{=_id.invoice_no}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Invoice Date.</label>
+                                <div class="col-sm-8">{{=_id.invoice_date}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Location</label>
+                                <div class="col-sm-8">{{=_id.location_code_id.location_name}}</div>
+                            </div>
+                        </div>        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Invoice Amount</label>
+                                <div class="col-sm-8">{{=_id.invoice_amount}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Courier</label>
+                                <div class="col-sm-8">{{=_id.courier}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">ETA</label>
+                                <div class="col-sm-8">{{=_id.estimated_time_of_arrival}}</div>
+                            </div>
+                        </div>        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Mode of Shipment</label>
+                                <div class="col-sm-8">{{=_id.mode_of_shipment}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Total Amount (QR)</label>
+                                <div class="col-sm-8">{{=_id.total_amount_in_qr}}</div>
+                            </div>
+                        </div>
+       
+                    </div>                    
+                </div>  
+                <hr>
+                {{=table}}
+                
+            </div>
+        </div>
+    </div>
+    
+
+    
+    <script>    
+        $(document).ready(function(){
+            $('#btnCon').attr('disabled','disabled');        
+            $(".checkbox").click(function(e){     
+                var value = $(this).closest('tr').find('input:checkbox').val();
+                if (this.checked) {                
+                    ajax("{{=URL('procurement','marked_po')}}" + '/'+ value);
+                } else {
+                    ajax("{{=URL('procurement','unmarked_po')}}" + '/'+ value);
+                }
+            });        
+        });
+    </script>

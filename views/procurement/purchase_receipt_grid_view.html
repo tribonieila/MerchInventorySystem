@@ -1,0 +1,99 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">EDIT VIEW</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_receipt_grid')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">PURCHASE RECEIPT FORM</span>
+        </div>
+        <div class="card-body tab-content">                                            
+                <div class="form-horizontal">
+    
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Location</label>
+                                    <div class="col-sm-8">{{=_pr.location_code_id.location_name}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Supplier/Acct Code</label>
+                                    <div class="col-sm-8">{{=_pr.supplier_account_code}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Supplier/Account Name</label>
+                                    <div class="col-sm-8">{{=_pr.supplier_account_code_description}}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Currency</label>
+                                    <div class="col-sm-8">{{=_pr.currency_id.mnemonic}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Trade Terms</label>
+                                    <div class="col-sm-8">{{=_pr.trade_terms_id.trade_terms}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Supplier Invoice</label>
+                                    <div class="col-sm-8">{{=_pr.supplier_invoice}}</div>
+                                </div>
+                            </div>
+                        </div>   
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Exchange Rate</label>
+                                    <div class="col-sm-4">{{=_pr.exchange_rate}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Landed Cost Rate</label>
+                                    <div class="col-sm-4">{{=_pr.landed_cost}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Other Charges</label>
+                                    <div class="col-sm-4">{{=_pr.other_charges}}</div>
+                                </div>
+                            </div>
+                        </div>          
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Custom Duty Charges</label>
+                                    <div class="col-sm-4">{{=_pr.custom_duty_charges}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Selective Tax</label>
+                                    <div class="col-sm-4">{{=_pr.selective_tax}}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-4"></div>
+                                
+                            </div>
+                        </div>                 
+                    
+                </div>
+                
+                  
+        </div>
+    </div>
+</div>

@@ -39,5 +39,7 @@ for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) &
 19 - wael 
 20 - john
 11 - user
+22 - back office
 17 - HAKIM
 18 - manoj 
+21 - juti

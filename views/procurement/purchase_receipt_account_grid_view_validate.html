@@ -97,9 +97,10 @@
                         {{=form3.custom.end}}
                 </div>
                 {{ pass }}
+                
             </div>
             <div id = "TrnxDetails">
-                <hr>                
+                            
                 {{ if db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
                     {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}
                 {{ else: }}
@@ -110,7 +111,7 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
     {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
@@ -142,6 +143,21 @@ $(document).ready(function(){
         ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
     });
 
-  
+    $('#no_table_landed_cost').change(function(){
+        ajax('{{=URL('procurement','landed_cost_validation')}}',['landed_cost', 'exchange_rate']);
+    });
 });
+</script>
+<script>
+    function landed_cost_alert(){
+        bootbox.alert({
+            size: "small",
+            message: "Landed Cost should not less than the exchange rate value.",
+            callback: function(){ 
+                $('#no_table_landed_cost').focus();
+                $('#btnProceed').attr('disabled','disabled');
+                return true;
+            }
+        });             
+    }
 </script>

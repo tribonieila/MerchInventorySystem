@@ -13,48 +13,7 @@
 
                 {{=table}}
                 <hr>
-
-                <table class="table">
-                    <thead>
-                        <tr class="bg-success">
-                            <th style="width:180px;">Suppler/Acct Code</th><th style="width:350px;">Supplier Name</th><th>Exchange Rate</th><th>Landed Cost</th><th>Other Charges</th><th>Custom Duty Charges</th><th>Trade Terms</th><th>Selective Tax</th><th>Supplier Invoice</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{ _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()}}
-                        {{ if _id: }}
-                        <tr>
-                                <td><input type="text" class="form-control" value="{{=_id.supplier_account_code}}"  disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.supplier_account_code_description}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.exchange_rate}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.landed_cost}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.other_charges}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.custom_duty_charges}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.selective_tax}}" disabled></td>
-                                <td><input type="text" class="form-control" value="{{=_id.supplier_invoice}}" disabled></td>
-                        </tr>
-
-                        {{ else: }}
-                            <tr>
-                                <td><input type="text" class="form-control" value="None" disabled></td>
-                                <td><input type="text" class="form-control" value="None" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                                <td><input type="text" class="form-control" value="0.0" disabled></td>
-                            </tr>
-    
-                        {{ pass }}
-                    </tbody>
-                </table>
-                
-    
-                
-                {{=LOAD('procurement','purchase_receipt_account_grid_view_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
+                {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}                                   
             </div>
         </div>
     </div>

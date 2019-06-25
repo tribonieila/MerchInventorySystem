@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+    <div class="col-md-12">
+        <div class="card card-underline"> 
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">PROCESSED</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('document_register_grid')}}";>BROWSE</a></li>
+                </ul>
+                <span class="card-title">D1 REGISTER</span>
+            </div>
+            <div class="card-body tab-content">            
+                {{=table}}
+                
+            </div>
+        </div>
+    </div>
+    
+
+    
+    <script>    
+        $(document).ready(function(){
+            $('#btnCon').attr('disabled','disabled');        
+            $(".checkbox").click(function(e){     
+                var value = $(this).closest('tr').find('input:checkbox').val();
+                if (this.checked) {                
+                    ajax("{{=URL('procurement','marked_po')}}" + '/'+ value);
+                } else {
+                    ajax("{{=URL('procurement','unmarked_po')}}" + '/'+ value);
+                }
+            });        
+        });
+    </script>
