@@ -3410,13 +3410,15 @@ def validate_consolidated_processed_quantity():
     print request.vars['quantity'][x]
 
 def validate_consolidated_processed():
-    row = 0    
-    if isinstance(request.vars['_id'], list):
-        for x in request.vars['pieces']:
-            print request.vars['quantity'][row]
-            row +=1
-    else:
-        print 'not list'
+    row = 0
+    # if isinstance(request.vars['_id'], list):
+        # print 'list', request.vars['pieces']
+    for x in request.vars['_id']:
+        print 'row: ', x, request.vars['pieces'][row], request.vars['uom'][row]
+        
+        row +=1
+    # else:
+    #     print 'not list'
 
     # _len = len(request.vars['item_code'])
     
@@ -3490,11 +3492,11 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
         if m.uom == 1:
             _mpcs = INPUT(_type='number', _class='form-control', _value = 0, _disabled = True), INPUT(_type='number', _class='form-control', _id = 'pieces', _name='pieces',_value = 0, _hidden = True)           
         else:
-            _mpcs = INPUT(_type='number', _class='form-control', _id = 'pieces', _name='pieces',_value = _mpcs)        
+            _mpcs = INPUT(_type='number', _class='form-control', _id = 'pieces', _name='pieces',_value = _mpcs, _onchange = "ajax('/procurement/validate_consolidated_processed', ['_id','item_code','uom','pieces']); return false")      
         
         if m.new_item == True:
             trow.append(TR(
-                TD(ctr),
+                TD(ctr, INPUT(_type='number', _id='_id', _name='_id', _value = ctr, _hidden = True)),
                 TD(m.item_code, INPUT(_type='text', _id='item_code', _name='item_code', _value=m.item_code, _hidden=True)),
                 TD(m.item_description),
                 TD(m.uom, INPUT(_type='text', _id='uom', _name='uom', _value=m.uom, _hidden=True)),
@@ -3506,10 +3508,10 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
                 TD(btn_lnk),_class='text-success'))     
         else:
             trow.append(TR(
-                TD(ctr),
+                TD(ctr, INPUT(_type='number', _id='_id', _name='_id', _value = ctr, _hidden = True)),
                 TD(m.item_code, INPUT(_type='text', _id='item_code', _name='item_code', _value=m.item_code, _hidden=True)),
                 TD(m.item_description),
-                TD(m.uom),
+                TD(m.uom, INPUT(_type='text', _id='uom', _name='uom', _value=m.uom, _hidden=True)),
                 TD(m.category_id.description),
                 TD(INPUT(_type='text', _class='form-control date', _id = 'production_date', _name='production_date', _value = m.production_date), _style="width:120px;"),
                 TD(INPUT(_type='text', _class='form-control date', _id = 'expiration_date', _name='expiration_date', _value = m.expiration_date), _style="width:120px;"),                
