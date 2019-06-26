@@ -391,7 +391,7 @@ def sales_order_form_abort():
             _s.update_record()
             db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).delete()            
         session.flash = 'ABORT'
-
+ 
 @auth.requires_login()
 def discount_session():
     session.discount = request.vars.discount

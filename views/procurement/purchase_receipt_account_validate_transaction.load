@@ -182,8 +182,7 @@ $('.delete').click(function(){
         $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());   
     });
 
-    function compute(i, q, u, p, r){
-        console.log('compute');
+    function compute(i, q, u, p, r){        
         var a = 0;
         var _gt = 0;
         var _lnd = $('#no_table_landed_cost').val();
@@ -194,6 +193,7 @@ $('.delete').click(function(){
         _gt = _gt + _a
         _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
         _loc = (parseFloat(_discount) * parseFloat(_lnd))
+        $('#total_amount').val(Number(_a.toFixed(6)).toLocaleString());
         $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
         $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  

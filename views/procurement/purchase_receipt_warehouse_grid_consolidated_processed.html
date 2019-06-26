@@ -63,8 +63,17 @@ $(document).ready(function(){
             size: "small",
             message: "Pieces value already exceed. \n Reset to zero.",
             callback: function(){ 
-                $('.pieces').val(0);
-                // location.reload();
+                $('.pieces').val(0);                
+            }
+        });        
+    }
+
+    function zeroAlert(){
+        bootbox.alert({
+            size: "small",
+            message: "Zero value not allowed.",
+            callback: function(){ 
+                $('#quantity').focus();                
             }
         });        
     }

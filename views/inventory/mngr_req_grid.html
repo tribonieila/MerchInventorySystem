@@ -1,103 +1,39 @@
 {{extend 'layout.html'}}
-<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<!-- <script scr="https://cdnjs.cloudflare.com/ajax/libs/vue-i18n/8.3.1/vue-i18n.min.js"></script> -->
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
-<div id="app">    
-    <div class="col-md-12">
-        <div class="card card-underline">
-            <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
-                    <!-- <li class="active"><a href="#" >BROWSE</a></li>mngr_req_grid -->
-                </ul>
-                <!-- <span class="card-title">STOCK TRANSACTIONS FOR APPROVAL</span> -->
-                <span class="card-title">SALES MANAGER WORKFLOW</span>
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
+                <!-- <li class="active"><a href="#" >BROWSE</a></li>mngr_req_grid -->
+            </ul>
+            <!-- <span class="card-title">STOCK TRANSACTIONS FOR APPROVAL</span> -->
+            <span class="card-title">SALES MANAGER WORKFLOW</span>
+        </div>
+        <div class="card-body tab-content">            
+            <div>
+              <ul class="nav nav-pills" role="tablist">
+                <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id == 4).count()}}</span></a></li>
+                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 4).count()}}</span></a></li>
+                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 4).count()}}</span></a></li>
+                <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db(db.Purchase_Request.status_id == 19).count()}}</span></a></li>
+              </ul>
+              <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="stock_request">                        
+                  {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}                                                    
+                </div>                   
+                <div role="tabpanel" class="tab-pane" id="sales_order">                        
+                  {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
+                </div>                   
+                <div role="tabpanel" class="tab-pane" id="sales_return">                        
+                  {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
+                </div>                   
+                <div role="tabpanel" class="tab-pane" id="purchase_request">                        
+                  {{=LOAD('procurement','purchase_request_grid.load', ajax = True, target = 'PRtbl')}}
+                </div>                   
+  
+              </div>
             </div>
-            <div class="card-body tab-content">
-                <template>                         
-                    <el-tabs :tab-position="tabPosition" style="height: 100%;">
-                        <el-tab-pane label="Stock Request">    
-                            {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}                                                    
-                        </el-tab-pane>
-                        <el-tab-pane label="Sales Order">
-                            {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
-                        </el-tab-pane>
-                        <el-tab-pane label="Sales Return">
-                            {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
-                        </el-tab-pane>                        
-                        <el-tab-pane label="Purchase Request">
-                          {{=LOAD('procurement','purchase_request_grid.load', ajax = True)}}
-                        </el-tab-pane>                           
-                    </el-tabs>
-                    <el-dialog title="Itim Stock Requested" :visible.sync="dialogTableVisible">
-                        <el-table :data="gridData">
-                            <el-table-column property="date" label="Date" width="150"></el-table-column>
-                            <el-table-column property="name" label="Name" width="200"></el-table-column>
-                            <el-table-column property="address" label="Address"></el-table-column>
-                        </el-table>
-                    </el-dialog>                    
-                </template>
-            </div>
-        </div>                
-    </div>
+        </div>
+    </div>                
 </div>
-
-<script>
-var Main = {
-    delimiters: ["{%","%}"],
-    methods: {     
-      linksClick(row) {
-        window.open("{{=URL('inventory','mngr_req_details')}}" + "/" + row, '_top');        
-      },
-      toggleSelection(rows) {
-        if (rows) {
-          rows.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row);
-          });
-        } else {
-          this.$refs.multipleTable.clearSelection();    
-        }
-      },
-      handleSelectionChange(val) {
-        this.multipleSelection = val;
-        // console.log(val);
-      },
-
-    },
-    data() {
-      return {
-        
-        {{import locale}}
-        gridData: [ 
-            {
-                date: '2016-05-02',
-                name: 'John Smith',
-                address: 'No.1518,  Jinshajiang Road, Putuo District'
-            },
-        ],          
-        dialogTableVisible: false,
-        tabPosition: 'top',
-        tableData: [{{for s in db(db.Stock_Request.srn_status_id == 4 ).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, 
-        orderby = ~db.Stock_Request.stock_request_no, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):}}
-        {
-            tag: '{{=s.Stock_Request.id}}',                
-            date: '{{=s.Stock_Request.stock_request_date}}',
-            req_no: '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Request.stock_request_no}}',
-            stk_src: '{{=s.Stock_Request.stock_source_id.location_name}}',
-            stk_des: '{{=s.Stock_Request.stock_destination_id.location_name}}',
-            stat: '{{=s.Stock_Request.srn_status_id.description}}',
-            req_by: '{{=s.Stock_Request.created_by.first_name.upper()}} {{=s.Stock_Request.created_by.last_name.upper()}}',
-            amount: '{{=locale.format('%.2f', s.Stock_Request.total_amount or 0, grouping = True)}}',
-            req: '{{=s.Stock_Request.srn_status_id.required_action}}',          
-        },{{pass}}],
-        multipleSelection: []
-      }
-    }
-  }
-var Ctor = Vue.extend(Main)
-new Ctor().$mount('#app')
-</script>
 

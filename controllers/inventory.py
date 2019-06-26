@@ -1720,6 +1720,7 @@ def itm_view_pop(x = request.args(0)):
             TR(TD('Status:'), TD(x.item_status_code_id.status, _style = 'text-align: right'))])
     table = str(XML(t, sanitize = False))
     return table
+
 @auth.requires_login()
 def itm_link_form():
 
@@ -3487,6 +3488,7 @@ def str_kpr_grid():
             pst_lnk = A(I(_class='fas fa-print'),  _title='Print Stock Transfer', _type=' button', _role='button', _class='btn btn-icon-toggle',  _href = URL('inventory','stock_transaction_report', args = n.id))
         psr_lnk = A(I(_class='fas fa-print'),  _title='Print Stock Request', _type=' button', _role='button', _class='btn btn-icon-toggle',  _href = URL('inventory','str_kpr_rpt', args = n.id))
         
+        # view_lnk = A(I(_class='fas fa-search'), _title='ITEM MASTER', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'left','_data-html':'true','_data-content': itm_view_pop(n.id)})
         
         btn_lnk = DIV(view_lnk, psr_lnk, pst_lnk)
         if not n.stock_receipt_no_id:
@@ -3501,11 +3503,12 @@ def str_kpr_grid():
         row.append(TR(
             TD(n.stock_request_date),
             TD(n.stock_request_no_id.prefix,n.stock_request_no),
-            TD(_transfer),
+
+            TD(A(_transfer, _role='button', **{'_data-toggle':'popover','_data-placement':'left','_data-html':'true','_data-content': approved_by(n.id)})),
             TD(_receipt),    
             TD(n.stock_source_id.location_name),
             TD(n.stock_destination_id.location_name),
-            TD(n.created_by.first_name.upper() + ' ' + n.created_by.last_name.upper()),
+            TD(n.created_by.first_name.upper() ,' ', n.created_by.last_name.upper()),            
             TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
             TD(n.srn_status_id.description),
             TD(n.srn_status_id.required_action),
@@ -3513,6 +3516,14 @@ def str_kpr_grid():
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')
     return dict(table = table)
+
+def approved_by(x = request.args(0)):
+    for x in db(db.Stock_Request.id == x).select():
+        t = TABLE(*[
+            TR(TD('Approved By: '),TD(x.stock_transfer_approved_by))
+        ])
+    table = str(XML(t, sanitize = False))
+    return table
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def stock_request_grid():    
@@ -5142,7 +5153,7 @@ def stock_corrections():
     return dict(table = table)    
 
 def stock_corrections_archived():
-    print 'archived ', request.args(0)
+    # print 'archived ', request.args(0)
     _id = db(db.Stock_Corrections.id == request.args(0)).select().first()
     _id.update_record(archive = True, updated_on = request.now, updated_by = auth.user_id)
     response.flash = 'RECORD CLEARD'
