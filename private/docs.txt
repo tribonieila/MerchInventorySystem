@@ -43,3 +43,4 @@ for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) &
 17 - HAKIM
 18 - manoj 
 21 - juti
+isinstance(_id, list):
