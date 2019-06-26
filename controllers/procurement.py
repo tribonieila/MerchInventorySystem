@@ -173,8 +173,10 @@ def purchase_receipt_grid():
     return dict(table = table)
 
 def purchase_receipt_approved():
-    db(db.Purchase_Receipt.id == request.args(0)).update(status_id = 21)    
-    db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).update(status_id = 21)
+    _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
+    _id.update_record(status_id = 21)
+    # db(db.Purchase_Receipt.id == request.args(0)).update(status_id = 21)    
+    db(db.Purchase_Receipt_Warehouse_Consolidated.id == int(_id.purchase_receipt_no_id_consolidated)).update(status_id = 21)
     session.flash = 'PURCHASE RECEIPT POSTED'
     response.js = "jQuery(location.reload())"
 
@@ -317,8 +319,8 @@ def puchase_receipt_account_grid(): # manoj
         else:
             prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
-            # vali_lnk = A(I(_class='fas fa-hand-holding-usd'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view_validate', args = n.id, extension = False))
-            vali_lnk = A(I(_class='fas fa-hand-holding-usd'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+            vali_lnk = A(I(_class='fas fa-hand-holding-usd'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view_validate', args = n.id, extension = False))
+            # vali_lnk = A(I(_class='fas fa-hand-holding-usd'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
         # if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == n.id).select().first():
         #     vali_lnk = A(I(_class='fas fa-hand-holding-usd'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view_validate', args = n.id, extension = False))
         #     prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                    
