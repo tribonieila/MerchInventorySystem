@@ -207,8 +207,8 @@ $('.delete').click(function(){
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
     }
 
-    function computed(m, i, q, u, p, r){     
-        console.log(m);      
+    function computed(i, q, u, p, r){     
+        
         var _lnd = $('#no_table_landed_cost').val();
         var _otc = $('#no_table_other_charges').val();
         var _cus = $('#no_table_custom_duty_charges').val();
@@ -239,7 +239,7 @@ $('.delete').click(function(){
         $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
         $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
-        $('#remarks).append(m),
+        
                           
     }
 

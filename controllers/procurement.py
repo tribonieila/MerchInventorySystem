@@ -523,7 +523,7 @@ def validate_account_transaction():
             _remarks = 'excess'
         _total_amount = float(_price_cost) * int(_pieces)                       
         # $( "#first-tab" ).append('<div><label for="name">Test</label></div>');
-        response.js = "computed(%s, %s, %s, %s, %s, %s))" % (_remarks, request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
+        response.js = "computed(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
         row += 1
     else:
         # print 'not list'
@@ -545,6 +545,13 @@ def validate_account_transaction():
     # response.js = "$('[name=total_amount]').eq(%s).val(%s)" %  (row, _total_amount)        
     
 
+def purchase_receipt_table():
+    grid = SQLFORM.smartgrid(db.Purchase_Receipt)
+    return dict(grid = grid)
+ 
+def purchase_receipt_transaction_table():    
+    grid = SQLFORM.grid(db.Purchase_Receipt_Transaction)
+    return dict(grid = grid)
 
 @auth.requires_login()
 def purchase_receipt_account_validate_transaction(): # .load
@@ -596,7 +603,7 @@ def purchase_receipt_account_validate_transaction(): # .load
             TD(_pcs, _align = 'right', _style="width:120px;"),
             TD(INPUT(_class='form-control price_cost', _type='number', _id = 'price_cost', _style="text-align:right;", _name='price_cost', _value= n.Purchase_Receipt_Transaction_Consolidated.price_cost, _onchange = "ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']);"),  _style="width:120px;"),
             TD(INPUT(_class='form-control', _type='text', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),
-            TD(DIV(_id='remarks')),TD(btn_lnk)))        
+            TD(INPUT(_class='form-control', _type='text', _id = 'remarks', _name='remarks', _readonly = True),_style="width:120px;"),TD(btn_lnk)))        
         for x in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.item_code_id == n.Purchase_Receipt_Transaction_Consolidated.item_code_id) & (db.Purchase_Receipt_Transaction.excessed == False)).select():                        
             if x.quantity != n.Purchase_Receipt_Transaction_Consolidated.quantity:
                 ctr += 1                      
@@ -621,7 +628,7 @@ def purchase_receipt_account_validate_transaction(): # .load
                     TD(INPUT(_type='numbers', _hidden = True, _value = _pcs)),
                     TD(locale.format('%.6F',x.price_cost or 0, grouping = True),INPUT(_type='numbers', _hidden = True, _value = locale.format('%.6F',x.price_cost or 0, grouping = True)),_align = 'right'),
                     TD(locale.format('%.6F',_total_amount or 0, grouping = True), _align = 'right'),
-                    TD(str(x.remarks) + '  ' + str('{:,d}'.format(abs(x.difference_quantity)))),TD(btn_lnk),_class='text-danger'))                 
+                    TD(str(x.remarks) + '  ' + str(card(x.difference_quantity, x.uom))),TD(btn_lnk),_class='text-danger'))                 
                                         
     for y in db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == False) ).select():
         ctr += 1
