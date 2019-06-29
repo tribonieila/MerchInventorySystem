@@ -517,11 +517,14 @@ def validate_account_transaction():
     if isinstance(request.vars['_id'], list):
         _pieces = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
         _price_cost = float(request.vars['price_cost'][row]) / int(request.vars['uom'][row])
-        if int(request.vars['_cquantity'][row]) < int(_pieces):
-            _remarks = 'short'
-        else:
-            _remarks = 'excess'
-        _total_amount = float(_price_cost) * int(_pieces)                       
+        # if int(request.vars['_cquantity'][row]) < int(_pieces):
+        #     _diff = int(_pieces) - int(request.vars['_cquantity'][row])
+        #     _remarks = request.vars['item_code_id'][row], ' short', _diff
+        # else:
+        #     _diff = int(request.vars['_cquantity'][row]) - int(_pieces) 
+        #     _remarks = request.vars['item_code_id'][row], 'excess', _diff
+        # _total_amount = float(_price_cost) * int(_pieces)        
+        # print _remarks
         # $( "#first-tab" ).append('<div><label for="name">Test</label></div>');
         response.js = "computed(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
         row += 1
