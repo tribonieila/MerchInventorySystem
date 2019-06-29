@@ -12,7 +12,7 @@
             <div class="form-horizontal">   
                 {{=table}}
                
-                {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
+                <!-- {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }} -->
                 <div class="form-horizontal">
                         {{=form3.custom.begin}}        
                             <div class="row">
@@ -96,16 +96,13 @@
                             </div>                 
                         {{=form3.custom.end}}
                 </div>
-                {{ pass }}
+                <!-- {{ pass }} -->
                 
             </div>
             <div id = "TrnxDetails">
                             
-                {{ if db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
-                    {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}
-                {{ else: }}
                     {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl')}}
-                {{ pass }}            
+                     
     
             </div>
         </div>
@@ -114,14 +111,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
+    // {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
         $('#TrnxDetails').hide();
         $('#btnProceed').attr('disabled','disabled');
 
-    {{ else: }}
+    // {{ else: }}
         $('#TrnxDetails').show();
 
-    {{ pass }}
+    // {{ pass }}
     $('#no_table_supplier_account_code, #no_table_trade_terms_id').change(function(){
         if ($('#no_table_supplier_account_code').val() && $('#no_table_trade_terms_id').val()) {
             $('#btnProceed').removeAttr('disabled');                 

@@ -74,7 +74,7 @@
         return false;
     });    
 
-    $('#btnSubmit').click(function(){        
+    $('#btnSubmit, #btnValidate').click(function(){        
         ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
         location.reload();
     });   
@@ -162,27 +162,35 @@ $('.delete').click(function(){
 </script>
 
 <script>
+    $('#no_table_landed_cost').change(function(){
+        recompute();
+    });
 
     $('#discount').change(function(){
+        recompute();
+    });
+
+    function recompute(){
         var _addcomputed = 0
 
-        var _lan = $('#no_table_landed_cost').val();
+        var _lan = parseFloat($('#no_table_landed_cost').val());
         var _cus = $('#no_table_custom_duty_charges').val();
         var _oth = $('#no_table_other_charges').val();
 
         var _ton = $('#total_net_amount').val();
         var _dis = $('#discount').val();        
-        var _for = $('#foreign_total_amount').val();
+        var _for = parseFloat($('#foreign_total_amount').val());
         var _loc = $('#local_total_amount').val();
 
         _for = (parseFloat(_ton) * (100 - parseInt(_dis))) / 100
-        _loc = parseFloat(_for) * parseFloat(_lan)
-        _addcomputed = parseFloat(_loc) + parseFloat(_oth) + parseFloat(_cus) 
+        _loc = parseFloat(_for) * parseFloat(_lan)                
         $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
+        _addcomputed = parseFloat(_lan) * $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
         $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());   
-    });
 
-    function compute(i, q, u, p, r){        
+    };
+    function compute(i, q, u, p, r){     
+        console.log(i);   
         var a = 0;
         var _gt = 0;
         var _lnd = $('#no_table_landed_cost').val();
@@ -199,7 +207,8 @@ $('.delete').click(function(){
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
     }
 
-    function computed(i, q, u, p, r){           
+    function computed(m, i, q, u, p, r){     
+        console.log(m);      
         var _lnd = $('#no_table_landed_cost').val();
         var _otc = $('#no_table_other_charges').val();
         var _cus = $('#no_table_custom_duty_charges').val();
@@ -211,7 +220,7 @@ $('.delete').click(function(){
         var _c = 0;
         var _a = 0;
         var inputs = document.getElementsByName('total_amount');             
-        console.log(i);
+        // console.log(i);   
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
                 // console.log('error');
@@ -230,7 +239,7 @@ $('.delete').click(function(){
         $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
         $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
         $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
-        
+        $('#remarks).append(m),
                           
     }
 
