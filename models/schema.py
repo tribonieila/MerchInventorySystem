@@ -1479,7 +1479,7 @@ db.define_table('Purchase_Receipt',
     Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
     Field('supplier_account_code_description', 'string', length = 50),
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
-    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', writable = False), #requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+    Field('currency_id', 'reference Currency', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
     Field('remarks', 'text'),                   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
     Field('posted','boolean', default = False), 

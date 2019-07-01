@@ -11,97 +11,103 @@
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
                 {{=table}}
-               
-                <!-- {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }} -->
+                <hr>
+                
                 <div class="form-horizontal">
-                        {{=form3.custom.begin}}        
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Location</label>
-                                        <div class="col-sm-8">{{=form3.custom.widget.location_code_id}}</div>
-                                    </div>
+                    {{=form3.custom.begin}}        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Location</label>
+                                    <div class="col-sm-8">{{=form3.custom.widget.location_code_id}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Supplier/Acct Code</label>
-                                        <div class="col-sm-8">{{=form3.custom.widget.supplier_account_code}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Supplier/Acct Code</label>
+                                    <div class="col-sm-8">{{=form3.custom.widget.supplier_account_code}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">                    
-                                        <label class="col-sm-4 control-label">Supplier/Account Name</label>
-                                        <div class="col-sm-8"><div id = "_supplier_code_id"></div></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Supplier/Account Name</label>
+                                    <div class="col-sm-8">
+                                        {{ if frm:}}
+                                            {{=form3.custom.widget.supplier_account_code_description}}                                        
+                                        {{ else: }}
+                                            <div id = "_supplier_code_id"></div>
+                                        {{ pass }}
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Currency</label>
-                                        <div class="col-sm-8">{{=form3.custom.widget.currency_id}}</div>
-                                    </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Currency</label>
+                                    <div class="col-sm-8">{{=form3.custom.widget.currency_id}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Trade Terms</label>
-                                        <div class="col-sm-8">{{=form3.custom.widget.trade_terms_id}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Trade Terms</label>
+                                    <div class="col-sm-8">{{=form3.custom.widget.trade_terms_id}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">                    
-                                        <label class="col-sm-4 control-label">Supplier Invoice</label>
-                                        <div class="col-sm-8">{{=form3.custom.widget.supplier_invoice}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Supplier Invoice</label>
+                                    <div class="col-sm-8">{{=form3.custom.widget.supplier_invoice}}</div>
                                 </div>
-                            </div>   
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Exchange Rate</label>
-                                        <div class="col-sm-4">{{=form3.custom.widget.exchange_rate}}</div>
-                                    </div>
+                            </div>
+                        </div>   
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Exchange Rate</label>
+                                    <div class="col-sm-4">{{=form3.custom.widget.exchange_rate}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Landed Cost Rate</label>
-                                        <div class="col-sm-4">{{=form3.custom.widget.landed_cost}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Landed Cost Rate</label>
+                                    <div class="col-sm-4">{{=form3.custom.widget.landed_cost}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">                    
-                                        <label class="col-sm-4 control-label">Other Charges</label>
-                                        <div class="col-sm-4">{{=form3.custom.widget.other_charges}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">                    
+                                    <label class="col-sm-4 control-label">Other Charges</label>
+                                    <div class="col-sm-4">{{=form3.custom.widget.other_charges}}</div>
                                 </div>
-                            </div>          
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Custom Duty Charges</label>
-                                        <div class="col-sm-4">{{=form3.custom.widget.custom_duty_charges}}</div>
-                                    </div>
+                            </div>
+                        </div>          
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Custom Duty Charges</label>
+                                    <div class="col-sm-4">{{=form3.custom.widget.custom_duty_charges}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">Selective Tax</label>
-                                        <div class="col-sm-4">{{=form3.custom.widget.selective_tax}}</div>
-                                    </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Selective Tax</label>
+                                    <div class="col-sm-4">{{=form3.custom.widget.selective_tax}}</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="col-sm-4 control-label"></label>
-                                    <div class="col-sm-4"><input class="btn btn-primary" type="button" value="Proceed" id="btnProceed"></div>
-                                    
-                                </div>
-                            </div>                 
-                        {{=form3.custom.end}}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-4"><input class="btn btn-primary" type="button" value="Proceed" id="btnProceed"></div>
+                                
+                            </div>
+                        </div>                 
+                    {{=form3.custom.end}}
                 </div>
-                <!-- {{ pass }} -->
                 
+                <hr>
             </div>
             <div id = "TrnxDetails">
                             
-                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl')}}
+                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
                      
     
             </div>

@@ -76,7 +76,7 @@
 
     $('#btnSubmit, #btnValidate').click(function(){        
         ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
-        location.reload();
+        //$( "#POTtbl" ).load(window.location.href + " #POTtbl" );
     });   
 
     $('#btnadd').click(function(){
@@ -112,7 +112,7 @@ $('#btnAbort').click(function(){
     })
 });    
 $('.delete').click(function(){
-    var _id = $(this).attr('data-id');
+    var _id = $(this).attr('data-ct');
     bootbox.confirm({
         size: "small",
         message: "Delete this record?",
@@ -136,7 +136,7 @@ $('.delete').click(function(){
     })
 });    
  $('.del').click(function(){
-    var _idd = $(this).attr('data-ct');
+    var _idd = $(this).attr('data-id');
     bootbox.confirm({
         size: "small",
         message: "Delete this record?",
@@ -153,15 +153,46 @@ $('.delete').click(function(){
         callback: function (result) {
             if (result) {
                 ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);
-                location.reload();
+                console.log('delete', _idd);
+                //location.reload();
             }
 
         }
     })
 });    
+
+ $('.dele').click(function(){
+    var _in = $(this).attr('data-nt');
+    bootbox.confirm({
+        size: "small",
+        message: "Delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('procurement','purchase_receipt_transaction_delete_new')}}" + '/'+ _in);
+                //location.reload();
+            }
+
+        }
+    })
+});  
 </script>
 
 <script>
+    $('#no_table_exchange_rate').change(function(){
+        recompute();
+    });
+
+
     $('#no_table_landed_cost').change(function(){
         recompute();
     });
@@ -176,42 +207,79 @@ $('.delete').click(function(){
         var _lan = parseFloat($('#no_table_landed_cost').val());
         var _cus = $('#no_table_custom_duty_charges').val();
         var _oth = $('#no_table_other_charges').val();
-
+        var _exc = $('#no_table_exchange_rate').val();
         var _ton = $('#total_net_amount').val();
         var _dis = $('#discount').val();        
         var _for = parseFloat($('#foreign_total_amount').val());
         var _loc = $('#local_total_amount').val();
 
         _for = (parseFloat(_ton) * (100 - parseInt(_dis))) / 100
-        _loc = parseFloat(_for) * parseFloat(_lan)                
-        $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
-        _addcomputed = parseFloat(_lan) * $('#foreign_total_amount').val(Number(_for.toFixed(6)).toLocaleString());          
-        $('#local_total_amount').val(Number(_addcomputed.toFixed(6)).toLocaleString());   
+        _loc = parseFloat(_for) * parseFloat(_exc)                
+        _pur = parseFloat(_lan) * parseFloat(_for)         
+        $('#foreign_total_amount').val(Number(_for.toFixed(3)).toLocaleString());                  
+        $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());   
+        $('#purchase_value').val(Number(_pur.toFixed(3)).toLocaleString());   
 
     };
-    function compute(i, q, u, p, r){     
-        console.log(i);   
+    function compute(i, c, q, u, p, r){     
+        var _diff = 0;
         var a = 0;
         var _gt = 0;
         var _lnd = $('#no_table_landed_cost').val();
         var _dis = $('#discount').val();
+
+        var remarks = document.getElementsByName('remarks');       
+        var quantity = document.getElementsByName('quantity');
+        var pieces = document.getElementsByName('pieces');
+        var price_cost = document.getElementsByName('price_cost');
+        var total_amount = document.getElementsByName('total_amount');
+
         var _p = parseInt(q) * parseInt(u) + parseInt(p)
         var _c = parseInt(r) / parseInt(u)
         var _a = _p * parseFloat(_c);
+
+        if (parseInt(c) < parseInt(_p)) {
+            _diff = parseInt(_p) - parseInt(c)
+            remarks.value = 'shorts ' + _diff            
+            $('#remarks').val(remarks.value);
+        } else if (parseInt(c) === parseInt(p)) {
+            remarks.value = ''
+            $('#remarks').val(remarks.value);
+        } else if (parseInt(c) > parseInt(p)) {            
+            _diff = parseInt(c) - parseInt(p)
+            remarks.value = 'excess ' + _diff
+            $('#remarks').val(remarks.value);
+        }
+
+        if (parseInt(q) < parseInt(0)) {
+            quantity.value = 0
+            remarks.value = 'excess ' + parseInt(u)
+            $('#remarks').val(remarks.value);
+            $('#quantity').val(quantity.value);
+            return alert('Please enter a positive integer.');
+        }
+
+        if (parseInt(p) < parseInt(0)) {
+            pieces.value = 0
+            remarks.value = ''
+            $('#remarks').val(remarks.value);
+            $('#pieces').val(pieces.value);
+            return alert('Please enter a positive integer.');
+        }
+
         _gt = _gt + _a
         _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
         _loc = (parseFloat(_discount) * parseFloat(_lnd))
-        $('#total_amount').val(Number(_a.toFixed(6)).toLocaleString());
-        $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
-        $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
-        $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
+
+        $('#total_amount').val(Number(_a.toFixed(3)).toLocaleString());
+        $('#total_net_amount').val(Number(_gt.toFixed(3)).toLocaleString());  
+        $('#foreign_total_amount').val(Number(_discount.toFixed(3)).toLocaleString());  
+        $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());  
     }
 
-    function computed(i, q, u, p, r){     
-        
+    function computed(i, c, q, u, p, r){     
+        var _diff = 0
         var _lnd = $('#no_table_landed_cost').val();
-        var _otc = $('#no_table_other_charges').val();
-        var _cus = $('#no_table_custom_duty_charges').val();
         var _gt = 0;
         var _loc = 0;
         var _discount = 0;
@@ -219,27 +287,60 @@ $('.delete').click(function(){
         var _p = 0;
         var _c = 0;
         var _a = 0;
-        var inputs = document.getElementsByName('total_amount');             
+        var remarks = ''
+        
+        var remarks = document.getElementsByName('remarks');       
+        var quantity = document.getElementsByName('quantity');
+        var pieces = document.getElementsByName('pieces');
+        var price_cost = document.getElementsByName('price_cost');
+        var total_amount = document.getElementsByName('total_amount');
+
         // console.log(i);   
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
-                // console.log('error');
+                // console.log(i);
                 errAlert();
             } 
 
             var _p = parseInt(q[x]) * parseInt(u[x]) + parseInt(p[x])
             var _c = parseFloat(r[x]) / parseInt(u[x])
             var _a = _p * parseFloat(_c)
-            inputs[x].value = _a.toFixed(3);
+          
+            if (parseInt(c[x]) < parseInt(_p)) {
+                _diff = parseInt(_p) - parseInt(c[x]) 
+                remarks[x].value = 'shorts '+ _diff
+            } else if (parseInt(c[x]) === parseInt(_p)) {
+                remarks[x].value = ''
+            } else if (parseInt(c[x]) > parseInt(_p)) {
+                _diff =  parseInt(c[x]) - parseInt(_p)
+                remarks[x].value = 'excess ' + _diff
+            } 
+            
+            if (parseInt(q[x]) < parseInt(0)) {
+                //console.log('not allowed');
+                quantity[x].value = 0
+                remarks[x].value = 'excess  ' + parseInt(u[x])
+                return alert('Please enter a positive integer.');
+            }  
+
+            if (parseInt(p[x]) < parseInt(0)) {
+                //console.log('not allowed');
+                pieces[x].value = 0
+                remarks[x].value = ''
+                return alert('Please enter a positive integer.');
+            }  
+
+
+            total_amount[x].value = _a.toFixed(3);
+            
             _gt = _gt + _a
             _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
-            _loc = (parseFloat(_discount) * parseFloat(_lnd)) // + (parseFloat(_otc) + parseFloat(_cus))
+            _loc = parseFloat(_discount) * parseFloat(_lnd) 
             
         }        
-        $('#total_net_amount').val(Number(_gt.toFixed(6)).toLocaleString());  
-        $('#foreign_total_amount').val(Number(_discount.toFixed(6)).toLocaleString());  
-        $('#local_total_amount').val(Number(_loc.toFixed(6)).toLocaleString());  
-        
+        $('#total_net_amount').val(Number(_gt.toFixed(3)).toLocaleString());  
+        $('#foreign_total_amount').val(Number(_discount.toFixed(3)).toLocaleString());  
+        $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());                 
                           
     }
 
@@ -253,9 +354,4 @@ $('.delete').click(function(){
             }
         });        
     }
-
-
-
-
-
 </script>

@@ -160,7 +160,7 @@ def insurance_proposal_details_on_hold():
 def purchase_receipt_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
-    for n in db(db.Purchase_Receipt.status_id == 18).select():
+    for n in db((db.Purchase_Receipt.status_id == 21) & (db.Purchase_Receipt.posted == False)).select():
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_grid_view', args = n.id, extension = False))        
         appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_receipt_approved', args = n.id, extension = False))
         reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_request_rejected', args = n.id, extension = False))
@@ -174,7 +174,89 @@ def purchase_receipt_grid():
 
 def purchase_receipt_approved():
     _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
-    _id.update_record(status_id = 21)
+    _id.update_record(status_id = 21, posted = True)
+
+    for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id == _id.id).select():        
+        if int(n.category_id) == 1: # for damaged items
+            _dmg_stk = db((db.Stock_File.item_code_id == int(n.item_code_id)) & (db.Stock_File.location_code_id == int(_id.location_code_id))).select().first()
+            _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(n.quantity)
+            _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)
+        elif n.category_id == 2: # for excess items
+            _tp = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
+            _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _tp.current_year_serial_key).select().first()
+            
+            if _dpr:
+                db.Direct_Purchase_Receipt_Transaction.insert(
+                    purchase_receipt_no_id = request.args(0),
+                    item_code_id = n.item_code_id,
+                    category_id = 2,
+                    quantity = n.quantity,
+                    uom = n.uom,
+                    price_cost = n.price_cost,
+                    total_amount = n.total_amount,
+                    excessed = True)
+            else:
+                _skey = _tp.current_year_serial_key
+                _skey += 1
+                _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
+                db.Direct_Purchase_Receipt.insert(
+                    purchase_receipt_no_prefix_id = _tp.id,
+                    purchase_receipt_no = _skey,
+                    dept_code_id = n.dept_code_id,
+                    supplier_code_id = n.supplier_code_id,
+                    mode_of_shipment = n.mode_of_shipment,
+                    location_code_id = n.location_code_id,
+                    total_amount = n.total_amount,
+                    total_amount_after_discount = n.total_amount_after_discount,
+                    currency_id = n.currency_id,
+                    exchange_rate = n.exchange_rate,
+                    trade_terms_id = n.trade_terms_id,
+                    landed_cost = n.landed_cost,
+                    other_charges = n.other_charges,
+                    custom_duty_charges = n.custom_duty_charges,
+                    selective_tax = n.selective_tax,
+                    supplier_invoice = n.supplier_invoice,
+                    supplier_account_code = n.supplier_account_code,
+                    supplier_account_code_description = n.supplier_account_code_description,
+                    discount_percentage = n.discount_percentage,
+                    status_id = n.status_id)                 
+                _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _skey).select().first()
+                session._dpr = _dpr.id
+                db.Direct_Purchase_Receipt_Transaction.insert(
+                    purchase_receipt_no_id = _dpr.id,
+                    item_code_id = n.item_code_id,
+                    category_id = 2,
+                    quantity = n.quantity,
+                    uom = n.uom,
+                    price_cost = n.price_cost,
+                    excessed = True)                              
+
+        else:            
+            _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _id.purchase_receipt_no_id_consolidated).select().first()        
+            db.Purchase_Batch_Cost.insert( # Purchase Batch Cost
+                item_code_id = n.item_code_id,
+                purchase_receipt_date = request.now,
+                batch_cost = n.price_cost,
+                supplier_price = n.price_cost,
+                batch_quantity = n.quantity,
+                batch_production_date = _prtc.production_date,
+                batch_expiry_date = _prtc.expiration_date)
+        
+            _stk_fil = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()
+            if not _stk_fil:
+                db.Stock_File.insert(
+                    item_code_id = request.vars.item_code_id,
+                    location_code_id = n.location_code_id,
+                    opening_stock = n.quantity,
+                    closing_stock = n.quantity,
+                    last_transfer_qty = n.quantity)
+            else:
+                _opn_stk = int(_stk_fil.opening_stock) + int(n.quantity)
+                _clo_stk = int(_stk_fil.closing_stock) + int(n.quantity)
+                _stk_fil.update_record(opening_stock = _opn_stk, closing_stock = _clo_stk, last_transfer_qty = n.quantity)
+        
+
+
     # db(db.Purchase_Receipt.id == request.args(0)).update(status_id = 21)    
     db(db.Purchase_Receipt_Warehouse_Consolidated.id == int(_id.purchase_receipt_no_id_consolidated)).update(status_id = 21)
     session.flash = 'PURCHASE RECEIPT POSTED'
@@ -455,9 +537,9 @@ def purchase_receipt_account_grid_view_transaction(): # .load
     return dict(table = table,_po = _po)    
     
 def purchase_receipt_account_grid_view_validate():
-    # _id = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == True)).select().first()
-    # if _id:
-    #     redirect(URL('procurement','purchase_receipt_account_grid_new_item', args = request.args(0)))
+    _id = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == True)).select().first()
+    if _id:
+        redirect(URL('procurement','purchase_receipt_account_grid_new_item', args = request.args(0)))
     # # elif db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first():
     # #     redirect(URL('procurement','purchase_receipt_account_view_validate_transaction', args = request.args(0)))
     # else:
@@ -485,25 +567,33 @@ def purchase_receipt_account_grid_view_validate():
     _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()        
     _supp = db(db.Supplier_Master.id == _prwc.supplier_code_id).select().first()
     _curr = db(db.Currency_Exchange.currency_id == _supp.currency_id).select().first()
-    session.Currency_Exchange == _curr.exchange_rate_value
-    form3 = SQLFORM.factory(
-        Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', default = 1, requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-        Field('exchange_rate','decimal(15,6)', default = _curr.exchange_rate_value),
-        Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
-        Field('landed_cost','decimal(15,6)', default = _curr.exchange_rate_value,  widget=SQLFORM.widgets.double.widget),
-        Field('other_charges','decimal(15,6)', default = 0.0),    
-        Field('custom_duty_charges','decimal(15,6)', default = 0.0),            
-        Field('selective_tax','decimal(15,6)', default = 0.0),
-        Field('supplier_invoice','string', length = 25),
-        Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),        
-        Field('currency_id', 'reference Currency', default = _supp.currency_id, ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
-        Field('discount_percentage', 'decimal(10,2)',default =0)) # on hold structure
-    if form3.process().accepted:
-        response.flash = 'RECORD SAVE'
-    elif form3.errors:
-        response.flash = 'FORM HAS ERROR'  
+    session.Currency_Exchange = _curr.exchange_rate_value
+    frm = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
+    if frm:
+        form3 = SQLFORM(db.Purchase_Receipt, frm)
+        if form3.process().accepted:
+            response.flash = 'RECORD UPDATED'
+        elif form3.errors:
+            response.flash = 'FORM HAS ERROR'  
+    else:
+        form3 = SQLFORM.factory(
+            Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', default = 1, requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+            Field('exchange_rate','decimal(15,6)', default = _curr.exchange_rate_value),
+            Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
+            Field('landed_cost','decimal(15,6)', default = _curr.exchange_rate_value,  widget=SQLFORM.widgets.double.widget),
+            Field('other_charges','decimal(15,6)', default = 0.0),    
+            Field('custom_duty_charges','decimal(15,6)', default = 0.0),            
+            Field('selective_tax','decimal(15,6)', default = 0.0),
+            Field('supplier_invoice','string', length = 25),
+            Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),        
+            Field('currency_id', 'reference Currency', default = _supp.currency_id, ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
+            Field('discount_percentage', 'decimal(10,2)',default =0)) # on hold structure
+        if form3.process().accepted:
+            response.flash = 'RECORD SAVE'
+        elif form3.errors:
+            response.flash = 'FORM HAS ERROR'  
                         
-    return dict(table = table, form3 = form3)
+    return dict(table = table, form3 = form3, frm = frm)
 
 def landed_cost_validation():
     if request.vars.landed_cost < request.vars.exchange_rate:
@@ -515,38 +605,22 @@ def landed_cost_validation():
 def validate_account_transaction():
     row = 0    
     if isinstance(request.vars['_id'], list):
-        _pieces = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
-        _price_cost = float(request.vars['price_cost'][row]) / int(request.vars['uom'][row])
-        # if int(request.vars['_cquantity'][row]) < int(_pieces):
-        #     _diff = int(_pieces) - int(request.vars['_cquantity'][row])
-        #     _remarks = request.vars['item_code_id'][row], ' short', _diff
-        # else:
-        #     _diff = int(request.vars['_cquantity'][row]) - int(_pieces) 
-        #     _remarks = request.vars['item_code_id'][row], 'excess', _diff
-        # _total_amount = float(_price_cost) * int(_pieces)        
-        # print _remarks
-        # $( "#first-tab" ).append('<div><label for="name">Test</label></div>');
-        response.js = "computed(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
-        row += 1
+        # print 'list', request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost']
+        response.js = "jQuery(computed(%s, %s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
+            # row += 1
     else:
         # print 'not list'
-        response.js = "jQuery(compute(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
+        response.js = "jQuery(compute(%s, %s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
 
+def validate_account_unit_price():
+    if isinstance(request.vars['_id'], list):
+        print 'list', request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost']
+        response.js = "jQuery(computed(%s, %s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
+            # row += 1
+    else:
+        print 'not list'
+        response.js = "jQuery(compute(%s, %s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['_cquantity'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
 
-    # for x in request.vars['item_code_id']:
-    #     _pieces = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
-    #     _price_cost = float(request.vars['price_cost'][row]) / int(request.vars['uom'][row])
-    #     _total_amount = float(_price_cost) * int(_pieces)                       
-    #     if row < 1:
-    #         response.js = "jQuery(compute(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
-    #     else:
-    #         response.js = "jQuery(computed(%s, %s, %s, %s, %s))" % (request.vars['item_code_id'], request.vars['quantity'], request.vars['uom'], request.vars['pieces'],request.vars['price_cost'])
-
-    #     # print request.now.time(), 'row: ', row,  _total_amount, _grand_total
-    #     row += 1
-    
-    # response.js = "$('[name=total_amount]').eq(%s).val(%s)" %  (row, _total_amount)        
-    
 
 def purchase_receipt_table():
     grid = SQLFORM.smartgrid(db.Purchase_Receipt)
@@ -558,24 +632,28 @@ def purchase_receipt_transaction_table():
 
 @auth.requires_login()
 def purchase_receipt_account_validate_transaction(): # .load
-    _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
-    if _pr:
-        response.js = "$('#btnSubmit').attr('disabled','disabled');$('#btnValidate').attr('disabled','disabled');$('#btnAbort').attr('disabled','disabled');$('#btnadd').attr('disabled','disabled');$('.del').attr('disabled','disabled');$('.delete').attr('disabled','disabled');" 
+    _pr = db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt.posted == True)).select().first()
+    if db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt.posted == True)).select().first():
+        response.js = "$('#btnProceed').attr('disabled','disabled');$('#btnSubmit').attr('disabled','disabled');$('#btnValidate').attr('disabled','disabled');$('#btnAbort').attr('disabled','disabled');$('#btnadd').attr('disabled','disabled');$('.del').attr('disabled','disabled');$('.delete').attr('disabled','disabled');;$('.dele').attr('disabled','disabled');" 
+    elif db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first():
+        response.js = "$('#btnProceed').attr('disabled','disabled');$('#btnValidate').attr('disabled','disabled')$('#btnadd').attr('disabled','disabled');$('.del').attr('disabled','disabled');$('.delete').attr('disabled','disabled');;$('.dele').attr('disabled','disabled');"     
     else:                
         response.js = "$('#btnSubmit').removeAttr('disabled')"    
+    
     _id = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
     item_code_id = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)).select()
     row = []
     ctr = _po = currency_id = 0
     _price_cost = _pieces = _total_net_amount = _total_amount_rec_new = _net_amount = 0
     _total_amount_1 = _total_amount_2 = total_amount_3 = 0
-    
+    n = 0
     # head = THEAD(TR(TH('Suppler/Acct Codes'),TH('Supplier Name'),TH('Exchange Rate'),TH('Landed Cost'),TH('Other Charges'),TH('Custom Duty Charges'),TH('Discount'),TH('Selective Tax'),TH('Supplier Invoice'),TH(),TH(),TH(),TH(),_class='bg-success'))        
     # head += TR(TD('#'),TD('Item Code'),TD('Item Description'),TH('UOM'),TH('Category'),TH('Invoice Qty'),TH('Warehouse Receipt Qty'),TH('Quantity'),TH('Pieces'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'))
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty'),TH('Warehouse Receipt Qty'),TH('Invoice Qty'),TH('Invoice Pcs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-success'))        
-    for n in db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction_Consolidated.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction_Consolidated.item_code_id)):
-        ctr += 1
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle del', _disabled = True, callback = URL(args = n.Purchase_Receipt_Transaction_Consolidated.id, extension = False), **{'_data-ct':(n.Purchase_Receipt_Transaction_Consolidated.id)})
+    for n in db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.delete == False)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction_Consolidated.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction_Consolidated.item_code_id)):
+        
+        ctr += 1        
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = n.Purchase_Receipt_Transaction_Consolidated.id, extension = False), **{'_data-ct':(n.Purchase_Receipt_Transaction_Consolidated.id)})
         btn_lnk = DIV(dele_lnk)                
         # print ':', n.Purchase_Receipt_Transaction_Consolidated.id
         _pot = db(db.Purchase_Order_Transaction.item_code_id == n.Purchase_Receipt_Transaction_Consolidated.item_code_id).select().first()
@@ -604,17 +682,44 @@ def purchase_receipt_account_validate_transaction(): # .load
             TD(card(n.Purchase_Receipt_Transaction_Consolidated.quantity,n.Purchase_Receipt_Transaction_Consolidated.uom),INPUT(_type='numbers', _id = '_cquantity', _name='_cquantity', _hidden = True, _value= n.Purchase_Receipt_Transaction_Consolidated.quantity)),
             TD(_qty,INPUT(_type='numbers', _id='flanded_cost', _hidden=True, _name='flanded_cost',_value = n.Purchase_Receipt_Transaction_Consolidated.price_cost), _align = 'right', _style="width:120px;"),
             TD(_pcs, _align = 'right', _style="width:120px;"),
-            TD(INPUT(_class='form-control price_cost', _type='number', _id = 'price_cost', _style="text-align:right;", _name='price_cost', _value= n.Purchase_Receipt_Transaction_Consolidated.price_cost, _onchange = "ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']);"),  _style="width:120px;"),
+            TD(INPUT(_class='form-control price_cost', _type='number', _id = 'price_cost', _style="text-align:right;", _name='price_cost', _value= locale.format('%.3F',n.Purchase_Receipt_Transaction_Consolidated.price_cost or 0, grouping = True), _onchange = "ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost', '_cquantity']);"),  _style="width:120px;"),
             TD(INPUT(_class='form-control', _type='text', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),
+            # TD(DIV(_id='_remarks')),TD(btn_lnk)))
             TD(INPUT(_class='form-control', _type='text', _id = 'remarks', _name='remarks', _readonly = True),_style="width:120px;"),TD(btn_lnk)))        
-        for x in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.item_code_id == n.Purchase_Receipt_Transaction_Consolidated.item_code_id) & (db.Purchase_Receipt_Transaction.excessed == False)).select():                        
+        for x in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.item_code_id == n.Purchase_Receipt_Transaction_Consolidated.item_code_id) & (db.Purchase_Receipt_Transaction.excessed == False) & (db.Purchase_Receipt_Transaction.delete == False)).select():                        
             if x.quantity != n.Purchase_Receipt_Transaction_Consolidated.quantity:
                 ctr += 1                      
                 _price_cost = float(x.price_cost) / int(x.uom)
                 _total_amount = float(_price_cost) * int(x.quantity)              
                 _total_amount_2 += _total_amount                
                 # clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})
-                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete',  _disabled = True, callback = URL(args = x.id, extension = False), **{'_data-id':(x.id)})          
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle del', callback = URL(args = x.id, extension = False), **{'_data-id':(x.id)})
+                btn_lnk = DIV(dele_lnk)
+                # print 'total amount 2: ', _total_amount_2
+                _qty = x.quantity / x.uom                
+                _pcs = x.quantity - x.quantity / x.uom * x.uom
+                row.append(TR(
+                    TD(ctr, INPUT(_type='number', _id='_id', _name='_id', _value = ctr, _hidden = True)),
+                    TD(x.item_code_id.item_code),
+                    TD(n.Item_Master.item_description),
+                    TD(n.Purchase_Receipt_Transaction_Consolidated.uom, INPUT(_type='text', _id='uom', _name='uom', _hidden=True, _value=x.uom)),
+                    TD(x.category_id.mnemonic),
+                    TD(card(n.Purchase_Receipt_Transaction_Consolidated.purchase_ordered_quantity,n.Purchase_Receipt_Transaction_Consolidated.uom)),
+                    TD(card(n.Purchase_Receipt_Transaction_Consolidated.quantity,n.Purchase_Receipt_Transaction_Consolidated.uom),INPUT(_type='numbers', _id = '_cquantity', _name='_cquantity', _hidden = True, _value= n.Purchase_Receipt_Transaction_Consolidated.quantity)),                                        
+                    # TD(card(x.quantity, x.uom), INPUT(_type='numbers', _hidden = True, _value= _qty)),
+                    TD(INPUT(_class='form-control quantity', _type='number', _id='quantity', _name='quantity', _value = _qty)),
+                    TD(INPUT(_class='form-control pieces', _type='number', _id='pieces', _name='pieces', _value = _pcs)),
+                    TD(locale.format('%.3F',x.price_cost or 0, grouping = True),INPUT(_type='numbers', _hidden = True, _value = locale.format('%.3F',x.price_cost or 0, grouping = True)),_align = 'right'),
+                    TD(INPUT(_class='form-control', _type='text', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),
+                    # TD(locale.format('%.3F',_total_amount or 0, grouping = True), _align = 'right'),
+                    TD(str(x.remarks) + '  ' + str(card(x.difference_quantity, x.uom))),TD(btn_lnk),_class='text-danger'))    
+            elif x.category_id == 5:
+                ctr += 1                      
+                _price_cost = float(x.price_cost) / int(x.uom)
+                _total_amount = float(_price_cost) * int(x.quantity)              
+                _total_amount_2 += _total_amount                
+                # clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle del', callback = URL(args = x.id, extension = False), **{'_data-id':(x.id)})          
                 btn_lnk = DIV(dele_lnk)
                 # print 'total amount 2: ', _total_amount_2
                 _qty = x.quantity / x.uom                
@@ -627,19 +732,21 @@ def purchase_receipt_account_validate_transaction(): # .load
                     TD(x.category_id.mnemonic),
                     TD(card(n.Purchase_Receipt_Transaction_Consolidated.purchase_ordered_quantity,n.Purchase_Receipt_Transaction_Consolidated.uom)),
                     TD(card(n.Purchase_Receipt_Transaction_Consolidated.quantity,n.Purchase_Receipt_Transaction_Consolidated.uom)),                                        
-                    TD(card(x.quantity, x.uom), INPUT(_type='numbers', _hidden = True, _value= _qty)),
-                    TD(INPUT(_type='numbers', _hidden = True, _value = _pcs)),
-                    TD(locale.format('%.6F',x.price_cost or 0, grouping = True),INPUT(_type='numbers', _hidden = True, _value = locale.format('%.6F',x.price_cost or 0, grouping = True)),_align = 'right'),
-                    TD(locale.format('%.6F',_total_amount or 0, grouping = True), _align = 'right'),
-                    TD(str(x.remarks) + '  ' + str(card(x.difference_quantity, x.uom))),TD(btn_lnk),_class='text-danger'))                 
+                    TD(INPUT(_class='form-control quantity', _type='number', _id='quantity', _name='quantity', _value = _qty)),
+                    TD(INPUT(_class='form-control pieces', _type='number', _id='pieces', _name='pieces', _value = _pcs)),
+                    TD(locale.format('%.3F',x.price_cost or 0, grouping = True),INPUT(_type='numbers', _hidden = True, _value = locale.format('%.3F',x.price_cost or 0, grouping = True)),_align = 'right'),
+                    TD(locale.format('%.3F',_total_amount or 0, grouping = True), _align = 'right'),
+                    TD(str(x.remarks) + '  ' + str(card(x.difference_quantity, x.uom))),TD(btn_lnk),_class='text-danger'))                                                              
                                         
-    for y in db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == False) ).select():
-        ctr += 1
+    for y in db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == False) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False) ).select():
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle dele', callback = URL(args = y.id, extension = False), **{'_data-nt':(y.id)})
+        btn_lnk = DIV(dele_lnk)                
 
+        ctr += 1
         if y.uom == 1:
             _new_pcs = INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces', _value = 0, _disabled = True), INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces',_value = 0, _hidden = True)            
         else:
-            _new_pcs = INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces', _value = y.pieces, _onchange="ajax('/procurement/validate_account_transaction',['_id','item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']);")
+            _new_pcs = INPUT(_type='number', _class='form-control pieces', _id = 'pieces', _name='pieces', _value = y.pieces, _onchange="ajax('/procurement/validate_account_transaction',['_id','item_code_id', 'quantity', 'pieces', 'uom', 'price_cost', '_cquantity']);")
         if y.category_id == 1:
             _remarks = 'Damaged entry'
         else:
@@ -648,7 +755,7 @@ def purchase_receipt_account_validate_transaction(): # .load
         _cprice_cost = float(y.price_cost) / int(y.uom)
         _qty = y.quantity / y.uom
         
-        _new_qty = INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _onchange="ajax('/procurement/validate_account_transaction',['_id','item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']); ")
+        _new_qty = INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _onchange="ajax('/procurement/validate_account_transaction',['_id','item_code_id', 'quantity', 'pieces', 'uom', 'price_cost', '_cquantity']); ")
         
         _total_amount_3 = float(y.price_cost) * int(_qty)
         total_amount_3 += _total_amount_3
@@ -660,26 +767,29 @@ def purchase_receipt_account_validate_transaction(): # .load
             TD(y.uom,INPUT(_type='text', _id = 'uom', _name='uom', _hidden = True, _value= y.uom)),
             TD(y.category_id.mnemonic,INPUT(_type='numbers', _id='category_id', _name='category_id', _hidden = True, _value = y.category_id)),
             TD(card(0,y.uom),INPUT(_type='number', _id='uom', _name='uom', _hidden = True, _value = y.uom)),
-            TD(card(y.total_pieces, y.uom),INPUT(_type='numbers', _id = '_cquantity', _name='_cquantity',  _hidden = True, _value= y.total_pieces)),
-            TD(_new_qty, INPUT(_type='number', _id='flanded_cost', _name='flanded_cost',_hidden = True, _value = n.Purchase_Receipt_Transaction_Consolidated.price_cost),_align = 'right', _style="width:120px;"),
+            TD(card(y.total_pieces, y.uom),INPUT(_type='numbers', _id = '_cquantity', _name='_cquantity',  _hidden = True, _value= 0)),
+            TD(_new_qty, INPUT(_type='number', _id='flanded_cost', _name='flanded_cost',_hidden = True, _value = locale.format('%.3F',n.Purchase_Receipt_Transaction_Consolidated.price_cost or 0, grouping = True)),_align = 'right', _style="width:120px;"),
             TD(_new_pcs, _align = 'right', _style="width:120px;"),
-            # TD(INPUT(_class='form-control pieces', _type='number', _id = 'pieces', _name='pieces', _value = y.pieces, _onchange="ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']); "), _align = 'right', _style="width:120px;"),
-            TD(INPUT(_class='form-control price_cost', _type='number', _id = 'price_cost',   _style="text-align:right;", _name='price_cost', _value= locale.format('%.3F',y.price_cost or 0, grouping = True), _onchange="ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']);"),  _align = 'right', _style="width:120px;"),
+            # TD(INPUT(_class='form-control pieces', _type='number', _id = 'pieces', _name='pieces', _value = y.pieces, _onchange="ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost']); "), _align = 'right', _style="width:120px;"),            
+            TD(INPUT(_class='form-control price_cost', _type='number', _id = 'price_cost', _style="text-align:right;", _name='price_cost', _value= locale.format('%.3F',y.price_cost or 0, grouping = True), _onchange="ajax('/procurement/validate_account_transaction',['item_code_id', 'quantity', 'pieces', 'uom', 'price_cost', '_cquantity']);"),  _align = 'right', _style="width:120px;"),
             TD(INPUT(_class='form-control', _type='text', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount_3 or 0, grouping = True)),_style="width:120px;"),      
-            # TD(locale.format('%.6F',y.total_amount or 0, grouping = True),_style="text-align:right;"),
-            TD(_remarks),
+            # TD(locale.format('%.6F',y.total_amount or 0, grouping = True),_style="text-align:right;"),            
+            # TD(_remarks),
+            TD(INPUT(_class='form-control', _type='text', _id = 'remarks', _name='remarks', _readonly = True),_style="width:120px;"),            
             TD(btn_lnk),_class='text-success'))        
         
-    _total_net_amount = float(_total_amount_1) + float(total_amount_3) 
+    _total_net_amount = float(_total_amount_1) + float(_total_amount_2) + float(total_amount_3) 
     _total_amount = float(_total_net_amount) * int((100 - n.Purchase_Receipt_Transaction_Consolidated.discount_percentage)) / 100    
     _cur = db(db.Currency_Exchange.id == _po.currency_id).select().first()
     _local_amount = float(_total_amount) * float(_cur.exchange_rate_value)
-    # print 'currency:', _po.currency_id.mnemonic, _total_amount
+    _purchase_value = float(session.Currency_Exchange) * float(_total_amount)    
     body = TBODY(*row)        
     foot  = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),
     TD(INPUT(_id='btnSubmit', _name= 'btnSubmit', _type='submit', _value='submit',_class='btn btn-success')),    
     TD(INPUT(_id='btnAbort', _name='btnAbort', _type= 'button', _value='abort', _class='btn btn-danger')),
-    TD(INPUT(_id='btnValidate', _name = 'btnValidate',_type='submit', _value='validate',_class='btn btn-warning'))))
+    TD(INPUT(_id='btnValidate', _name='btnValidate', _type= 'submit', _value='validate', _class='btn btn-warning'))))
+
+    # TD(INPUT(_id='btnValidate', _name = 'btnValidate',_type='submit', _value='validate',_class='btn btn-warning'))))
     # foot  = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(INPUT(_id='btnSubmit', _type='submit', _value='submit',_class='btn btn-success btnSubmit'),TD(INPUT(_id='btnValidate',_type='submit', _value='validate',_class='btn btn-warning')),TD(INPUT(_id='btnAbort', _type='button', _value='abort', _class='btn btn-danger')))))
     # TD(INPUT(_class='form-control', _type='numbers', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.6F',_total_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD(btn_lnk)))        
     # foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount'),TD(_po.currency_id.mnemonic,' ', locale.format('%.6F',_total_net_amount or 0, grouping = True),_align = 'right'),TD(),TD()))
@@ -688,14 +798,18 @@ def purchase_receipt_account_validate_transaction(): # .load
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount'),TD(INPUT(_class='form-control', _type='number', _id = 'discount', _style='text-align:right;', _name='discount', _value = locale.format('%.3F',n.Purchase_Receipt_Transaction_Consolidated.discount_percentage or 0, grouping = True)),_style="width:120px;"),TD(),TD()))    
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount    ', _po.currency_id.mnemonic),TD(INPUT(_class='form-control', _type='text', _id = 'foreign_total_amount', _style='text-align:right;', _name='foreign_total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount (QR)'),TD(INPUT(_class='form-control', _type='text', _id = 'local_total_amount', _style='text-align:right;', _name='local_total_amount', _readonly = True, _value = locale.format('%.3F',_local_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
+    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Purchase Value (QR)'),TD(INPUT(_class='form-control', _type='text', _id = 'purchase_value', _style='text-align:right;', _name='purchase_value', _readonly = True, _value = locale.format('%.3F',_purchase_value or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     # foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount'),TD('QR ',locale.format('%.6F',_local_amount or 0, grouping = True), _align = 'right'),TD(),TD()))    
     form = FORM(TABLE(*[head, body, foot], _class= 'table', _id = 'POTtbl'))
     if form.accepts(request, session):    
-        if request.vars.btnSubmit:
-            print 'submit'
+        if request.vars.btnSubmit:            
+            db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(status_id = 21)
+            response.flash = 'RECORD SAVED'        
+            response.js = "$('#POTtbl').get(0).reload()"
         elif request.vars.btnValidate:
-            print 'validate'
-            response.flash = 'RECORD VALIDATED'                
+            db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(status_id = 18)
+            response.flash = 'RECORD VALIDATED'        
+            response.js = "$('#POTtbl').get(0).reload()"        
         
         _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
         # print 'form', request.args(0), request.args(1), request.vars.location_code_id
@@ -709,7 +823,25 @@ def purchase_receipt_account_validate_transaction(): # .load
                     _total_pcs = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
                     _price_per_piece = float(request.vars['price_cost'][row].replace(',','')) / int(request.vars['uom'][row])            
 
-                    if int(request.vars['_cquantity'][row]) == int(_total_pcs): # updated or insert to purchase receipt transaction  if normal                          
+                    if int(request.vars['category_id'][row]) == 1: # updated or insert to purchase receipt transaction  if damaged
+                        print 'damages',int(request.vars['_cquantity'][row]) ,int(_total_pcs)
+                        db.Purchase_Receipt_Transaction.update_or_insert(
+                            purchase_receipt_no_id_consolidated = request.args(0),
+                            purchase_receipt_no_id = _pr.id,
+                            item_code_id = request.vars['item_code_id'][row],
+                            category_id = request.vars['category_id'][row],
+                            uom = request.vars['uom'][row],   
+                            quantity = _total_pcs,                
+                            price_cost = float(request.vars['price_cost'][row].replace(',','')),
+                            consolidated = True, 
+                            total_amount = _price_per_piece * int(request.vars['_cquantity'][row]),
+                            received = True)                  
+                        # _dmg_stk = db((db.Stock_File.item_code_id == request.vars['item_code_id'][row]) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+                        # _tot_dmg = int(_dmg_stk.damaged_stock_qty) + _total_pcs
+                        # # _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(request.vars['_cquantity'][row])
+                        # _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)
+
+                    elif int(request.vars['_cquantity'][row]) == int(_total_pcs): # updated or insert to purchase receipt transaction  if normal                          
                         print 'normal',int(request.vars['_cquantity'][row]) ,int(_total_pcs)
                         db.Purchase_Receipt_Transaction.update_or_insert(
                             purchase_receipt_no_id_consolidated = request.args(0),
@@ -722,132 +854,122 @@ def purchase_receipt_account_validate_transaction(): # .load
                             consolidated = True, 
                             total_amount = _price_per_piece * int(request.vars['_cquantity'][row]),
                             received = True)    
-                        _batch_quantity = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
-                        db.Purchase_Batch_Cost.insert(
-                            item_code_id = request.vars['item_code_id'][row],
-                            purchase_receipt_date = request.now,
-                            batch_cost = float(request.vars['price_cost'][row].replace(',','')),
-                            supplier_price = float(request.vars['flanded_cost'][row]),
-                            batch_quantity = _batch_quantity,
-                            batch_production_date = str(request.vars['production_date'][row]),
-                            batch_expiry_date = str(request.vars['expiration_date'][row]))
-                        if not _stk_fil:
-                            db.Stock_File.insert(
-                                item_code_id = request.vars['item_code_id'][row],
-                                location_code_id = session.location_code_id,
-                                opening_stock = int(request.vars['quantity'][row]),
-                                closing_stock = int(request.vars['quantity'][row]),
-                                last_transfer_qty = int(request.vars['quantity'][row]))
-                            # _ave_cst = (int(request.vars['quantity'][row]) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'][row])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity'][row]))
+                        # _batch_quantity = int(request.vars['quantity'][row]) * int(request.vars['uom'][row]) + int(request.vars['pieces'][row])
+                        # db.Purchase_Batch_Cost.insert(
+                        #     item_code_id = request.vars['item_code_id'][row],
+                        #     purchase_receipt_date = request.now,
+                        #     batch_cost = float(request.vars['price_cost'][row].replace(',','')),
+                        #     supplier_price = float(request.vars['flanded_cost'][row]),
+                        #     batch_quantity = _batch_quantity,
+                        #     batch_production_date = str(request.vars['production_date'][row]),
+                        #     batch_expiry_date = str(request.vars['expiration_date'][row]))
+                        # if not _stk_fil:
+                        #     db.Stock_File.insert(
+                        #         item_code_id = request.vars['item_code_id'][row],
+                        #         location_code_id = session.location_code_id,
+                        #         opening_stock = int(request.vars['quantity'][row]),
+                        #         closing_stock = int(request.vars['quantity'][row]),
+                        #         last_transfer_qty = int(request.vars['quantity'][row]))
+                        #     # _ave_cst = (int(request.vars['quantity'][row]) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'][row])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity'][row]))
 
-                        else:
-                            _opn_stk = int(_stk_fil.opening_stock) + int(request.vars['quantity'][row])
-                            _clo_stk = int(_stk_fil.closing_stock) + int(request.vars['quantity'][row])
-                            _stk_fil.update_record(opening_stock = _opn_stk,closing_stock = _clo_stk,last_transfer_qty = int(request.vars['quantity'][row]))
-                    elif int(request.vars['_cquantity'][row]) > int(_total_pcs): # excess
-                        print 'excess',int(request.vars['_cquantity'][row]) ,int(_total_pcs)
-                        _total_pcs = int(_total_pcs) - int(request.vars['_cquantity'][row])
-                        _category_id = 2        
-
-                        _tp = db((db.Transaction_Prefix.dept_code_id == session.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
-                        _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _tp.current_year_serial_key).select().first()
-
-                        if _dpr:
-                            _total = int('{:,d}'.format(abs(_total_pcs))) * float(request.vars['price_cost'][row].replace(',',''))
-                            db.Direct_Purchase_Receipt_Transaction.insert(
-                                purchase_receipt_no_id = session._dpr,
-                                item_code_id = request.vars['item_code_id'][row],
-                                category_id = 2,
-                                quantity = str('{:,d}'.format(abs(_total_pcs))),
-                                uom = request.vars['uom'][row],
-                                price_cost = float(request.vars['price_cost'][row].replace(',','')),
-                                total_amount = _total,
-                                excessed = True)
-                        else:
-                            _skey = _tp.current_year_serial_key
-                            _skey += 1                                            
-                            _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)   
-                            db.Direct_Purchase_Receipt.insert(
-                                purchase_receipt_no_prefix_id = _tp.id,
-                                purchase_receipt_no = _skey,                        
-                                dept_code_id = _pr.dept_code_id,
-                                supplier_code_id = _pr.supplier_code_id,
-                                mode_of_shipment = _pr.mode_of_shipment,
-                                location_code_id = _pr.location_code_id,
-                                total_amount = _pr.total_amount,
-                                total_amount_after_discount = _pr.total_amount_after_discount,
-                                currency_id = _pr.currency_id,
-                                exchange_rate = _pr.exchange_rate,
-                                trade_terms_id = _pr.trade_terms_id,
-                                landed_cost = _pr.landed_cost,
-                                other_charges = _pr.other_charges,
-                                custom_duty_charges = _pr.custom_duty_charges,
-                                selective_tax = _pr.selective_tax,
-                                supplier_invoice = _pr.supplier_invoice,
-                                supplier_account_code = _pr.supplier_account_code,
-                                supplier_account_code_description = _pr.supplier_account_code_description,
-                                discount_percentage = _pr.discount_percentage,
-                                # supplier_reference_order = _pr.supplier_reference_order,
-                                status_id = _pr.status_id)                               
-
-                            _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _skey).select().first()
-                            session._dpr = _dpr.id
-                            db.Direct_Purchase_Receipt_Transaction.insert(
-                                purchase_receipt_no_id = _dpr.id,
-                                item_code_id = request.vars['item_code_id'][row],
-                                category_id = 2,
-                                quantity = str('{:,d}'.format(abs(_total_pcs))),
-                                uom = request.vars['uom'][row],
-                                price_cost = float(request.vars['price_cost'][row].replace(',','')),
-                                excessed = True)                              
-
-                    elif int(request.vars['_cquantity'][row]) != int(_total_pcs): # not equal
-                        if int(request.vars['_cquantity'][row]) < int(_total_pcs): # updated or insert to purchase receipt transaction if short
-                            print 'short',int(request.vars['_cquantity'][row]) ,int(_total_pcs)     
-                            _total_pcs = int(_total_pcs) - int(request.vars['_cquantity'][row])
-                            db.Purchase_Receipt_Transaction.update_or_insert(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0),
-                            # db.Purchase_Receipt_Transaction.insert(
-                                purchase_receipt_no_id_consolidated = request.args(0),
-                                purchase_receipt_no_id = _pr.id,
-                                item_code_id = request.vars['item_code_id'][row],
-                                category_id = 5,
-                                uom = request.vars['uom'][row],
-                                quantity = int(_total_pcs),                
-                                price_cost = float(request.vars['price_cost'][row].replace(',','')),
-                                difference_quantity = str('{:,d}'.format(abs(_total_pcs))),                                
-                                total_amount = _price_per_piece * int(_total_pcs),
-                                remarks = 'Short by ',
-                                partial = True)                 
                         # else:
-                        print 'not equal', int(request.vars['_cquantity'][row]) ,int(_total_pcs)
-                        db.Purchase_Receipt_Transaction.update_or_insert(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0),
-                            purchase_receipt_no_id_consolidated = request.args(0),
-                            purchase_receipt_no_id = _pr.id,
-                            item_code_id = request.vars['item_code_id'][row],
-                            category_id = 5,
-                            uom = request.vars['uom'][row],
-                            quantity = int(_total_pcs),                
-                            price_cost = float(request.vars['price_cost'].replace(',','')),
-                            consolidated = True, 
-                            total_amount = _price_per_piece * int(_total_pcs),
-                            received = True)  
-                                
-                    elif int(request.vars['category_id'][row]) == 1: # updated or insert to purchase receipt transaction  if damaged
-                        print 'damages',int(request.vars['_cquantity'][row]) ,int(_total_pcs)
+                        #     _opn_stk = int(_stk_fil.opening_stock) + int(request.vars['quantity'][row])
+                        #     _clo_stk = int(_stk_fil.closing_stock) + int(request.vars['quantity'][row])
+                        #     _stk_fil.update_record(opening_stock = _opn_stk,closing_stock = _clo_stk,last_transfer_qty = int(request.vars['quantity'][row]))
+                    
+                    elif int(request.vars['_cquantity'][row]) > int(_total_pcs): # excess
+                        
+                        _total_pcs = int(_total_pcs) - int(request.vars['_cquantity'][row])
+
                         db.Purchase_Receipt_Transaction.update_or_insert(
                             purchase_receipt_no_id_consolidated = request.args(0),
                             purchase_receipt_no_id = _pr.id,
                             item_code_id = request.vars['item_code_id'][row],
-                            category_id = request.vars['category_id'][row],
+                            category_id = 2,
                             uom = request.vars['uom'][row],
-                            quantity = request.vars['_cquantity'][row],                
+                            quantity = str('{:,d}'.format(abs(_total_pcs))),                
                             price_cost = float(request.vars['price_cost'][row].replace(',','')),
                             consolidated = True, 
                             total_amount = _price_per_piece * int(request.vars['_cquantity'][row]),
-                            received = True)                  
-                        _dmg_stk = db((db.Stock_File.item_code_id == request.vars['item_code_id'][row]) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
-                        _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(request.vars['_cquantity'][row])
-                        _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)
+                            received = True,
+                            excessed = True)  
+
+                        # _category_id = 2        
+
+                        # _tp = db((db.Transaction_Prefix.dept_code_id == session.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
+                        # _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _tp.current_year_serial_key).select().first()
+
+                        # if _dpr:
+                        #     _total = int('{:,d}'.format(abs(_total_pcs))) * float(request.vars['price_cost'][row].replace(',',''))
+                        #     db.Direct_Purchase_Receipt_Transaction.insert(
+                        #         purchase_receipt_no_id = session._dpr,
+                        #         item_code_id = request.vars['item_code_id'][row],
+                        #         category_id = 2,
+                        #         quantity = str('{:,d}'.format(abs(_total_pcs))),
+                        #         uom = request.vars['uom'][row],
+                        #         price_cost = float(request.vars['price_cost'][row].replace(',','')),
+                        #         total_amount = _total,
+                        #         excessed = True)
+                        # else:
+                        #     _skey = _tp.current_year_serial_key
+                        #     _skey += 1                                            
+                        #     _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)   
+                        #     db.Direct_Purchase_Receipt.insert(
+                        #         purchase_receipt_no_prefix_id = _tp.id,
+                        #         purchase_receipt_no = _skey,                        
+                        #         dept_code_id = _pr.dept_code_id,
+                        #         supplier_code_id = _pr.supplier_code_id,
+                        #         mode_of_shipment = _pr.mode_of_shipment,
+                        #         location_code_id = _pr.location_code_id,
+                        #         total_amount = _pr.total_amount,
+                        #         total_amount_after_discount = _pr.total_amount_after_discount,
+                        #         currency_id = _pr.currency_id,
+                        #         exchange_rate = _pr.exchange_rate,
+                        #         trade_terms_id = _pr.trade_terms_id,
+                        #         landed_cost = _pr.landed_cost,
+                        #         other_charges = _pr.other_charges,
+                        #         custom_duty_charges = _pr.custom_duty_charges,
+                        #         selective_tax = _pr.selective_tax,
+                        #         supplier_invoice = _pr.supplier_invoice,
+                        #         supplier_account_code = _pr.supplier_account_code,
+                        #         supplier_account_code_description = _pr.supplier_account_code_description,
+                        #         discount_percentage = _pr.discount_percentage,
+                        #         # supplier_reference_order = _pr.supplier_reference_order,
+                        #         status_id = _pr.status_id)                               
+
+                        #     _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _skey).select().first()
+                        #     session._dpr = _dpr.id
+                        #     db.Direct_Purchase_Receipt_Transaction.insert(
+                        #         purchase_receipt_no_id = _dpr.id,
+                        #         item_code_id = request.vars['item_code_id'][row],
+                        #         category_id = 2,
+                        #         quantity = str('{:,d}'.format(abs(_total_pcs))),
+                        #         uom = request.vars['uom'][row],
+                        #         price_cost = float(request.vars['price_cost'][row].replace(',','')),
+                        #         excessed = True)                              
+                        print 'excess',int(request.vars['_cquantity'][row]) ,int(_total_pcs)
+                                                
+                    elif int(request.vars['_cquantity'][row]) != int(_total_pcs): # not equal
+                        if int(request.vars['_cquantity'][row]) < int(_total_pcs): # updated or insert to purchase receipt transaction if short
+                            if int(request.vars['category_id'][row]) == 1:
+                                n = 0
+                            else:
+                                print 'short',int(request.vars['_cquantity'][row]) ,int(_total_pcs)     
+                                _total_pcs = int(_total_pcs) - int(request.vars['_cquantity'][row])
+                                # db.Purchase_Receipt_Transaction.update_or_insert(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0),
+                                db.Purchase_Receipt_Transaction.update_or_insert(
+                                    purchase_receipt_no_id_consolidated = request.args(0),
+                                    purchase_receipt_no_id = _pr.id,
+                                    item_code_id = request.vars['item_code_id'][row],
+                                    category_id = 5,
+                                    uom = request.vars['uom'][row],
+                                    quantity = int(_total_pcs),                
+                                    price_cost = float(request.vars['price_cost'][row].replace(',','')),
+                                    difference_quantity = str('{:,d}'.format(abs(_total_pcs))),                                
+                                    total_amount = _price_per_piece * int(_total_pcs),
+                                    remarks = 'Short by ',
+                                    delete = False,
+                                    partial = True)              
                 except: 
                     n = 0
                 row += 1
@@ -870,31 +992,31 @@ def purchase_receipt_account_validate_transaction(): # .load
                     consolidated = True, 
                     total_amount = _price_per_piece * int(request.vars['_cquantity']),
                     received = True)    
-                _batch_quantity = int(request.vars['quantity']) * int(request.vars['uom']) + int(request.vars['pieces'])
-                db.Purchase_Batch_Cost.insert(
-                    item_code_id = request.vars['item_code_id'],
-                    purchase_receipt_date = request.now,
-                    batch_cost = float(request.vars['price_cost'].replace(',','')),
-                    supplier_price = float(request.vars['flanded_cost']),
-                    batch_quantity = _batch_quantity,
-                    batch_production_date = str(request.vars['production_date']),
-                    batch_expiry_date = str(request.vars['expiration_date']))
-                if not _stk_fil:
-                    db.Stock_File.insert(
-                        item_code_id = request.vars['item_code_id'],
-                        location_code_id = session.location_code_id,
-                        opening_stock = int(request.vars['quantity']),
-                        closing_stock = int(request.vars['quantity']),
-                        last_transfer_qty = int(request.vars['quantity']))
-                    # _ave_cst = (int(request.vars['quantity']) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity']))
+                # _batch_quantity = int(request.vars['quantity']) * int(request.vars['uom']) + int(request.vars['pieces'])
+                # db.Purchase_Batch_Cost.insert(
+                #     item_code_id = request.vars['item_code_id'],
+                #     purchase_receipt_date = request.now,
+                #     batch_cost = float(request.vars['price_cost'].replace(',','')),
+                #     supplier_price = float(request.vars['flanded_cost']),
+                #     batch_quantity = _batch_quantity,
+                #     batch_production_date = str(request.vars['production_date']),
+                #     batch_expiry_date = str(request.vars['expiration_date']))
+                # if not _stk_fil:
+                #     db.Stock_File.insert(
+                #         item_code_id = request.vars['item_code_id'],
+                #         location_code_id = session.location_code_id,
+                #         opening_stock = int(request.vars['quantity']),
+                #         closing_stock = int(request.vars['quantity']),
+                #         last_transfer_qty = int(request.vars['quantity']))
+                #     # _ave_cst = (int(request.vars['quantity']) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity']))
 
-                else:
-                    _opn_stk = int(_stk_fil.opening_stock) + int(request.vars['quantity'])
-                    _clo_stk = int(_stk_fil.closing_stock) + int(request.vars['quantity'])
-                    _stk_fil.update_record(
-                        opening_stock = _opn_stk,
-                        closing_stock = _clo_stk,
-                        last_transfer_qty = int(request.vars['quantity']))
+                # else:
+                #     _opn_stk = int(_stk_fil.opening_stock) + int(request.vars['quantity'])
+                #     _clo_stk = int(_stk_fil.closing_stock) + int(request.vars['quantity'])
+                #     _stk_fil.update_record(
+                #         opening_stock = _opn_stk,
+                #         closing_stock = _clo_stk,
+                #         last_transfer_qty = int(request.vars['quantity']))
 
                     # _ave_cst = (int(_stk_fil.opening_stock) * float(_itm_prc.average_cost)) + (float(_itm_prc.most_recent_landed_cost) * int(request.vars['quantity'])) / (int(_stk_fil.opening_stock) + int(request.vars['quantity']))
                     
@@ -970,7 +1092,7 @@ def purchase_receipt_account_validate_transaction(): # .load
                         excessed = True)                              
             elif int(request.vars['_cquantity']) != int(_total_pcs):                      
                 if int(request.vars['_cquantity']) < int(_total_pcs): # updated or insert to purchase receipt transaction if short                            
-                    _total_pcs = int(request.vars['_cquantity']) - int(_total_pcs)                     
+                    _total_pcs = int(_total_pcs) - int(request.vars['_cquantity']) 
                     
                     db.Purchase_Receipt_Transaction.update_or_insert(
                         purchase_receipt_no_id_consolidated = request.args(0),
@@ -986,29 +1108,6 @@ def purchase_receipt_account_validate_transaction(): # .load
                         receive_quantity = int(request.vars['_cquantity']),
                         remarks = 'Short by ',
                         partial = True)       
-                            
-                    _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()
-                    _prwc.update_record(status_id = 17, draft = True)
-                    # _prowc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
-                    _prtc = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.item_code_id == int(request.vars['item_code_id']))).select().last()
-                    if _prtc:
-                        _diff = int(request.vars['_cquantity']) - int(_total_pcs)
-                        # print 'prtc', _diff, _prtc.difference_quantity, _prtc.selected, _prtc.consolidated, _prtc.status_id, _prtc.partial
-                        _prtc.update_record(
-                            difference_quantity = _diff, 
-                            selected = False, 
-                            consolidated = False, 
-                            status_id = 17, 
-                            partial = True)        
-                    else:
-                        _prtcn = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == int(request.vars['item_code_id']))).select().last()
-                        _diff = int(request.vars['_cquantity']) - int(_total_pcs)
-                        _prtcn.update_record(
-                            difference_quantity = _diff, 
-                            selected = False, 
-                            consolidated = False, 
-                            status_id = 17, 
-                            partial = True)     
 
                 db.Purchase_Receipt_Transaction.update_or_insert(
                     purchase_receipt_no_id_consolidated = request.args(0),
@@ -1052,7 +1151,7 @@ def purchase_receipt_account_validate_transaction(): # .load
         Field('item_code','string',length = 25),
         Field('quantity', 'integer', default = 0),
         Field('pieces','integer', default = 0),
-        Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION', requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 1) | (db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
+        Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION', requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 1) | (db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4) | (db.Transaction_Item_Category.id == 5)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
     if form2.process(onvalidation = validate_purchase_receipt).accepted:
         db.Purchase_Receipt_Transaction_Consolidated_New_Item.insert(
             purchase_receipt_no_id = request.args(0),
@@ -1066,7 +1165,7 @@ def purchase_receipt_account_validate_transaction(): # .load
             total_amount = form2.vars.total_amount)  
         
         response.flash = 'RECORD SAVE'
-        response.js = '$("#PRTCNItbl").get(0).reload();'
+        response.js = "$('#POTtbl').get(0).reload()"    
     elif form2.errors:
         response.flash = 'FORM HAS ERROR'        
 
@@ -1295,14 +1394,19 @@ def purchase_receipt_account_grid_new_item():
     table = TABLE(*[head, body], _class='table')
     return dict(table = table) 
 
-def purchase_receipt_transaction_delete():    
-    _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
-    _id.update_record(delete = True)
+def purchase_receipt_transaction_delete():        
+    db(db.Purchase_Receipt_Transaction_Consolidated.id == request.args(0)).update(delete = True)    
+    response.js = "$('#POTtbl').get(0).reload()"
 
-def purchase_receipt_transaction_delete_cons():
-    print 'del cons', request.vars._id
-    # _id = db(db.Purchase_Receipt_Transaction_Consolidated.id == request.args(0)).select().first()
+def purchase_receipt_transaction_delete_cons():    
+    db(db.Purchase_Receipt_Transaction.id == request.args(0)).update(delete = True)
+    response.js = "$('#POTtbl').get(0).reload()"
     # _id.update_record(delete = True)
+
+def purchase_receipt_transaction_delete_new():    
+    # print 'delete', request.args(0)
+    db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.id == request.args(0)).update(delete = True)
+    response.js = "$('#POTtbl').get(0).reload()"
 
 def validate_accounts_new_item(form):
     print 'form here: ', request.vars.item_code
@@ -1532,10 +1636,10 @@ def validate_purchase_receipt(form2):
     if not _id:
         form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' is zero in stock file.'
     else:
-        _exist = db((db.Purchase_Receipt_Transaction_Consolidated.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0))).select().first()
+        _exist = db((db.Purchase_Receipt_Transaction_Consolidated.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.category_id == request.vars.category_id) & (db.Purchase_Receipt_Transaction_Consolidated.delete == True)).select().first()
         if _exist:
             form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
-        elif db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0))).select().first():
+        elif db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False)).select().first():
             form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
         else:    
             _qty = int(request.vars.quantity) * _id.uom_value + int(request.vars.pieces)
@@ -3573,7 +3677,14 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
         elif request.vars.btnSubmit:
             _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()        
             _prwc.update_record(draft = False)
-            session.flash = 'RECORD SAVE'           
+            session.flash = 'RECORD SAVE'     
+            if db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first():
+                print 'exist'
+                _prwc.update_record(status_id = 18)
+            else:
+                print 'not exist'
+
+
         
         if isinstance(request.vars['_id'], list):
             # print 'list', request.vars['_id']

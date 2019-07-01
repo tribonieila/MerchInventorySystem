@@ -75,7 +75,7 @@ $(document).ready(function(){
         var fa = 0;
         var _d = $('#discount').val();
         var la = $('#local_amount').val();        
-        text = "Discount Added";
+        text = "Discount Added"; 
         fa = (_g * (100 - _d)) / 100
         la = fa * {{=_foc.exchange_rate_value}}        
         $('#foreign_amount').val(Number(fa.toFixed(2)).toLocaleString());
