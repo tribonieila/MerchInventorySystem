@@ -139,6 +139,7 @@ $(document).ready(function(){
     $('#btnProceed').click(function(){
         // ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
         $('#TrnxDetails').slideDown();
+        $('#btnSubmit').attr('disabled','disabled');  
         $('#btnProceed').attr('disabled','disabled');  
        
     });
