@@ -189,12 +189,22 @@ $('.delete').click(function(){
 
 <script>
     $('#no_table_exchange_rate').change(function(){
-        recompute();
+        if ($('#no_table_exchange_rate').val() > $('#no_table_landed_cost').val()) {
+            excAlert();
+        } else {
+            recompute();
+        }
+        
     });
 
 
     $('#no_table_landed_cost').change(function(){
-        recompute();
+        if ($('#no_table_landed_cost').val() < $('#no_table_exchange_rate').val()) {
+            lanAlert();
+        } else {
+            recompute();
+        }
+        
     });
 
     $('#discount').change(function(){
@@ -202,25 +212,24 @@ $('.delete').click(function(){
     });
 
     function recompute(){
-        var _addcomputed = 0
-
-        var _lan = parseFloat($('#no_table_landed_cost').val());
+        var _lan = $('#no_table_landed_cost').val();
         var _cus = $('#no_table_custom_duty_charges').val();
         var _oth = $('#no_table_other_charges').val();
         var _exc = $('#no_table_exchange_rate').val();
         var _ton = $('#total_net_amount').val();
-        var _dis = $('#discount').val();        
-        var _for = parseFloat($('#foreign_total_amount').val());
+        var _dis = $('#discount').val();
+        var _for = $('#foreign_total_amount').val();
         var _loc = $('#local_total_amount').val();
 
-        _for = (parseFloat(_ton) * (100 - parseInt(_dis))) / 100
-        _loc = parseFloat(_for) * parseFloat(_exc)                
-        _pur = parseFloat(_lan) * parseFloat(_for)         
-        $('#foreign_total_amount').val(Number(_for.toFixed(3)).toLocaleString());                  
-        $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());   
-        $('#purchase_value').val(Number(_pur.toFixed(3)).toLocaleString());   
-
+        _for = (parseInt(_ton) * (100 - parseInt(_dis))) / 100
+        _loc = parseFloat(_for) * parseFloat(_exc)      
+        _pur = parseFloat(_lan) * parseFloat(_for)
+        console.log(_pur, _lan, _for, _ton);
+        $('#foreign_total_amount').val(Number(_for.toFixed(3)).toLocaleString('en'));                  
+        $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString('en'));   
+        $('#purchase_value').val(Number(_pur.toFixed(3)).toLocaleString('en'));                   
     };
+
     function compute(i, c, q, u, p, r){     
         var _diff = 0;
         var a = 0;
@@ -354,4 +363,26 @@ $('.delete').click(function(){
             }
         });        
     }
+
+    function excAlert(){
+        bootbox.alert({
+            size: "small",
+            message: "Exchange Rate value must not more than Landed Cost Value.",
+            callback: function(){ 
+                $('#no_table_exchange_rate').val(3.64);
+            }
+        });        
+    }
+
+    
+    function lanAlert(){
+        bootbox.alert({
+            size: "small",
+            message: "Landed Cost Value must not less than Exchange Rate Value.",
+            callback: function(){ 
+                $('#no_table_landed_cost').val(3.64);
+            }
+        });        
+    }
+
 </script>

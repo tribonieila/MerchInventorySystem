@@ -535,7 +535,7 @@ def purchase_receipt_account_grid_view_transaction(): # .load
     
     table = TABLE(*[head, body, foot], _class= 'table', _id = 'POTtbl')    
     return dict(table = table,_po = _po)    
-    
+@auth.requires_login()    
 def purchase_receipt_account_grid_view_validate():
     _id = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.new_item == True)).select().first()
     if _id:
@@ -548,12 +548,14 @@ def purchase_receipt_account_grid_view_validate():
     head = THEAD(TR(TH('#'),TH('Date'),TH('Purchase Receipt'),TH('Purchase Order'),T('Department'),TH('Location'),_class='bg-primary'))
     for n in db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select():
         ctr += 1
-        _id = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()        
+        _id = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == n.id).select().first()        
         _po = db(db.Purchase_Order.id == _id.purchase_order_no_id).select().first()
         # print 'Purchase Order', _po.purchase_order_no
         session.dept_code_id = _po.dept_code_id
         session.supplier_code_id = _po.supplier_code_id
         session.location_code_id = _po.location_code_id 
+        session.discount_percentage = _po.discount_percentage
+        session.currency_id = _po.currency_id
         row.append(TR(
             TD(ctr),
             TD(n.purchase_receipt_date_approved),
@@ -595,12 +597,7 @@ def purchase_receipt_account_grid_view_validate():
                         
     return dict(table = table, form3 = form3, frm = frm)
 
-def landed_cost_validation():
-    if request.vars.landed_cost < request.vars.exchange_rate:
-        response.js = "jQuery(landed_cost_alert())"
-    else:
-        response.js = "$('#btnProceed').removeAttr('disabled');"
-   
+
 
 def validate_account_transaction():
     row = 0    
@@ -778,9 +775,9 @@ def purchase_receipt_account_validate_transaction(): # .load
             TD(INPUT(_class='form-control', _type='text', _id = 'remarks', _name='remarks', _readonly = True),_style="width:120px;"),            
             TD(btn_lnk),_class='text-success'))        
         
-    _total_net_amount = float(_total_amount_1) + float(_total_amount_2) + float(total_amount_3) 
-    _total_amount = float(_total_net_amount) * int((100 - n.Purchase_Receipt_Transaction_Consolidated.discount_percentage)) / 100    
-    _cur = db(db.Currency_Exchange.id == _po.currency_id).select().first()
+    _total_net_amount = float(_total_amount_1) + float(_total_amount_2) + float(total_amount_3)     
+    _total_amount = float(_total_net_amount) * int((100 - int(session.discount_percentage))) / 100    
+    _cur = db(db.Currency_Exchange.id == session.currency_id).select().first()
     _local_amount = float(_total_amount) * float(_cur.exchange_rate_value)
     _purchase_value = float(session.Currency_Exchange) * float(_total_amount)    
     body = TBODY(*row)        
@@ -794,9 +791,9 @@ def purchase_receipt_account_validate_transaction(): # .load
     # TD(INPUT(_class='form-control', _type='numbers', _id = 'total_amount', _style='text-align:right;', _name='total_amount', _readonly = True, _value = locale.format('%.6F',_total_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD(btn_lnk)))        
     # foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount'),TD(_po.currency_id.mnemonic,' ', locale.format('%.6F',_total_net_amount or 0, grouping = True),_align = 'right'),TD(),TD()))
     # foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount'),TD(locale.format('%.6F', n.Purchase_Receipt_Transaction_Consolidated.discount_percentage or 0, grouping = True), _align = 'right'),TD(),TD()))
-    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount ', _po.currency_id.mnemonic),TD(INPUT(_class='form-control', _type='text', _id = 'total_net_amount', _style='text-align:right;', _name='total_net_amount', _readonly = True, _value = locale.format('%.3F',_total_net_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
+    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount ', _cur.currency_id.mnemonic),TD(INPUT(_class='form-control', _type='text', _id = 'total_net_amount', _style='text-align:right;', _name='total_net_amount', _readonly = True, _value = locale.format('%.3F',_total_net_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount'),TD(INPUT(_class='form-control', _type='number', _id = 'discount', _style='text-align:right;', _name='discount', _value = locale.format('%.3F',n.Purchase_Receipt_Transaction_Consolidated.discount_percentage or 0, grouping = True)),_style="width:120px;"),TD(),TD()))    
-    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount    ', _po.currency_id.mnemonic),TD(INPUT(_class='form-control', _type='text', _id = 'foreign_total_amount', _style='text-align:right;', _name='foreign_total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
+    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount    ', _cur.currency_id.mnemonic),TD(INPUT(_class='form-control', _type='text', _id = 'foreign_total_amount', _style='text-align:right;', _name='foreign_total_amount', _readonly = True, _value = locale.format('%.3F',_total_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount (QR)'),TD(INPUT(_class='form-control', _type='text', _id = 'local_total_amount', _style='text-align:right;', _name='local_total_amount', _readonly = True, _value = locale.format('%.3F',_local_amount or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Purchase Value (QR)'),TD(INPUT(_class='form-control', _type='text', _id = 'purchase_value', _style='text-align:right;', _name='purchase_value', _readonly = True, _value = locale.format('%.3F',_purchase_value or 0, grouping = True)),_style="width:120px;"),TD(),TD()))
     # foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount'),TD('QR ',locale.format('%.6F',_local_amount or 0, grouping = True), _align = 'right'),TD(),TD()))    
@@ -1639,7 +1636,9 @@ def validate_purchase_receipt(form2):
         _exist = db((db.Purchase_Receipt_Transaction_Consolidated.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.category_id == request.vars.category_id) & (db.Purchase_Receipt_Transaction_Consolidated.delete == True)).select().first()
         if _exist:
             form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
-        elif db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False)).select().first():
+        elif db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.category_id == request.vars.category_id) ).select().first():
+            form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
+        elif _id.item_code == str(request.vars.item_code):
             form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
         else:    
             _qty = int(request.vars.quantity) * _id.uom_value + int(request.vars.pieces)

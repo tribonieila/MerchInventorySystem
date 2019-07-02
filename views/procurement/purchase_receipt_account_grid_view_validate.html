@@ -138,7 +138,7 @@ $(document).ready(function(){
     
     $('#btnProceed').click(function(){
         // ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
-        $('#TrnxDetails').show();
+        $('#TrnxDetails').slideDown();
         $('#btnProceed').attr('disabled','disabled');  
        
     });
@@ -146,21 +146,5 @@ $(document).ready(function(){
         ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
     });
 
-    $('#no_table_landed_cost').change(function(){
-        ajax('{{=URL('procurement','landed_cost_validation')}}',['landed_cost', 'exchange_rate']);
-    });
 });
-</script>
-<script>
-    function landed_cost_alert(){
-        bootbox.alert({
-            size: "small",
-            message: "Landed Cost should not less than the exchange rate value.",
-            callback: function(){ 
-                $('#no_table_landed_cost').focus();
-                $('#btnProceed').attr('disabled','disabled');
-                return true;
-            }
-        });             
-    }
 </script>
