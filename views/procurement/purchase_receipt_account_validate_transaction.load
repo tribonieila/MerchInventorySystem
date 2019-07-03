@@ -77,6 +77,7 @@
     $('#btnValidate').click(function(){        
         ajax('{{=URL('procurement','add_other_charges', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
         //$( "#POTtbl" ).load(window.location.href + " #POTtbl" );
+        $('#btnSubmit').removeAttr('disabled'); 
     });   
 
     $('#btnadd').click(function(){
@@ -89,7 +90,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 
-
+$(document).ready(function(){
+    
 $('#btnAbort').click(function(){
     var _id = $(this).attr('data-id');
     bootbox.confirm({
@@ -187,6 +189,8 @@ $('.delete').click(function(){
         }
     })
 });  
+
+});
 </script>
 
 <script>
@@ -217,11 +221,6 @@ $('.delete').click(function(){
     $('#discount').change(function(){
         recompute();
     });
-
-    Number.prototype.format = function(){
-    return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
-    };
-
 
     function recompute(){
         var _lan = $('#no_table_landed_cost').val();
@@ -264,14 +263,20 @@ $('.delete').click(function(){
 
         if (parseInt(c) < parseInt(_p)) {
             _diff = parseInt(_p) - parseInt(c)
-            remarks.value = 'shorts ' + _diff            
+            _out = Math.round(parseInt(_diff) / parseInt(u))
+            _inn = parseInt(_diff) - (parseInt(_out) * parseInt(u))
+            _uom = parseInt(u)            
+            remarks.value = 'shorts '.concat(_out, ' - ', _inn, '/', _uom)
             $('#remarks').val(remarks.value);
         } else if (parseInt(c) === parseInt(p)) {
             remarks.value = ''
             $('#remarks').val(remarks.value);
         } else if (parseInt(c) > parseInt(p)) {            
             _diff = parseInt(c) - parseInt(p)
-            remarks.value = 'excess ' + _diff
+            _out = Math.round(parseInt(_diff) / parseInt(u))
+            _inn = parseInt(_diff) - (parseInt(_out) * parseInt(u))
+            _uom = parseInt(u)
+            remarks.value = 'excess '.concat(_out, ' - ', _inn, '/', _uom)
             $('#remarks').val(remarks.value);
         }
 
@@ -332,12 +337,20 @@ $('.delete').click(function(){
           
             if (parseInt(c[x]) < parseInt(_p)) {
                 _diff = parseInt(_p) - parseInt(c[x]) 
-                remarks[x].value = 'shorts '+ _diff
+                _out = Math.round(parseInt(_diff) / parseInt(u[x]) )
+                _inn = parseInt(_diff) - (parseInt(_out) * parseInt(u[x]))
+                _uom = parseInt(u[x])                 
+                remarks[x].value = 'shorts '.concat(_out, ' - ', _inn, '/',_uom)                
+                //console.log(_diff, _out, _inn, _uom);
+
             } else if (parseInt(c[x]) === parseInt(_p)) {
                 remarks[x].value = ''
             } else if (parseInt(c[x]) > parseInt(_p)) {
                 _diff =  parseInt(c[x]) - parseInt(_p)
-                remarks[x].value = 'excess ' + _diff
+                _out = Math.round(parseInt(_diff) / parseInt(u[x]) )
+                _inn = parseInt(_diff) - (parseInt(_out) * parseInt(u[x]))
+                _uom = parseInt(u[x])
+                remarks[x].value = 'excess '.concat(_out, ' - ', _inn, '/',_uom)
             } 
             
             if (parseInt(q[x]) < parseInt(0)) {
@@ -358,7 +371,7 @@ $('.delete').click(function(){
             
             _gt = _gt + _a
             _foc = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
-            console.log(_foc);
+            //console.log(_foc);
             
         }        
         _loc = parseFloat(_foc) * parseFloat(_exc) 
