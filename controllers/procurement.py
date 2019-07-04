@@ -1005,11 +1005,6 @@ def purchase_receipt_account_validate_transaction(): # .load
                     _dmg_stk.update_record(
                         damaged_stock_qty = _tot_dmg
                     )                
-                
-
-        
-        
-        # response.js = "jQuery(location.reload();)"
         
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
@@ -1515,8 +1510,7 @@ def validate_purchase_receipt(form2):
         form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' is zero in stock file.'
     else:
         _exist = db((db.Purchase_Receipt_Transaction_Consolidated.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.delete == False)).select().first()
-        if _exist:
-            # if db(db.Purchase_Receipt_Transaction_Consolidated.category_id == 5).select().first():
+        if _exist:            
             form2.errors.item_code = 'Item code ' + str(request.vars.item_code) + ' already exist.'
             response.js = "$('#no_table_item_code').val('')"
         elif db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == _id.id) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False)).select().first():
@@ -1525,7 +1519,8 @@ def validate_purchase_receipt(form2):
         else:    
             _qty = int(request.vars.quantity) * _id.uom_value + int(request.vars.pieces)
             if _qty <= 0:
-                form.errors.quantity = 'Quantity should not less than to zero.'
+                form2.errors.quantity = 'Quantity should not less than to zero.'
+                response.js = "$('#no_table_item_code').val('')"
             _pu = float(request.vars.most_recent_cost.replace(',','')) / int(_id.uom_value)
             _pc = float(_pu) * int(_qty)
             form2.vars.item_code_id = _id.id
@@ -1808,7 +1803,7 @@ def purchase_request_form():
                 uom = n.uom,
                 price_cost = n.price_cost,
                 total_amount = n.total_amount,
-                average_cost = _ip.average_cost,                
+                average_cost = _ip.average_cost,
                 wholesale_price = _ip.wholesale_price,
                 retail_price = _ip.retail_price,
                 vansale_price = _ip.vansale_price,
@@ -4601,46 +4596,59 @@ def purchase_receipt_reports():
     #     _total_amount_loc += n.purchase_order_no_id.local_currency_value
      
     ctr = _net_amount = _total_amount = 0
-    _row = [['#','Item Code','Item Description','Cat.','Qty','Supp Pr','LC Rate','WS-Price', 'Margin']]
+    _row = [['#','Item Code','Item Description','Cat.','Qty','Supp Pr','Lnd Cost','WS-Price', 'Margin']]
     for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction.item_code_id)):
         ctr += 1
         _pi = db(db.Item_Prices.item_code_id == n.Purchase_Receipt_Transaction.item_code_id).select().first()                
         if n.Purchase_Receipt_Transaction.category_id == 2:
-            _price_cost = 0
-            _total_amount = 0
+            _foreign_currency_fld = ''
+            _landed_cost_fld = ''
+            _wholesale_price_fld = '-- excess received --'
+            _margin_fld = ''
         elif n.Purchase_Receipt_Transaction.category_id == 5:
-            _price_cost = n.Purchase_Receipt_Transaction.price_cost / n.Purchase_Receipt_Transaction.uom            
+            _landed_cost = n.Purchase_Receipt_Transaction.price_cost * _prt_rep.landed_cost# / n.Purchase_Receipt_Transaction.uom      
+            _price_cost = float(n.Purchase_Receipt_Transaction.price_cost) / n.Purchase_Receipt_Transaction.uom
             _total_amount =  float(_price_cost) * n.Purchase_Receipt_Transaction.quantity
-            _margin = 100 - ((n.Purchase_Receipt_Transaction.price_cost / _pi.wholesale_price) * 100)
-            _fc = n.Purchase_Receipt_Transaction.price_cost / _pr.landed_cost
+            _margin = ((float(_pi.wholesale_price) - float(_landed_cost)) / float(_pi.wholesale_price)) * 100                        
+            _fc = n.Purchase_Receipt_Transaction.price_cost #/ _pr.landed_cost
             _net_amount += _total_amount 
-        else:
-            _remarks = ''
-            _price_cost = n.Purchase_Receipt_Transaction.price_cost / n.Purchase_Receipt_Transaction.uom            
-            _total_amount =  float(_price_cost) * n.Purchase_Receipt_Transaction.quantity
-            _margin = 100 - ((n.Purchase_Receipt_Transaction.price_cost / _pi.wholesale_price) * 100)
-            _fc = n.Purchase_Receipt_Transaction.price_cost / _pr.landed_cost
-            _net_amount += _total_amount 
+            _wholesale_price = _pi.wholesale_price
 
+            _foreign_currency_fld = locale.format('%.3F',_fc or 0, grouping = True)
+            _landed_cost_fld = locale.format('%.3F',_landed_cost or 0, grouping = True)
+            _wholesale_price_fld = locale.format('%.3F',_wholesale_price or 0, grouping = True)
+            _margin_fld = locale.format('%.3F',_margin or 0, grouping = True)
+        else:            
+            _landed_cost = n.Purchase_Receipt_Transaction.price_cost * _prt_rep.landed_cost#/ n.Purchase_Receipt_Transaction.uom            
+            _price_cost = float(n.Purchase_Receipt_Transaction.price_cost) / n.Purchase_Receipt_Transaction.uom
+            _total_amount =  float(_price_cost) * n.Purchase_Receipt_Transaction.quantity
+            _margin = ((float(_pi.wholesale_price) - float(_landed_cost)) / float(_pi.wholesale_price)) * 100            
+            # _margin = 100 - ((float(_price_cost) / float(_pi.wholesale_price)) * 100)
+            _fc = n.Purchase_Receipt_Transaction.price_cost #/ _pr.landed_cost
+            _net_amount += _total_amount 
+            _wholesale_price = _pi.wholesale_price
+            _foreign_currency_fld = locale.format('%.3F',_fc or 0, grouping = True)
+            _landed_cost_fld = locale.format('%.3F',_landed_cost or 0, grouping = True)
+            _wholesale_price_fld = locale.format('%.3F',_wholesale_price or 0, grouping = True)
+            _margin_fld = locale.format('%.3F',_margin or 0, grouping = True)
         _row.append([
             ctr,
             n.Purchase_Receipt_Transaction.item_code_id.item_code,
             n.Item_Master.item_description,
             n.Purchase_Receipt_Transaction.category_id.description,
             card(n.Purchase_Receipt_Transaction.quantity,n.Purchase_Receipt_Transaction.uom),            
-            locale.format('%.3F',_fc or 0, grouping = True),
-            locale.format('%.3F',_price_cost or 0, grouping = True),
-            locale.format('%.3F',_pi.wholesale_price or 0, grouping = True),
-            locale.format('%.3F',_margin or 0, grouping = True),
-            ])    
+            _foreign_currency_fld,
+            _landed_cost_fld,
+            _wholesale_price_fld,
+            _margin_fld])    
     _total_amount = float(_net_amount) + float(_pr.other_charges)
     _local_amount = float(_total_amount) * float(_pr.exchange_rate) 
     _purchase_value = float(_total_amount) * float(_pr.landed_cost)
     _row.append(['Exchange Rate',':',str(locale.format('%.3F',_pr.exchange_rate or 0, grouping = True)),'','','Total Amount',':','', str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _net_amount or 0, grouping = True)])
     _row.append(['Lnd Cost Rate',':', str(locale.format('%.3F',_pr.landed_cost or 0, grouping = True)),'','','Discount %',':','',locale.format('%.3F', _pr.discount_percentage or 0, grouping = True)])
-    _row.append(['Custom Duty Ch.',':', str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
-    _row.append(['Selective Tax',':', str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Net Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _total_amount or 0, grouping = True)])
-    _row.append(['Purchase Value',':', str(locale.format('%.3F',_purchase_value or 0, grouping = True)),'','','Net Amount (QR)',':','', str('QR') + ' ' + locale.format('%.3F', _local_amount or 0, grouping = True)])
+    _row.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
+    _row.append(['Selective Tax',':', 'QR ' + str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Net Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _total_amount or 0, grouping = True)])
+    _row.append(['Purchase Value',':', 'QR ' + str(locale.format('%.3F',_purchase_value or 0, grouping = True)),'','','Net Amount (QR)',':','', str('QR') + ' ' + locale.format('%.3F', _local_amount or 0, grouping = True)])
     _table = Table(_row, colWidths=[20,70,'*',50,50,50,50,50,50])
     _table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
@@ -4657,15 +4665,21 @@ def purchase_receipt_reports():
         ('ALIGN',(1,-5),(2,-1),'RIGHT'),
         ('ALIGN',(6,-5),(6,-1),'LEFT'),
     ]))    
-    _addl = [['Remarks : ',_pr.remarks]]
-    _addl_table = Table(_addl, colWidths=[100,'*'])
+    _addl = [['Remarks : ' + str(_pr.remarks)],
+    ['','',''],
+    [str(auth.user.first_name.upper()) + ' ' + str(auth.user.last_name.upper()),'',''],    
+    ['Posted By','','']]
+    _addl_table = Table(_addl, colWidths=['*',100,'*'])
     _addl_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),        
+        # ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),        
+        ('LINEABOVE', (0,-1), (0,-1), 0.25, colors.black,None, (2,2)),        
         ('TOPPADDING',(0,0),(-1,0),5),
+        ('TOPPADDING',(0,-2),(0,-2),20),
         ('BOTTOMPADDING',(0,0),(-1,0),5),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
-        ('FONTSIZE',(0,0),(-1,-1),8)
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN',(0,-2),(0,-1),'CENTER'),
     ]))
 
     ctr_2 = _var = 0
@@ -4675,41 +4689,51 @@ def purchase_receipt_reports():
 
         _inv_price = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.item_code_id == n.Purchase_Receipt_Transaction.item_code_id)).select().first()
         _inv_price_new = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == n.Purchase_Receipt_Transaction.item_code_id)).select().first()
+        _ip = db(db.Item_Prices.item_code_id == n.Purchase_Receipt_Transaction.item_code_id).select().first()
+        _mrc = _ip.most_recent_cost 
+        _variant = ((n.Purchase_Receipt_Transaction.price_cost - _ip.most_recent_cost) / n.Purchase_Receipt_Transaction.price_cost) * 100
+        # print("Formatted Number with percentage: "+"{:.2%}".format(y));
 
-        if _inv_price_new:
-            _inv_price = _inv_price_new or 0
-        else:
-            # print '\n1:', n.Purchase_Receipt_Transaction.price_cost, _inv_price.price_cost
-            
-            _price_cost = n.Purchase_Receipt_Transaction.price_cost / n.Purchase_Receipt_Transaction.uom
-            _var = float(n.Purchase_Receipt_Transaction.price_cost) - float(_inv_price.price_cost)
-            _total_amount =  float(_price_cost) * n.Purchase_Receipt_Transaction.quantity
+        _var = _variant
 
         if n.Purchase_Receipt_Transaction.category_id == 2:
-            _total_amount = 0
+            _total_amount = ''
+            _most_recent_cost = ''
+            _invoice_cost = ''
+            _variation = '-- excess received --'
+            _total_amount = ''
+
         elif n.Purchase_Receipt_Transaction.category_id == 5:
             _total_amount = n.Purchase_Receipt_Transaction.total_amount
-        
+            _most_recent_cost = locale.format('%.3F',_mrc or 0, grouping = True)
+            _invoice_cost = locale.format('%.3F',n.Purchase_Receipt_Transaction.price_cost or 0, grouping = True)
+            _variation = locale.format('%.3F',_var or 0, grouping = True)
+            _total_amount = locale.format('%.3F',_total_amount or 0, grouping = True)
+        else:
+            _total_amount = n.Purchase_Receipt_Transaction.total_amount
+            _most_recent_cost = locale.format('%.3F',_mrc or 0, grouping = True)
+            _invoice_cost = locale.format('%.3F',n.Purchase_Receipt_Transaction.price_cost or 0, grouping = True)
+            _variation = locale.format('%.3F',_var or 0, grouping = True)
+            _total_amount = locale.format('%.3F',_total_amount or 0, grouping = True)
         _row_2.append([
             ctr_2,
             n.Purchase_Receipt_Transaction.item_code_id.item_code,
             n.Item_Master.item_description,
             n.Purchase_Receipt_Transaction.category_id.description,
             card(n.Purchase_Receipt_Transaction.quantity,n.Purchase_Receipt_Transaction.uom),
-            locale.format('%.2F',n.Purchase_Receipt_Transaction.price_cost or 0, grouping = True),
-            locale.format('%.2F',_inv_price.price_cost or 0, grouping = True), 
-            locale.format('%.2F',_var or 0, grouping = True), 
-            locale.format('%.2F',_total_amount or 0, grouping = True),
-            
+            _most_recent_cost,
+            _invoice_cost,            
+            _variation,
+            _total_amount                        
         ])
     _total_amount = float(_net_amount) + float(_pr.other_charges)
     _local_amount = float(_total_amount) * float(_pr.exchange_rate) 
     _purchase_value = float(_total_amount) * float(_pr.landed_cost)
-    _row_2.append(['Exchange Rate',':',locale.format('%.3F',_pr.exchange_rate or 0, grouping = True),'','','Net Amount',':','', str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.2F', _net_amount or 0, grouping = True)])
-    _row_2.append(['Lnd Cost Rate',':',locale.format('%.3F',_pr.landed_cost or 0, grouping = True),'','','Discount %',':','',locale.format('%.2F', _pr.discount_percentage or 0, grouping = True)])
-    _row_2.append(['Custom Duty Ch.',':',locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True),'','','Other Charges',':','',locale.format('%.2F', _pr.other_charges or 0, grouping = True)])
-    _row_2.append(['Selective Tax',':',locale.format('%.3F',_pr.selective_tax or 0, grouping = True),'','','Total Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.2F', _total_amount or 0, grouping = True)])
-    _row_2.append(['Purchase Value',':',locale.format('%.3F',_purchase_value or 0, grouping = True),'','','Total Amount (QR)',':','', str('QR') + ' ' + locale.format('%.2F', _local_amount or 0, grouping = True)])
+    _row_2.append(['Exchange Rate',':',locale.format('%.3F',_pr.exchange_rate or 0, grouping = True),'','','Net Amount',':','', str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _net_amount or 0, grouping = True)])
+    _row_2.append(['Lnd Cost Rate',':',locale.format('%.3F',_pr.landed_cost or 0, grouping = True),'','','Discount %',':','',locale.format('%.3F', _pr.discount_percentage or 0, grouping = True)])
+    _row_2.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
+    _row_2.append(['Selective Tax',':', 'QR ' + str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Total Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _total_amount or 0, grouping = True)])
+    _row_2.append(['Purchase Value',':','QR ' + str(locale.format('%.3F',_purchase_value or 0, grouping = True)),'','','Total Amount (QR)',':','', str('QR') + ' ' + locale.format('%.3F', _local_amount or 0, grouping = True)])
 
     _table_2 = Table(_row_2, colWidths=[20,70,'*',50,50,50,50,50])
     _table_2.setStyle(TableStyle([
@@ -4733,14 +4757,22 @@ def purchase_receipt_reports():
     for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction.item_code_id)):
         ctr_3 += 1
         _pi = db(db.Item_Prices.item_code_id == n.Purchase_Receipt_Transaction.item_code_id).select().first()  
+        if n.Purchase_Receipt_Transaction.category_id == 2:
+            _wholesale_price = ''
+            _retail_price = '-- excess received --'
+        elif n.Purchase_Receipt_Transaction.category_id == 5:
+            _wholesale_price = locale.format('%.3F',_pi.wholesale_price or 0, grouping = True)
+            _retail_price = locale.format('%.3F',_pi.retail_price or 0, grouping = True)
+        else:
+            _wholesale_price = locale.format('%.3F',_pi.wholesale_price or 0, grouping = True)
+            _retail_price = locale.format('%.3F',_pi.retail_price or 0, grouping = True)
         _row_3.append([
             ctr_3,
             n.Purchase_Receipt_Transaction.item_code_id.item_code,
             n.Item_Master.item_description,
             n.Purchase_Receipt_Transaction.category_id.description,
             card(n.Purchase_Receipt_Transaction.quantity,n.Purchase_Receipt_Transaction.uom),
-            locale.format('%.2F',_pi.wholesale_price or 0, grouping = True),
-            locale.format('%.2F',_pi.retail_price or 0, grouping = True)])
+            _wholesale_price, _retail_price])
     _table_3 = Table(_row_3, colWidths=[20,70,'*',60,60,60,60])
     _table_3.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
@@ -4753,14 +4785,14 @@ def purchase_receipt_reports():
         ('ALIGN',(5,1),(6,-1),'RIGHT'),
     ]))    
 
-    _row_4 = [['Note: Kindly check this Purchase Receipt for clarity and notify Accounts of any discrepancy immediately']]
+    _row_4 = [['Note: Kindly check this Purchase Receipt for clarity and notify Accounts of any discrepancy immediately'],
+    ['-- Store Copy --']]
     _table_4 = Table(_row_4)
     _table_4.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
-        ('FONTSIZE',(0,0),(-1,-1),8)
-
-
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN',(0,0),(0,-1),'CENTER'),
     ]))
         
 

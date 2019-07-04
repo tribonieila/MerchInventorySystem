@@ -116,34 +116,18 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();   
+    $('#Stock_Corrections_dept_code_id, #Stock_Corrections_location_code_id, #Stock_Corrections_stock_quantity_from_id, #Stock_Corrections_stock_quantity_to_id, #Stock_Corrections_status_id').change(function(){
+        if ($('#Stock_Corrections_dept_code_id').val() && $('#Stock_Corrections_location_code_id').val() && $('#Stock_Corrections_stock_quantity_from_id').val() && $('#Stock_Corrections_stock_quantity_to_id').val() && $('#Stock_Corrections_status_id').val()) {
+            $('#btnrequest').removeAttr('disabled');
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }
+    });    
     $('#Stock_Corrections_dept_code_id').change(function(){
         ajax('{{=URL('gen_stock_corrections')}}',['dept_code_id'], '_stk_gen_no');        
-        var ctr = this.value;        
-        if (ctr > 0) {
-            request(1)
-        } else if (ctr == '') {
-            request(0)
-        }                            
-        return false;  
-    });
-    $('#Stock_Corrections_adjustment_type').change(function(){
-        var ctr = this.value;              
-        if (ctr > 0) {
-            request(1)
-        } else if (ctr == '') {
-            request(0)
-        }       
-        return false;
     });
     $('#Stock_Corrections_location_code_id').change(function(){
         ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
-        var ctr = this.value;        
-        if (ctr > 0) {
-            request(1)
-        } else if (ctr == '') {
-            request(0)
-        }       
-        return false;
     });
 
     $('#btnsubmit').click(function(){

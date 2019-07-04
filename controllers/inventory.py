@@ -2915,7 +2915,8 @@ def validate_item_code(form):
         
         if _total_pcs == 0:
             form.errors.quantity = 'Zero quantity not accepted.'
-
+            print 'zero not allowed'
+            response.js = "$('#no_table_item_code').val('')"
         _unit_price = float(_price.retail_price) / int(_id.uom_value)
 
         _total = float(_unit_price) * int(_total_pcs)
@@ -3803,17 +3804,17 @@ def stk_tns_val_form(form):
 def stk_tns_add_form():
     db.Stock_Request.stock_request_no.writable = False
     db.Stock_Request.stock_request_date.writable = False
-    db.Stock_Request.stock_source.writable = False
-    db.Stock_Request.stock_destination.writable = False
+    db.Stock_Request.stock_source_id.writable = False
+    db.Stock_Request.stock_destination_id.writable = False
     db.Stock_Request.total_amount.writable = False
-    db.Stock_Request.requested_by.writable = False
-    db.Stock_Request.srn_status.writable = False
-    db.Stock_Request.approved_by.writable = False
+    # db.Stock_Request.requested_by.writable = False
+    db.Stock_Request.srn_status_id.writable = False
+    db.Stock_Request.stock_request_approved_by.writable = False
  
-    db.Stock_Request.src_no.writable = False
-    db.Stock_Request.src_date.writable = False
-    db.Stock_Request.src_prepared_by.writable = False
-    db.Stock_Request.src_status.writable = False
+    db.Stock_Request.stock_request_no.writable = False
+    db.Stock_Request.stock_request_date.writable = False
+    db.Stock_Request.stock_request_approved_by.writable = False
+    # db.Stock_Request.src_status.writable = False
 
     form = SQLFORM(db.Stock_Request)
     if form.process(onvalidation = stk_tns_val_form).accepted:
@@ -3960,8 +3961,14 @@ def validate_adjustment_item_code(form):
         _ip = db(db.Item_Prices.item_code_id == _id.id).select().first()    
         _tq = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces)
         # float("737,280,000".replace(',',''))
-        _pu =  float(request.vars.average_cost.replace(',','')) / int(_id.uom_value)
 
+        if (request.vars.average_cost).strip():            
+            _average_cost = float(request.vars.average_cost.replace(',',''))            
+        else:            
+            form.errors.average_cost = CENTER(DIV('Zero price not accepted.',_class='alert alert-danger',_role='alert'))            
+            _average_cost = 0
+        _pu = _average_cost / int(_id.uom_value)
+        
         _tc = float(_pu) * int(_tq)
 
         if int(_adj) == int(2):                
@@ -3969,11 +3976,13 @@ def validate_adjustment_item_code(form):
                 form.errors.quantity = CENTER(DIV('Quantity should not exceed the closing stock ' + str(_sf.closing_stock),_class='alert alert-danger',_role='alert'))
         if _tq == 0:
             form.errors.quantity = CENTER(DIV('Zero quantity not accepted.',_class='alert alert-danger',_role='alert'))
+            response.js = "$('#no_table_item_code').val('');"    
+
         form.vars.total_quantity = _tq
         form.vars.total_cost = _tc
         form.vars.item_code_id = _id.id    
         form.vars.uom = _id.uom_value
-        form.vars.average_cost = float(request.vars.average_cost.replace(',',''))
+        form.vars.average_cost = _average_cost #float(request.vars.average_cost.replace(',',''))
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def stock_adjutment_transaction_temporary_table():        
@@ -5047,15 +5056,15 @@ def stock_corrections_session():
     
 def stock_corrections_item_description():
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
-    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
-    
+    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == request.vars.dept_code_id)).select().first()        
+    print request.vars.item_code, request.vars.dept_code_id
     if not _icode:
         response.js = "$('#btnadd').attr('disabled','disabled')"
         return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))       
     else:   
         response.js = "$('#btnadd').removeAttr('disabled')"     
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
-        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()        
+        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()        
         # print 'stock file', _icode.id, session.location_code_id
         if not _sfile:
             response.js = "$('#btnadd').attr('disabled','disabled')"
@@ -5228,6 +5237,8 @@ def gen_stock_corrections():
     if not _trans_prfx:
         return INPUT(_type="text", _class="form-control", _id='_stk_no', _name='_stk_no', _disabled = True)        
     else:
+        session.dept_code_id = request.vars.dept_code_id
+        print session.dept_code_id
         _serial = _trans_prfx.current_year_serial_key + 1
         _stk_no = str(_trans_prfx.prefix) + str(_serial)
         return INPUT(_type="text", _class="form-control", _id='_stk_no', _name='_stk_no', _value=_stk_no, _disabled = True)    

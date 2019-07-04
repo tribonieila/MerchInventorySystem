@@ -92,6 +92,17 @@
 
 $(document).ready(function(){
     
+    $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+
 $('#btnAbort').click(function(){
     var _id = $(this).attr('data-id');
     bootbox.confirm({
@@ -191,6 +202,9 @@ $('.delete').click(function(){
 });  
 
 });
+
+
+
 </script>
 
 <script>
