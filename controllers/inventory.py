@@ -1728,7 +1728,7 @@ def itm_link_form():
 
 def item_master_profile():
     _query = db(db.Item_Master.id == request.args(0)).select().first()
-    if _query:
+    if _query:        
         tbody1 = TBODY(
             TR(TD('Item Code'),TD('Description En'),TD('Description AR'),TD('Supplier Ref.'),TD('Barcode Int.'),TD('Barcode Loc.'),TD('Purchase Point'), _class='active'),
             TR(TD(_query.item_code),TD(_query.item_description),TD(_query.item_description_ar),TD(_query.supplier_item_ref),TD(_query.int_barcode),TD(_query.loc_barcode),TD(_query.purchase_point)))
@@ -1765,14 +1765,36 @@ def item_master_prices():
 def item_master_stocks():
     row = []
     head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
-    for n in db(db.Stock_File.item_code_id == request.args(0)).select():
+    for n in db(db.Stock_File.item_code_id == request.args(0)).select():    
         row.append(TR(TD(n.item_code_id.item_code), TD(n.location_code_id.location_name),TD(n.opening_stock),TD(n.closing_stock),TD(n.previous_year_closing_stock),TD(n.stock_in_transit)))
     body = TBODY(*[row])
     table = TABLE(*[head, body], _class='table')
     return DIV(table)
     # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 def item_master_batch_info():    
-    return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+    _query = db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select().first()
+    if _query:
+        row = []
+        ctr = _average = 0
+        _id = db(db.Item_Master.id == request.args(0)).select().first()        
+        _count = db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).count()        
+        head = THEAD(TR(TD('Item Code: '),TD(_id.item_code),TD('Description: '),TD(_id.item_description),_class='active'))
+        head += THEAD(TR(TD(''),TD(),TD(),TD()))
+        head += THEAD(TR(TH('#'), TH('Date'),TH('Batch Cost'),TH('Most Recent Landed Cost'),TH('Quantity')))        
+        for n in db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select(orderby = ~db.Purchase_Batch_Cost.id):            
+            ctr += 1
+            _landed_cost = n.batch_cost * n.supplier_price
+            row.append(TR(TD(ctr),TD(n.purchase_receipt_date.date()),TD(n.batch_cost),TD(locale.format('%.3F',_landed_cost or 0, grouping = True)),TD(n.batch_quantity)))
+            _average += _landed_cost
+        _ave = float(_average) / int(_count)
+        body = TBODY(*[row])
+        body += TR(TD(),TD(),TD(B('Average Cost:')),TD(B(locale.format('%.3F',_ave or 0, grouping = True))),TD())
+        table = TABLE(*[head, body], _class='table ')
+        return DIV(table)
+    else:
+        return CENTER(DIV(B('INFO! '),'Grrrrr! No item purchase batch record.',_class='alert alert-info',_role='alert'))
+    # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+
 def item_master_sales_quantity():
     return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 
@@ -2950,6 +2972,7 @@ def stock_request_transaction_temporary_table():
     row = []        
     grand_total = 0
     form = SQLFORM.factory(
+        # Field('item_code', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.item_code, limitby = (0,10), min_length = 2)),
         Field('item_code', 'string', length = 15),
         Field('quantity', 'integer', default = 0),
         Field('pieces', 'integer', default = 0),

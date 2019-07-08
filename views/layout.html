@@ -69,6 +69,7 @@
 	 <!-- <div class="flash">{{=response.flash or ''}}</div>	 -->
 	 
 	 <!-- BEGIN HEADER-->
+	 {{if (auth.user_id):}}
 	<header id="header" >
 		<div class="headerbar">
 			<!-- Brand and toggle get grouped for better mobile display -->
@@ -88,29 +89,30 @@
 			</div>
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
-			{{if (auth.user_id):}}
+			
 			<div class="headerbar-right">
-				<ul class="header-nav header-nav-profile">
+				<ul class="header-nav header-nav header-nav-toggle">
 					<li class="dropdown">
-						<a href="javascript:void(0);" class="dropdown-toggle ink-reaction" data-toggle="dropdown">				
+						<a href="" class="dropdown-toggle ink-reaction" data-toggle="dropdown">				
 							<span class="profile-info">		
 								{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}								
-								<small>{{=auth.user_groups.values()}}</small>
+								<!-- <small>{{=auth.user_groups.values()}}</small> -->
 							</span>
 						</a>
-						<ul class="dropdown-menu animation-dock">
-							<!-- <li><a href="{{=URL('default','user/Profile')}}"><i class="fa fa-fw fa-user text-primary"></i>My profile</a></li> -->
+						<ul class="dropdown-menu animation-dock">							
 							<li><a href="{{=URL('default','user/logout')}}"><i class="fa fa-fw fa-power-off text-danger"></i> Logout</a></li>
 						</ul><!--end .dropdown-menu -->
 					</li><!--end .dropdown -->
 				</ul><!--end .header-nav-profile -->
 			</div><!--end #header-navbar-collapse -->
-			{{pass}}
+			
 		</div>
 	</header>
+	{{pass}}
 	<!-- END HEADER-->
 
 	<!-- BEGIN BASE-->
+	
 	<div id="base">
 		<!-- BEGIN OFFCANVAS LEFT -->
 		<div class="offcanvas">
@@ -132,6 +134,7 @@
 		<!-- END CONTENT -->
 		
 		<!-- BEGIN MENUBAR-->
+		{{if (auth.user_id):}}
 		<div id="menubar" class="menubar-inverse ">
 			<div class="menubar-fixed-panel">
 				<div>
@@ -234,7 +237,7 @@
 							<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
 							<li><a href="#" ><span class="title">Reports</span></a></li>
 							
-							<li><a href="{{=URL('procurement', 'insurance_proposal_details')}}" ><span class="title">Insurance Proposal Details</span></a></li>
+							<li><a href="{{=URL('procurement', '6a91504f3e6233d97c5ea90ba31a082c')}}" ><span class="title">Insurance Proposal</span></a></li>
 							<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
@@ -251,8 +254,8 @@
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
 								<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
-								<li><a href="{{=URL('sales', 'delivery_note_browse')}}" ><span class="title">Delivery Note</span></a></li>
-								<li><a href="{{=URL('sales', 'stock_card_movement')}}" ><span class="title">Sales Invoice</span></a></li>
+								<li><a href="#" ><span class="title">Delivery Note</span></a></li>
+								<li><a href="#" ><span class="title">Sales Invoice</span></a></li>
 								<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 							</ul>
 						</li>
@@ -392,7 +395,7 @@
 				</div>
 			</div><!--end .menubar-scroll-panel-->
 		</div>
-		
+		{{pass}}
 		
 		<!--end #menubar-->
 		<!-- END MENUBAR -->

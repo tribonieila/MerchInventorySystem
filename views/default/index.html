@@ -1,4 +1,27 @@
 {{extend 'layout.html'}}
-<h1>Dashboard here...  </h1>
+<style>
+    .verticalhorizontal {
+        /* display: table-cell; */
+        height: 300px;
+        text-align: center;
+        width: 300px;
+        vertical-align: middle;
+        margin-left: auto;
+        margin-right: auto ;
+    }
+    img.center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        height: 300px;
+        width: 300px;
+        vertical-align: middle;
+    }
+</style>
+<div class="verticalhorizontal">
+    <img src="{{=URL('static','images/merch_logo.png')}}" alt="merch" class="center">
+</div>
+
+
 
 

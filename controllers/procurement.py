@@ -8,10 +8,35 @@ from time import gmtime, strftime
 locale.setlocale(locale.LC_ALL, '')
 
 @auth.requires_login()
+def insurance_proposal_grid():
+    row = []
+    ctr = 0
+    head = THEAD(TR(TD('#'),TH('Insurance Name'),TH('Contact Person'),TH('Address'),TH('City'),TH('Country'),TH('Action')))
+    for n in db().select(db.Insurance_Master.ALL):
+        ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('insurance_proposal_edit', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.insurance_name),TD(n.contact_person.upper()),TD(n.address),TD(n.city),TD(n.country_id.description),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class= 'table')    
+    return dict(table = table)
+
+@auth.requires_login()
 def insurance_proposal():
     form = SQLFORM(db.Insurance_Master)
     if form.process().accepted:
         response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+@auth.requires_login()
+def insurance_proposal_edit():
+    form = SQLFORM(db.Insurance_Master, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM UPDATED'
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
     return dict(form = form)
@@ -22,7 +47,7 @@ def validate_ins_pro(form):
 @auth.requires_login()
 def insurance_proposal_details():
     # _om = db.Outgoing_Mail(request.args(0)) or redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
-    _om = db(db.Outgoing_Mail.purchase_request_no_id == request.args(0)).select().first()
+    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
     if not _om:
         redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
     else:
@@ -221,10 +246,11 @@ def purchase_receipt_approved():
             # print 'excess submit'
         else:            
             _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _id.purchase_receipt_no_id_consolidated).select().first()        
+            _price_cost = n.price_cost * _id.landed_cost
             db.Purchase_Batch_Cost.insert( # Purchase Batch Cost
                 item_code_id = n.item_code_id,
                 purchase_receipt_date = request.now,
-                batch_cost = n.price_cost,
+                batch_cost = _id.landed_cost,
                 supplier_price = n.price_cost,
                 batch_quantity = n.quantity,
                 batch_production_date = _prtc.production_date,
@@ -296,7 +322,6 @@ def purchase_receipt_grid_view():
     table = TABLE(*[head, body, foot ], _class = 'table', _id = 'PRtbl')
     return dict(_pr = _pr, table = table)    
     
-
 @auth.requires_login()
 def direct_purchase_receipt_account_grid():
     row = []
@@ -383,7 +408,7 @@ def purchase_receipt_account_grid_direct_view_transaction():
 @auth.requires_login()
 def puchase_receipt_account_grid(): # manoj
     row = []
-    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
+    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Created By'),TH('Approved By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
     
     for n in db(((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18)| (db.Purchase_Receipt_Warehouse_Consolidated.status_id == 21)) & (db.Purchase_Receipt_Warehouse_Consolidated.draft == False)).select(db.Purchase_Receipt_Warehouse_Consolidated.ALL , orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
         _prnt = db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == n.id) & (db.Purchase_Receipt.status_id == 21)).select().first()
@@ -419,6 +444,9 @@ def puchase_receipt_account_grid(): # manoj
             TD(_ow.dept_code_id.dept_name),
             TD(_ow.supplier_code_id.supp_name),
             TD(_ow.location_code_id.location_name),
+            TD(n.created_by.first_name.upper()),
+            TD(n.updated_by.first_name.upper()),
+
             TD(n.status_id.description),
             TD(n.status_id.required_action),
             TD(btn_lnk)))
@@ -2321,7 +2349,7 @@ def purchase_request_grid():
 @auth.requires_login()
 def purchase_order_grid():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
+    head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
     for n in db(db.Purchase_Order.archives == False).select(orderby = ~db.Purchase_Order.id):    
         purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
         clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
@@ -2339,6 +2367,7 @@ def purchase_order_grid():
             TD(n.supplier_reference_order),
             TD(n.location_code_id.location_name),
             TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True)),
+            TD(n.purchase_order_approved_by.first_name.upper(),' ', n.purchase_order_approved_by.last_name.upper()),
             TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='POtbl')    
@@ -4646,8 +4675,8 @@ def purchase_receipt_reports():
     _purchase_value = float(_total_amount) * float(_pr.landed_cost)
     _row.append(['Exchange Rate',':',str(locale.format('%.3F',_pr.exchange_rate or 0, grouping = True)),'','','Total Amount',':','', str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _net_amount or 0, grouping = True)])
     _row.append(['Lnd Cost Rate',':', str(locale.format('%.3F',_pr.landed_cost or 0, grouping = True)),'','','Discount %',':','',locale.format('%.3F', _pr.discount_percentage or 0, grouping = True)])
-    _row.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
-    _row.append(['Selective Tax',':', 'QR ' + str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Net Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _total_amount or 0, grouping = True)])
+    _row.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
+    _row.append(['Selective Tax',':', 'QR ' + str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Net Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _total_amount or 0, grouping = True)])
     _row.append(['Purchase Value',':', 'QR ' + str(locale.format('%.3F',_purchase_value or 0, grouping = True)),'','','Net Amount (QR)',':','', str('QR') + ' ' + locale.format('%.3F', _local_amount or 0, grouping = True)])
     _table = Table(_row, colWidths=[20,70,'*',50,50,50,50,50,50])
     _table.setStyle(TableStyle([
@@ -4731,7 +4760,7 @@ def purchase_receipt_reports():
     _purchase_value = float(_total_amount) * float(_pr.landed_cost)
     _row_2.append(['Exchange Rate',':',locale.format('%.3F',_pr.exchange_rate or 0, grouping = True),'','','Net Amount',':','', str(_pr.currency_id.mnemonic) + ' ' + locale.format('%.3F', _net_amount or 0, grouping = True)])
     _row_2.append(['Lnd Cost Rate',':',locale.format('%.3F',_pr.landed_cost or 0, grouping = True),'','','Discount %',':','',locale.format('%.3F', _pr.discount_percentage or 0, grouping = True)])
-    _row_2.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
+    _row_2.append(['Custom Duty Ch.',':', 'QR ' + str(locale.format('%.3F',_pr.custom_duty_charges or 0, grouping = True)),'','','Other Charges',':','',str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _pr.other_charges or 0, grouping = True)])
     _row_2.append(['Selective Tax',':', 'QR ' + str(locale.format('%.3F',_pr.selective_tax or 0, grouping = True)),'','','Total Amount',':','',  str(_pr.currency_id.mnemonic) + ' ' +locale.format('%.3F', _total_amount or 0, grouping = True)])
     _row_2.append(['Purchase Value',':','QR ' + str(locale.format('%.3F',_purchase_value or 0, grouping = True)),'','','Total Amount (QR)',':','', str('QR') + ' ' + locale.format('%.3F', _local_amount or 0, grouping = True)])
 

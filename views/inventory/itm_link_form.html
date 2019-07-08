@@ -10,8 +10,8 @@
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">INFO</a></li>                
                 <li class=""><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
-            </ul>
-            <span class="card-title">ITEM MASTER INFORMATION</span>
+            </ul>            
+            <span id="capLabel" class="card-title"></span>
         </div>
         <div class="card-body tab-content">
             <div id="app">
@@ -38,14 +38,38 @@
         </div>
     </div>
 </div>
+
 <script>
 var Main = {
     data() {
       return {
         tabPosition: 'right'
       };
-    }
+    },
   };
 var Ctor = Vue.extend(Main)
 new Ctor().$mount('#app')
+</script>
+<script>
+$(document).ready(function(){
+    $('#capLabel').text('ITEM MASTER PROFILE');
+    $('#tab-0').click(function(){
+        $('#capLabel').text('ITEM MASTER PROFILE');
+    });
+    $('#tab-1').click(function(){
+        $('#capLabel').text('ITEM MASTER PRICES');
+    });
+    $('#tab-2').click(function(){
+        $('#capLabel').text('ITEM MASTER STOCKS');
+    });
+
+    $('#tab-3').click(function(){
+        $('#capLabel').text('ITEM MASTER BATCH INFO');
+    });
+    $('#tab-4').click(function(){
+        $('#capLabel').text('ITEM MASTER SALES QUANTITY');
+    });
+
+
+});
 </script>

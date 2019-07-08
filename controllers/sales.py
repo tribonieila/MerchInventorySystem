@@ -526,13 +526,13 @@ def validate_sales_order_transaction(form):
         if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
             form.errors.quantity = 'Quantity should not be more than probational balance.'
         
-    form.vars.item_code_id = _id.id
-    form.vars.selective_tax = _selective_tax
-    form.vars.selective_tax_foc = _selective_tax_foc
-    form.vars.total_pieces = _total_pcs
-    form.vars.price_cost = _unit_price
-    form.vars.total_amount = _total_amount
-    form.vars.net_price = _net_price
+        form.vars.item_code_id = _id.id
+        form.vars.selective_tax = _selective_tax
+        form.vars.selective_tax_foc = _selective_tax_foc
+        form.vars.total_pieces = _total_pcs
+        form.vars.price_cost = _unit_price
+        form.vars.total_amount = _total_amount
+        form.vars.net_price = _net_price
 
 @auth.requires_login()            
 def sales_order_transaction_temporary():       
@@ -688,7 +688,7 @@ def sales_order_browse():
             _inv = 'None'            
         else:
             _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
-            _inv = A(_inv, _class='text-danger', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
+            _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
         row.append(TR(TD(n.sales_order_date),TD(_sales),TD(_note),TD(_inv),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
             TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
             TD(n.status_id.required_action),TD(btn_lnk)))
@@ -1153,6 +1153,58 @@ def sales_return_view():
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _id = _id) 
 
+@auth.requires_login()   
+def sales_return_browse_load():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Salesman'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+    for n in db(db.Sales_Return.archives == False).select(orderby = ~db.Sales_Return.id):  
+        if n.status_id == 13:            
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_browse_load_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_browse_load_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk, clea_lnk)
+
+        row.append(TR(
+            TD(n.sales_return_date),
+            TD(n.transaction_prefix_id.prefix,n.sales_return_no),
+            TD(n.dept_code_id.dept_name),
+            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.location_code_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.sales_man_id),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)
+
+@auth.requires_login()
+def sales_return_browse_load_view():
+    session.sales_return_no_id = 0
+    db.Sales_Return.sales_return_date.writable = False
+    db.Sales_Return.dept_code_id.writable = False
+    db.Sales_Return.location_code_id.writable = False
+    db.Sales_Return.customer_code_id.writable = False
+    db.Sales_Return.customer_order_reference.writable = False
+    db.Sales_Return.delivery_due_date.writable = False
+    db.Sales_Return.total_amount.writable = False
+    db.Sales_Return.total_selective_tax.writable = False
+    db.Sales_Return.total_vat_amount.writable = False    
+    db.Sales_Return.sales_man_id.writable = False    
+    db.Sales_Return.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    db.Sales_Return.status_id.default = 4
+    session.sales_return_no_id = request.args(0)
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    form = SQLFORM(db.Sales_Return, request.args(0))
+    if form.process().accepted:
+        response.flash = 'RECORD UPDATED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'    
+    return dict(form = form, _id = _id) 
+    
 @auth.requires_login()   
 def sales_return_browse():
     row = []
@@ -2050,20 +2102,28 @@ def sales_man_grid():
 # ----------    AUTOGENERATE FORM    ----------
 def customer_address():    
     _c = db(db.Customer.id == request.vars.customer_code_id).select().first()    
-    return XML(DIV(DIV('Building No. ', _c.building_no),DIV('Street No. ', _c.street_no), _class="well well-sm"))
+    if _c:
+        return XML(DIV(DIV('Building No. ', _c.building_no),DIV('Street No. ', _c.street_no), _class="well well-sm"))
+    else:
+        return XML(DIV(''))
 
 def generate_sales_order_no():
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SOR')).select().first()    
-    _serial = _trans_prfx.current_year_serial_key + 1
-    _stk_req_no = str(_trans_prfx.prefix) + str(_serial)
-    return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _value=_stk_req_no, _disabled = True))
+    if _trans_prfx:
+        _serial = _trans_prfx.current_year_serial_key + 1
+        _stk_req_no = str(_trans_prfx.prefix) + str(_serial)
+        return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _value=_stk_req_no, _disabled = True))
+    else:        
+        return XML(INPUT(_type="text", _class="form-control", _id='_stk_req_no', _name='_stk_req_no', _disabled = True))
 
 def generate_sales_return_no():
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SRS')).select().first()    
-    _serial = _trans_prfx.current_year_serial_key + 1
-    _val_sales_return = str(_trans_prfx.prefix) + str(_serial)
-    return XML(INPUT(_type="text", _class="form-control", _id='sales_return_no', _name='sales_return_no', _value=_val_sales_return, _disabled = True))
-
+    if _trans_prfx:
+        _serial = _trans_prfx.current_year_serial_key + 1
+        _val_sales_return = str(_trans_prfx.prefix) + str(_serial)
+        return XML(INPUT(_type="text", _class="form-control", _id='sales_return_no', _name='sales_return_no', _value=_val_sales_return, _disabled = True))
+    else:
+        return XML(INPUT(_type="text", _class="form-control", _id='sales_return_no', _name='sales_return_no', _disabled = True))
 
 # ------- form id generator ----------
 def id_generator():    

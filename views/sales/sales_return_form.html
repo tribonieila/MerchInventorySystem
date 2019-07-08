@@ -125,8 +125,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-$(document).ready(function(){    
-    var str_ctr = 0
+$(document).ready(function(){        
 
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
@@ -134,26 +133,20 @@ $(document).ready(function(){
     $('#selective_tax').hide();
     $('#order_panel').hide();
 
+    $('#no_table_dept_code_id, #no_table_customer_code_id, #no_table_location_code_id, #no_table_status_id').change(function(){
+        if ($('#no_table_dept_code_id').val() && $('#no_table_customer_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_status_id').val()) {
+            $('#btnproceed').removeAttr('disabled');
+        } else {
+            $('#btnproceed').attr('disabled','disabled');
+        }
+    });
+
     $('#no_table_dept_code_id').change(function(){
         ajax('{{=URL('generate_sales_return_no')}}', ['dept_code_id'], '_sales_return_no');     
-        var ctr = this.value;
-        if (ctr > 0) {
-            request(1)
-        } else if (ctr = '') {
-            request(0)
-        }
-        return false;
     });
 
     $('#no_table_customer_code_id').change(function(){
         ajax('{{=URL('customer_address')}}', ['customer_code_id'], 'customer_address');
-        var ctr = this.value;
-        if (ctr > 0) {
-            request(1)
-        } else if (ctr = '') {
-            request(0)
-        }                
-        return false;
     });
 
     // $('#no_table_stock_source_id').change(function(){
@@ -198,25 +191,6 @@ $(document).ready(function(){
     // $('#btnAbort').click(function(){
     //     ajax('{{=URL('sales','sales_return_form_abort')}}', ['ticket_no_id']);
     // });
-    function request(e){
-        if (e == 1) {
-            str_ctr += e;
-        } else {
-            str_ctr -= 1;
-        }
-        var d = $('#no_table_dept_code_id').val();
-        // var l = $('#no_table_stock_source_id').val();
-        var c = $('#no_table_customer_code_id').val();
-        if (str_ctr >= 2) {
-            if ( d != '' && c != '') {
-                $('#btnproceed').removeAttr('disabled');
-            } else {
-                $('#btnproceed').attr('disabled','disabled');
-            }
-        } else {
-            $('#btnproceed').attr('disabled','disabled');
-        }
-    }
         
 });
 </script>

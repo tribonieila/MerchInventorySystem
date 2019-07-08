@@ -1,7 +1,7 @@
 <hr>
 {{=table}}
 {{=form.custom.begin}}
-<div class="row">    
+<div class="row">     
     <div class="col-md-2">
         <div class="form-group">
             <label class="col-sm-4 control-label">Item Code</label>
@@ -53,7 +53,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    
+
+    $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+        
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();

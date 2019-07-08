@@ -53,7 +53,17 @@
 
 <script>
 $(document).ready(function(){
-    
+    $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+        
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();
