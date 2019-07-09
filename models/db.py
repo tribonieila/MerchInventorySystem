@@ -159,3 +159,4 @@ db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv', pool_size=0)
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
 # db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
 
+ 

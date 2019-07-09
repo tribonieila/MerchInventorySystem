@@ -277,7 +277,7 @@ def suplr_add_form():
             Field('scp_address_2','string', length = 50, requires = IS_UPPER()),
             Field('scp_country_id','reference Made_In', requires = IS_IN_DB(db, db.Made_In.id, '%(mnemonic)s - %(description)s', zero = 'Choose Country')),
             Field('scp_status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))            
-        if form2.process(formname = 'step 2', keepvalues = True, onvalidation = validate_supplier_id ).accepted:
+        if form2.process(formname = 'step 2', keepvalues = True ).accepted:
             
             db.Supplier_Contact_Person.insert(
                 supplier_id = _id.id, 
@@ -303,7 +303,7 @@ def suplr_add_form():
             Field('discount_percentage','string',length=10),
             Field('custom_duty_percentage','string',length=10),
             Field('spm_status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
-        if form3.process(fornmane = 'step 3', keepvalues = True, onvalidation = validate_supplier_id).accepted:
+        if form3.process(fornmane = 'step 3', keepvalues = True).accepted:
             db.Supplier_Payment_Mode_Details.insert(
                 supplier_id = _id.id,
                 trade_terms_id = form.vars.trade_terms_id,
@@ -332,7 +332,7 @@ def suplr_add_form():
             Field('city', 'string'),
             Field('sb_country_id','reference Made_In', requires = IS_IN_DB(db, db.Made_In.id, '%(mnemonic)s - %(description)s', zero = 'Choose Country')),
             Field('sb_status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
-        if form4.process(formname = 'step 4', keepvalues = True, onvalidation = validate_supplier_id).accepted:         
+        if form4.process(formname = 'step 4', keepvalues = True).accepted:         
             db.Supplier_Bank.insert(
                 supplier_id = _id.id,
                 account_no = form.vars.account_no,
@@ -351,7 +351,7 @@ def suplr_add_form():
          
         form5 = SQLFORM(db.Supplier_Forwarders)
         
-        if form5.process(formname = 'step 5', keepvalues = True, onvalidation = validate_supplier_id).accepted:
+        if form5.process(formname = 'step 5', keepvalues = True).accepted:
             response.flash = 'NEW RECORD SAVE'
         elif form5.errors:
             response.flash = 'ENTRY HAS ERROR'

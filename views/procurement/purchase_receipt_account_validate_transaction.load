@@ -93,6 +93,7 @@
 $(document).ready(function(){
     
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
+        console.log('recent cost');
         nospaces(this);
     });
 

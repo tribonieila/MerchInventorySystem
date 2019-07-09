@@ -44,3 +44,27 @@ for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) &
 18 - manoj 
 21 - juti
 isinstance(_id, list):
+
+
+
+HR MANAGEMENT
+Main Menu
+- Core HR/HRIS
+- Payroll Management 
+- Leave and Attendance Management
+- Employee Self-Service
+- Asset Management
+    - IT Management    
+        - Dashboard
+        - Machines
+        - Software
+        - Hardware
+        - Reports
+    - Office Administration
+        - Dashboard
+        - x
+        - x
+        - x
+        - x
+
+- Reporting

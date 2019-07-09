@@ -61,7 +61,18 @@ $(document).ready(function(){
         $("#no_table_item_code").val(withoutSpaces);
             }, 1);
     });
-    
+
+    $("#no_table_quantity, #no_table_pieces, #most_recent_cost").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
