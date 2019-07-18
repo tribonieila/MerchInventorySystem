@@ -1,0 +1,31 @@
+{{=table}}
+<script>
+    $('#btnSubmit').click(function(){        
+        ajax('{{=URL('procurement','purchase_receipt_discount_percentage', args = request.args(0))}}', ['discount_percentage']);
+    });
+</script>
+
+
+<script>
+$(document).ready(function(){
+    $('#Purchase_Receipt_landed_cost, #Purchase_Receipt_exchange_rate, #Purchase_Receipt_other_charges, #discount_percentage').change(function(){        
+        var _exc = $('#Purchase_Receipt_exchange_rate').val();
+        var _lan = $('#Purchase_Receipt_landed_cost').val();
+        var _oth = $('#Purchase_Receipt_other_charges').val();        
+        var _tfa = $('#_total_foreign_amount').text();        
+        var _toa = $('#_total_amount').text();
+        var _dis = $('#discount_percentage').val();
+
+        _tot_value = ((parseFloat(_toa.replace(/,/g,'')) * (100 - parseFloat(_dis))) / 100) + parseFloat(_oth)        
+        _foc_value = parseFloat(_tot_value) * parseFloat(_lan)        
+        _loc_value = parseFloat(_tot_value) * parseFloat(_exc)
+
+        $('#_other_charges').text(parseFloat(_oth));
+        $('#_total_foreign_amount').text(Number(_tot_value.toFixed(3)).toLocaleString());        
+        $('#_purchase_value').text('QR ' + Number(_foc_value.toFixed(3)).toLocaleString());
+        $('#_total_local_amount').text('QR ' + Number(_loc_value.toFixed(3)).toLocaleString());
+
+    });
+
+});
+</script>

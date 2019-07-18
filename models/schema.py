@@ -1526,6 +1526,7 @@ db.define_table('Purchase_Receipt_Transaction',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Purchase_Batch_Cost', # Except short and excess
+    Field('purchase_receipt_no_id','reference Purchase_Receipt',ondelete = 'NO ACTION',writable = False),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
     Field('purchase_receipt_date', 'datetime', default = request.now), # from purchase receipt date
     Field('batch_cost', 'decimal(10,2)', default = 0), # landed  cost

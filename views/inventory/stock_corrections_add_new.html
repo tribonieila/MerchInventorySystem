@@ -135,6 +135,9 @@ $(document).ready(function(){
         $('#Stock_Corrections_stock_location_to_id').removeAttr('disabled');
         $('#stock_corrections_date').removeAttr('disabled');
         $('#Stock_Corrections_location_code_id').removeAttr('disabled');
+        $('#Stock_Corrections_stock_quantity_from_id').removeAttr('disabled');
+        $('#Stock_Corrections_stock_quantity_to_id').removeAttr('disabled');
+        $('#Stock_Corrections_remarks').removeAttr('disabled');
         $('#Stock_Corrections_status_id').removeAttr('disabled');
         ajax('{{=URL('stock_corrections_add_new')}}', ['dept_code_id','stock_location_from_id','stock_location_to_id','stock_corrections_date','location_code_id', 'status_id']);        
     });
@@ -147,35 +150,14 @@ $(document).ready(function(){
         $('#Stock_Corrections_dept_code_id').attr('disabled','disabled');
         $('#Stock_Corrections_stock_location_from_id').attr('disabled','disabled');
         $('#Stock_Corrections_stock_adjustment_date').attr('disabled','disabled');
+        $('#Stock_Corrections_stock_quantity_from_id').attr('disabled','disabled');
+        $('#Stock_Corrections_stock_quantity_to_id').attr('disabled','disabled');
         $('#Stock_Corrections_location_code_id').attr('disabled','disabled');
+        $('#Stock_Corrections_remarks').attr('disabled','disabled');
         $('#btnrequest').attr('disabled','disabled');
         $('#Stock_Corrections_status_id').attr('disabled','disabled');
         return false;
     }); 
-
-    function request(e){
-
-        if (e == 1) {
-            str_ctr += e;
-        } else {
-            str_ctr -= 1;
-        }
-        // console.log(e, str_ctr);
-        // if $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
-          
-        var loc = $('#Stock_Corrections_location_code_id').val();
-        var dept = $('#Stock_Corrections_dept_code_id').val();        
-        // var adj = $('#Stock_Corrections_adjustment_type').val(); 
-        if (str_ctr >= 2) {
-            if (dept != '' && loc != '') {
-                $('#btnrequest').removeAttr('disabled');               
-            } else {
-                $('#btnrequest').attr('disabled','disabled');
-            }
-        } else {
-            $('#btnrequest').attr('disabled','disabled');
-        }       
-    }
 
     function preventDupes( select, index) {
         var options = select.options, len = options.length;

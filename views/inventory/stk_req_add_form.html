@@ -120,7 +120,6 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();
-
     $('#no_table_dept_code_id, #no_table_stock_source_id, #no_table_stock_destination_id, #no_table_srn_status_id').change(function() {  
         if ($('#no_table_dept_code_id').val() && $('#no_table_stock_source_id').val() && $('#no_table_stock_destination_id').val() && $('#no_table_srn_status_id').val()) {
             $('#btnrequest').removeAttr('disabled');

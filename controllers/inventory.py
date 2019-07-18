@@ -3482,10 +3482,8 @@ def obsol_grid_view_rejected():
 def corrections_grid():
     head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-danger'))
     for n in db((db.Stock_Corrections.created_by == auth.user.id) & (db.Stock_Corrections.archive != True)).select(orderby = ~db.Stock_Corrections.id):
-
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_view', args = n.id, extension = False))        
-        clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False))                    
-        
+        clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False))                            
         btn_lnk = DIV(view_lnk, clea_lnk)
         row.append(TR(         
             TD(n.stock_corrections_date),
@@ -5075,20 +5073,20 @@ def stock_corrections_session():
     session.dept_code_id = session.stock_source_id = 0
     session.dept_code_id = request.vars.dept_code_id
     session.stock_source_id = session.location_code_id = request.vars.location_code_id
-    # session.stock_quantity_from_id = request.vars.stock_quantity_from_id     
+    session.stock_quantity_from_id = request.vars.stock_quantity_from_id     
     
 def stock_corrections_item_description():
+    print '-- ', request.now
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
-    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == request.vars.dept_code_id)).select().first()        
-    print request.vars.item_code, request.vars.dept_code_id
-    if not _icode:
+    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == int(session.dept_code_id))).select().first()       
+    if not _icode:    
         response.js = "$('#btnadd').attr('disabled','disabled')"
         return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))       
     else:   
         response.js = "$('#btnadd').removeAttr('disabled')"     
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
-        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()        
-        # print 'stock file', _icode.id, session.location_code_id
+        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first() 
+              
         if not _sfile:
             response.js = "$('#btnadd').attr('disabled','disabled')"
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
@@ -5260,8 +5258,7 @@ def gen_stock_corrections():
     if not _trans_prfx:
         return INPUT(_type="text", _class="form-control", _id='_stk_no', _name='_stk_no', _disabled = True)        
     else:
-        session.dept_code_id = request.vars.dept_code_id
-        print session.dept_code_id
+        session.dept_code_id = request.vars.dept_code_id        
         _serial = _trans_prfx.current_year_serial_key + 1
         _stk_no = str(_trans_prfx.prefix) + str(_serial)
         return INPUT(_type="text", _class="form-control", _id='_stk_no', _name='_stk_no', _value=_stk_no, _disabled = True)    
@@ -5285,8 +5282,8 @@ def stock_corrections_add_new():
     db.Stock_Corrections.status_id.default = 4
     form = SQLFORM(db.Stock_Corrections)
     if form.process(onvalidation = validate_stock_corrections).accepted:        
-        _id = db(db.Stock_Corrections.stock_corrections_no == form.vars.stock_corrections_no).select().first()
-        _query = db(db.Stock_Corrections_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select()
+        _id = db(db.Stock_Corrections.stock_corrections_no == form.vars.stock_corrections_no).select().first()        
+        _query = db(db.Stock_Corrections_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select()        
         for n in _query:
             _p = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
             db.Stock_Corrections_Transaction.insert(
@@ -5332,9 +5329,9 @@ def validate_stock_corrections_transaction_temporary(form):
             if _tq > _sf.free_stock_qty:
                 form.errors.quantity = 'Items should not be more than ' + str(_sf.quantity) + str(' pieces.')
 
-    form.vars.total_quantity = _tq
-    form.vars.item_code_id = _id.id
-    form.vars.uom = _id.uom_value
+        form.vars.total_quantity = _tq
+        form.vars.item_code_id = _id.id
+        form.vars.uom = _id.uom_value
 
 def stock_corrections_transaction_temporary():        
     ctr = 0
