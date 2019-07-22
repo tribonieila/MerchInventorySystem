@@ -9,7 +9,7 @@ DELIVERY NOTE HAKIM PRINT
 
 NO AMOUNT ONLY QUANTITY
 SALES INVOICE REPORT WITH AMOUNT
-
+ 
 NO REMARKS
 
 total amount = wholesale + (retail price * selective tax) / 100
@@ -45,12 +45,22 @@ for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) &
 21 - juti
 isinstance(_id, list):
 
-
+sudo systemctl restart postgresql-10.service
+sudo systemctl stop postgresql.service
+sudo systemctl start postgresql.service
+sudo systemctl enable postgresql.service
+sudo systemctl status postgresql.service
 
 HR MANAGEMENT
 Main Menu
 - Core HR/HRIS
+    - Basic Information
+    - Address Details
+    - Account Details
+    - Employment Details
+    - Other Details
 - Payroll Management 
+
 - Leave and Attendance Management
 - Employee Self-Service
 - Asset Management

@@ -1766,7 +1766,7 @@ def item_master_stocks():
     row = []
     head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
     for n in db(db.Stock_File.item_code_id == request.args(0)).select():    
-        row.append(TR(TD(n.item_code_id.item_code), TD(n.location_code_id.location_name),TD(n.opening_stock),TD(n.closing_stock),TD(n.previous_year_closing_stock),TD(n.stock_in_transit)))
+        row.append(TR(TD(n.item_code_id.item_code), TD(n.location_code_id.location_name),TD(card_view(n.item_code_id, n.opening_stock)),TD(card_view(n.item_code_id, n.closing_stock)),TD(card_view(n.item_code_id, n.previous_year_closing_stock)),TD(card_view(n.item_code_id, n.stock_in_transit))))
     body = TBODY(*[row])
     table = TABLE(*[head, body], _class='table')
     return DIV(table)
@@ -1784,7 +1784,7 @@ def item_master_batch_info():
         for n in db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select(orderby = ~db.Purchase_Batch_Cost.id):            
             ctr += 1
             _landed_cost = n.batch_cost * n.supplier_price
-            row.append(TR(TD(ctr),TD(n.purchase_receipt_date.date()),TD(n.batch_cost),TD(locale.format('%.3F',_landed_cost or 0, grouping = True)),TD(n.batch_quantity)))
+            row.append(TR(TD(ctr),TD(n.purchase_receipt_date.date()),TD(n.batch_cost),TD(locale.format('%.3F',_landed_cost or 0, grouping = True)),TD(card_view(n.item_code_id, n.batch_quantity))))
             _average += _landed_cost
         _ave = float(_average) / int(_count)
         body = TBODY(*[row])

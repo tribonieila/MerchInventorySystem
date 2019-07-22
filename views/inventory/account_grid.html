@@ -7,7 +7,7 @@
                 <!-- <li class="active"><a href="#">BROWSE</a></li> -->
             </ul>
             <span class="card-title">ACCOUNT'S WORKFLOW</span>
-        </div>
+        </div> 
         <div class="card-body tab-content">                 
             <div>
                 <ul class="nav nav-pills" role="tablist">
@@ -16,7 +16,7 @@
                     <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 12).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence <span class="badge">{{=db(db.Obsolescence_Stocks.status_id != 15).count()}}</span></a></li>
                     <li role="presentation"><a href="#corrections" aria-controls="corrections" role="tab" data-toggle="tab">Corrections <span class="badge">{{=db(db.Stock_Corrections.status_id == 4).count()}}</span></a></li>
-                    <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18).count()}}</span></a></li>                        
+                    <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.draft == False).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt <span class="badge">{{=db(db.Direct_Purchase_Receipt.id > 0).count()}}</span></a></li>
                 </ul>
                 <div class="tab-content">

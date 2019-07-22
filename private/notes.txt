@@ -11,6 +11,14 @@ op: lar
 pa: 54193
 np: larrypass123
 
+127.0.0.1 5 1563693275
+
+Operation	        SQL	    HTTP	            RESTful WS	    DDS
+Create	            INSERT	PUT / POST	        POST	        write
+Read (Retrieve)	    SELECT	GET	                GET	            read / take
+Update (Modify)	    UPDATE	PUT / POST / PATCH	PUT	            write
+Delete (Destroy)	DELETE	DELETE	            DELETE	        dispose
+
 lpstat -p -d
 lpr -P "MyPrinterName" filename.pdf
 Generic-PostScript # printer name

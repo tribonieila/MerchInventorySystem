@@ -119,8 +119,9 @@ def outgoing_mail_browse():
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('outgoing_mail_browse_edit', args = n.id))
+        prin_lnk = A(I(_class='fas fa-print'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('procurement','insurance_proposal_reports', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        btn_lnk = DIV(view_lnk, edit_lnk, prin_lnk, dele_lnk)
         row.append(TR(
             TD(n.id),
             TD(n.mail_date),
