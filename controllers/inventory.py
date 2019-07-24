@@ -1751,7 +1751,7 @@ def item_master_prices():
     if _query:
         tbody1 = TBODY(
             TR(TD('Item Code'),TD('Recent Cost'),TD('Average Cost'),TD('Landed Cost'),TD('Op. Average Cost'),_class='active'),
-            TR(TD(_query.item_code_id.item_code),TD(_query.most_recent_cost),TD(_query.average_cost),TD(_query.most_recent_landed_cost),TD(_query.opening_average_cost)))
+            TR(TD(_query.item_code_id.item_code),TD(locale.format('%.4F',_query.most_recent_cost or 0, grouping = True)),TD(locale.format('%.4F',_query.average_cost or 0, grouping = True)),TD(_query.most_recent_landed_cost),TD(_query.opening_average_cost)))
         table1 = TABLE(*[tbody1],_class = 'table table-bordered')
 
         tbody2 = TBODY(
