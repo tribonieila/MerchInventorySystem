@@ -644,6 +644,21 @@ db.define_table('Stock_File',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+db.define_table('Stock_Card_Movement',
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', writable = False),
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION', writable = False),    
+    Field('type','string', length = 10),
+    Field('transaction_no','integer', default = 0),
+    Field('date_approved', 'date', default = request.now),
+    Field('category_description', 'string', length = 25),
+    Field('quantity_in', 'integer', default = 0),
+    Field('quantity_out', 'integer', default = 0),
+    Field('quantity_balanced', 'integer', default = 0),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Adjustment_Type',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]),     
@@ -726,9 +741,9 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))
 
 db.define_table('Item_Prices',
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',writable = False, requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
     Field('most_recent_cost', 'decimal(16,4)', default = 0),
-    Field('average_cost', 'decimal(16,4)', default = 0),
+    Field('average_cost', 'decimal(16,4)', default = 0, writable = False),
     Field('most_recent_landed_cost', 'decimal(16,4)', default =0),
     Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
     Field('opening_average_cost', 'decimal(16,4)', default = 0),

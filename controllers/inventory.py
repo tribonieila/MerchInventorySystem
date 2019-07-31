@@ -1522,6 +1522,13 @@ def itm_add_batch_form():
                 collection_code_id = form.vars.collection_code_id,
                 made_in_id = form.vars.made_in_id,
                 item_status_code_id = form.vars.item_status_code_id)
+            _id = db(db.Item_Master.item_code == itm_code).select().first()
+
+            db.Item_Prices.insert(
+                item_code_id = _id.id,                
+            )            
+            db.Stock_File.insert(item_code_id = _id.id, location_code_id = 1)
+            
         else:
             for v in xrange(len(request.vars['counter'])):            
                 ctr = db(db.Item_Master).count()
@@ -1567,6 +1574,10 @@ def itm_add_batch_form():
                     collection_code_id = form.vars.collection_code_id,
                     made_in_id = form.vars.made_in_id,
                     item_status_code_id = form.vars.item_status_code_id)
+
+                _id = db(db.Item_Master.item_code == itm_code).select().first()
+                db.Item_Prices.insert(item_code_id = _id.id)
+                db.Stock_File.insert(item_code_id = _id.id, location_code_id = 1)
                 
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
@@ -1649,6 +1660,9 @@ def itm_add_form():
             collection_code_id = form.vars.collection_code_id,
             made_in_id = form.vars.made_in_id,
             item_status_code_id = form.vars.item_status_code_id)
+        _id = db(db.Item_Master.item_code == itm_code).select().first()
+        db.Item_Prices.insert(item_code_id = _id.id)
+        db.Stock_File.insert(item_code_id = _id.id, location_code_id = 1)            
         response.flash = 'ITEM CODE '+str(itm_code)+'. RECORD SAVE'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'        
@@ -1780,7 +1794,7 @@ def item_master_batch_info():
         _count = db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).count()        
         head = THEAD(TR(TD('Item Code: '),TD(_id.item_code),TD('Description: '),TD(_id.item_description),_class='active'))
         head += THEAD(TR(TD(''),TD(),TD(),TD()))
-        head += THEAD(TR(TH('#'), TH('Date'),TH('Batch Cost'),TH('Most Recent Landed Cost'),TH('Quantity')))        
+        head += THEAD(TR(TH('#'), TH('Date'),TH('Batch Cost'),TH('Batch Landed Cost'),TH('Batch Quantity')))        
         for n in db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select(orderby = ~db.Purchase_Batch_Cost.id):            
             ctr += 1
             _landed_cost = n.batch_cost * n.supplier_price
@@ -1803,6 +1817,40 @@ def itm_link_profile():
     form = SQLFORM(db.Item_Master, request.args(0))
     _itim_master = db(db.Item_Master.id == request.args(0)).select().first()
     return dict(_itim = _item_master)
+
+def item_prices_grid():
+    ctr = 0
+    row = []
+    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand Line'),TH('Item Description'),TH('Most Recent Cost'),TH('Average Cost'),TH('Most Recent Landed Cost'),TH('Status'),TH('Actions')))
+    for n in db(db.Item_Master).select(db.Item_Prices.ALL, db.Item_Master.ALL, left = db.Item_Prices.on(db.Item_Master.id == db.Item_Prices.item_code_id)):        
+        ctr += 1        
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Item_Prices.id))        
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','item_prices_edit', args = n.Item_Prices.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Item_Prices.id))
+        # prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk,edit_lnk, dele_lnk)        
+        row.append(TR(
+            TD(ctr),
+            TD('ITM'+n.Item_Master.item_code),
+            TD(n.Item_Master.brand_line_code_id.brand_line_name),
+            TD(n.Item_Master.item_description.upper()),
+            TD(n.Item_Prices.most_recent_cost),
+            TD(n.Item_Prices.average_cost),
+            TD(n.Item_Prices.most_recent_landed_cost),            
+            TD(n.Item_Master.item_status_code_id.status),
+            TD(btn_lnk)))
+    tbody = TBODY(*row)
+    table = TABLE(*[thead, tbody], _class='table')
+    return dict(table = table)    
+
+def item_prices_edit():
+    db.Item_Prices.item_code_id.represent = lambda id, r: db.Item_Master(id).item_code
+    form = SQLFORM(db.Item_Prices, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
 
 def master_account():
     form = SQLFORM(db.Master_Account)
@@ -6449,7 +6497,7 @@ def stock_card_movement():
         i_row = []
         i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Opening Stock'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price')))
         i_row.append(TR(TD(_itm_code.item_code),TD(_itm_code.item_description),
-        TD(_stk_file.opening_stock),
+        TD(card_view(_itm_code.id, _stk_file.opening_stock)),
         TD(_itm_code.group_line_id.group_line_name),
         TD(_itm_code.brand_line_code_id.brand_line_name),
         TD(_itm_code.uom_value),
@@ -6463,63 +6511,66 @@ def stock_card_movement():
         row = []
         ctr = 0
         
-        _query = db.Stock_Request.srn_status_id == 6
-        _query &= db.Stock_Request_Transaction.item_code_id == request.vars.item_code_id     
-        _query &= db.Stock_Request.stock_transfer_date_approved >= request.vars.start_date
-        _query &= db.Stock_Request.stock_transfer_date_approved <= request.vars.end_date
-        query = db(_query).select(db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, left = db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id)) 
+        _stv = db.Stock_Request_Transaction.item_code_id == request.vars.item_code_id     
+        _stv &= db.Stock_Request.stock_source_id == request.vars.location_code_id
+        _stv &= db.Stock_Request.srn_status_id == 6
+        _stv &= db.Stock_Request.stock_transfer_date_approved >= request.vars.start_date
+        _stv &= db.Stock_Request.stock_transfer_date_approved <= request.vars.end_date
+
+
+
+        # query = db(_pr).select(db.Purchase_Receipt.ALL, db.Purchase_Receipt_Transaction.ALL, db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, 
+        # left = [db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id), db.Purchase_Receipt_Transaction.on(db.Purchase_Receipt.id == db.Purchase_Receipt_Transaction.purchase_receipt_no_id)]) 
         _bal = 0
         _bal = _stk_file.opening_stock
-        
-        for i in query: 
+        # print 'stv: ', _stv
+  
+        for n in db(db.Item_Master.id == request.vars.item_code_id).select():
+            ctr += 1            
+            _pr = db.Purchase_Receipt_Transaction.item_code_id == int(n.id)
+            _pr &= db.Purchase_Receipt.posted == True
+            _pr &= db.Purchase_Receipt.purchase_receipt_date_approved >= request.vars.start_date
+            _pr &= db.Purchase_Receipt.purchase_receipt_date_approved <= request.vars.end_date
+            _pr &= db.Purchase_Receipt.location_code_id == request.vars.location_code_id    
+            _type = 'None'
+            _no = 'None'
+            _date = 'None'
+            _category = 'None'
+            _quantity_in = 'None'
+            _quantity_out = 'None'
+            _balanced = 'None'
 
-        # _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
-        
-        # _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
-        
-        # _outer = int(_stk_file.probational_balance) / int(_itm_code.uom_value)        
-        # _pcs = int(_stk_file.probational_balance) - int(_outer * _itm_code.uom_value)    
-        # _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
-        
-            # TD( # validate if uom = 1, present whole number
-            # str(int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom)) + " - " +
-            # str(int(k.Stock_Request_Transaction.quantity) - (int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom) * int(k.Stock_Request_Transaction.uom))) + "/" +
-            # str(k.Item_Master.uom_value)), 
-            # TD(k.Item_Prices.retail_price, _align='right'),TD(locale.format('%.2F', int(k.Stock_Request_Transaction.quantity) * float(k.Stock_Request_Transaction.price_cost) or 0, grouping = True),_align = 'right'),TD(k.Stock_Request_Transaction.remarks),TD(btn_lnk)))
-
-
-            # print _stk_file.location_code_id , i.Stock_Request.stock_source_id
-            if _stk_file.location_code_id == i.Stock_Request.stock_source_id:
-                _outer  = i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom
-                _pcs    = i.Stock_Request_Transaction.quantity - i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom * i.Stock_Request_Transaction.uom
-
-                _bal = _bal - i.Stock_Request_Transaction.quantity
-                _out = str(_outer) + ' - ' + str(_pcs) + '/' + str(_itm_code.uom_value)
-                # _out = i.Stock_Request_Transaction.quantity
-                _in = 0
-                # print i.Stock_Request_Transaction.id, ' out'
-            else:               
-                _outer  = i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom
-                _pcs    = i.Stock_Request_Transaction.quantity - i.Stock_Request_Transaction.quantity / i.Stock_Request_Transaction.uom * i.Stock_Request_Transaction.uom
-
-                _bal = _bal + i.Stock_Request_Transaction.quantity 
-                _in = str(_outer) + ' - ' + str(_pcs) + '/' + str(_itm_code.uom_value)
-                _out = 0
-                # print 'in ', i.Stock_Request_Transaction.id
+            for i in db(_pr).select(db.Purchase_Receipt.ALL, db.Purchase_Receipt_Transaction.ALL):                                
+                _type = i.Purchase_Receipt.purchase_receipt_no_prefix_id.prefix
+                _no = i.Purchase_Receipt.purchase_receipt_no
+                _date = i.Purchase_Receipt.purchase_receipt_date_approved
+                _category = i.Purchase_Receipt_Transaction.category_id.description
+                _quantity_in = card_view(i.Purchase_Receipt_Transaction.item_code_id, i.Purchase_Receipt_Transaction.quantity)
+                _quantity_out = 0
+                _balanced = card_view(i.Purchase_Receipt_Transaction.item_code_id, i.Purchase_Receipt_Transaction.quantity)
                 
-            ctr += 1
+            for g in db(_stv).select(db.Stock_Request.ALL, db.Stock_Request_Transaction.ALL):                                  
+                _type = g.Stock_Request.stock_transfer_no_id.prefix
+                _no = g.Stock_Request.stock_transfer_no
+                _date = g.Stock_Request.stock_transfer_date_approved
+                _category = g.Stock_Request_Transaction.category_id.description
+                _quantity_in = card_view(g.Stock_Request_Transaction.item_code_id, g.Stock_Request_Transaction.quantity)
+                _quantity_out = 0
+                _balanced = card_view(g.Stock_Request_Transaction.item_code_id, g.Stock_Request_Transaction.quantity)
+                
+
             row.append(TR(TD(ctr),
-            TD(i.Stock_Request.stock_transfer_no_id.prefix),
-            TD(i.Stock_Request.stock_transfer_no),
-            TD(i.Stock_Request.stock_transfer_date_approved),
-            TD(i.Stock_Request_Transaction.category_id.mnemonic),
-            TD(_in),
-            TD(_out),                                        
-            TD(_bal)))
+            TD(_type),
+            TD(_no),
+            TD(_date),                                        
+            TD(_category),
+            TD(_quantity_in), 
+            TD(_quantity_out),
+            TD(_balanced)))
 
         body = TBODY(*row)
-        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD('CLOSING STOCK AS PER MASTER STOCK',_colspan = '3'),TD(_stk_file.closing_stock)))
-        table = TABLE(*[head, body, foot], _class = 'table')
+        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD('CLOSING STOCK AS PER MASTER STOCK',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.closing_stock))))
+        table = TABLE(*[head, body, foot], _class = 'table table-bordered')
         return dict(form = form, i_table = i_table, table = table)
     else:
         return dict(form = form, table = '', i_table = '')
