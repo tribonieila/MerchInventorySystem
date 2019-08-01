@@ -60,8 +60,19 @@ Main Menu
     - Employment Details
     - Other Details
 - Payroll Management 
-
+    - Dashboard
+    - Run Payroll
+    - Employees
+    - Payroll History
+    - Benefits
+    - Forms
+    - Settings
 - Leave and Attendance Management
+    - Dashboard
+    - Application
+    - Approval
+    - Config
+    - Reports
 - Employee Self-Service
 - Asset Management
     - IT Management    

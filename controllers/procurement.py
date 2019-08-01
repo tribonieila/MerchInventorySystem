@@ -2370,6 +2370,7 @@ def purchase_request_transaction_view():
 def puchase_request_transaction_view_details():
     # print 'session', session.supplier_code_id, session.dept_code_id
     _id = db(db.Purchase_Request.id == request.args(0)).select().first()
+    _exc_rate = db(db.Currency_Exchange.currency_id == _id.currency_id).select().first()
     row = body = foot = []
     ctr = _total_amount = 0
     if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
@@ -2407,10 +2408,10 @@ def puchase_request_transaction_view_details():
                 TD(locale.format('%.2F',n.Purchase_Request_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ', locale.format('%.2F',_local_net_price or 0, grouping = True), _align = 'right')),TD()))
+            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ', locale.format('%.2F',_local_net_price or 0, grouping = True), _align = 'right')),TD(I('(FX : ',_exc_rate.exchange_rate_value,')' ))))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount '), _align = 'right'), TD(H4(_id.currency_id.mnemonic, ' ' ,locale.format('%.2F',_total_amount or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%d',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4(_id.currency_id.mnemonic, ' ' ,locale.format('%.2F', _net_price or 0, grouping = True), _align = 'right')),TD()))            
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4(_id.currency_id.mnemonic, ' ' ,locale.format('%.2F', _net_price or 0, grouping = True), _align = 'right')),TD('Exc.Rate')))            
         else:
             row.append(TR(
                 TD(ctr),
@@ -2424,11 +2425,11 @@ def puchase_request_transaction_view_details():
                 TD(locale.format('%.2F',n.Purchase_Request_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ',locale.format('%.2F',_local_net_price or 0, grouping = True), _align = 'right')),TD()))            
+            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ',locale.format('%.2F',_local_net_price or 0, grouping = True), _align = 'right')),TD(I('(FX : ',_exc_rate.exchange_rate_value,')' ))))            
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F',_total_amount or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%.2F',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F',_net_price or 0, grouping = True), _align = 'right')),TD()))
-    table = TABLE(*[head, body, foot], _class='table', _id = 'tblPr')
+    table = TABLE(*[head, body, foot], _class='table table-bordered', _id = 'tblPr')
     
     form = SQLFORM.factory(
         Field('item_code', 'string', length = 25),
@@ -3463,6 +3464,7 @@ def purchase_order_transaction_manager_view():
 @auth.requires_login()
 def puchase_order_transaction_view_details():
     _id = db(db.Purchase_Order.id == request.args(0)).select().first()
+    _exc_rate = db(db.Currency_Exchange.currency_id == _id.currency_id).select().first()
     row = body = foot = []
     ctr =  _total_amount = 0
     if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
@@ -3501,7 +3503,7 @@ def puchase_order_transaction_view_details():
                 TD(locale.format('%.2F',n.Purchase_Order_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right'),TD(H4(locale.format('%.2F',_local_amount or 0, grouping = True)), _align = 'right'),TD()))            
+            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right'),TD(H4(locale.format('%.2F',_local_amount or 0, grouping = True)), _align = 'right'),TD(I('(FX : ',_exc_rate.exchange_rate_value,')' ))))            
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ', locale.format('%.2F', _total_amount or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%d',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F', _discount or 0, grouping = True)), _align = 'right'),TD()))
@@ -3532,7 +3534,7 @@ def puchase_order_transaction_view_details():
                 TD(locale.format('%.2F',n.Purchase_Order_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ', locale.format('%.2F',_local_amount or 0, grouping = True)), _align = 'right'),TD()))            
+            foot =  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ', locale.format('%.2F',_local_amount or 0, grouping = True)), _align = 'right'),TD(I('(FX : ',_exc_rate.exchange_rate_value,')' ))))            
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ', locale.format('%.2F', _total_amount or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%d',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F', _discount or 0, grouping = True)), _align = 'right'),TD()))
@@ -4446,21 +4448,18 @@ def procurement_session():
 @auth.requires_login()
 def help_request():    
     row = []
-    head = THEAD(TR(TH('Item Code'),TH('Description'),TH('Department'),TH('Supplier'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance')))    
+    head = THEAD(TR(TH('Item Code'),TH('Description'),TH('Department'),TH('Supplier Reference'),TH('Supplier'),TH('Group Line'),TH('Brand Line'),TH('Retail Price')))    
     for n in db((db.Item_Master.dept_code_id == session.dept_code_id) & (db.Item_Master.supplier_code_id == session.supplier_code_id)).select(db.Item_Master.ALL, db.Item_Prices.ALL, join = db.Item_Master.on(db.Item_Master.id == db.Item_Prices.item_code_id)):
         for s in db((db.Stock_File.item_code_id == n.Item_Master.id) & (db.Stock_File.location_code_id == session.location_code_id)).select():
             row.append(TR(            
                 TD(n.Item_Master.item_code),
                 TD(n.Item_Master.item_description),            
                 TD(n.Item_Master.dept_code_id.dept_name),
-                TD(n.Item_Master.supplier_code_id),
+                TD(n.Item_Master.supplier_item_ref),
+                TD(n.Item_Master.supplier_code_id.supp_name),
                 TD(n.Item_Master.group_line_id.group_line_name),
-                TD(n.Item_Master.brand_line_code_id.brand_line_name),
-                TD(n.Item_Master.uom_value),
-                TD(n.Item_Prices.retail_price),
-                TD(on_hand(n.Item_Master.id)),
-                TD(on_transit(n.Item_Master.id)),
-                TD(on_balance(n.Item_Master.id))))
+                TD(n.Item_Master.brand_line_code_id.brand_line_name),                
+                TD(n.Item_Prices.retail_price)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'display', _id = 'example', _style = "width:100%")
     return dict(table = table)
