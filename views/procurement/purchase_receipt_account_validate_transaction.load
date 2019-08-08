@@ -276,6 +276,8 @@ $('.delete').click(function(){
         var _c = parseInt(r) / parseInt(u)
         var _a = _p * parseFloat(_c);
 
+        console.log('compute');
+        
         if (parseInt(c) < parseInt(_p)) {
             _diff = parseInt(_p) - parseInt(c)
             _out = Math.round(parseInt(_diff) / parseInt(u))
@@ -338,18 +340,18 @@ $('.delete').click(function(){
         var pieces = document.getElementsByName('pieces');
         var price_cost = document.getElementsByName('price_cost');
         var total_amount = document.getElementsByName('total_amount');
-
+        console.log('computed');
         // console.log(i);   
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
-                // console.log(i);
+                console.log(i);
                 errAlert();
             } 
 
             var _p = parseInt(q[x]) * parseInt(u[x]) + parseInt(p[x])
             var _c = parseFloat(r[x]) / parseInt(u[x])
             var _a = _p * parseFloat(_c)
-          
+
             if (parseInt(c[x]) < parseInt(_p)) {
                 _diff = parseInt(_p) - parseInt(c[x]) 
                 _out = Math.round(parseInt(_diff) / parseInt(u[x]) )
