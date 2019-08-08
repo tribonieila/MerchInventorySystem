@@ -275,9 +275,9 @@ def purchase_receipt_approved():
                 batch_quantity = n.quantity,
                 batch_production_date = _prtc.production_date,
                 batch_expiry_date = _prtc.expiration_date)
-        
+
             _stk_fil = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()       
-            
+        
             if not _stk_fil:
                 db.Stock_File.insert(
                     item_code_id = n.item_code_id,
@@ -285,7 +285,7 @@ def purchase_receipt_approved():
                     opening_stock = n.quantity,
                     closing_stock = n.quantity, 
                     last_transfer_qty = n.quantity)
-
+            
             else:
                 _opn_stk = int(_stk_fil.opening_stock) + int(n.quantity)
                 _clo_stk = int(_stk_fil.closing_stock) + int(n.quantity)
@@ -295,6 +295,19 @@ def purchase_receipt_approved():
                 
                 _old_stk_sum = int(_opn_stk_sum) - int(n.quantity)
 
+                _stk_fil.update_record(opening_stock = _opn_stk, closing_stock = _clo_stk, last_transfer_qty = n.quantity)
+
+            _itm_pri = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+            if not _itm_pri:
+                db.Item_Prices.insert(
+                    item_code_id = n.item_code_id,
+                    most_recent_cost = n.price_cost,
+                    average_cost = n.price_cost,
+                    most_recent_landed_cost = n.price_cost,
+                    currency_id = _id.currency_id,
+                    opening_average_cost = n.price_cost,
+                    last_issued_date = request.now)
+            else:
                 _ave_cost = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
                 _landed_cost = float(_id.landed_cost) * float(n.price_cost)
                 _average_cost = ((int(_opn_stk_sum) * float(_ave_cost.opening_average_cost)) + (float(_landed_cost) * int(n.quantity))) / int(int(_opn_stk_sum) + int(n.quantity))
@@ -303,7 +316,7 @@ def purchase_receipt_approved():
                 # print n.item_code_id.item_code, ' average cost: ', _average_cost, ' = ', _opn_stk_sum, ' * ', _ave_cost.opening_average_cost, ' + ', _landed_cost, ' * ', n.quantity ,' / ', _opn_stk_sum, '+', n.quantity
                                 
                 db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = float(_average_cost), opening_average_cost = float(_average_cost))
-                _stk_fil.update_record(opening_stock = _opn_stk, closing_stock = _clo_stk, last_transfer_qty = n.quantity)
+
                 
         
     # db(db.Purchase_Receipt.id == request.args(0)).update(status_id = 21)    
