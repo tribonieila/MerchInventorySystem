@@ -144,14 +144,26 @@ def currency_exchange():
         response.flash = 'RECORD SAVE'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
-    head = THEAD(TR(TH('#'),TH('Currency'),TH('Exchange Rate'),TH('Status')))
-    ctr = 0
-    for n in db().select(db.Currency_Exchange.ALL):
-        ctr += 1
-        row.append(TR(TD(ctr),TD(n.currency_id.mnemonic),TD(n.exchange_rate_value),TD(n.status_id.status)))
+    head = THEAD(TR(TH('#'),TH('Currency'),TH('Exchange Rate'),TH('Status'),TH('Action')))    
+    for n in db().select(db.Currency_Exchange.ALL):    
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','currency_exchange_edit', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(n.id),TD(n.currency_id.mnemonic),TD(n.exchange_rate_value),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table')
     return dict(form = form, table = table)
+
+@auth.requires_login()
+def currency_exchange_edit():
+    form = SQLFORM(db.Currency_Exchange, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM UPDATED'
+        redirect(URL('inventory','currency_exchange'))
+    elif form.errors:
+        response.flash = 'FORM HAS ERRORS'
+    return dict(form = form)
 
 # ---- Supplier Master  -----
 # @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE'))
