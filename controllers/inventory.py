@@ -1777,26 +1777,38 @@ def item_master_prices():
     if _query:
         tbody1 = TBODY(
             TR(TD('Item Code'),TD('Recent Cost'),TD('Average Cost'),TD('Landed Cost'),TD('Op. Average Cost'),_class='active'),
-            TR(TD(_query.item_code_id.item_code),TD(locale.format('%.4F',_query.most_recent_cost or 0, grouping = True)),TD(locale.format('%.4F',_query.average_cost or 0, grouping = True)),TD(_query.most_recent_landed_cost),TD(_query.opening_average_cost)))
+            TR(TD(_query.item_code_id.item_code),TD(_query.currency_id.mnemonic, ' ',locale.format('%.4F',_query.most_recent_cost or 0, grouping = True)),TD('QR ', locale.format('%.4F',_query.average_cost or 0, grouping = True)),TD('QR ', _query.most_recent_landed_cost),TD('QR ', _query.opening_average_cost)))
         table1 = TABLE(*[tbody1],_class = 'table table-bordered')
 
         tbody2 = TBODY(
             TR(TD('Wholesale Price'),TD('Retail Price'),TD('Vansale Price'),TD('Reorder Qty'),TD('Last Issued Date'),TD('Currency'),_class='active'),
-            TR(TD(_query.wholesale_price),TD(_query.retail_price),TD(_query.vansale_price),TD(_query.reorder_qty),TD(_query.last_issued_date),TD(_query.currency_id.description)))
+            TR(TD('QR ', _query.wholesale_price),TD('QR ', _query.retail_price),TD('QR ', _query.vansale_price),TD(_query.reorder_qty),TD(_query.last_issued_date),TD(_query.currency_id.description)))
         table2 = TABLE(*[tbody2],_class = 'table table-bordered')
         return DIV(table1, table2)        
     else:
         return CENTER(DIV(B('INFO! '),'Grrrrr! No item price record.',_class='alert alert-info',_role='alert'))
 
 def item_master_stocks():
-    row = []
-    head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
-    for n in db(db.Stock_File.item_code_id == request.args(0)).select():    
-        row.append(TR(TD(n.item_code_id.item_code), TD(n.location_code_id.location_name),TD(card_view(n.item_code_id, n.opening_stock)),TD(card_view(n.item_code_id, n.closing_stock)),TD(card_view(n.item_code_id, n.previous_year_closing_stock)),TD(card_view(n.item_code_id, n.stock_in_transit))))
-    body = TBODY(*[row])
-    table = TABLE(*[head, body], _class='table')
-    return DIV(table)
-    # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+    _query = db(db.Stock_File.item_code_id == request.args(0)).select().first()
+    if _query:
+        row = []
+        head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
+        _sum = db.Stock_File.closing_stock.sum()
+        _closing_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_sum).first()[_sum]
+        for n in db(db.Stock_File.item_code_id == request.args(0)).select():    
+            row.append(TR(
+                TD(n.item_code_id.item_code), 
+                TD(n.location_code_id.location_name),
+                TD(card_view(n.item_code_id, n.opening_stock)),
+                TD(card_view(n.item_code_id, n.closing_stock)),
+                TD(card_view(n.item_code_id, n.previous_year_closing_stock)),
+                TD(card_view(n.item_code_id, n.stock_in_transit))))
+        body = TBODY(*[row])
+        body += TR(TD(),TD(B('TOTAL :')),TD(),TD(card_view(n.item_code_id, _closing_stock)),TD(),TD())
+        table = TABLE(*[head, body], _class='table')
+        return DIV(table)
+    else:
+        return CENTER(DIV(B('INFO! '),'Grrrrr! No item stock.',_class='alert alert-info',_role='alert'))
 def item_master_batch_info():    
     _query = db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select().first()
     if _query:
@@ -1810,7 +1822,12 @@ def item_master_batch_info():
         for n in db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select(orderby = ~db.Purchase_Batch_Cost.id):            
             ctr += 1
             _landed_cost = n.batch_cost * n.supplier_price
-            row.append(TR(TD(ctr),TD(n.purchase_receipt_date.date()),TD(n.batch_cost),TD(locale.format('%.3F',_landed_cost or 0, grouping = True)),TD(card_view(n.item_code_id, n.batch_quantity))))
+            _batch_cost = n.supplier_price
+            row.append(TR(
+                TD(ctr),TD(n.purchase_receipt_date.date()),
+                TD(n.supplier_price),
+                TD(locale.format('%.3F',_landed_cost or 0, grouping = True)),
+                TD(card_view(n.item_code_id, n.batch_quantity))))
             _average += _landed_cost
         _ave = float(_average) / int(_count)
         body = TBODY(*[row])
@@ -1822,7 +1839,18 @@ def item_master_batch_info():
     # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 
 def item_master_sales_quantity():
-    return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+    _query = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select().first()
+
+    if _query:
+        row = []
+        head = THEAD(TR(TD('#'),TD('Date'),TD('Category'),TD('Quantity')))
+        for n in db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select():
+            row.append(TR(TD(),TD(),TD(),TD()))
+        body = TBODY(*[row])
+        table = TABLE(*[head, body], _class='table')
+        return DIV(table)        
+    else:    
+        return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 
 @auth.requires_login()
 def itm_link_profile():
@@ -3079,7 +3107,7 @@ def stock_request_transaction_temporary_table():
         row.append(TR(
             TD(ctr),
             TD(k.Stock_Transaction_Temp.item_code.upper()),
-            TD(k.Item_Master.item_description.upper()),
+            TD(k.Item_Master.item_description),
             TD(k.Stock_Transaction_Temp.category_id),
             TD(k.Item_Master.uom_value),
             TD(k.Stock_Transaction_Temp.quantity),
@@ -3862,7 +3890,7 @@ def stk_tns_form():
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_tns_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.stock_request_no),TD(n.stock_source_id),TD(n.stock_destination_id),TD(n.srn_status_id),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.stock_request_no),TD(n.stock_source_id),TD(n.stock_destination_id),TD(n.srn_status_id.description),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table table-striped')        
     return dict(table = table)

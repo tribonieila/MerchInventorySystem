@@ -2060,11 +2060,20 @@ def sale_order_manager_delivery_note_rejected():
 
 def sales_order_manager_invoice_no_approved():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'INV')).select().first()        
     _skey = _trns_pfx.current_year_serial_key
     _skey += 1
-    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
+    
+    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)            
     _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now,)    
+
+    for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select():
+        _stk_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
+        _diff = _stk_file.closing_stock - n.quantity
+        _stk_file.update_record(closing_stock = _diff, last_transfer_quantity = _diff, last_transfer_date = request.now)
+        print 'item_code: ok?', n.id, n.item_code_id, _stk_file.id, _stk_file.item_code_id, n.quantity
+
     session.flash = 'SALES INVOICE APPROVED'
     response.js = "$('#tblso').get(0).reload()"
 

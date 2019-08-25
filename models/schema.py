@@ -1760,7 +1760,7 @@ db.define_table('Incoming_Mail',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Outgoing_Mail',    
-    Field('purchase_order_no_id','reference Purchase_Order',ondelete = 'NO ACTION',writable = False),
+    # Field('purchase_order_no_id','reference Purchase_Order',ondelete = 'NO ACTION',writable = False),
     Field('insurance_master_id','reference Insurance_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
     Field('mail_prefix_no_id','reference Communication_Tranx_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('outgoing_mail_no', 'string', length = 25, writable = False),

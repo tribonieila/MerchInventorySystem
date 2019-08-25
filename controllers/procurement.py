@@ -107,7 +107,7 @@ def validate_outgoing_mail(form):
 @auth.requires_login()
 def insurance_proposal_details_new():        
     _po = db(db.Purchase_Order.purchase_request_no_id == request.args(0)).select().first()
-    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
+    # _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
     _pur = db(db.Purchase_Request.id == request.args(0)).select().first()
     # _po = db(db.Purchase_Order.id == request.args(0)).select().first()    
     _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
@@ -118,7 +118,7 @@ def insurance_proposal_details_new():
     _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
     _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
     form = SQLFORM.factory(
-        Field('insurance_master_id','reference Insurance_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
+        Field('insurance_master_id','reference Insurance_Master',ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
         Field('mail_subject','string', length = 50, default = _subject),
         Field('description', 'string', length = 50),
         Field('payment_terms', 'string', length = 50),
@@ -130,7 +130,7 @@ def insurance_proposal_details_new():
         _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
         _pur.update_record(status_id = 22)
         db.Outgoing_Mail.insert(
-            purchase_order_no_id = _po.id,
+            # purchase_order_no_id = _po.id,
             insurance_master_id = form.vars.insurance_master_id,
             mail_prefix_no_id = form.vars.mail_prefix_no_id,
             outgoing_mail_no = form.vars.outgoing_mail_no,            
@@ -138,6 +138,8 @@ def insurance_proposal_details_new():
             mail_sender = 'The Management',
             mail_addressee = form.vars.mail_addressee,
             print_process = True)
+        session.outgoing_mail_no = form.vars.outgoing_mail_no
+        session.mail_subject = form.vars.mail_subject
         db.Insurance_Details.insert(
             purchase_order_no_id = _po.id,
             insurance_master_id = form.vars.insurance_master_id,
@@ -145,12 +147,12 @@ def insurance_proposal_details_new():
             description = form.vars.description,
             payment_terms = form.vars.payment_terms,
             partial_shipment = form.vars.partial_shipment,
-            transhipment = form.vars.transhipment)        
+            transhipment = form.vars.transhipment) 
+        # _id = db(db.Outgoing_Mail.outgoing_mail_no == form.vars.outgoing_mail_no).select().first()       
         redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
     elif form.errors:
-        response.flash = 'FORM HAS ERROR'
-    
-    return dict(form = form, _ckey = _ckey,_om = _om)
+        response.flash = 'FORM HAS ERROR'    
+    return dict(form = form, _ckey = _ckey)
 
 @auth.requires_login()
 def insurance_proposal_details_on_hold():
@@ -270,7 +272,7 @@ def purchase_receipt_approved():
                 purchase_receipt_no_id = request.args(0),
                 item_code_id = n.item_code_id,
                 purchase_receipt_date = request.now,
-                batch_cost = _id.landed_cost,
+                batch_cost = _id.landed_cost, 
                 supplier_price = n.price_cost,
                 batch_quantity = n.quantity,
                 batch_production_date = _prtc.production_date,
@@ -281,8 +283,7 @@ def purchase_receipt_approved():
             if not _stk_fil:
                 db.Stock_File.insert(
                     item_code_id = n.item_code_id,
-                    location_code_id = _id.location_code_id,
-                    opening_stock = n.quantity,
+                    location_code_id = _id.location_code_id,                    
                     closing_stock = n.quantity, 
                     last_transfer_qty = n.quantity)
             
@@ -298,27 +299,26 @@ def purchase_receipt_approved():
                 _stk_fil.update_record(opening_stock = _opn_stk, closing_stock = _clo_stk, last_transfer_qty = n.quantity)
 
             _itm_pri = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+            _landed_cost = float(_id.landed_cost) * float(n.price_cost)
+            _average_cost = ((int(_opn_stk_sum) * 0) + (float(_landed_cost) * int(n.quantity))) / int(int(_opn_stk_sum) + int(n.quantity))
+            _most_recent_landed_cost = 0
             if not _itm_pri:
                 db.Item_Prices.insert(
                     item_code_id = n.item_code_id,
                     most_recent_cost = n.price_cost,
-                    average_cost = n.price_cost,
-                    most_recent_landed_cost = n.price_cost,
+                    average_cost = float(_average_cost),
+                    most_recent_landed_cost = float(_landed_cost),
                     currency_id = _id.currency_id,
-                    opening_average_cost = n.price_cost,
+                    opening_average_cost = float(_average_cost),
                     last_issued_date = request.now)
             else:
                 _ave_cost = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
                 _landed_cost = float(_id.landed_cost) * float(n.price_cost)
                 _average_cost = ((int(_opn_stk_sum) * float(_ave_cost.opening_average_cost)) + (float(_landed_cost) * int(n.quantity))) / int(int(_opn_stk_sum) + int(n.quantity))
+                db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = float(_average_cost))#, opening_average_cost = float(_average_cost))
                 # _tot = int(_opn_stk_sum) - int(_old_stk_sum)
                 # print _opn_stk_sum, _old_stk_sum.opening_stock, _tot
-                # print n.item_code_id.item_code, ' average cost: ', _average_cost, ' = ', _opn_stk_sum, ' * ', _ave_cost.opening_average_cost, ' + ', _landed_cost, ' * ', n.quantity ,' / ', _opn_stk_sum, '+', n.quantity
-                                
-                db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = float(_average_cost), opening_average_cost = float(_average_cost))
-
-                
-        
+                # print n.item_code_id.item_code, ' average cost: ', _average_cost, ' = ', _opn_stk_sum, ' * ', _ave_cost.opening_average_cost, ' + ', _landed_cost, ' * ', n.quantity ,' / ', _opn_stk_sum, '+', n.quantity                                                                        
     # db(db.Purchase_Receipt.id == request.args(0)).update(status_id = 21)    
     db(db.Purchase_Receipt_Warehouse_Consolidated.id == int(_id.purchase_receipt_no_id_consolidated)).update(status_id = 21)
     session.flash = 'PURCHASE RECEIPT POSTED'
@@ -330,6 +330,7 @@ def purchase_receipt_grid_view():
     _head = THEAD(TR(TH('#'),TH('Date'),TH('Purchase Receipt'),TH('Purchase Order'),TH('Location'),_class='bg-primary'))
     for m in db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select():
         _ctr += 1
+        
         _row.append(TR(TD(_ctr),TD(m.purchase_receipt_no_id),TD(),TD()))
     _body = TBODY(*_row)
     _table = TABLE(*[_head, _body], _class='table')
@@ -343,6 +344,10 @@ def purchase_receipt_grid_view():
     for n in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id == request.args(0))).select(orderby = db.Purchase_Receipt_Transaction.id):
         
         ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('sales','sales_return_browse_load_view', args = n.Purchase_Receipt_Transaction.id, extension = False))        
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('sales','sales_return_browse_load_view', args = n.Purchase_Receipt_Transaction.id, extension = False))        
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('sales','sales_return_browse_load_view', args = n.Purchase_Receipt_Transaction.id, extension = False))
+        btn_lnk = DIV(view_lnk,edit_lnk,dele_lnk)           
         if n.category_id == 2:
             _remarks = 'excessed ' + card(n.quantity, n.uom)
             _total_amount = 0        
@@ -355,6 +360,15 @@ def purchase_receipt_grid_view():
         
         _i = db(db.Item_Master.id == n.item_code_id).select().first()
         _p = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == n.purchase_receipt_no_id_consolidated) & (db.Purchase_Receipt_Transaction_Consolidated.item_code_id == int(n.item_code_id))).select().first()
+        if not _p:
+            _n = db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == n.purchase_receipt_no_id_consolidated) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.item_code_id == int(n.item_code_id))).select().first()
+            _ord = '0 - 0/'+str(n.uom)
+            _war = card(_n.quantity, _n.uom)
+            
+        else:
+            _ord = card(_p.purchase_ordered_quantity, n.uom)
+            _war = card(_p.quantity, n.uom)
+            
         # _p = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
         
         # print _p.id, request.args(0), n.item_code_id, n.item_code_id.item_code, _p.purchase_ordered_quantity
@@ -368,13 +382,13 @@ def purchase_receipt_grid_view():
             TD(n.category_id.description),        
             # TD(),
             # TD(),
-            TD(card(_p.purchase_ordered_quantity, _p.uom)),
-            TD(card(_p.quantity, _p.uom)),
+            TD(_ord),
+            TD(_war),
             TD(card(n.quantity, n.uom)),
             TD(locale.format('%.3F',n.price_cost or 0, grouping = True), _align = 'right'),
             TD(locale.format('%.3F',_total_amount or 0, grouping = True), _align = 'right'),                        
             TD(_remarks),
-            TD()
+            TD(btn_lnk)
         ))
     
         _sum_amount += _total_amount    
@@ -725,10 +739,9 @@ def purchase_receipt_account_grid_view_transaction(): # .load
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount'),TD('QR ',locale.format('%.2F',_local_amount or 0, grouping = True), _align = 'right'),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount'),TD(_po.currency_id.mnemonic,' ', locale.format('%.2F',_total_net_amount or 0, grouping = True),_align = 'right'),TD(),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount'),TD(locale.format('%.2F', n.Purchase_Receipt_Transaction_Consolidated.discount_percentage or 0, grouping = True), _align = 'right'),TD(),TD()))
-    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount'),TD(_po.currency_id.mnemonic,' ',locale.format('%.2F',_total_amount or 0, grouping = True),_align = 'right'),TD(),TD()))
-    
+    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount'),TD(_po.currency_id.mnemonic,' ',locale.format('%.2F',_total_amount or 0, grouping = True),_align = 'right'),TD(),TD()))    
     table = TABLE(*[head, body, foot], _class= 'table', _id = 'POTtbl')    
-    return dict(table = table,_po = _po)    
+    return dict(table = table,_po = _po)
 
 @auth.requires_login()    
 def purchase_receipt_account_grid_view_validate():
@@ -740,15 +753,16 @@ def purchase_receipt_account_grid_view_validate():
     # else:
     row = []
     ctr = 0        
+    
     head = THEAD(TR(TH('#'),TH('Date'),TH('Purchase Receipt'),TH('Purchase Order'),T('Department'),TH('Location'),_class='bg-primary'))
     for n in db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select():
         ctr += 1
+        _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()    
         _id = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == n.id).select().first()        
-        _po = db(db.Purchase_Order.id == _id.purchase_order_no_id).select().first()
-        # print 'Purchase Order', _po.purchase_order_no
+        _po = db(db.Purchase_Order.id == _id.purchase_order_no_id).select().first()        
         session.dept_code_id = _po.dept_code_id
-        session.supplier_code_id = _po.supplier_code_id
-        session.location_code_id = _po.location_code_id 
+        session.supplier_code_id = _prwc.supplier_code_id
+        session.location_code_id = _prwc.location_code_id 
         session.discount_percentage = _po.discount_percentage
         session.currency_id = _po.currency_id
         row.append(TR(
@@ -929,13 +943,13 @@ def purchase_receipt_account_validate_transaction(): # .load
             _remarks = ''        
         
         try:
-            # print 'try'
+            print 'try'
             _cprice_cost = y.Purchase_Receipt_Transaction_Consolidated_New_Item.price_cost # float(y.Purchase_Receipt_Transaction_Consolidated_New_Item.price_cost) / int(y.Purchase_Receipt_Transaction_Consolidated_New_Item.uom)
             _total_amount_3 = float(y.Purchase_Receipt_Transaction_Consolidated_New_Item.price_cost) / int(y.Purchase_Receipt_Transaction_Consolidated_New_Item.uom) * int(y.Purchase_Receipt_Transaction_Consolidated_New_Item.quantity)
         except:
             _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
             if not _pr:
-                # print 'not _pr'
+                print 'not _pr'
                 _cprice_cost = 0
                 _total_amount_3 = 0
             else:         
@@ -1588,6 +1602,7 @@ def purchase_receipt_account_new_item_form():
     ctr = str(ctr).rjust(5,'0')    
     db.Item_Master.item_code.default = _id.item_code
     db.Item_Master.item_description.default = _id.item_description
+    db.Item_Master.supplier_code_id.default = session.supplier_code_id
     db.Item_Master.uom_value.default = _id.uom
     db.Item_Master.division_id.default = _dv.id
     db.Item_Master.dept_code_id.default = _dp.id
@@ -2246,16 +2261,22 @@ def purchase_request_transaction_temporary_delete():
 
 @auth.requires_login()
 def purchase_request_item_code_description():
-    # print 'session in description: ', session.supplier_code_id, session.dept_code_id, request.vars.item_code
+    print 'session in description: ', session.supplier_code_id, session.dept_code_id, request.vars.item_code
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
-    _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id) & (db.Item_Master.supplier_code_id == session.supplier_code_id)).select().first()    
+    _icode = db((db.Item_Master.item_code == str(request.vars.item_code)) & (db.Item_Master.dept_code_id == int(session.dept_code_id)) & (db.Item_Master.supplier_code_id == int(session.supplier_code_id))).select().first()    
     if not _icode:
         # response.js = "$('#btnadd').attr('disabled','disabled')"
-        return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't belongs to the selected supplier. ", _class='alert alert-warning',_role='alert'))       
+        return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't belongs to the selected supplier. ", _class='alert alert-warning',_role='alert'))
     else:       
         # response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"            
         # response.js = "$('#btnadd').removeAttr('disabled')"
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
+        if not _iprice:
+            _retail_price = 0
+            _whole_sale = 0
+        else:
+            _retail_price = _iprice.retail_price
+            _whole_sale = _iprice.wholesale_price
         _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()        
         if _sfile:                           
             if _icode.uom_value == 1:                
@@ -2277,7 +2298,7 @@ def purchase_request_item_code_description():
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),                
-                TD(_iprice.retail_price),
+                TD(_retail_price),
                 # TD(locale.format('%.4F',_iprice.wholesale_price or 0, grouping = True)),
                 TD(_on_hand),
                 TD(_on_transit)),_class="bg-info"),_class='table'))
@@ -2290,8 +2311,8 @@ def purchase_request_item_code_description():
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),                
-                TD(_iprice.retail_price),
-                TD(locale.format('%.4F',_iprice.wholesale_price or 0, grouping = True)),
+                TD(_retail_price),
+                TD(locale.format('%.4F',_whole_sale or 0, grouping = True)),
                 TD(_on_hand),
                 TD(_on_transit)),_class="bg-info"),_class='table'))            
             # return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock.",_class='alert alert-warning',_role='alert'))        
@@ -3860,6 +3881,7 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
     trow = []
     ctr = _after_discount = _total_amount = grand_total = discount_percentage = _foc_amount = _loc_amount = _total_row_amount =  0
     _wc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select().first()
+    
     _id = db(db.Purchase_Order.id == _wc.purchase_order_no_id).select().first()    
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Purchase Order No.'),TH('Purchase Request No.'),_class='bg-success'))
     for n in db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == request.args(0)).select(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id, db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_order_no_id, groupby = db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id | db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_order_no_id):        
@@ -3881,7 +3903,7 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
     thead = THEAD(TR(
         TD(DIV(LABEL('Location:'),DIV(_consl.location_code_id.location_name),_class='form-group'),_colspan='3'),TD(),
         TD(DIV(LABEL('Supplier:'),DIV(_consl.supplier_code_id.supp_name),_class='form-group'),_colspan='2'),TD(),TD(),TD(),TD()))        
-    
+    session.supplier_cod_id = _consl.supplier_code_id
     thead += THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Prod. Date'),TH('Exp. Date'),TH('Quantity'),TH('Pieces'),TH('Action'),_class='bg-success'))    
     for t in db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.partial == False)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction_Consolidated.ALL, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction_Consolidated.item_code_id)):
         ctr += 1
@@ -4175,8 +4197,12 @@ def purchase_receipt_warehouse_grid_consolidate_add_new_item():
     return dict(form2 = form2, table = table)     
 
 def warehouse_add_new_item():
-    _icode = db(db.Item_Master.item_code == request.vars.new_item_code).select().first()
-    if _icode:
+    _icode = db((db.Item_Master.item_code == request.vars.new_item_code) & (db.Item_Master.supplier_code_id == session.supplier_code_id)).select().first()
+    if not _icode:
+        # response.js = "$('#no_table_item_description').removeAttr('disabled'), $('#no_table_uom').removeAttr('disabled')"
+        response.js = "$('#BtnAdd').attr('disabled','disabled');"
+        return CENTER(DIV('Item Code ', B(str(request.vars.new_item_code)), ' doesnt belong to the selected supplier. Create as a new item?  ', A(' Yes ', _type='button ', _role='button', _onclick = "$('#BtnAdd').removeAttr('disabled');"),'/',A(' No ', _type='button ', _role='button', _onclick="$('#BtnAdd').attr('disabled','disabled');"),'?'), _class='alert alert-danger',_role='alert') 
+    else:
         _des = str(_icode.item_description.upper())        
         response.js = "$('#no_table_uom').attr('disabled','disabled');$('#no_table_item_description').attr('disabled','disabled');"
         return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'))),
@@ -4186,9 +4212,9 @@ def warehouse_add_new_item():
             TD(_icode.group_line_id.group_line_name),
             TD(_icode.brand_line_code_id.brand_line_name),
             TD(_icode.uom_value)),_class="bg-info"),_class='table'))
-    else:
-        response.js = "$('#no_table_item_description').removeAttr('disabled'), $('#no_table_uom').removeAttr('disabled')"
-        return CENTER(DIV('Item Code ', B(str(request.vars.new_item_code)), ' is new item.'), _class='alert alert-danger',_role='alert')
+    # else:
+    #     response.js = "$('#no_table_item_description').removeAttr('disabled'), $('#no_table_uom').removeAttr('disabled')"
+    #     return CENTER(DIV('Item Code ', B(str(request.vars.new_item_code)), ' is new item.'), _class='alert alert-danger',_role='alert')
 
 def save_as_draft_record():
     return locals()
@@ -4442,8 +4468,11 @@ def generate_item_code_recent_cost():
     if not _i:
         _value = 0        
     else:
-        _p = db(db.Item_Prices.item_code_id == _i.id).select().first()    
-        _value = _p.most_recent_cost            
+        _p = db(db.Item_Prices.item_code_id == _i.id).select().first()
+        if not _p:
+            _value = 0
+        else:
+            _value = _p.most_recent_cost            
     return XML(INPUT(_type="number", _class="form-control", _id='most_recent_cost', _name='most_recent_cost', _value=_value))        
 
 @auth.requires_login()
@@ -4642,13 +4671,13 @@ def insurance_proposal_reports():
     _po = db(db.Purchase_Order.id == request.args(0)).select().first()
     _sum = db.Purchase_Order_Transaction.total_amount.sum()
     _pt = db(db.Purchase_Order_Transaction.purchase_order_no_id == request.args(0)).select(_sum).first()[_sum]
-    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
+    # _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
     _header = [
         ['INSURANCE PROPOSAL'],
-        ['Ref: ' + str(_om.outgoing_mail_no)],
+        ['Ref: ' + str(session.outgoing_mail_no)],
         [str(request.now.strftime("%B %d, %Y"))],
         [str(_ip.contact_person) + str('\n') + str(_ip.insurance_name) + str('\n') + str(_ip.address) + str('\n') +str(_ip.city) + str('\n') + str(_ip.country_id.description),''],
-        ['Subject: ' + str(_om.mail_subject),''],        
+        ['Subject: ' + str(session.mail_subject),''],        
         [Paragraph('Please make insurance for the following shipment which the details as the following to cover under our Open Insurance No. MTC/9/82:', style=_style)],
         ['DESCRIPTION',':',str(_id.description)],
         ['VALUE',':',str(_po.currency_id.mnemonic) + ' ' + str(locale.format('%.2F',_pt or 0, grouping = True))],
@@ -4946,7 +4975,7 @@ def warehouse_receipt_reports():
             n.Purchase_Receipt_Transaction_Consolidated.uom,
             n.Purchase_Receipt_Transaction_Consolidated.category_id.description,
             card(n.Purchase_Receipt_Transaction_Consolidated.quantity,n.Purchase_Receipt_Transaction_Consolidated.uom)])
-    for m in db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)).select():
+    for m in db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)).select(orderby = ~db.Purchase_Receipt_Transaction_Consolidated_New_Item.id):
         ctr += 1
         _row.append([
             ctr,
@@ -5396,3 +5425,7 @@ def unorder():
     db(db.Purchase_Order).update(status_id = 17)
     db(db.Purchase_Order_Transaction).update(consolidated = False)
     return locals()
+
+def item_master_grid():
+    grid = SQLFORM.grid(db.Item_Master)
+    return dict(grid = grid)

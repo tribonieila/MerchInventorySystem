@@ -74,7 +74,11 @@ Main Menu
     - Config
     - Reports
 - Employee Self-Service
-- Asset Management
+- Reports
+
+ASSET MANAGEMENT
+Main Menu
+    - Dashboard
     - IT Management    
         - Dashboard
         - Machines
@@ -87,5 +91,16 @@ Main Menu
         - x
         - x
         - x
+- Reports
 
-- Reporting
+ADMINISTRATION MANAGEMENT
+Main Menu
+    - Dashboard
+
+FLEET MANAGEMENT
+Main Menu
+    - Dashboard
+
+FINANCE MANAGEMENT
+Main Menu
+    - Dashboard
