@@ -4,7 +4,11 @@
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
+                {{if auth.has_membership(role = 'ACCOUNT USERS'):}}
+                    <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
+                {{else:}}
+                    <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_receipt_grid')}}";>BROWSE</a></li>
+                {{pass}}
             </ul>
             <span class="card-title">PURCHASE RECIEPT FORM EDIT</span>
         </div>

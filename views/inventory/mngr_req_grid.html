@@ -17,7 +17,7 @@
                 <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 4).count()}}</span></a></li>
                 <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db(db.Purchase_Request.status_id == 19).count()}}</span></a></li>
               </ul>
-              <div class="tab-content">
+              <div class="tab-content"> 
                 <div role="tabpanel" class="tab-pane active" id="stock_request">                        
                   {{=LOAD('inventory','stock_request_manager_grid.load', ajax = True, target = 'tblsr')}}                                                    
                 </div>                   

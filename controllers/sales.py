@@ -2325,7 +2325,6 @@ def sales_invoice_footer(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
-
 def sales_order_store_keeper_header_footer_report(canvas, doc):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
