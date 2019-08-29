@@ -26,6 +26,10 @@ def get_purchase_receipt_grid():
     db.Purchase_Receipt.posted.writable = True
     return dict(grid = SQLFORM.grid(db.Purchase_Receipt))
 
+def get_purchase_receipt_transaction_grid():
+    db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated.represent = lambda id, r: db.Purchase_Receipt_Ordered_Warehouse_Consolidated(id).id
+    return dict(grid = SQLFORM.grid(db.Purchase_Receipt_Transaction))
+
 @auth.requires_login()
 def insurance_proposal_grid():
     row = []
@@ -206,17 +210,21 @@ def insurance_proposal_details_on_hold():
 def purchase_receipt_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
-    for n in db((db.Purchase_Receipt.status_id == 21) & (db.Purchase_Receipt.posted == False)).select(orderby = ~db.Purchase_Receipt.purchase_receipt_no):
-        # if n.posted == False:
-        #     print 'not posted'
-        # else:
-        #     print 'posted'            
+    for n in db().select(orderby = ~db.Purchase_Receipt.purchase_receipt_no):
+        if n.posted == False:
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_receipt_approved', args = n.id, extension = False))
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_request_rejected', args = n.id, extension = False))
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href=URL('procurement','purchase_receipt_reports', args=n.id, extension=False))
+            print 'not posted'
+        else:
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('procurement','purchase_receipt_approved', args = n.id, extension = False))
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('procurement','purchase_request_rejected', args = n.id, extension = False))
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('procurement','purchase_receipt_reports', args=n.id, extension=False))
+            print 'posted'            
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_grid_view', args = n.id, extension = False))        
-        appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_receipt_approved', args = n.id, extension = False))
-        reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('procurement','purchase_request_rejected', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle',_href = URL('procurement','purchase_receipt_account_grid_edit', args = n.id, extension = False))         
         clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-        prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+        
         btn_lnk = DIV(view_lnk, edit_lnk, appr_lnk, reje_lnk, prin_lnk, clea_lnk)
         row.append(TR(TD(n.purchase_receipt_date_approved),TD(n.purchase_receipt_no_prefix_id.prefix_key,n.purchase_receipt_no),TD(n.dept_code_id.dept_name),TD(n.supplier_code_id.supp_name),TD(n.location_code_id.location_name),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
@@ -225,7 +233,7 @@ def purchase_receipt_grid():
 
 def purchase_receipt_approved():
     _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
-    _id.update_record(status_id = 21, posted = True)
+    _id.update_record(status_id = 21)#, posted = True)
     print '\n\n---', request.now, '---'
     for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id == _id.id).select():        
         if int(n.category_id) == 1: # for damaged items
@@ -297,17 +305,19 @@ def purchase_receipt_approved():
                 _clo_stk = int(_stk_fil.closing_stock) + int(n.quantity)
                 
                 _sum_opn_stk = db.Stock_File.opening_stock.sum()
-                _opn_stk_sum = db(db.Stock_File.item_code_id == n.item_code_id).select(_sum_opn_stk).first()[_sum_opn_stk]
+                _sum_clo_stk = db.Stock_File.closing_stock.sum()
+                _opn_stk_sum = db(db.Stock_File.item_code_id == n.item_code_id).select(_sum_clo_stk).first()[_sum_clo_stk]
                 
                 _old_stk_sum = int(_opn_stk_sum) - int(n.quantity)
 
-                _stk_fil.update_record(opening_stock = _opn_stk, closing_stock = _clo_stk, last_transfer_qty = n.quantity)
+                _stk_fil.update_record(closing_stock = _clo_stk, last_transfer_qty = n.quantity) #opening_stock = _opn_stk,
 
             _itm_pri = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
             _landed_cost = float(_id.landed_cost) * float(n.price_cost)
-            _average_cost = ((int(_opn_stk_sum) * 0) + (float(_landed_cost) * int(n.quantity))) / int(int(_opn_stk_sum) + int(n.quantity))
+            _average_cost = float(_landed_cost) * int(n.quantity) / int(n.quantity)
             _most_recent_landed_cost = 0
             if not _itm_pri:
+                print 'NEW average cost : ', _average_cost
                 db.Item_Prices.insert(
                     item_code_id = n.item_code_id,
                     most_recent_cost = n.price_cost,
@@ -320,7 +330,8 @@ def purchase_receipt_approved():
                 _ave_cost = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
                 _landed_cost = float(_id.landed_cost) * float(n.price_cost)
                 _average_cost = ((int(_opn_stk_sum) * float(_ave_cost.opening_average_cost)) + (float(_landed_cost) * int(n.quantity))) / int(int(_opn_stk_sum) + int(n.quantity))
-                db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = float(_average_cost))#, opening_average_cost = float(_average_cost))
+                print 'OLD average cost : ', _average_cost, _opn_stk_sum, _landed_cost, n.quantity, _ave_cost.opening_average_cost
+                db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = float(_average_cost), most_recent_landed_cost = float(_landed_cost), most_recent_cost = float(n.price_cost))#, opening_average_cost = float(_average_cost))
                 # _tot = int(_opn_stk_sum) - int(_old_stk_sum)
                 # print _opn_stk_sum, _old_stk_sum.opening_stock, _tot
                 # print n.item_code_id.item_code, ' average cost: ', _average_cost, ' = ', _opn_stk_sum, ' * ', _ave_cost.opening_average_cost, ' + ', _landed_cost, ' * ', n.quantity ,' / ', _opn_stk_sum, '+', n.quantity                                                                        
@@ -2270,20 +2281,23 @@ def purchase_request_item_code_description():
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
     _icode = db((db.Item_Master.item_code == str(request.vars.item_code)) & (db.Item_Master.dept_code_id == int(session.dept_code_id)) & (db.Item_Master.supplier_code_id == int(session.supplier_code_id))).select().first()    
     if not _icode:
-        # response.js = "$('#btnadd').attr('disabled','disabled')"
+        # response.js = "$('#btnadd').attr('disabled','disabled')"        
         return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't belongs to the selected supplier. ", _class='alert alert-warning',_role='alert'))
-    else:       
+    else:               
         # response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"            
         # response.js = "$('#btnadd').removeAttr('disabled')"
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
         if not _iprice:
             _retail_price = 0
             _whole_sale = 0
+            print 'false: ', request.vars.item_code, _retail_price, _whole_sale
         else:
             _retail_price = _iprice.retail_price
             _whole_sale = _iprice.wholesale_price
+            print 'true: ', request.vars.item_code, _retail_price, _whole_sale
         _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()        
         if _sfile:                           
+            print 'sfile true'
             if _icode.uom_value == 1:                
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"
                 session.pieces = 0
@@ -2291,6 +2305,7 @@ def purchase_request_item_code_description():
                 _on_transit = _sfile.stock_in_transit
                 _on_hand = _sfile.closing_stock                      
             else:
+                
                 response.js = "$('#no_table_pieces').removeAttr('disabled')"                
                 _on_balanced = card(_sfile.probational_balance, _icode.uom_value)
                 _on_transit = card(_sfile.stock_in_transit, _icode.uom_value)
@@ -2309,6 +2324,7 @@ def purchase_request_item_code_description():
                 TD(_on_transit)),_class="bg-info"),_class='table'))
             response.js = "$('#btnadd').removeAttr('disabled')"         
         else:
+            # print 'else: ', _retail_price, _whole_sale, _on_hand, _on_transit
             return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Supplier Price'),TH('Closing Stock'),TH('Order In Transit'))),
             TBODY(TR(
                 TD(_icode.item_code),
@@ -2316,11 +2332,11 @@ def purchase_request_item_code_description():
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),                
-                TD(_retail_price),
-                TD(locale.format('%.4F',_whole_sale or 0, grouping = True)),
-                TD(_on_hand),
-                TD(_on_transit)),_class="bg-info"),_class='table'))            
-            # return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock.",_class='alert alert-warning',_role='alert'))        
+                TD(locale.format('%.3F',_retail_price or 0, grouping=True)),
+                TD(locale.format('%.3F',_whole_sale or 0, grouping = True)),
+                TD(0),
+                TD(0)),_class="bg-info"),_class='table'))            
+            return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock.",_class='alert alert-warning',_role='alert'))        
         
 
 @auth.requires_login()
@@ -4205,7 +4221,7 @@ def warehouse_add_new_item():
     _icode = db((db.Item_Master.item_code == request.vars.new_item_code) & (db.Item_Master.supplier_code_id == session.supplier_code_id)).select().first()
     if not _icode:
         # response.js = "$('#no_table_item_description').removeAttr('disabled'), $('#no_table_uom').removeAttr('disabled')"
-        response.js = "$('#BtnAdd').attr('disabled','disabled');"
+        # response.js = "$('#BtnAdd').attr('disabled','disabled');"
         return CENTER(DIV('Item Code ', B(str(request.vars.new_item_code)), ' doesnt belong to the selected supplier. Create as a new item?  ', A(' Yes ', _type='button ', _role='button', _onclick = "$('#BtnAdd').removeAttr('disabled');"),'/',A(' No ', _type='button ', _role='button', _onclick="$('#BtnAdd').attr('disabled','disabled');"),'?'), _class='alert alert-danger',_role='alert') 
     else:
         _des = str(_icode.item_description.upper())        

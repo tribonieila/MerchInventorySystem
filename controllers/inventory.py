@@ -1843,10 +1843,22 @@ def item_master_sales_quantity():
 
     if _query:
         row = []
-        head = THEAD(TR(TD('#'),TD('Date'),TD('Category'),TD('Quantity')))
-        for n in db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select():
-            row.append(TR(TD(),TD(),TD(),TD()))
+        ctr = 0
+        head = THEAD(TR(TD('#'),TD('Date'),TD('Category'),TD('Quantity'),TD('Total Amount')))
+        _quantity = db.Sales_Order_Transaction.quantity.sum()
+        _total_amount = db.Sales_Order_Transaction.total_amount.sum()
+        _qty = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(_quantity).first()[_quantity]
+        _tot_amt = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(_total_amount).first()[_total_amount]
+        for n in db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(orderby = ~db.Sales_Order_Transaction.created_on):
+            ctr += 1
+            row.append(TR(
+                TD(ctr),
+                TD(n.created_on.date()),
+                TD(n.category_id.description),
+                TD(card_view(n.item_code_id, n.quantity),
+                TD(locale.format('%.3F',n.total_amount or 0, grouping = True)))))
         body = TBODY(*[row])
+        body += TR(TD(),TD(),TD(B('TOTAL:')),TD(B(card_view(n.item_code_id, _qty))),TD(B(locale.format('%.3F',_tot_amt or 0, grouping = True))))
         table = TABLE(*[head, body], _class='table')
         return DIV(table)        
     else:    
@@ -3890,7 +3902,7 @@ def stk_tns_form():
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_tns_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.stock_request_no),TD(n.stock_source_id),TD(n.stock_destination_id),TD(n.srn_status_id.description),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.stock_request_no),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.srn_status_id.description),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table table-striped')        
     return dict(table = table)
