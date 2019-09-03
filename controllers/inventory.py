@@ -1862,7 +1862,7 @@ def item_master_sales_quantity():
         table = TABLE(*[head, body], _class='table')
         return DIV(table)        
     else:    
-        return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
+        return CENTER(DIV(B('INFO! '),'Grrrrr! No sales items', _class='alert alert-info',_role='alert'))
 
 @auth.requires_login()
 def itm_link_profile():

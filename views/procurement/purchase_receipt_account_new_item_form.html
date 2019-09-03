@@ -106,8 +106,9 @@
 $(document).ready(function(){
     $("#no_table_division_id").change(function(){      
         if ($("#no_table_division_id").val() == 2) {
-            $("#no_table_gender_code_id, #no_table_fragrance_code_id, #no_table_collection_code_id").val(1);
+            $("#no_table_gender_code_id, #no_table_fragrance_code_id, #no_table_collection_code_id, #no_table_size_code_id").val(1);
             $("#no_table_color_code_id").val(12);
+
             console.log("fmcg");
         } else {
             console.log("not fmcg");
@@ -158,3 +159,4 @@ $(document).ready(function(){
         });
     });
 </script>
+

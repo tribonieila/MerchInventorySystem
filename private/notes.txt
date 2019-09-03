@@ -19,6 +19,17 @@ Read (Retrieve)	    SELECT	GET	                GET	            read / take
 Update (Modify)	    UPDATE	PUT / POST / PATCH	PUT	            write
 Delete (Destroy)	DELETE	DELETE	            DELETE	        dispose
 
+DATABASE 
+Merch_HR_DB
+Merch_RootDB
+m3rch_admin_db
+m3rch_asset_db
+m3rch_finance_db
+m3rch_fleet_db
+m3rch_hrm_db
+m3rch_root_db
+https://adminlte.io/themes/AdminLTE/index.html
+
 lpstat -p -d
 lpr -P "MyPrinterName" filename.pdf
 Generic-PostScript # printer name
