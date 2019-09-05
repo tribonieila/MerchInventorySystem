@@ -1,21 +1,12 @@
-
-
-
     {{=form}}
-
-
-
     <hr>
-
     {{=form2.custom.begin}}
     <div class="row">    
         <div class="col-md-2">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Item Code</label>
                 <div class="col-sm-8">         
-                        {{=form2.custom.widget.item_code}}
-
-                    
+                    {{=form2.custom.widget.item_code}}                    
                 </div>                           
             </div>                        
         </div>
@@ -263,12 +254,15 @@ $('.delete').click(function(){
     };
 
     function compute(i, c, q, u, p, r){     
+        console.log('compute');
         var _diff = 0;
         var a = 0;
         var _gt = 0;
         var _lnd = $('#no_table_landed_cost').val();
         var _dis = $('#discount').val();
 
+        var _exc = $('#no_table_exchange_rate').val();
+        var _oth = $('#no_table_other_charges').val();
         var remarks = document.getElementsByName('remarks');       
         var quantity = document.getElementsByName('quantity');
         var pieces = document.getElementsByName('pieces');
@@ -278,9 +272,7 @@ $('.delete').click(function(){
         var _p = parseInt(q) * parseInt(u) + parseInt(p)
         var _c = parseInt(r) / parseInt(u)
         var _a = _p * parseFloat(_c);
-
-        console.log('compute');
-        
+              
         if (parseInt(c) < parseInt(_p)) {
             _diff = parseInt(_p) - parseInt(c)
             _out = Math.round(parseInt(_diff) / parseInt(u))
@@ -324,9 +316,11 @@ $('.delete').click(function(){
         $('#total_net_amount').val(Number(_gt.toFixed(3)).toLocaleString());  
         $('#foreign_total_amount').val(_discount);  
         $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());  
+        console.log(_gt);
     }
 
-    function computed(i, c, q, u, p, r){     
+    function computed(i, c, q, u, p, r){   
+        console.log('computed');  
         var _diff = 0
         var _lnd = $('#no_table_landed_cost').val();
         var _gt = 0;
@@ -343,9 +337,7 @@ $('.delete').click(function(){
         var quantity = document.getElementsByName('quantity');
         var pieces = document.getElementsByName('pieces');
         var price_cost = document.getElementsByName('price_cost');
-        var total_amount = document.getElementsByName('total_amount');
-        console.log('computed');
-        // console.log(i);   
+        var total_amount = document.getElementsByName('total_amount');           
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
                 console.log(i);

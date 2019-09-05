@@ -1598,6 +1598,10 @@ def itm_add_batch_form():
     return dict(form = form)
 
 @auth.requires_login()
+def gen_item_code():
+    print 'generate item code'
+
+@auth.requires_login()
 def itm_add_form():
     itm = db(db.Division.id == request.args(0)).select().first()
     ctr = db(db.Item_Master).count()
@@ -1674,7 +1678,7 @@ def itm_add_form():
             item_status_code_id = form.vars.item_status_code_id)
         _id = db(db.Item_Master.item_code == itm_code).select().first()
         db.Item_Prices.insert(item_code_id = _id.id)
-        db.Stock_File.insert(item_code_id = _id.id, location_code_id = 1)            
+        # db.Stock_File.insert(item_code_id = _id.id, location_code_id = 1)            
         response.flash = 'ITEM CODE '+str(itm_code)+'. RECORD SAVE'
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'        
@@ -1776,10 +1780,10 @@ def item_master_prices():
     _query = db(db.Item_Prices.item_code_id == request.args(0)).select().first()
     if _query:
         tbody1 = TBODY(
-            TR(TD('Item Code'),TD('Recent Cost'),TD('Average Cost'),TD('Landed Cost'),TD('Op. Average Cost'),_class='active'),
+            TR(TD('Item Code'),TD('Recent Cost'),TD('Average Cost'),TD('Recent Landed Cost'),TD('Op. Average Cost'),_class='active'),
             TR(TD(_query.item_code_id.item_code),TD(_query.currency_id.mnemonic, ' ',locale.format('%.4F',_query.most_recent_cost or 0, grouping = True)),TD('QR ', locale.format('%.4F',_query.average_cost or 0, grouping = True)),TD('QR ', _query.most_recent_landed_cost),TD('QR ', _query.opening_average_cost)))
         table1 = TABLE(*[tbody1],_class = 'table table-bordered')
-
+        session.average_cost =  _query.average_cost
         tbody2 = TBODY(
             TR(TD('Wholesale Price'),TD('Retail Price'),TD('Vansale Price'),TD('Reorder Qty'),TD('Last Issued Date'),TD('Currency'),_class='active'),
             TR(TD('QR ', _query.wholesale_price),TD('QR ', _query.retail_price),TD('QR ', _query.vansale_price),TD(_query.reorder_qty),TD(_query.last_issued_date),TD(_query.currency_id.description)))
@@ -1792,19 +1796,42 @@ def item_master_stocks():
     _query = db(db.Stock_File.item_code_id == request.args(0)).select().first()
     if _query:
         row = []
-        head = THEAD(TR(TH('Item Code'),TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit')),_class='active')
-        _sum = db.Stock_File.closing_stock.sum()
-        _closing_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_sum).first()[_sum]
+        head = THEAD(TR(TD(B('Item Code: ')),TD(_query.item_code_id.item_code),TD(B('Description: ')),TD(_query.item_code_id.item_description),TD(),TD(),TD(),_class='active'))
+        head += THEAD(TR(TD(''),TD(),TD(),TD()))
+
+        head += THEAD(TR(TH('Location'),TH('Opening Stock'),TH('Closing Stock'),TH('Prv.Yr. Closing Stock'),TH('Stock In Transit'),TH('Free/Promo Stock'),TH('Damaged/Expired Stock')),_class='active')
+        _os = db.Stock_File.opening_stock.sum()
+        _cs = db.Stock_File.closing_stock.sum()
+        _ps = db.Stock_File.previous_year_closing_stock.sum()
+        _si = db.Stock_File.stock_in_transit.sum()
+        _fs = db.Stock_File.free_stock_qty.sum()
+        _ds = db.Stock_File.damaged_stock_qty.sum()
+        _opening_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_os).first()[_os]
+        _closing_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_cs).first()[_cs]
+        _previou_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_ps).first()[_ps]
+        _transit_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_si).first()[_si]
+        _freepro_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_fs).first()[_fs]
+        _damaged_stock = db(db.Stock_File.item_code_id == request.args(0)).select(_ds).first()[_ds]
+
+        _total_stock = _closing_stock + _damaged_stock
         for n in db(db.Stock_File.item_code_id == request.args(0)).select():    
-            row.append(TR(
-                TD(n.item_code_id.item_code), 
+            row.append(TR(                
                 TD(n.location_code_id.location_name),
                 TD(card_view(n.item_code_id, n.opening_stock)),
                 TD(card_view(n.item_code_id, n.closing_stock)),
                 TD(card_view(n.item_code_id, n.previous_year_closing_stock)),
-                TD(card_view(n.item_code_id, n.stock_in_transit))))
+                TD(card_view(n.item_code_id, n.stock_in_transit)),
+                TD(card_view(n.item_code_id, n.free_stock_qty)),
+                TD(card_view(n.item_code_id, n.damaged_stock_qty))))
         body = TBODY(*[row])
-        body += TR(TD(),TD(B('TOTAL :')),TD(),TD(card_view(n.item_code_id, _closing_stock)),TD(),TD())
+        body += TR(
+            TD(B('TOTAL :')),
+            TD(B(card_view(n.item_code_id, _opening_stock))),
+            TD(B(card_view(n.item_code_id, _total_stock))),
+            TD(B(card_view(n.item_code_id, _previou_stock))),            
+            TD(B(card_view(n.item_code_id, _transit_stock))),
+            TD(B(card_view(n.item_code_id, _freepro_stock))),
+            TD(B(card_view(n.item_code_id, _damaged_stock))))
         table = TABLE(*[head, body], _class='table')
         return DIV(table)
     else:
@@ -1816,9 +1843,9 @@ def item_master_batch_info():
         ctr = _average = 0
         _id = db(db.Item_Master.id == request.args(0)).select().first()        
         _count = db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).count()        
-        head = THEAD(TR(TD('Item Code: '),TD(_id.item_code),TD('Description: '),TD(_id.item_description),_class='active'))
+        head = THEAD(TR(TD(B('Item Code: ')),TD(_id.item_code),TD(B('Description: ')),TD(_id.item_description),_class='active'))
         head += THEAD(TR(TD(''),TD(),TD(),TD()))
-        head += THEAD(TR(TH('#'), TH('Date'),TH('Batch Cost'),TH('Batch Landed Cost'),TH('Batch Quantity')))        
+        head += THEAD(TR(TH('#'), TH('Batch Date'),TH('Batch Cost'),TH('Batch Landed Cost'),TH('Batch Quantity')))        
         for n in db(db.Purchase_Batch_Cost.item_code_id == request.args(0)).select(orderby = ~db.Purchase_Batch_Cost.id):            
             ctr += 1
             _landed_cost = n.batch_cost * n.supplier_price
@@ -1831,36 +1858,37 @@ def item_master_batch_info():
             _average += _landed_cost
         _ave = float(_average) / int(_count)
         body = TBODY(*[row])
-        body += TR(TD(),TD(),TD(B('Average Cost:')),TD(B(locale.format('%.3F',_ave or 0, grouping = True))),TD())
+        body += TR(TD(),TD(),TD(B('Average Cost:')),TD(B(locale.format('%.3F',session.average_cost or 0, grouping = True))),TD())
         table = TABLE(*[head, body], _class='table ')
         return DIV(table)
     else:
         return CENTER(DIV(B('INFO! '),'Grrrrr! No item purchase batch record.',_class='alert alert-info',_role='alert'))
     # return CENTER(DIV(B('INFO! '),'Still in progress.',_class='alert alert-info',_role='alert'))
 
-def item_master_sales_quantity():
+def item_master_sales_quantity():    
     _query = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select().first()
-
     if _query:
+        _sales_sum = db.Sales_Order_Transaction.quantity.sum()
+        _total_sales = db((db.Sales_Order_Transaction.item_code_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(_sales_sum).first()[_sales_sum]
+        tbody1 = TBODY(
+            TR(TD('Item Code'),TD('Description'),TD('Total Sales'), _class='active'),
+            TR(TD(_query.item_code_id.item_code),TD(_query.item_code_id.item_description),TD(card_view(_query.item_code_id,_total_sales))))
+        table1 = TABLE(*[tbody1], _class='table table-bordered')
         row = []
-        ctr = 0
-        head = THEAD(TR(TD('#'),TD('Date'),TD('Category'),TD('Quantity'),TD('Total Amount')))
+        ctr = 0        
+        head = THEAD(TR(TD('#'),TD('Location'),TD('Total Sales'), _class='active'))
         _quantity = db.Sales_Order_Transaction.quantity.sum()
         _total_amount = db.Sales_Order_Transaction.total_amount.sum()
         _qty = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(_quantity).first()[_quantity]
         _tot_amt = db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(_total_amount).first()[_total_amount]
-        for n in db(db.Sales_Order_Transaction.item_code_id == request.args(0)).select(orderby = ~db.Sales_Order_Transaction.created_on):
-            ctr += 1
-            row.append(TR(
-                TD(ctr),
-                TD(n.created_on.date()),
-                TD(n.category_id.description),
-                TD(card_view(n.item_code_id, n.quantity),
-                TD(locale.format('%.3F',n.total_amount or 0, grouping = True)))))
+        for n in db((db.Sales_Order_Transaction.item_code_id == request.args(0)) & (db.Sales_Order_Transaction.delete==True)).select(orderby = ~db.Sales_Order_Transaction.created_on):
+            for y in db(db.Sales_Order.id == n.sales_order_no_id).select():
+                ctr += 1
+                row.append(TR(TD(ctr),TD(y.stock_source_id.location_name),TD(card_view(_query.item_code_id,_total_sales))))
         body = TBODY(*[row])
-        body += TR(TD(),TD(),TD(B('TOTAL:')),TD(B(card_view(n.item_code_id, _qty))),TD(B(locale.format('%.3F',_tot_amt or 0, grouping = True))))
-        table = TABLE(*[head, body], _class='table')
-        return DIV(table)        
+        # body += TR(TD(),TD(),TD(B('TOTAL:')),TD(B(card_view(n.item_code_id, _qty))),TD(B(locale.format('%.3F',_tot_amt or 0, grouping = True))))
+        table = TABLE(*[head, body], _class='table table-bordered')
+        return DIV(table1, table)        
     else:    
         return CENTER(DIV(B('INFO! '),'Grrrrr! No sales items', _class='alert alert-info',_role='alert'))
 

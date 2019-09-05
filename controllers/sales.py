@@ -1114,7 +1114,7 @@ def sales_return_accounts_form():
 @auth.requires_login()
 def sales_return_accounts_form_approved():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    _query = db(db.Sales_Order_Transaction.sales_return_no_id == request.args(0)).select()    
+    _query = db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select()    
     _damaged_qty = 0
     for n in _query:
         _sf = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()                

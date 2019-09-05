@@ -343,7 +343,7 @@ def _purchase_receipt_approved_():
 def purchase_receipt_approved():
     _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
     _id.update_record(status_id = 21)#, posted = True)
-    print '\n\n---', request.now, '---'
+    # print '\n\n---', request.now, '---'
     for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id == _id.id).select():        
         if int(n.category_id) == 1: # for damaged items
             _dmg_stk = db((db.Stock_File.item_code_id == int(n.item_code_id)) & (db.Stock_File.location_code_id == int(_id.location_code_id))).select().first()
@@ -428,7 +428,7 @@ def purchase_receipt_approved():
                     last_issued_date = request.now)
                 # print 'average cost new', _average_cost, n.uom, _ave_cost_1, _ave_cost_2, _ave_cost_3                
             else:
-                _landed_cost_rate = (_id.landed_cost * n.price_cost) / n.uom                
+                _landed_cost_rate = (_id.landed_cost * n.price_cost) / n.uom      # landed cost rate per piece          
                 _itm_pri = db(db.Item_Prices.item_code_id == n.item_code_id).select().last()
                 _sum = db.Stock_File.closing_stock.sum()
                 _closing_stock = db(db.Stock_File.item_code_id == n.item_code_id).select(_sum).first()[_sum]
@@ -437,7 +437,7 @@ def purchase_receipt_approved():
                 _ave_cost_2 = float(_landed_cost_rate) * int(n.quantity)
                 _ave_cost_3 = int(_closing_stock) + int(n.quantity)
                 _average_cost = ((int(_ave_cost_1) + float(_ave_cost_2)) / int(_ave_cost_3)) * n.uom                
-                _most_recent_landed_cost = float(n.price_cost) * float(_landed_cost_rate) #/ int(n.uom)
+                _most_recent_landed_cost = float(n.price_cost) * float(_id.landed_cost) #/ int(n.uom)
                 # print 'average cost exist', _average_cost, n.uom, _ave_cost_1, _ave_cost_2, _ave_cost_3, _closing_stock
                 _clo_stk = int(_stk_fil.closing_stock) + int(n.quantity)
                 _stk_fil.update_record(closing_stock = _clo_stk, last_transfer_qty = n.quantity)
@@ -955,6 +955,15 @@ def purchase_receipt_table():
 def purchase_receipt_transaction_table():    
     grid = SQLFORM.grid(db.Purchase_Receipt_Transaction)
     return dict(grid = grid)
+
+def item_master_grid():
+    db.Item_Master.uom_id.represent = lambda id, r: db.UOM(id).description    
+    db.Item_Master.supplier_uom_id.represent = lambda id, r: db.UOM(id).description    
+    # db.Item_Master.weight_id.represent = lambda id, r: db.Weight(id).mnemonic
+    db.Item_Master.type_id.represent = lambda id, r: db.Item_Type(id).description
+    db.Item_Master.division_id.represent = lambda id, r: db.Division(id).div_name
+    db.Item_Master.gender_code_id.represent = lambda id, r: db.Gender(id).description
+    return dict(grid = SQLFORM.grid(db.Item_Master))
 
 @auth.requires_login()
 def purchase_receipt_account_validate_transaction(): # .load
@@ -1777,8 +1786,8 @@ def purchase_receipt_account_new_item_form():
 def purchase_receipt_account_new_item_prices_form():
     form = SQLFORM.factory(
         Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
-        Field('most_recent_cost', 'decimal(10,4)', default = 0),
-        Field('average_cost', 'decimal(10,4)', default = 0),
+        Field('most_recent_cost', 'decimal(10,4)', default=0),
+        Field('average_cost', 'decimal(10,4)', default =0),
         Field('most_recent_landed_cost', 'decimal(10,4)', default =0),
         Field('currency_id', 'reference Currency', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
         Field('opening_average_cost', 'decimal(10,4)', default = 0),
@@ -2512,7 +2521,7 @@ def puchase_request_transaction_view_details():
                 TD(n.Item_Master.item_description.upper()),
                 TD(n.Purchase_Request_Transaction.uom, _style="width:100px;"),
                 TD(n.Purchase_Request_Transaction.category_id.mnemonic, _style="width:100px;"),            
-                TD(card(n.Purchase_Request_Transaction.quantity,n.Item_Master.uom_value), _align = 'right', _style="width:120px;"),        
+                TD(card(n.Purchase_Request_Transaction.quantity,n.Item_Master.uom_value), _align = 'right', _style="width:120px;"),      
                 TD(stock_on_hand_all_location(n.Purchase_Request_Transaction.item_code_id), _align = 'right', _style="width:120px;"),
                 TD(stock_in_transit_all_location(n.Purchase_Request_Transaction.item_code_id), _align = 'right', _style="width:120px;"),    
                 TD(locale.format('%.2F',n.Purchase_Request_Transaction.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"), 
@@ -3511,10 +3520,13 @@ def purchase_order(): # purchase_order_table
         prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle print', _href = URL('procurement','purchase_order_reports', args = n.id, extension = False))
         insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)        
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_order_transaction_view', args = n.id, extension = False))        
-        if n.trade_terms_id == 1:
-            _om = db(db.Outgoing_Mail.purchase_order_no_id == n.id).select().first()
-            if not _om:
-                insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _target = '_blank', _href = URL('procurement','insurance_proposal_details_on_hold', args = n.id, extension = False))
+        # if n.trade_terms_id == 1:
+        #     _om = db(db.Outgoing_Mail.outgoing_mail_no == n.id).select().first()
+        #     if not _om:
+                
+        #         insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _target = '_blank', _href = URL('procurement','insurance_proposal_details_on_hold', args = n.id, extension = False))
+        # else:
+        #     print 'not'
         btn_lnk = DIV(view_lnk, insu_lnk, purh_lnk, prin_lnk, clea_lnk)
         row.append(TR(
             TD(n.purchase_order_date_approved),
@@ -3799,7 +3811,7 @@ def purchase_receipt_warehouse_grid_consolidated():
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Status'),TH('Action'),_class='bg-success'))
     for n in db().select(db.Purchase_Receipt_Warehouse_Consolidated.ALL, orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
         if n.draft == True:
-            proc_lnk = A(I(_class='fas fa-highlighter'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_processed', args = n.id, extension = False))
+            proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_processed', args = n.id, extension = False))
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
             insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
             purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
@@ -3810,7 +3822,7 @@ def purchase_receipt_warehouse_grid_consolidated():
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
             prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))
             insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
-            proc_lnk = A(I(_class='fas fa-highlighter'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+            proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
         btn_lnk = DIV(view_lnk, proc_lnk, insu_lnk, purh_lnk, prin_lnk, clea_lnk)
         row.append(TR(
@@ -3921,8 +3933,9 @@ def warehouse_validation():
         response.js = "jQuery(exceeds())"            
 
 def validate_consolidated_processed_quantity():
-    row = 0
+    row = 0    
     for x in request.vars['_id']:
+        print request.vars['_id'][row], x
         if int(request.vars['quantity'][row]) == 0:
             response.js = "jQuery(zeroAlert());"
         row += 1
@@ -3956,7 +3969,7 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
         _consl = db(db.Purchase_Receipt_Warehouse_Consolidated.id == n.purchase_receipt_no_id).select().first()
         row.append(TR(            
             TD(_consl.purchase_receipt_date_approved),
-            TD(_consl.purchase_receipt_no),
+            TD(_consl.purchase_receipt_no_prefix_id.prefix,_consl.purchase_receipt_no),
             TD(n.purchase_order_no_id.purchase_order_no_prefix_id.prefix, n.purchase_order_no_id.purchase_order_no),
             TD(n.purchase_order_no_id.purchase_request_no_id.purchase_request_no_prefix_id.prefix, n.purchase_order_no_id.purchase_request_no_id.purchase_request_no)))
 
@@ -3986,7 +3999,7 @@ def purchase_receipt_warehouse_grid_consolidated_processed():
             TD(t.Purchase_Receipt_Transaction_Consolidated.category_id.description),
             TD(INPUT(_type='text', _class='form-control date', _id = 'production_date', _name='production_date', _value = t.Purchase_Receipt_Transaction_Consolidated.production_date), _style="width:120px;"),
             TD(INPUT(_type='text', _class='form-control date', _id = 'expiration_date', _name='expiration_date', _value = t.Purchase_Receipt_Transaction_Consolidated.expiration_date), _style="width:120px;"),
-            TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _onchange = "ajax('/procurement/validate_consolidated_processed_quantity',['_id', 'item_code', 'uom', 'pieces', 'quantity'])", _align = 'right'), _style="width:120px;"),
+            TD(INPUT(_type='number', _class='form-control', _id = 'quantity', _name='quantity', _value= _qty, _onchange = "ajax('/procurement/validate_consolidated_processed_quantity', ['_id', 'item_code', 'uom', 'pieces', 'quantity'])", _align = 'right'), _style="width:120px;"),
             TD(_pcs, _align = 'right', _style="width:120px;"),
             TD(btn_lnk)))
     for m in db((db.Purchase_Receipt_Transaction_Consolidated_New_Item.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.partial == False) & (db.Purchase_Receipt_Transaction_Consolidated_New_Item.delete == False)).select():        
@@ -4643,8 +4656,11 @@ def on_transit(e):
 # ---- STOCK ON HAND ENTIRE LOCATION  -----
 def stock_on_hand_all_location(e):
     _i = db(db.Purchase_Request_Transaction.item_code_id == e).select().first()
-    _sum_on_hand = db.Stock_File.closing_stock.sum()
+    _sum_on_hand = db.Stock_File.closing_stock.coalesce_zero().sum()
     _closing = db(db.Stock_File.item_code_id == e).select(_sum_on_hand).first()[_sum_on_hand]
+    if not _closing:
+        _closing = 0
+
     if _i.uom == 1:        
         return _closing
     else:
@@ -4655,8 +4671,10 @@ def stock_on_hand_all_location(e):
 
 def stock_in_transit_all_location(e):
     _i = db(db.Purchase_Request_Transaction.item_code_id == e).select().first()
-    _sum_on_hand = db.Stock_File.stock_in_transit.sum()
+    _sum_on_hand = db.Stock_File.stock_in_transit.coalesce_zero().sum()
     _in_transit = db(db.Stock_File.item_code_id == e).select(_sum_on_hand).first()[_sum_on_hand]
+    if not _in_transit:
+        _in_transit = 0
     if _i.uom == 1:        
         return _in_transit
     else:
@@ -5488,6 +5506,3 @@ def unorder():
     db(db.Purchase_Order_Transaction).update(consolidated = False)
     return locals()
 
-def item_master_grid():
-    grid = SQLFORM.grid(db.Item_Master)
-    return dict(grid = grid)
