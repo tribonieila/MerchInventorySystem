@@ -1,12 +1,21 @@
+
+
+
     {{=form}}
+
+
+
     <hr>
+
     {{=form2.custom.begin}}
     <div class="row">    
         <div class="col-md-2">
             <div class="form-group">
                 <label class="col-sm-4 control-label">Item Code</label>
                 <div class="col-sm-8">         
-                    {{=form2.custom.widget.item_code}}                    
+                        {{=form2.custom.widget.item_code}}
+
+                    
                 </div>                           
             </div>                        
         </div>
@@ -81,8 +90,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 
-$(document).ready(function(){
-    
+$(document).ready(function(){    
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         console.log('recent cost');
         nospaces(this);
@@ -95,103 +103,105 @@ $(document).ready(function(){
         }
     }    
 
-$('#btnAbort').click(function(){
-    var _id = $(this).attr('data-id');
-    bootbox.confirm({
-        size: "small",
-        message: "Abort the process?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
+    $('#btnAbort').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Abort the process?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
             },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
+            callback: function (result) {
+                if (result) {
+                    ajax('{{=URL('procurement','purchase_receipt_account_abort_transaction', args=request.args(0))}}');                     
+                    location.reload();
+                } 
             }
-        },
-        callback: function (result) {
-            if (result) {
-                ajax('{{=URL('procurement','purchase_receipt_account_abort_transaction', args=request.args(0))}}');                     
-                location.reload();
-            } 
-        }
-    })
-});    
-$('.delete').click(function(){
-    var _id = $(this).attr('data-ct');
-    bootbox.confirm({
-        size: "small",
-        message: "Delete this record?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
+        })
+    });    
+
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-ct');
+        bootbox.confirm({
+            size: "small",
+            message: "Delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
             },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
-            }
-        },
-        callback: function (result) {
-            if (result) {
-                ajax("{{=URL('procurement','purchase_receipt_transaction_delete')}}" + '/'+ _id);
-                location.reload();
-            }
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete')}}" + '/'+ _id);
+                    location.reload();
+                }
 
-        }
-    })
-});    
- $('.del').click(function(){
-    var _idd = $(this).attr('data-id');
-    bootbox.confirm({
-        size: "small",
-        message: "Delete this record?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
+            }
+        })
+    });    
+
+    $('.del').click(function(){
+        var _idd = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
             },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
-            }
-        },
-        callback: function (result) {
-            if (result) {
-                ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);
-                console.log('delete', _idd);
-                //location.reload();
-            }
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);
+                    console.log('delete', _idd);
+                    //location.reload();
+                }
 
-        }
-    })
-});    
+            }
+        })
+    });    
 
- $('.dele').click(function(){
-    var _in = $(this).attr('data-nt');
-    bootbox.confirm({
-        size: "small",
-        message: "Delete this record?",
-        buttons: {
-            confirm: {
-                label: "Yes",
-                className: "btn-success"
+    $('.dele').click(function(){
+        var _in = $(this).attr('data-nt');
+        bootbox.confirm({
+            size: "small",
+            message: "Delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
             },
-            cancel: {
-                label: "No",
-                className: "btn-danger"
-            }
-        },
-        callback: function (result) {
-            if (result) {
-                ajax("{{=URL('procurement','purchase_receipt_transaction_delete_new')}}" + '/'+ _in);
-                //location.reload();
-            }
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete_new')}}" + '/'+ _in);
+                    //location.reload();
+                }
 
-        }
-    })
-});  
+            }
+        })
+    });  
 
 });
 
@@ -254,15 +264,17 @@ $('.delete').click(function(){
     };
 
     function compute(i, c, q, u, p, r){     
-        console.log('compute');
         var _diff = 0;
         var a = 0;
+        var _p = 0;
+        var _c = 0;
+        var _a = 0;
         var _gt = 0;
         var _lnd = $('#no_table_landed_cost').val();
         var _dis = $('#discount').val();
-
         var _exc = $('#no_table_exchange_rate').val();
         var _oth = $('#no_table_other_charges').val();
+
         var remarks = document.getElementsByName('remarks');       
         var quantity = document.getElementsByName('quantity');
         var pieces = document.getElementsByName('pieces');
@@ -272,7 +284,9 @@ $('.delete').click(function(){
         var _p = parseInt(q) * parseInt(u) + parseInt(p)
         var _c = parseInt(r) / parseInt(u)
         var _a = _p * parseFloat(_c);
-              
+
+        console.log('compute');
+        
         if (parseInt(c) < parseInt(_p)) {
             _diff = parseInt(_p) - parseInt(c)
             _out = Math.round(parseInt(_diff) / parseInt(u))
@@ -280,10 +294,10 @@ $('.delete').click(function(){
             _uom = parseInt(u)            
             remarks.value = 'shorts '.concat(_out, ' - ', _inn, '/', _uom)
             $('#remarks').val(remarks.value);
-        } else if (parseInt(c) === parseInt(p)) {
+        } else if (parseInt(c) === parseInt(_p)) {
             remarks.value = ''
             $('#remarks').val(remarks.value);
-        } else if (parseInt(c) > parseInt(p)) {            
+        } else if (parseInt(c) > parseInt(_p)) {            
             _diff = parseInt(c) - parseInt(p)
             _out = Math.round(parseInt(_diff) / parseInt(u))
             _inn = parseInt(_diff) - (parseInt(_out) * parseInt(u))
@@ -309,18 +323,21 @@ $('.delete').click(function(){
         }
 
         _gt = _gt + _a
-        _discount = (parseFloat(_gt) * (100 - parseInt(_dis))) / 100
-        _loc = (parseFloat(_discount) * parseFloat(_lnd))
+        _foc = ((parseFloat(_gt) * (100 - parseFloat(_dis))) / 100) + parseFloat(_oth)
+        _loc = parseFloat(_foc) * parseFloat(_exc)
+        _pur = parseFloat(_foc) * parseFloat(_lnd)
 
-        $('#total_amount').val(Number(_a.toFixed(3)).toLocaleString());
         $('#total_net_amount').val(Number(_gt.toFixed(3)).toLocaleString());  
-        $('#foreign_total_amount').val(_discount);  
+        $('#foreign_total_amount').val(_foc);  
         $('#local_total_amount').val(Number(_loc.toFixed(3)).toLocaleString());  
-        console.log(_gt);
+        $('#purchase_value').val(Number(_pur.toFixed(3)).toLocaleString());                 
+        $('#total_amount').val(Number(_a.toFixed(3)).toLocaleString());
+        
+        
+        
     }
 
-    function computed(i, c, q, u, p, r){   
-        console.log('computed');  
+    function computed(i, c, q, u, p, r){     
         var _diff = 0
         var _lnd = $('#no_table_landed_cost').val();
         var _gt = 0;
@@ -337,7 +354,7 @@ $('.delete').click(function(){
         var quantity = document.getElementsByName('quantity');
         var pieces = document.getElementsByName('pieces');
         var price_cost = document.getElementsByName('price_cost');
-        var total_amount = document.getElementsByName('total_amount');           
+        var total_amount = document.getElementsByName('total_amount');
         for(var x = 0; x < i.length; x++){
             if (parseInt(u[x]) <= parseInt(p[x])){
                 console.log(i);
