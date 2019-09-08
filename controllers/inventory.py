@@ -2799,47 +2799,57 @@ def test_up():
     # return "jQuery('#target').html(%s);" % repr(request.vars.name)
     _tmp.update_record(quantity = _qty, pieces = _pcs)
 
-def itm_description():    
-    response.js = "$('#add').removeAttr('disabled')"
-    response.js = "$('#no_table_pieces').removeAttr('disabled')"
-    _itm_code = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()       
+def itm_description_():
+    print '-----', request.now, '-------'
+    _itm_code = db(db.Item_Master.item_code == str(request.vars.item_code)).select().first()       
     if not _itm_code:
-        response.js = "$('#add').attr('disabled','disabled')"
-        return CENTER(DIV("Item code no " , B(str(request.vars.item_code)), " doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
+        print 'not available'
     else:
-        response.js = "$('#add').removeAttr('disabled')"
-        _item_price = db(db.Item_Prices.item_code_id == _itm_code.id).select().first()
-        
         _stk_file = db((db.Stock_File.item_code_id == _itm_code.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
+        _item_price = db(db.Item_Prices.item_code_id == _itm_code.id).select().first()
+    
+        if all([_itm_code, _stk_file, _item_price]):
+            print 'all'
+        elif not _stk_file:
+            print 'no stock file'
+        elif not _item_price:
+            print 'no item price'
+        else:
+            print 'error'
+        
 
-        if _stk_file:
-            
+def itm_description():   
+    # print '-----', request.now, '-------' 
+    response.js = "$('#add').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled')"    
+    _itm_code = db(db.Item_Master.item_code == request.vars.item_code).select().first()       
+    if not _itm_code:        
+        # response.js = "$('#add').attr('disabled','disabled')"
+        return CENTER(DIV("Item code no doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))        
+    else:        
+        _stk_file = db((db.Stock_File.item_code_id == _itm_code.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
+        _item_price = db(db.Item_Prices.item_code_id == _itm_code.id).select().first()        
+        if all([_itm_code, _stk_file, _item_price]):                        
+            # response.js = "$('#add').removeAttr('disabled')"
             if _itm_code.uom_value == 1:
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"                
                 _on_balanced = _stk_file.probational_balance
                 _on_transit = _stk_file.stock_in_transit
-                _on_hand = _stk_file.closing_stock                
+                _on_hand = _stk_file.closing_stock      
             else:    
                 response.js = "$('#no_table_pieces').removeAttr('disabled')"
-                _outer = int(int(_stk_file.probational_balance) / int(_itm_code.uom_value))
-                _pcs = int(_stk_file.probational_balance) - (int(_outer * _itm_code.uom_value))
-                _on_balanced = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
-
-                _outer_transit = int(_stk_file.stock_in_transit) / int(_itm_code.uom_value)   
-                _pcs_transit = int(_stk_file.stock_in_transit) - (int(_outer_transit * _itm_code.uom_value))
-                _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_itm_code.uom_value)
-
-                _outer_on_hand = int(int(_stk_file.closing_stock) / int(_itm_code.uom_value))
-                _pcs_on_hand = int(_stk_file.closing_stock) - (int(_outer_on_hand * _itm_code.uom_value))
-                _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_itm_code.uom_value)
-
+                _on_balanced = card_view(_stk_file.item_code_id, _stk_file.probational_balance)
+                _on_transit = card_view(_stk_file.item_code_id, _stk_file.stock_in_transit)
+                _on_hand = card_view(_stk_file.item_code_id, _stk_file.closing_stock)
             return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
             TBODY(TR(TD(_itm_code.item_code),TD(_itm_code.item_description.upper()),TD(_itm_code.group_line_id.group_line_name),TD(_itm_code.brand_line_code_id.brand_line_name),
             TD(_itm_code.uom_value),TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),TD(_on_hand),TD(_on_transit),TD(_on_balanced)),_class="bg-info"),_class='table'))
-        else:
-            return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
-    # else:       
-    #     return CENTER(DIV("Item code no " , B(str(request.vars.item_code)), " doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))
+            
+        elif not _stk_file:             
+            return CENTER(DIV("Empty stock file on selected stock source.", _class='alert alert-warning',_role='alert'))            
+            # response.js = "$('#add').attr('disabled','disabled')"               
+        elif not _item_price:            
+            return CENTER(DIV("Empty retail price.", _class='alert alert-warning',_role='alert'))         
+            # response.js = "$('#add').attr('disabled','disabled')"    
 
 def itm_view():    
     row = []
@@ -3029,13 +3039,27 @@ def validate_item_code(form):
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
         _exist = db((db.Stock_Transaction_Temp.ticket_no_id == session.ticket_no_id) & (db.Stock_Transaction_Temp.item_code == request.vars.item_code)).select(db.Stock_Transaction_Temp.item_code).first()                   
 
-                    
-        if not _price:
-            form.errors._stk_file =  "Item code does'nt have price."
-            # form.errors._stk_file =  CENTER(DIV('Item code ',B(str(request.vars.item_code)), " does'nt have price.",_class='alert alert-danger',_role='alert'))        
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)    
+        
+        if _total_pcs == 0:
+            form.errors.quantity = 'Zero quantity not accepted.'
+            # print 'zero not allowed'
+            response.js = "$('#no_table_item_code').val('')"
+        
+        if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):            
+            strr = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+            form.errors.quantity = 'Quantity should not be more than probational balance '
 
-        if (_price.retail_price == float(0.0) or _price.wholesale_price == float(0.0)) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
+        if not _price:
+            # print 'price validation ', _id.item_code
+            form.errors.item_code =  "Item code does'nt have price."
+            _total = _unit_price = 0
+            # form.errors._stk_file =  CENTER(DIV('Item code ',B(str(request.vars.item_code)), " does'nt have price.",_class='alert alert-danger',_role='alert'))        
+        elif (_price.retail_price == float(0.0) or _price.wholesale_price == float(0.0)) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
             form.errors._price = 'Cannot request this item because retail price is zero'
+        else:
+            _unit_price = float(_price.retail_price) / int(_id.uom_value)
+            _total = float(_unit_price) * int(_total_pcs)            
             # form.errors._price = CENTER(DIV('Cannot request this item because retail price is zero',_class='alert alert-danger',_role='alert'))
 
         if _exist:
@@ -3061,19 +3085,7 @@ def validate_item_code(form):
 
         # if int(_stk_file.probational_balance) == 0:
         
-        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)    
-        
-        if _total_pcs == 0:
-            form.errors.quantity = 'Zero quantity not accepted.'
-            print 'zero not allowed'
-            response.js = "$('#no_table_item_code').val('')"
-        _unit_price = float(_price.retail_price) / int(_id.uom_value)
 
-        _total = float(_unit_price) * int(_total_pcs)
-        
-        if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):            
-            strr = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-            form.errors.quantity = 'Quantity should not be more than probational balance '
             # form.errors.clear()
             # form.errors.quantity = CENTER(DIV(B('WARNING! '),' Quantity should not be more than probational balance ' + str(strr) ,_class='alert alert-danger',_role='alert')) 
 
@@ -4181,7 +4193,7 @@ def stock_adjutment_transaction_temporary_table():
     table = TABLE(*[head, body, foot],  _class='table', _id = 'tmptbl')                
     return dict(form = form, table = table)
 
-
+@auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def stock_adjustment_delete():    
     db(db.Stock_Adjustment_Transaction_Temp.id == request.args(0)).delete()    
     response.js =  "$('#tmptbl').get(0).reload()"
@@ -4191,7 +4203,6 @@ def stock_adjustment_browse():
 
     return dict()
 
-# -----------   ADJUSTMENT STOCKS     -----------------
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
 def stock_adjustment_form():
     ctr_val = "ADJ18100000"  # temporary autogenerated
@@ -4433,7 +4444,7 @@ def stock_adjustment_manager_details():
 
     return dict(form = form, table = table, _stk_adj = _stk_adj, _btn_approved = _btn_approved, _btn_reject = _btn_reject)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
 def stock_adjustment_manager_details_approved():    
     _stk_adj = db(db.Stock_Adjustment.id == request.args(0)).select().first()            
     _stk_adj.update_record(srn_status_id = 2, approved_by = auth.user_id, date_approved = request.now)    
@@ -4476,7 +4487,7 @@ def stock_adjustment_manager_details_approved():
         #     dept_code = '%s' % (_stk_adj.dept_code_id.dept_name)
         # )
     
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
 def stock_adjustment_manager_details_reject():
     _stk_adj = db(db.Stock_Adjustment.id == request.args(0)).select().first()
     _stk_adj.update_record(srn_status_id = 3)
@@ -4545,24 +4556,6 @@ def stock_adjustment_browse_details():
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL COST:', _align = 'right')),TD(H4(locale.format('%.2F',_total_amount or 0, grouping = True)),_align = 'right'),TD()))
     table = TABLE(*[head, body, foot],  _class='table', _id = 'dettbl')    
     return dict(form = form, table = table, _stk_adj = _stk_adj)
-    
-# ---- C A R D Function  -----
-def card(item, quantity, uom_value):
-    _itm_code = db(db.Item_Master.id == item).select().first()
-    
-    if _itm_code.uom_value == 1:
-        return quantity
-    else:
-        return str(int(quantity) / int(uom_value)) + ' - ' + str(int(quantity) - int(quantity) / int(uom_value) * int(uom_value))  + '/' + str(int(uom_value))        
-# ---- C A R D Function  -----
-
-def card_view(item_code_id, stock):
-    _item = db(db.Item_Master.id == item_code_id).select().first()
-    if not stock:
-        stock = 0
-        return stock
-    else:
-        return str(int(stock) / int(_item.uom_value)) + ' - ' + str(int(stock) - int(stock) / int(_item.uom_value) * int(_item.uom_value))  + '/' + str(int(_item.uom_value))        
 
 def stock_adjustment_browse_details_delete():
     
@@ -4626,6 +4619,61 @@ def stock_adjustment_browse_details_edit():
 def stock_adjustment_manager():
     return dict()
 
+@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT') | auth.has_membership('INVENTORY'))
+def stock_adjustment_manager_grid():
+    row = []        
+    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action'), _class='bg-danger'))  
+    for i in db(db.Stock_Adjustment.archive == False).select(orderby = ~db.Stock_Adjustment.id):
+        edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_manager_details', args = i.id, extension = False))
+        appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
+        if i.srn_status_id == 2:
+            appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
+            reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del', callback = URL('stk_req_del', args = i.id, extension = False))            
+        elif i.srn_status_id == 3:
+            reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
+        else:
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_approved', args = i.id, extension = False))
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_reject', args = i.id, extension = False))
+            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
+        
+        btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, clea_lnk)        
+        row.append(TR(
+            TD(i.stock_adjustment_date),
+            TD(i.stock_adjustment_no_id.prefix,i.stock_adjustment_no),
+            TD(i.dept_code_id.dept_name),
+            TD(i.location_code_id.location_name),
+            TD(locale.format('%.2F', i.total_amount or 0, grouping = True), _align = 'right'),
+            TD(i.adjustment_type.description),
+            TD(i.created_by.first_name.upper(),' ',i.created_by.last_name.upper()),
+            TD(i.srn_status_id.description),            
+            TD(btn_lnk)))
+    body = TBODY(*row)    
+    table = TABLE(*[head, body],  _class='table', _id='tbladj')    
+    return dict(table = table)
+   
+# -----------   ADJUSTMENT STOCKS     -----------------
+
+# ---- C A R D Function  -----
+def card(item, quantity, uom_value):
+    _itm_code = db(db.Item_Master.id == item).select().first()
+    
+    if _itm_code.uom_value == 1:
+        return quantity
+    else:
+        return str(int(quantity) / int(uom_value)) + ' - ' + str(int(quantity) - int(quantity) / int(uom_value) * int(uom_value))  + '/' + str(int(uom_value))        
+# ---- C A R D Function  -----
+
+def card_view(item_code_id, stock):
+    _item = db(db.Item_Master.id == item_code_id).select().first()
+    if not stock:
+        stock = 0
+        return stock
+    else:
+        return str(int(stock) / int(_item.uom_value)) + ' - ' + str(int(stock) - int(stock) / int(_item.uom_value) * int(_item.uom_value))  + '/' + str(int(_item.uom_value))        
+
+
 def inventory_manager():
     return dict()
 
@@ -4660,40 +4708,7 @@ def stock_request_manager_grid():
     table = TABLE(*[head, body], _class = 'table', _id = 'tblsr')
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT') | auth.has_membership('INVENTORY'))
-def stock_adjustment_manager_grid():
-    row = []        
-    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action'), _class='bg-danger'))  
-    for i in db(db.Stock_Adjustment.archive == False).select(orderby = ~db.Stock_Adjustment.stock_adjustment_no):
-        edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_manager_details', args = i.id, extension = False))
-        appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
-        if i.srn_status_id == 2:
-            appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
-            reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', delete = 'tr', _id = 'del', callback = URL('stk_req_del', args = i.id, extension = False))            
-        elif i.srn_status_id == 3:
-            reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
-        else:
-            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_approved', args = i.id, extension = False))
-            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('stock_adjustment_manager_details_reject', args = i.id, extension = False))
-            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
-        
-        btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, clea_lnk)        
-        row.append(TR(
-            TD(i.stock_adjustment_date),
-            TD(i.stock_adjustment_no_id.prefix,i.stock_adjustment_no),
-            TD(i.dept_code_id.dept_name),
-            TD(i.location_code_id.location_name),
-            TD(locale.format('%.2F', i.total_amount or 0, grouping = True), _align = 'right'),
-            TD(i.adjustment_type.description),
-            TD(i.created_by.first_name.upper(),' ',i.created_by.last_name.upper()),
-            TD(i.srn_status_id.description),            
-            TD(btn_lnk)))
-    body = TBODY(*row)    
-    table = TABLE(*[head, body],  _class='table', _id='tbladj')    
-    return dict(table = table)
-   
+
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_request_tool():
     
@@ -4706,7 +4721,7 @@ def stock_request_tool():
             TD(k.Stock_Transaction_Temp.created_on.strftime('%Y-%m-%d')),
             TD(k.Item_Master.item_code),
             TD(k.Item_Master.item_description.upper()),
-            TD(k.Stock_Transaction_Temp.category_id.mnemonic),
+            TD(k.Stock_Transaction_Temp.category_id),
             TD(k.Item_Master.uom_value),
             TD(k.Stock_Transaction_Temp.quantity),
             TD(k.Stock_Transaction_Temp.pieces),

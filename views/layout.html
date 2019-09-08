@@ -77,7 +77,7 @@
 				<ul class="header-nav header-nav-options">
 					<li class="header-nav-brand" >
 						<div class="brand-holder">						
-							<a href="#"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
+							<a href="http://localhost:3000/provider"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
 						</div>
 					</li>
 					<li>
@@ -87,9 +87,7 @@
 					</li>
 				</ul>
 			</div>
-
-			<!-- Collect the nav links, forms, and other content for toggling -->
-			
+			<!-- Collect the nav links, forms, and other content for toggling -->			
 			<div class="headerbar-right">
 				<ul class="header-nav header-nav header-nav-toggle">
 					<li class="dropdown">
@@ -174,6 +172,7 @@
 								
 							</ul>
 						</li>
+						{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT MANAGER')):}}
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
@@ -185,6 +184,7 @@
 								<li><a href="{{=URL('inventory', 'stock_corrections')}}" ><span class="title">Stock Corrections</span></a></li>			
 							</ul>
 						</li>
+						{{pass}}
 						<li class="gui-folder expanded">
 							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
 							<ul>

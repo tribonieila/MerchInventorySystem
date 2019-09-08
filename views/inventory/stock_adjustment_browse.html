@@ -43,7 +43,7 @@
         data() {
             return {
                 tableData: [
-                    {{ for s in db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, orderby = db.Stock_Adjustment.stock_adjustment_date,
+                    {{ for s in db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, orderby = ~db.Stock_Adjustment.id,
                     left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Adjustment.stock_adjustment_no_id)): }}                
                         
                         {   {{import locale}}            

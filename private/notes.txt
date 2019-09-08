@@ -13,6 +13,9 @@ np: larrypass123
 
 127.0.0.1 5 1563693275
 
+DayOFF
+August 24, 2019 - Troubleshoot Tawar Mall
+
 Operation	        SQL	    HTTP	            RESTful WS	    DDS
 Create	            INSERT	PUT / POST	        POST	        write
 Read (Retrieve)	    SELECT	GET	                GET	            read / take

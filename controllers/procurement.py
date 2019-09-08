@@ -217,7 +217,7 @@ def purchase_receipt_grid():
             prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href=URL('procurement','purchase_receipt_reports', args=n.id, extension=False))
             # print 'not posted'
         else:
-            appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('procurement','purchase_receipt_approved', args = n.id, extension = False))
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('procurement','purchase_request_rejected', args = n.id, extension = False))
             prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('procurement','purchase_receipt_reports', args=n.id, extension=False))
             # print 'posted'            
@@ -233,7 +233,7 @@ def purchase_receipt_grid():
 
 def _purchase_receipt_approved_():
     _id = db(db.Purchase_Receipt.id == request.args(0)).select().first()
-    _id.update_record(status_id = 21)#, posted = True)
+    _id.update_record(status_id = 21, posted = True)
     print '\n\n---', request.now, '---'
     for n in db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id == _id.id).select():        
         if int(n.category_id) == 1: # for damaged items
@@ -3398,7 +3398,7 @@ def document_register_grid_processed_view():
 def document_register_grid():
     unmarked_all_po()
     head = THEAD(TR(TH(),TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
-    for n in db((db.Purchase_Order.status_id == 22) & (db.Purchase_Order.consolidated == False) & (db.Purchase_Order.archives == False)).select(orderby = db.Purchase_Order.id):
+    for n in db((db.Purchase_Order.status_id == 22) & (db.Purchase_Order.consolidated == False) & (db.Purchase_Order.archives == False)).select(orderby = ~db.Purchase_Order.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_view', args = n.id, extension = False))        
         insu_lnk = A(I(_class='fas fa-car-crash'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
         purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    

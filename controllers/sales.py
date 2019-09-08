@@ -401,7 +401,7 @@ def item_code_description():
     response.js = "$('#btnadd').removeAttr('disabled')"
     response.js = "$('#no_table_pieces').removeAttr('disabled')"   
     response.js = "$('#discount').removeAttr('disabled')"    
-    _icode = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()    
+    _icode = db(db.Item_Master.item_code == request.vars.item_code).select().first()    
     # _icode = db((db.Item_Master.item_code == request.vars.item_code.upper()) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
     
     if not _icode:
@@ -2071,9 +2071,8 @@ def sales_order_manager_invoice_no_approved():
     for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select():
         _stk_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
         _diff = _stk_file.closing_stock - n.quantity
-        _stk_file.update_record(closing_stock = _diff, last_transfer_quantity = _diff, last_transfer_date = request.now)
-        print 'item_code: ok?', n.id, n.item_code_id, _stk_file.id, _stk_file.item_code_id, n.quantity
-
+        _transit = _stk_file.stock_in_transit - n.quantity
+        _stk_file.update_record(closing_stock = _diff, stock_in_transit = _transit, last_transfer_quantity = _diff, last_transfer_date = request.now)
     session.flash = 'SALES INVOICE APPROVED'
     response.js = "$('#tblso').get(0).reload()"
 
