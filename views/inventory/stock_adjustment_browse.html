@@ -1,20 +1,18 @@
 {{extend 'layout.html'}}
-<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
-<div id="app">  
+
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                {{ if auth.has_membership(role = 'ACCOUNT USERS'): }}                
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">                    
                     <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_add_new')}}";>+ ADD NEW</a></li>
                     <li class="active"><a href="#" >BROWSE</a></li>                    
                 </ul>
+                {{ pass }}
                 <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
             </div>
-            <div class="card-body tab-content">         
+            <div class="card-body tab-content">   
+                {{=table}}      
                 <template>
                     <el-table :data="tableData" size="medium" fit>                        
                         <el-table-column prop="stk_adj_date" label = "Date"></el-table-column>
@@ -35,7 +33,7 @@
             </div>
         </div>
     </div>
-</div>
+
 
 <script>
     var Main = {

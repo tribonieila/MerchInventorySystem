@@ -19,7 +19,7 @@
                 <div>
                     <ul class="nav nav-pills" role="tablist">
                         <li role="presentation"><a href="#purchase_order" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Order<span class="badge">{{=db(db.Purchase_Order.status_id == 17).count()}}</span></a></li>
-                        <li role="presentation"><a href="#warehouse_purchase_receipt" aria-controls="warehouse_purchase_receipt" role="tab" data-toggle="tab">Warehouse Purchase Receipt<span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.draft==True).count()}}</span></a></li>
+                        <li role="presentation"><a href="#warehouse_purchase_receipt" aria-controls="warehouse_purchase_receipt" role="tab" data-toggle="tab">Warehouse Purchase Receipt<span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id==18).count()}}</span></a></li>
                         <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db(db.Stock_Request.srn_status_id == 2).count()}}</span></a></li>
                         <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 9).count()}}</span></a></li>
                         <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        

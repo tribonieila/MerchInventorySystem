@@ -1750,7 +1750,66 @@ def sales_return_form_abort():
         session.flash = 'ABORT'
 
 # ----------  M A N A G E R ' S   G R I D   ----------
- 
+
+def get_sales_order_grid():
+    row = []
+    _query = db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id)
+    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
+    for n in _query:
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
+        if not n.transaction_prefix_id:
+            _sales = 'None'
+        else:
+            _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)            
+            _sales = A(_sales,_class='text-primary', _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+        if not n.delivery_note_no_prefix_id:
+            _note = 'None'
+        else:
+            _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+            _note = A(_note,  _class='text-warning', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+        if not n.sales_invoice_no_prefix_id:
+            _inv = 'None'            
+        else:
+            _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+            _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})        
+        row.append(TR(
+            TD(n.sales_order_date),
+            TD(_sales),
+            TD(_note),
+            TD(_inv),
+            TD(n.dept_code_id.dept_name),
+            # TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.stock_source_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id='tblso')
+    return dict(table = table)
+
+def get_sales_return_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db((db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id):  
+        view_lnk = A(I(_class='fas fa-search'), _target="#",_title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
+
+        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+            TD(n.status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)    
+    
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 @auth.requires_login()
 def sales_order_manager_grid():
@@ -3297,15 +3356,14 @@ def stock_corrections_transaction_table_reports():
         else:
             _qty = card(n.Stock_Corrections_Transaction.item_code_id, n.Stock_Corrections_Transaction.quantity, n.Stock_Corrections_Transaction.uom)
         _sc.append([ctr,n.Stock_Corrections_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),n.Stock_Corrections_Transaction.uom, _qty])
-    _sc.append(['','','----------  NOTHING TO FOLLOWS   ----------','',''])
+    _sc.append(['','','----------  nothing to follows   ----------','',''])
     _sc_tbl = Table(_sc, colWidths=[20,60,'*',50,50], repeatRows = 1)
     _sc_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
         ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
         ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
-        ('TOPPADDING',(0,-1),(-1,-1),15),
-        
+        ('TOPPADDING',(0,-1),(-1,-1),15),        
         ('FONTNAME',(0,0),(-1,-1),'Courier'),
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,-1), (-1,-1), 'CENTER'),
@@ -3322,21 +3380,25 @@ def stock_corrections_transaction_table_reports():
         ('TOPPADDING',(0,0),(-1,-1),0),
         ('BOTTOMPADDING',(0,0),(-1,-1),0),        
     ]))
+    if _id.status_id == 16:
+        _approved_by = str(_id.approved_by.first_name.upper()) + ' ' + str(_id.approved_by.last_name.upper())
+    else:
+        _approved_by = ''
+    _signatory = [        
+        ['',str(_id.created_by.first_name.upper()) + str(' ') + str(_id.created_by.last_name.upper()),'',_approved_by,''],
+        ['','Requested by:','','Approved by:','']]
 
-    _signatory = [
-        ['','Requested by:','','Approved by:',''],
-        ['',str(_id.created_by.first_name.upper()) + str(' ') + str(_id.created_by.last_name.upper()),'',str(_id.approved_by.first_name.upper() + str(' ') + str(_id.approved_by.last_name.upper())),''],
-        ['','Name and Signature','','Name and Signature','']]
-
-    _signatory_table = Table(_signatory, colWidths=[50,'*',25,'*',50])
+    _signatory_table = Table(_signatory, colWidths=[50,'*',50,'*',50])
     _signatory_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('BOTTOMPADDING',(0,0),(-1,0),30),
-        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
+        ('LINEABOVE', (1,1), (1,1), 0.25, colors.black,None, (2,2)),
+        ('LINEABOVE', (3,1), (3,1), 0.25, colors.black,None, (2,2)),
+        # ('BOTTOMPADDING',(0,0),(-1,0),30),
+        # ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
     row.append(_sc_tbl)    

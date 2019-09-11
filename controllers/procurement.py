@@ -615,9 +615,8 @@ def prwc():
 @auth.requires_login()
 def puchase_receipt_account_grid(): # manoj
     row = []
-    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Created By'),TH('Approved By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
-    
-    for n in db(((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18)| (db.Purchase_Receipt_Warehouse_Consolidated.status_id == 21)) & (db.Purchase_Receipt_Warehouse_Consolidated.draft == False)).select(db.Purchase_Receipt_Warehouse_Consolidated.ALL , orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
+    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Created By'),TH('Approved By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))    
+    for n in db(((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18)| (db.Purchase_Receipt_Warehouse_Consolidated.status_id == 21)) & (db.Purchase_Receipt_Warehouse_Consolidated.draft == True)).select(db.Purchase_Receipt_Warehouse_Consolidated.ALL , orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
         _prnt = db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == n.id) & (db.Purchase_Receipt.status_id == 21)).select().first()
         if _prnt:
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view', args = _prnt.id, extension = False))                
@@ -3800,21 +3799,21 @@ def purchase_receipt_warehouse_grid_view_():
 def purchase_receipt_warehouse_grid_consolidated():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Status'),TH('Action'),_class='bg-success'))
-    for n in db().select(db.Purchase_Receipt_Warehouse_Consolidated.ALL, orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
-        if n.draft == True:
-            proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_processed', args = n.id, extension = False))
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
-            insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
-            purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
-            prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _disabled = True) #_href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))
-            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
-        else:
-            purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
-            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
-            prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))
-            insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
-            proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
+    for n in db(db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18).select(db.Purchase_Receipt_Warehouse_Consolidated.ALL, orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):
+        # if n.draft == True:
+        proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_processed', args = n.id, extension = False))
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True) #_href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
+        insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
+        purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _disabled = True) #_href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))
+        clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+        # else:
+        #     purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
+        #     clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+        #     prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))
+        #     insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                
+        #     proc_lnk = A(I(_class='fas fa-check-circle'), _title='Process Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+        #     view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_consolidated_view', args = n.id, extension = False))        
         btn_lnk = DIV(view_lnk, proc_lnk, insu_lnk, purh_lnk, prin_lnk, clea_lnk)
         row.append(TR(
             TD(n.purchase_receipt_date_approved),
@@ -4284,6 +4283,57 @@ def warehouse_add_new_item():
 
 def save_as_draft_record():
     return locals()
+
+def get_purchase_receipt_warehouse_grid():
+    row = []
+    
+    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Created By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db(db.Purchase_Receipt_Warehouse_Consolidated.status_id == 21).select(orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id):  
+        _prowc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == n.id).select().first()      
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_view', args = n.id, extension = False))        
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','puchase_request_transaction_view_edit',args = n.id, extension = False))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.id, extension = False), **{'_data-id':(n.id)})
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle')
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)                
+        row.append(TR(
+            TD(n.purchase_receipt_date_approved),
+            TD(n.purchase_receipt_no_prefix_id.prefix,'',n.purchase_receipt_no),
+            TD(_prowc.purchase_order_no_id.dept_code_id.dept_name),
+            TD(_prowc.purchase_order_no_id.supplier_code_id.supp_name),
+            TD(_prowc.purchase_order_no_id.supplier_reference_order),
+            TD(_prowc.purchase_order_no_id.location_code_id.location_name),
+            TD(n.created_by.first_name.upper(),' ', n.created_by.last_name.upper()),
+            TD(n.status_id.description),            
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body],_class='table',_id='prtbl')    
+    return dict(table=table)
+
+def get_purchase_order_warehouse_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Created By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db((db.Purchase_Order.status_id == 17) & (db.Purchase_Order.consolidated == False) & (db.Purchase_Order.archives == False)).select(orderby = ~db.Purchase_Order.id):
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_view', args = n.id, extension = False))        
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','puchase_request_transaction_view_edit',args = n.Purchase_Order_Transaction.id, extension = False))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Purchase_Order_Transaction.id, extension = False), **{'_data-id':(n.Purchase_Order_Transaction.id)})
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle')
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)                
+        row.append(TR(            
+            TD(n.purchase_order_date_approved),
+            TD(n.purchase_order_no_prefix_id.prefix,n.purchase_order_no),        
+            TD(n.dept_code_id.dept_name),
+            TD(n.supplier_code_id.supp_name),
+            TD(n.supplier_reference_order),
+            TD(n.location_code_id.location_name),
+            TD(n.purchase_order_approved_by.first_name.upper(),' ', n.purchase_order_approved_by.last_name.upper()),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+        session.supplier_code_id = n.supplier_code_id
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id='PRtbl')    
+    return dict(table = table)
 
 @auth.requires_login()
 def purchase_request_grid_view_accounts():

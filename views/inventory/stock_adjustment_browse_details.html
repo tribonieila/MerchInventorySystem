@@ -4,7 +4,7 @@
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
+                <li class="active"><a href="#">VIEW</a></li>
                 <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
             </ul>
             <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
@@ -100,13 +100,8 @@
         </div>   
         {{=form.custom.end}}
         <hr>
-        {{=table}}
+        {{=LOAD('inventory','stock_adjustment_browse_details_transaction.load', ajax = True, args = request.args(0), target = "dettbl")}}
         </div>
     </div>
 </div>
 
-<script>
-    $('#del').click(function(){
-        location.reload();
-    });
-</script>
