@@ -107,13 +107,12 @@
                                         {{=form.custom.widget.mode_of_shipment}}
                                 </div>
                             </div>
-                        </div>   
-                        
+                        </div>                           
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
-                                    <input class="btn btn-primary" type="submit" value="submit and print" id="btnadd">
+                                    <input class="btn btn-primary" type="submit" value="submit and print" id="btnSubmitPrint">
                                 </div>
                             </div>
                         </div>                        
@@ -124,4 +123,8 @@
         </div>
     </div>
     
-    
+<script>
+$("#btnSubmitPrint").click(function(){
+    console.log("Submit Print");
+});
+</script>

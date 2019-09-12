@@ -21,6 +21,7 @@
     <meta name="google-site-verification" content="">
 
 	<!-- include stylesheets -->
+	
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/> -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	
@@ -171,8 +172,7 @@
 								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
 								
 							</ul>
-						</li>
-						
+						</li>						
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
@@ -183,8 +183,7 @@
 								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
 								<li><a href="{{=URL('inventory', 'stock_corrections')}}" ><span class="title">Stock Corrections</span></a></li>			
 							</ul>
-						</li>
-						
+						</li>						
 						<li class="gui-folder expanded">
 							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
 							<ul>
@@ -460,16 +459,33 @@
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY SALES MANAGER')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
-				<li><a href="{{=URL('inventory','mngr_req_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>			
-				<li><a href="{{=URL('inventory', 'stock_request_tool_redo')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">Utility</span></a>
-				<li><a><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
+				<li><a href="{{=URL('inventory','mngr_req_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>	
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-qrcode"></i></div><span class="title">INVENTORY</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_stock_request_grid')}}" ><span class="title">Stock Request</span></a></li>
+						<!-- <li><a href="{{=URL('inventory', 'get_stock_request_grid')}}" ><span class="title"></span></a></li> -->
+					</ul>
+				</li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
+					<ul>
+						<li><a href="{{=URL('sales', 'get_sales_order_grid')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales', 'get_sales_return_grid')}}" ><span class="title">Sales Return</span></a></li>
+					</ul>					
+				</li>				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-shopping-bag"></i></div><span class="title">PROCUREMENT</span></a>
+					<ul>
+						<li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Purchase Request</span></a></li>						
+					</ul>
+				</li>				
+				<li><a href="{{=URL('inventory', 'stock_request_tool_redo')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}		
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
 			<ul id="main-menu" class="gui-controls">				
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li><a href="{{=URL('inventory','str_kpr_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>			
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-file-alt"></i></div><span class="title">INVENTORY</span></a>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-qrcode"></i></div><span class="title">INVENTORY</span></a>
 					<ul>
 						<li><a href="{{=URL('inventory', 'get_stock_request_grid')}}" ><span class="title">Stock Request</span></a></li>
 					</ul>
@@ -480,13 +496,13 @@
 						<li><a href="{{=URL('sales', 'get_sales_return_grid')}}" ><span class="title">Sales Return</span></a></li>
 					</ul>					
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-store-alt"></i></div><span class="title">PROCUREMENT</span></a>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-shopping-bag"></i></div><span class="title">PROCUREMENT</span></a>
 					<ul>
 						<li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement', 'get_purchase_receipt_warehouse_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
 					</ul>
 				</li>
-				<li><a><div class="gui-icon"><i class="md fas fa-file"></i></div><span class="title">REPORTS</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}	
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY POS')):}}		

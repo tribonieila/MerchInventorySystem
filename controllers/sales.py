@@ -1534,7 +1534,7 @@ def sales_return_grid():
         _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Return.status_id == 12) | (db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
-    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in _query:
         if auth.has_membership(role = 'ROOT'):
             edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_mngr_grid', args = n.id, extension = False))        

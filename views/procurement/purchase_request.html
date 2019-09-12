@@ -1,23 +1,22 @@
 {{extend 'layout.html'}}
-    <div class="col-md-12">
-        <div class="card card-underline"> 
-            <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class=""><a href="#" onclick=window.location="{{=URL('purchase_request_form')}}";>+ ADD NEW</a></li>
-                    <li class="active"><a href="#">BROWSE</a></li>
-                </ul>
-                <span class="card-title">PURCHASE REQUEST</span>
-            </div>
-            <div class="card-body tab-content">            
-                {{=table}}
-          
-            </div>
+<div class="col-md-12">
+    <div class="card card-underline"> 
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class=""><a href="#" onclick=window.location="{{=URL('purchase_request_form')}}";>+ ADD NEW</a></li>
+                <li class="active"><a href="#">BROWSE</a></li>
+            </ul>
+            <span class="card-title">PURCHASE REQUEST</span>
+        </div>
+        <div class="card-body tab-content">            
+            {{=table}}          
         </div>
     </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    $('#generate').click(function(){        
+    $('.generate').click(function(){        
         location.reload();
     });
     $('.clear').click(function(){
