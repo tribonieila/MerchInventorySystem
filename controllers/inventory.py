@@ -124,6 +124,7 @@ def show_products():
     body = TBODY(*row)
     table = TABLE(*[thead, body], _class='table')
     return table
+    
 @auth.requires_login()
 def subprod_edit_form():
     ctr_val = db(db.SubProduct.id == request.args(0)).select().first()
@@ -1443,7 +1444,7 @@ def col_edit_form():
 def itm_mas():    
     ctr = 0
     row = []
-    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Int Barcode'),TH('Loc Barcode'),TH('Group Line'),TH('Brand Line'),TH('Status'),TH('Actions')))
+    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Int Barcode'),TH('Loc Barcode'),TH('Group Line'),TH('Brand Line'),TH('Status'),TH('Actions')), _class='bg-primary')
     for n in db(db.Item_Master).select(orderby = db.Item_Master.item_code):        
         ctr += 1
         link_lnk = A(I(_class='fas fa-info-circle'), _title='Link Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('itm_link_form', args = n.id))
@@ -1454,7 +1455,7 @@ def itm_mas():
         btn_lnk = DIV(view_lnk,link_lnk, prin_lnk,edit_lnk, dele_lnk)        
         row.append(TR(TD(ctr),TD('ITM'+n.item_code),TD(n.item_description.upper()),TD(n.int_barcode),TD(n.loc_barcode),TD(n.group_line_id.group_line_name),TD(n.brand_line_code_id.brand_line_name),TD(n.item_status_code_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
-    table = TABLE(*[thead, tbody], _class='table')
+    table = TABLE(*[thead, tbody], _class='table',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
 @auth.requires_login()
@@ -2815,8 +2816,7 @@ def itm_description_():
         elif not _item_price:
             print 'no item price'
         else:
-            print 'error'
-        
+            print 'error'        
 
 def itm_description():   
     # print '-----', request.now, '-------' 
@@ -2840,7 +2840,7 @@ def itm_description():
                 _on_balanced = card_view(_stk_file.item_code_id, _stk_file.probational_balance)
                 _on_transit = card_view(_stk_file.item_code_id, _stk_file.stock_in_transit)
                 _on_hand = card_view(_stk_file.item_code_id, _stk_file.closing_stock)
-            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
+            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Stock-On-Hand'),TH('Stock-On-Transit'),TH('Probational Balance'))),
             TBODY(TR(TD(_itm_code.item_code),TD(_itm_code.item_description.upper()),TD(_itm_code.group_line_id.group_line_name),TD(_itm_code.brand_line_code_id.brand_line_name),
             TD(_itm_code.uom_value),TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),TD(_on_hand),TD(_on_transit),TD(_on_balanced)),_class="bg-info"),_class='table'))
             
@@ -2945,8 +2945,7 @@ def category_option():
             if _id.type_id == 3 or _id.type_id == 2:
                 return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db(db.Transaction_Item_Category.id == 4).select(orderby=db.Transaction_Item_Category.id)])        
             if _id.type_id == 1:
-                return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db(db.Transaction_Item_Category.id == 3).select(orderby=db.Transaction_Item_Category.id)])
-            
+                return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db(db.Transaction_Item_Category.id == 3).select(orderby=db.Transaction_Item_Category.id)])            
             # if _id.type_id == 3 and _des.location_code_id == 1:
         else:
             # print 'else'
@@ -2988,6 +2987,7 @@ def stk_req_add_form():
             srn_status_id = form.vars.srn_status_id,
             requested_by = auth.user_id,
             remarks = form.vars.remarks)
+        
         _id = db(db.Stock_Request.stock_request_no == ctr.current_year_serial_key ).select().first()
         _src = db((db.Stock_Transaction_Temp.created_by == auth.user_id) & (db.Stock_Transaction_Temp.ticket_no_id == form.vars.ticket_no_id)).select()
         if not _src:
@@ -2995,34 +2995,28 @@ def stk_req_add_form():
         for s in _src:
             _itm = db(db.Item_Master.id == s.item_code_id).select().first()
             _prc = db(db.Item_Prices.item_code_id == s.item_code_id).select().first()
+            _qty = s.quantity * _itm.uom_value + s.pieces
             db.Stock_Request_Transaction.insert(
                 stock_request_id = _id.id,
                 item_code_id = s.item_code_id,
                 category_id = s.category_id,
                 uom = _itm.uom_value,
                 price_cost = s.price_cost,
-                quantity = s.qty,
+                quantity = _qty,
                 average_cost = _prc.average_cost,
                 wholesale_price = _prc.wholesale_price,
                 retail_price = _prc.retail_price,
-                vansale_price = _prc.vansale_price,remarks = s.remarks,created_by = s.created_by)
+                vansale_price = _prc.vansale_price,
+                remarks = s.remarks,
+                created_by = s.created_by)
         total = db.Stock_Transaction_Temp.amount.sum().coalesce_zero()
         grand_total = db(db.Stock_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(total).first()[total]
         _id.update_record(total_amount = grand_total)
         db((db.Stock_Transaction_Temp.created_by == auth.user_id)&(db.Stock_Transaction_Temp.ticket_no_id == str(_id.ticket_no))).delete()
     elif form.errors:
         response.flash = 'ENTRY HAS ERROR' 
-    form2 = SQLFORM.factory(
-        Field('item_code', 'string', length = 10),
-        Field('quantity', 'integer', default = 0),
-        Field('pieces', 'integer', default = 0),
-        Field('category_id', 'reference Transaction_Item_Category', default = 4, requires = IS_IN_DB(db((db.Transaction_Item_Category.mnemonic != 'E') & (db.Transaction_Item_Category.mnemonic != 'S')), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')))
-    if form2.process().accepted:
-        response.flash = 'record save'
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'    
     btnHelp = A(_class='btn btn-info', _type = 'button', _href = URL('inventory', 'item_help', args = [form.vars.dept_code_id, form.vars.stock_source_id]))
-    return dict(form = form,  form2 = form2, ticket_no_id = _ticket_no, btnHelp = btnHelp)
+    return dict(form = form, ticket_no_id = _ticket_no, btnHelp = btnHelp)
  
 def validate_item_code(form):    
     _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
@@ -3048,7 +3042,8 @@ def validate_item_code(form):
         
         if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):            
             strr = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-            form.errors.quantity = 'Quantity should not be more than probational balance '
+            _pb = card(_stk_file.item_code_id, strr, _id.uom_value)            
+            form.errors.quantity = 'Quantity should not be more than probational balance of ' + str(_pb)
 
         if not _price:
             # print 'price validation ', _id.item_code
@@ -3071,7 +3066,7 @@ def validate_item_code(form):
         # if _id.uom_value == 1:
         #     form.vars.pieces = 0        
         if int(form.vars.pieces) >= _id.uom_value:
-            form.errors.pieces = 'Pieces value should not be more than or equal to UOM value '
+            form.errors.pieces = 'Pieces value should not be more than or equal to UOM value of ' + str(_id.uom_value)
             # print pcs
             # Pieces Value is not applicable to this item because UOM is equal to 1
             # form.errors.pcs = CENTER(DIV('Pieces value should not be more than or equal to UOM value ',_class='alert alert-danger',_role='alert')) 
@@ -3133,8 +3128,7 @@ def stock_request_transaction_temporary_table():
             category_id = form.vars.category_id,
             amount = form.vars.amount, 
             remarks = form.vars.remarks, 
-            ticket_no_id = session.ticket_no_id)
-        
+            ticket_no_id = session.ticket_no_id)                
         if db(db.Stock_Transaction_Temp.ticket_no_id == session.ticket_no_id).count() != 0:
             response.js = "$('#btnsubmit').removeAttr('disabled');"
         else:
@@ -3146,7 +3140,7 @@ def stock_request_transaction_temporary_table():
     elif form.errors:        
         table = TABLE(*[TR(v) for k, v in form.errors.items()])
         response.flash = XML(v)
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'), _class='bg-success'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price',_style="width:10px;"),TH('Total Amount',_style="width:100px;"),TH('Remarks'),TH('Action'), _class='bg-success'))
     for k in db(db.Stock_Transaction_Temp.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Stock_Transaction_Temp.ALL, db.Item_Prices.ALL, orderby = db.Stock_Transaction_Temp.id, 
         left = [
             db.Item_Master.on(db.Item_Master.item_code == db.Stock_Transaction_Temp.item_code),
@@ -3156,22 +3150,38 @@ def stock_request_transaction_temporary_table():
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle delete', callback=URL( args = k.Stock_Transaction_Temp.id, extension = False), **{'_data-id':(k.Stock_Transaction_Temp.id)})            
         btn_lnk = DIV(dele_lnk)
         grand_total += float(k.Stock_Transaction_Temp.amount)
+
         row.append(TR(
-            TD(ctr),
+            TD(ctr, INPUT(_class='form-control ctr',_type='number',_name='ctr',_hidden='true',_value=k.Stock_Transaction_Temp.id)),
             TD(k.Stock_Transaction_Temp.item_code.upper()),
             TD(k.Item_Master.item_description),
             TD(k.Stock_Transaction_Temp.category_id.description),
-            TD(k.Item_Master.uom_value),
-            TD(k.Stock_Transaction_Temp.quantity),
-            TD(k.Stock_Transaction_Temp.pieces or 0),            
-            TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),
-            TD(locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True), _align='right'),
+            TD(k.Item_Master.uom_value, INPUT(_type='number',_name='uom',_hidden='true',_value=k.Item_Master.uom_value)),
+            TD(INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=k.Stock_Transaction_Temp.quantity), _style='text-align:right;width:100px;'),
+            TD(INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=k.Stock_Transaction_Temp.pieces or 0), _style='text-align:right;width:100px;'), 
+            TD(INPUT(_class='form-control unit_price',_type='text',_name='unit_price', _value=locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True)),_align='right'),
+            TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=locale.format('%.2f',k.Stock_Transaction_Temp.amount or 0, grouping = True)),_align='right'),
             TD(k.Stock_Transaction_Temp.remarks),
             TD(btn_lnk)))
     body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f', grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control grand_total',_type='text',_value=locale.format('%.2f', grand_total or 0, grouping = True))), _align = 'right'),TD(),TD()))
     table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
+
     return dict(form = form, table = table)
+
+def stock_request_temp_update():
+    row = 0
+    if isinstance(request.vars.ctr, list):
+        # print 'true'    
+        for x in request.vars.ctr:
+            # print 'id :', x, 'quantity: ', request.vars['quantity'][row]
+            db(db.Stock_Transaction_Temp.id == x).update(quantity = request.vars['quantity'][row], pieces = request.vars['pieces'][row])
+            # print 'ticket session', session.ticket_no_id, request.vars['quantity'][row]
+            row+=1        
+    else:
+        db(db.Stock_Transaction_Temp.id == request.vars.ctr).update(quantity = request.vars.quantity[row], pieces = request.vars.pieces[row])
+        # print 'false', session.ticket_no_id, request.vars.quantity[row], request.vars.ctr    
+    # return locals()
 
 def push_to_session():
     session.dept_code_id = request.vars.dept_code_id
@@ -3236,59 +3246,154 @@ def stk_req_details_form():
     db.Stock_Request.dept_code_id.writable = False        
     db.Stock_Request.stock_source_id.writable = False  
     db.Stock_Request.stock_destination_id.writable = False
-    db.Stock_Request.total_amount.writable = False
-    # db.Stock_Request.srn_status_id.writable = False
-    db.Stock_Request.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)| (db.Stock_Status.id == 9)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
-
+    db.Stock_Request.total_amount.writable = False    
+    db.Stock_Request.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Stock_Request.stock_request_date_approved.writable = False
     ticket_no_id = id_generator()
     form = SQLFORM(db.Stock_Request, request.args(0))
     if form.process(onvalidation = validateremarks).accepted:
         response.flash = 'RECORDS UPDATED'
+        redirect(URL('inventory','stk_req_form'))
     if form.errors:
         response.flash = 'FORM HAS ERRORS'
     row = []
-    grand_total = 0
+    _grand_total = 0
     _id = db(db.Stock_Request.id == request.args(0)).select().first()
+    session.stock_source_id = _id.stock_source_id
     ctr = 0
     row = []        
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('Quantity'),TH('Unit Price', _style = 'text-align: right'),TH('Total Amount',_style = 'text-align: right'),TH('Remarks'),TH('Action')))
-    for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select(db.Item_Master.ALL, db.Stock_Request_Transaction.ALL, db.Item_Prices.ALL, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
-        
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('Unit Price', _style = 'text-align: right'),TH('Total Amount',_style = 'text-align: right'),TH('Remarks'),TH('Action')))
+    for k in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select(db.Item_Master.ALL, db.Stock_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Stock_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Stock_Request_Transaction.item_code_id)]):
+        ctr += 1
+        _total_amount = int(k.Stock_Request_Transaction.quantity) * float(k.Stock_Request_Transaction.price_cost)
+        _grand_total += _total_amount
+        _qty = k.Stock_Request_Transaction.quantity / k.Stock_Request_Transaction.uom
+        _pcs = k.Stock_Request_Transaction.quantity - k.Stock_Request_Transaction.quantity / k.Stock_Request_Transaction.uom * k.Stock_Request_Transaction.uom
         if (_id.srn_status_id == 2) | (_id.srn_status_id == 5) | (_id.srn_status_id == 6):        
             edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle disabled')
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle disabled')            
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button', _role='button', _class='btn btn-icon-toggle disabled')   
+            _quantity = INPUT(_class='form-control quantity',_type='number',_name='qty',_value=_qty, _readonly='true')
+            _pieces = INPUT(_class='form-control pieces',_type='number',_name='pcs',_value=_pcs,_readonly='true')                        
         else:
+            _quantity = INPUT(_class='form-control quantity',_type='number',_name='qty',_value=_qty)
+            _pieces = INPUT(_class='form-control pieces',_type='number',_name='pcs',_value=_pcs)
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stk_req__trans_edit_form', args = k.Stock_Request_Transaction.id, extension = False))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = k.Stock_Request_Transaction.id), **{'_data-id':(k.Stock_Request_Transaction.id)})          
-
-        btn_lnk = DIV(edit_lnk, dele_lnk)
-        ctr += 1            
-        _price_cost = int(k.Stock_Request_Transaction.quantity) * float(k.Stock_Request_Transaction.price_cost)
-        grand_total += _price_cost
-        row.append(TR(TD(ctr),
-        TD(k.Item_Master.item_code),
-        TD(k.Item_Master.item_description.upper()),
-        TD(k.Stock_Request_Transaction.category_id.mnemonic),        
-        # TD( # validate if uom = 1, present whole number
-        #     str(int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom)) + " - " +
-        #     str(int(k.Stock_Request_Transaction.quantity) - (int(k.Stock_Request_Transaction.quantity) / int(k.Stock_Request_Transaction.uom) * int(k.Stock_Request_Transaction.uom))) + "/" +
-        #     str(k.Item_Master.uom_value)), 
-        TD(card(k.Item_Master.id, k.Stock_Request_Transaction.quantity, k.Stock_Request_Transaction.uom)), 
-        TD(k.Item_Prices.retail_price, _align='right'),
-        TD(locale.format('%.2F', _price_cost or 0, grouping = True),_align = 'right'),
-        TD(k.Stock_Request_Transaction.remarks),
-        TD(btn_lnk)))
+        btn_lnk = DIV( dele_lnk)        
+        row.append(TR(
+            TD(ctr,INPUT(_class='form-control ctr',_type='number',_name='ctr',_hidden='true',_value=k.Stock_Request_Transaction.id)),
+            TD(k.Item_Master.item_code,INPUT(_class='form-control uom',_type='number',_name='uom',_hidden='true',_value=k.Stock_Request_Transaction.uom)),
+            TD(k.Item_Master.item_description.upper()),
+            TD(k.Stock_Request_Transaction.category_id.mnemonic),        
+            TD(_quantity, _style='width:100px;'),
+            TD(_pieces, _style='width:100px;'),
+            TD(INPUT(_class='form-control unit_price',_type='text',_name='unit_price',_value=k.Item_Prices.retail_price), _style='width:100px;'),
+            TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=locale.format('%.2F', _total_amount or 0, grouping = True)), _style='width:100px;'),        
+            TD(k.Stock_Request_Transaction.remarks),
+            TD(btn_lnk)))
     body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD(),TD()))
-    table = TABLE(*[head, body, foot],_class='table',  _id='tblIC')
-
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control grand_total',_type='text',_value=locale.format('%.2F',_grand_total or 0, grouping = True))), _align = 'right'),TD(),TD()))
+    table = TABLE(*[head, body, foot],_id='tblIC', _class='table')
     btnAdd = A('Add New',_class='btn btn-success', _role = 'button', _id = 'btnrewReq', callback = URL('addNewItem',  args = [request.args(0), ticket_no_id]))       
+    
+    # btnHelp = A('Help?',_class='btn btn-success', _role = 'button', _id = 'btnHelp', _target = 'blank', _href=URL('item_help',args = _id.dept_code_id))
+    form2 = SQLFORM.factory(        
+        Field('item_code', 'string', length = 15),
+        Field('quantity', 'integer', default = 0),
+        Field('pieces', 'integer', default = 0),
+        Field('category_id', 'integer', default = 4))
+    if form2.process(onvalidation = validate_updated_item_code).accepted:        
+        response.flash = 'ITEM CODE ' + str(form2.vars.item_code) + ' ADDED'        
+        _ic = db(db.Item_Master.item_code == form2.vars.item_code).select().first()   
+        _ip = db(db.Item_Prices.item_code_id == _ic.id).select().first()     
+        _qty = int(form2.vars.quantity) * int(_ic.uom_value) + int(form2.vars.pieces)
+        _ppp = float(_ip.retail_price) / int(_ic.uom_value) 
+        _tot = int(_qty) * float(_ppp)        
+        # print request.args(0), form2.vars.category_id, _ip.retail_price, _tot, _ppp, _ip.average_cost, _ip.wholesale_price, _ip.vansale_price
+        db.Stock_Request_Transaction.insert(
+            stock_request_id = request.args(0),
+            item_code_id = _ic.id,
+            category_id = form2.vars.category_id,
+            quantity = _qty,
+            uom = _ic.uom_value,
+            price_cost = _ppp,
+            retail_price = _ip.retail_price,
+            average_cost = _ip.average_cost,
+            wholesale_price = _ip.wholesale_price,
+            vansale_price = _ip.vansale_price,
+            remarks = form2.vars.remarks)
+    # else:
+    #     response.flash = 'FORM HAS ERROR'
+    return dict(form = form, form2 = form2, table = table, _id = _id, ticket_no_id = ticket_no_id)
+
+def validate_updated_item_code_(form2):    
+    print 'validated', session.stock_source_id
+    
+def validate_updated_item_code(form2):    
+    _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
+    if not _id:
+        form2.errors.item_code = 'Item code does not exist or empty.'
+    elif not db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first():
+        form2.errors._stk_file =  'Item code is zero in stock file'
+    else:
+        _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
+        _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
+        _exist = db((db.Stock_Request_Transaction.item_code_id == _id.id) & (db.Stock_Request_Transaction.stock_request_id == request.args(0))).select(db.Stock_Request_Transaction.item_code_id).first()                   
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)            
+        if _total_pcs == 0:
+            form2.errors.quantity = 'Zero quantity not accepted.'
+            # print 'zero not allowed'
+            response.js = "$('#no_table_item_code').val('')"
         
-        # btnHelp = A('Help?',_class='btn btn-success', _role = 'button', _id = 'btnHelp', _target = 'blank', _href=URL('item_help',args = _id.dept_code_id))               
-    return dict(form = form, table = table, _id = _id, ticket_no_id = ticket_no_id, btnAdd = btnAdd)
+        if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):            
+            strr = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+            _pb = card(_stk_file.item_code_id, strr, _id.uom_value)            
+            form2.errors.quantity = 'Quantity should not be more than probational balance of ' + str(_pb)
 
+        if not _price:            
+            form2.errors.item_code =  "Item code does'nt have price."
+            _total = _unit_price = 0            
+        elif (_price.retail_price == float(0.0) or _price.wholesale_price == float(0.0)) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
+            form2.errors._price = 'Cannot request this item because retail price is zero'
+        else:
+            _unit_price = float(_price.retail_price) / int(_id.uom_value)
+            _total = float(_unit_price) * int(_total_pcs)            
+        if _exist:
+            form2.errors.item_code = 'Item code ' + str(form2.vars.item_code) + ' already exist.'
+        if int(form2.vars.pieces) >= _id.uom_value:
+            form2.errors.pieces = 'Pieces value should not be more than or equal to UOM value of ' + str(_id.uom_value)
+            # print pcs
+            # Pieces Value is not applicable to this item because UOM is equal to 1
+        
+        # to be modified 
+        # print request.vars.category_id
+        if (form2.vars.category_id == 3) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):            
+            form2.errors.mnemonic = 'This saleable item cannot be transfered as FOC.'
+            # form2.errors.mnemonic = CENTER(DIV(B('WARNING! '),' This saleable item cannot be transfered as FOC.',_class='alert alert-danger',_role='alert')) 
+            # ' this saleable item cannot be transfered as FOC'
+        if not _stk_file.last_transfer_date:        
+            # _remarks = 'LTD: ' + str(date.today().strftime("%d/%m/%Y")) + ' - QTY: ' + str(_card)
+            _remarks = 'None' 
+        else:
+            _card = card(_stk_file.item_code_id, _stk_file.last_transfer_qty, _id.uom_value)
+            _remarks = 'LTD: ' + str(_stk_file.last_transfer_date.strftime("%d/%m/%Y")) + ' - QTY: ' + str(_card)       
+        # form2.vars.item_code_id = _id.id        
+        # form2.vars.amount = float(_total)        
+        # form2.vars.price_cost = float(_unit_price)
+        form2.vars.remarks = _remarks
+        # form2.vars.qty = int(_total_pcs)    
 
+def stock_request_update():    
+    if isinstance(request.vars.ctr, list):                
+        row = 0
+        for x in request.vars.ctr:                
+            _qty = (int(request.vars.qty[row]) * int(request.vars.uom[row])) + int(request.vars.pcs[row])        
+            db(db.Stock_Request_Transaction.id == x).update(quantity = _qty, updated_by = auth.user_id, updated_on = request.now)        
+            row+=1                
+    else:
+        _qty = (int(request.vars.qty) * int(request.vars.uom)) + int(request.vars.pcs)        
+        db(db.Stock_Request_Transaction.id == int(request.vars.ctr)).update(quantity = _qty, updated_by = auth.user_id, updated_on = request.now)
+        
 def addNewItem():    
     for n in db(db.Stock_Request_Transaction.stock_request_id == request.args(0)).select():     
         _id = db(db.Item_Master.id == n.item_code_id).select().first()
@@ -3301,7 +3406,7 @@ def addNewItem():
 
 def help_request():    
     row = []
-    head = THEAD(TR(TH('Item Code'),TH('Description'),TH('Department'),TH('Supplier'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance')))    
+    head = THEAD(TR(TH('Item Code'),TH('Description'),TH('Department'),TH('Supplier'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Stock-On-Hand'),TH('Stock-On-Transit'),TH('Probational Balance')))    
     for n in db(db.Item_Master.dept_code_id == session.dept_code_id).select(db.Item_Master.ALL, db.Item_Prices.ALL, join = db.Item_Master.on(db.Item_Master.id == db.Item_Prices.item_code_id)):
         for s in db((db.Stock_File.item_code_id == n.Item_Master.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select():
             if not n.Item_Master.supplier_code_id:
@@ -3387,26 +3492,79 @@ def stk_req_details_add_form():
     # _stk_trn_no = db(db.Stock_Request_Transaction.stock_request_id == _stk_req_no.id).select().first()
     return dict(_stk_req_no = _stk_req_no, _stk_trn_no = '_stk_trn_no')
 
+def stock_request_info(e = request.args(0)):
+    _id = db(db.Stock_Request.id == e).select().first()
+    if not _id.stock_request_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        if not _id.stock_request_date_approved:
+            _date = 'None'
+        else:
+            _date = _id.stock_request_date_approved
+        if not _id.stock_request_approved_by:
+            _appr = 'None'
+        else:        
+            _appr = str(_id.stock_request_approved_by.first_name.upper()) + ' ' + str(_id.stock_request_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align = 'right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table = str(XML(i, sanitize = False))
+    return table
+
+def stock_transfer_info(e = request.args(0)):
+    _id = db(db.Stock_Request.id == e).select().first()
+    if not _id.stock_transfer_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        _date = _id.stock_transfer_date_approved
+        _appr = str(_id.stock_transfer_approved_by.first_name.upper()) + ' ' + str(_id.stock_transfer_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align = 'right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table = str(XML(i, sanitize = False))
+    return table
+
+def stock_receipt_info(e = request.args(0)):
+    _id = db(db.Stock_Request.id == e).select().first()
+    if not _id.stock_receipt_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        _date = _id.stock_receipt_date_approved
+        _appr = str(_id.stock_receipt_approved_by.first_name.upper()) + ' ' + str(_id.stock_receipt_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align='right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table=str(XML(i,sanitize=False))
+    return table
+
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 def stk_req_form():   
     row = []
-    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-primary' ))
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary' )
     for n in db(db.Stock_Request.created_by == auth.user_id).select(orderby = ~db.Stock_Request.id):
+        _stock_request = n.stock_request_no_id.prefix,n.stock_request_no
+        _stock_request = A(_stock_request, _class='text-primary',_title='Stock Request', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_request_info(n.id)})   
         if n.stock_transfer_no_id == None: 
             _stock_transfer = 'None'            
         else:
-            _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no        
+            _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
+            _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_transfer_info(n.id)})   
         if n.stock_receipt_no_id == None:
             _stock_receipt = 'None'        
         else:    
             _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
+            _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Receipt', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.stock_request_date),TD(n.stock_request_no_id.prefix,n.stock_request_no),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
+        row.append(TR(TD(n.stock_request_date),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    # table = TABLE(*[head, body], _class='table_class', _id='table_id',**{'_data-toggle':'table', '_data-classes':'table table-striped',  '_data-search':'true', '_data-show-pagination-switch':'true','_data-pagination':'true'})
+    table = TABLE(*[head, body], _class='table_class', **{'_data-toggle':'table', '_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
     return dict(table = table)
 
 @auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
@@ -3748,15 +3906,11 @@ def str_kpr_grid_gen_stk_trn():
     # print request.vars._id
     _stk_req = db(db.Stock_Request.id == request.vars._id).select().first()
     if _stk_req.srn_status_id != 5:
-
         _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _stk_req.dept_code_id) & (db.Transaction_Prefix.prefix == 'STV')).select().first()
-
-        _skey = _trns_pfx.current_year_serial_key
-        
+        _skey = _trns_pfx.current_year_serial_key        
         _skey += 1
         _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
         _stk_req.update_record(srn_status_id = 5,stock_transfer_no_id = _trns_pfx.id, stock_transfer_no = _skey, stock_transfer_date_approved = request.now, stock_transfer_approved_by = auth.user_id)
-
         session.flash = 'SAVING STOCK TRANSFER NO STV' +str(_skey) + '.'
         redirect(URL('str_kpr_grid'))
     else:
@@ -3793,7 +3947,7 @@ def mngr_req_grid():
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def mngr_btn_aprvd():    
     _id = db(db.Stock_Request.id == request.args(0)).select().first()
-    _id.update_record(srn_status_id = 2, stock_request_date_approved = request.now, stock_request_approved_by = auth.user_id)
+    _id.update_record(srn_status_id = 2, stock_request_date_approved = request.now, stock_request_approved_by = auth.user_id, remarks ='')
     session.flash = 'STOCK REQUEST NO ' + str(_id.stock_request_no) +' APPROVED'
     response.js = "$('#tblsr').get(0).reload()"
     
@@ -3816,7 +3970,7 @@ def mngr_btn_archive():
 def mngr_aprvd(form):
     form.vars.stock_request_date_approved = request.now
     form.vars.stock_request_approved_by = auth.user_id
-
+    
 
 @auth.requires(lambda: auth.has_membership('INVENTORY SALES MANAGER'))
 def mngr_req_details():
@@ -3868,16 +4022,18 @@ def stk_trn_add_form():
 def stk_tns_form():
     row = []
     ctr = 0
-    thead = THEAD(TR(TH('#'),TH('Transaction No'),TH('Transaction Date'),TH('Prepared By'),TH('Status'),TH('Action')))
-    for n in db().select(db.Stock_Request.ALL):
+    thead = THEAD(TR(TH('Date'),TH('Stock Transfer No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')))
+    for n in db(db.Stock_Request.srn_status_id == 5).select(orderby = ~db.Stock_Request.id):
         ctr += 1
+        _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
+        _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_transfer_info(n.id)})   
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stk_tns_edit_form', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.stock_request_no),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.srn_status_id.description),TD(btn_lnk)))
+        row.append(TR(TD(n.stock_transfer_date_approved),TD(_stock_transfer),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     tbody = TBODY(*row)
-    table = TABLE(*[thead, tbody], _class='table table-striped')        
+    table = TABLE(*[thead, tbody], _class='table',**{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})        
     return dict(table = table)
 
 def stk_tns_edit_form():
@@ -3919,8 +4075,19 @@ def stk_tns_add_form():
 
 # ---- Stock Receipt Master   -----
 def stk_rcpt_form():
-    
-    return locals()
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')))
+    for n in db(db.Stock_Request.srn_status_id == 6).select(orderby = ~db.Stock_Request.id):
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
+        _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
+        row.append(TR(TD(n.stock_receipt_date_approved),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', **{'_data-toggle':'table','_data-classes':'table table-striped','_data-pagination':'true','_data-search':'true'})
+    return dict(table = table)
 
 # ---- Stock Adjustment Begin   -----    
 
@@ -4148,17 +4315,9 @@ def stock_adjustment_browse():
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('inventory','stock_adjustment_report', args=n.id, extension=False))
         btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk)
-        row.append(TR(
-            TD(n.stock_adjustment_date),
-            TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),
-            TD(n.dept_code_id.dept_name),
-            TD(n.location_code_id.location_name),
-            TD(n.adjustment_type.description),
-            TD(n.total_amount),
-            TD(n.srn_status_id.description),
-            TD(btn_lnk)))
+        row.append(TR(TD(n.stock_adjustment_date),TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(n.total_amount),TD(n.srn_status_id.description),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    table = TABLE(*[head, body], _class='table',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
@@ -4563,7 +4722,7 @@ def stock_adjustment_browse_details_edit():
     return dict(form = form, _stk_adj_tran = _stk_adj_tran, _itm_cod = _itm_cod)
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
-def stock_adjustment_manager():
+def account_manager_workflow():
     return dict()
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT') | auth.has_membership('INVENTORY'))
@@ -4627,7 +4786,7 @@ def inventory_manager():
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY') | auth.has_membership('ROOT'))
 def stock_request_manager_grid():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-primary'))
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary')
     for n in db((db.Stock_Request.srn_status_id == 4) & (db.Stock_Request.archive == False)).select(orderby = ~db.Stock_Request.id):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('mngr_req_details', args = n.id, extension = False))        
         if n.srn_status_id == 2:
@@ -4650,7 +4809,7 @@ def stock_request_manager_grid():
             TD(n.srn_status_id.required_action),
             TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class = 'table', _id = 'tblsr')
+    table = TABLE(*[head, body], _class = 'table', _id = 'tblsr', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
 
@@ -4701,7 +4860,7 @@ def stock_request_tool_redo():
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def obsolescence_of_stocks():
     row = []
-    head = THEAD(TR(TH('Date'),TD('Obsol. Stocks No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    head = THEAD(TR(TH('Date'),TH('Obsol. Stocks No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in db(db.Obsolescence_Stocks.archives != True).select(orderby = ~db.Obsolescence_Stocks.id):
         if auth.has_membership(role = 'ACCOUNT USERS'):
             if n.status_id == 15:
@@ -4742,10 +4901,9 @@ def obsolescence_of_stocks():
         # edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
         # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
-
         row.append(TR(TD(n.obsolescence_stocks_date),TD(n.transaction_prefix_id.prefix, n.obsolescence_stocks_no),TD(n.dept_code_id.dept_name),TD(n.account_code_id.account_name),TD(n.location_code_id.location_name),TD(n.total_amount),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class = 'table')
+    table = TABLE(*[head, body], _class = 'table',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
 def obsol_archived():
@@ -5301,8 +5459,6 @@ def obsol_grid_view_rejected():
     _id.update_record(status_id = 3, obsolescence_stocks_approved_by = auth.user_id, obsolescence_stocks_date_approved = request.now)
     session.flash = 'OBSOLESCENCE OF STOCKS REJECTED'    
 
-
-
 # -----------   STOCKS CORRECTIONS     -----------------
 def stock_corrections_session():
     session.dept_code_id = session.stock_source_id = 0
@@ -5371,10 +5527,11 @@ def stock_corrections():
     if auth.has_membership(role = 'ACCOUNT USERS'): # MANOJ        
         _query = db(((db.Stock_Corrections.status_id == 4) | (db.Stock_Corrections.status_id == 16))& (db.Stock_Corrections.archive != True)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
-        _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 16)).select(orderby = ~db.Stock_Corrections.id)
+        # _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
+        _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4) | (db.Stock_Corrections.status_id == 16)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ROOT'): # ADMIN
         _query = db().select(orderby = ~db.Stock_Corrections.id)        
-    head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+    head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
         if auth.has_membership(role = 'ACCOUNT USERS'):
             if n.status_id == 4:
@@ -5415,7 +5572,7 @@ def stock_corrections():
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
-                btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, prin_lnk, appr_lnk, reje_lnk, clea_lnk)
+                btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, appr_lnk, reje_lnk, clea_lnk)
         else:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -5450,7 +5607,7 @@ def stock_corrections():
             TD(n.status_id.required_action),            
             TD(btn_lnk)))
     body = TBODY(*row)    
-    table = TABLE(*[head, body],  _class='table', _id = 'tblcor')                
+    table = TABLE(*[head, body],  _class='table', _id = 'tblcor', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})                
     return dict(table = table)    
 
 @auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))

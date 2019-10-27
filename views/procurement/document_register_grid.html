@@ -1,4 +1,5 @@
 {{extend 'layout.html'}}
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
 <div class="col-md-12">
     <div class="card card-underline"> 
         <div class="card-head">
@@ -15,17 +16,25 @@
     </div>
 </div>
         
-<script>    
-    $(document).ready(function(){
-        $('#btnCon').attr('disabled','disabled');   
+
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<script>
+$(document).ready( function () {
+    $('#btnCon').attr('disabled','disabled');   
         $('#btnPro').attr('disabled','disabled');     
         $(".checkbox").click(function(e){     
             var value = $(this).closest('tr').find('input:checkbox').val();
             if (this.checked) {                
                 ajax("{{=URL('procurement','marked_po')}}" + '/'+ value);
             } else {
-                ajax("{{=URL('procurement','unmarked_po')}}" + '/'+ value);
+                // $('#btnPro').attr('disabled','disabled');     
+                ajax("{{=URL('procurement','unmarked_po')}}" + '/'+ value);                
             }
         });        
-    });
+
+    $('.table').bootstrapTable();
+});
 </script>
+
+
+

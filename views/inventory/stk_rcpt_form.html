@@ -1,19 +1,25 @@
 {{extend 'layout.html'}}
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class=""><a href="#">+ ADD NEW</a></li>
                 <li class="active"><a href="#" onclick=window.location="{{=URL('itm_mas')}}";>BROWSE</a></li>
-            </ul>
-            <span class="card-title">STOCK RECEIPT FORM</span>
+            </ul> -->
+            <span class="card-title">STOCK RECEIPT GRID</span>
         </div>
         <div class="card-body tab-content">
-
-    
+            {{=table}}    
+        </div>
     </div>
 </div>                
-
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<script>
+$(document).ready( function () {
+    $('.table').bootstrapTable();
+});
+</script>
 
 
 

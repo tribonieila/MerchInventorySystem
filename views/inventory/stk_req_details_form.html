@@ -139,15 +139,20 @@
             
             <hr>
 
+            <!-- <div id="tblReqOld"> -->
+ 
+                {{=table}}
+            <!-- </div>                                 -->
+            <hr>
             <div id="newReqPanel">
-                <div id = "_item_code_description"></div> 
-                <form>
+                
+                {{=form2.custom.begin}}
                 <div class="row">                    
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Item No</label>
                             <div class="col-sm-8">                                
-                                <input type="text" class="form-control" id="item_code" name = "item_code">
+                                {{=form2.custom.widget.item_code}}
                             </div>                           
                         </div>                        
                     </div>
@@ -155,7 +160,7 @@
                         <div class="form-group">
                             <label class="col-sm-6 control-label">Quantity</label>
                             <div class="col-sm-6"> 
-                                <input type="text" class="form-control" id="quantity" name = "quantity">
+                                {{=form2.custom.widget.quantity}}
                             </div>
                         </div>                    
                     </div>
@@ -163,7 +168,7 @@
                         <div class="form-group">
                             <label class="col-sm-6 control-label">Pieces</label>
                             <div class="col-sm-6">                                
-                                <input type="text" class="form-control" id="pieces" name = "pieces">
+                                {{=form2.custom.widget.pieces}}
                             </div>                           
                         </div>    
                     </div>                   
@@ -171,27 +176,71 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Category</label>
                             <div class="col-sm-8">                                 
-                                <select class="generic-widget form-control" id="no_table_category_id" name="category_id"><option value="">Choose Category</option><option value="1">D - DAMAGE</option><option selected="selected" value="4">N - NORMAL</option><option value="3">P - FOC</option></select>
+                                <div id="cat_id"></div>
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-2">                        
-                        <button class="btn btn-primary" type="submit" id="btnInsert">add</button>                        
+                        <!-- {{=form2.custom.submit}} -->
+                        {{ if (_id.srn_status_id == 2) | (_id.srn_status_id == 5) | (_id.srn_status_id == 6):}}
+                            <button class="btn btn-primary" type="submit" id="btnInsert" disabled>add</button>                        
+                        {{ else: }}
+                            <button class="btn btn-primary" type="submit" id="btnInsert">add</button>                        
+                        {{ pass }}
+                        
                         
                     </div>                                                              
                 </div> 
-                </form> 
+                {{=form2.custom.end}}
+                <div id = "_item_code_description"></div> 
                 <div id="tblReqNew"></div>              
-            </div>
-            <div id="tblReqOld">
- 
-                {{=table}}
-            </div>                                
+            </div>            
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+    $(".unit_price, .total_amount, .grand_total").prop("readonly", true);
+    var $tblrows = $("#tblIC tbody tr");
+
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=qty]").val();
+            var pcs = $tblrow.find("[name=pcs]").val();
+            var pri = $tblrow.find("[name=unit_price]").val();
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);       
+            
+            if (parseInt(qty) < parseInt(0)){
+                return alert("Please enter a positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)){                             
+                return alert("Please enter a positive integer.");
+            }
+          
+            if (parseInt(pcs) >= parseInt(uom)){
+                return alert("Pieces value should not be more than or equal to UOM value");
+            }
+            if(!isNaN(sub)){
+                $tblrow.find(".total_amount").val(sub.toFixed(2));
+                var grandTotal = 0;
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+                $(".grand_total").val(grandTotal.toFixed(2));                
+            }          
+            
+            ajax("{{=URL("inventory","stock_request_update")}}", ["ctr","qty","uom","pcs"]);
+        });
+    });
+});
+</script>
 <script>
     $('.delete').click(function(){
         var _id = $(this).attr('data-id');
@@ -219,25 +268,27 @@
     });</script>
 <script>
     
-    $('#newReqPanel').hide();
-    $('#item_code').change(function(){        
+    // $('#newReqPanel').hide();
+    $('#no_table_item_code').change(function(){        
         ajax('{{=URL('itm_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
+        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
     });
     $('#btnrewReq').click(function(){
         $('#newReqPanel').toggle( "slide" );
         $('#tblReqOld').toggle( "slide" );
-        $("#item_code").focus();
+        $("#no_table_item_code").focus();
         $('#btnnewReq').attr('disabled','disabled');        
         return false;
         
     })
-    $('#btnInsert').click(function() {                
-        ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'tblReqNew');
-        document.getElementById('item_code').value = ''
-        document.getElementById('quantity').value = '0'
-        document.getElementById('pieces').value = '0'      
-        $('#item_code').focus();        
-        return false;
+    $('#btnInsert').click(function() {
+        window.location.reload();
+        // ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'tblReqNew');
+        // document.getElementById('item_code').value = ''
+        // document.getElementById('quantity').value = '0'
+        // document.getElementById('pieces').value = '0'      
+        // $('#no_table_item_code').focus();        
+        // return false;
     });
     $('#del').click(function(){
         window.location.reload();

@@ -566,18 +566,15 @@ db.define_table('Stock_Request',
     Field('stock_request_date_approved','date'),
     Field('stock_request_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),
-
     # represent = lambda id, r: db.department(id).name if id else '',
     Field('stock_transfer_no_id', 'reference Transaction_Prefix',ondelete = 'NO ACTION', writable = False),    
     Field('stock_transfer_no', 'integer', writable = False),
     Field('stock_transfer_date_approved', 'date', writable = False),
     Field('stock_transfer_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
-    
     Field('stock_receipt_no_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),
     Field('stock_receipt_no', 'integer', writable = False),    
     Field('stock_receipt_date_approved', 'date', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),
-
     Field('ticket_no', 'string', length = 10, writable = False, requires = [IS_LENGTH(10),IS_UPPER(), IS_NOT_IN_DB(db, 'Stock_Request.ticket_no')]),
     Field('archive','boolean', default = False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),

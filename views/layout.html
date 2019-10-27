@@ -24,7 +24,7 @@
 	
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/> -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	
+	<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	 -->
 	<link rel="stylesheet" href="{{=URL('static','css/bootstrap.min.css')}}"/>
 	<link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap4.css')}}"/>	
 	<link rel="shortcut icon" href="{{=URL('static','images/merch_logo_9VV_icon.ico')}}" type="image/x-icon">
@@ -78,7 +78,8 @@
 				<ul class="header-nav header-nav-options">
 					<li class="header-nav-brand" >
 						<div class="brand-holder">						
-							<a href="http://localhost:3000/provider"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
+							<!-- <a href="http://localhost:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a> -->
+							<a href="http://128.1.2.13:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
 						</div>
 					</li>
 					<li>
@@ -103,8 +104,7 @@
 						</ul><!--end .dropdown-menu -->
 					</li><!--end .dropdown -->
 				</ul><!--end .header-nav-profile -->
-			</div><!--end #header-navbar-collapse -->
-			
+			</div><!--end #header-navbar-collapse -->			
 		</div>
 	</header>
 	{{pass}}
@@ -119,8 +119,7 @@
 		<!-- END OFFCANVAS LEFT -->
 
 		<!-- BEGIN CONTENT-->
-		<div id="content">
-				
+		<div id="content">				
 			<section>
 				<div class="section-body">		
 					{{block center}}
@@ -128,7 +127,6 @@
 					{{end}}
 				</div>
 			</section>
-
 		</div><!--end #content-->		
 		<!-- END CONTENT -->
 		
@@ -269,7 +267,7 @@
 						</li>
 					</ul>
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-bar"></i></div><span class="title">FINANCES</span></a></li>
+				<!-- <li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-bar"></i></div><span class="title">FINANCES</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-users"></i></div><span class="title">HUMAN RESOURCES</span></a></li>
 				<li><a href="http://128.1.2.2:8080"><div class="gui-icon"><i class="md fas fa-calculator"></i></div><span class="title">POS</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-briefcase"></i></div><span class="title">OFFICE ADMINISTRATION</span></a>
@@ -291,8 +289,7 @@
 							</ul>
 						</li>
 						<li><a href="{{=URL('communication', 'communication_tranx_prefix')}}" ><span class="title">Settings</span></a></li>
-					</ul>
-
+					</ul> -->
 				</li>
 				<li><a href="{{=URL('sili','labuyo')}}"><div class="gui-icon"><i class="md fas fa-user-shield"></i></div><span class="title">ADMINISTRATOR</span></a></li>
 
@@ -364,7 +361,7 @@
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT MANAGER')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>				
-				<li><a href="{{=URL('inventory', 'stock_adjustment_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="{{=URL('inventory', 'account_manager_workflow')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
 					<ul>
 						<li class="gui-folder expanded">
@@ -480,7 +477,7 @@
 				<li><a href="{{=URL('inventory', 'stock_request_tool_redo')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
-			{{pass}}		
+			{{pass}}
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
 			<ul id="main-menu" class="gui-controls">				
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
@@ -504,12 +501,12 @@
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
-			{{pass}}	
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY POS')):}}		
+			{{pass}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY POS')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
-				<li><a href="{{=URL('inventory','stock_receipt')}}"><div class="gui-icon"><i class="md fas fa-receipt"></i></div><span class="title">STOCK RECEIPT</span></a></li>			
-				<li><a href="{{=URL('inventory','stk_req_form')}}"><div class="gui-icon"><i class="md fas fa-file-invoice"></i></div><span class="title">STOCK REQUEST</span></a></li>							
+				<li><a href="{{=URL('inventory','stk_req_form')}}"><div class="gui-icon"><i class="md fas fa-file-invoice"></i></div><span class="title">STOCK REQUEST</span></a></li>					
+				<li><a href="{{=URL('inventory','stock_receipt')}}"><div class="gui-icon"><i class="md fas fa-receipt"></i></div><span class="title">STOCK RECEIPT</span></a></li>							
 				<li><a><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}							
@@ -549,9 +546,8 @@
 	<script>$(".dropdown-trigger").dropdown();</script>
 	
     {{pass}}
-    <!-- Share ============================y============ -->
+    <!-- Share ======================================== -->
 	<!-- <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
-
 	<!-- The external javascript ===================== -->
 	<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
 	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>	 -->
@@ -567,7 +563,6 @@
 	<!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
 	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> -->
 	<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
-
 	<!-- <script src="{{=URL('static','materialize/js/materialize.js')}}"></script> -->
 	
   </body>

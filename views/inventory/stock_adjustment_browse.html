@@ -1,5 +1,5 @@
 {{extend 'layout.html'}}
-
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
@@ -13,62 +13,14 @@
             </div>
             <div class="card-body tab-content">   
                 {{=table}}      
-                <template>
-                    <el-table :data="tableData" size="medium" fit>                        
-                        <el-table-column prop="stk_adj_date" label = "Date"></el-table-column>
-                        <el-table-column prop="stk_adj_no" label = "Adjustment No"></el-table-column>
-                        <el-table-column prop="stk_dept_id" label = "Department"></el-table-column>
-                        <el-table-column prop="stk_loc_id" label = "Location"></el-table-column>
-                        <el-table-column prop="stk_adj_type" label = "Adjustment Type"></el-table-column>
-                        <el-table-column prop="stk_adj_amt" label = "Amount"></el-table-column>
-                        <el-table-column prop="stk_sta_id" label = "Status"></el-table-column>
-                        <el-table-column fixed="right" label="Actions" width="200">
-                            <template slot-scope="scope">
-                                <el-button @click="printClick(scope.row.stk_adj_id)" type="primary" size="mini" plain>Print</el-button>
-                                <el-button @click="linksClick(scope.row.stk_adj_id)" type="primary" size="mini" plain>Details</el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </template>
             </div>
         </div>
     </div>
-
+    
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
 
 <script>
-    var Main = {
-        delimiters: ["{%","%}"],
-        data() {
-            return {
-                tableData: [
-                    {{ for s in db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, db.Transaction_Prefix.ALL, orderby = ~db.Stock_Adjustment.id,
-                    left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Adjustment.stock_adjustment_no_id)): }}                
-                        
-                        {   {{import locale}}            
-                            stk_adj_id  :  '{{=s.Stock_Adjustment.id}}',
-                            stk_adj_date: '{{=s.Stock_Adjustment.stock_adjustment_date}}',
-                            stk_adj_no  : '{{=s.Transaction_Prefix.prefix}}{{=s.Stock_Adjustment.stock_adjustment_no}}',
-                            stk_dept_id : '{{=s.Stock_Adjustment.dept_code_id.dept_name}}',
-                            stk_loc_id  : '{{=s.Stock_Adjustment.location_code_id.location_name}}',
-                            stk_adj_type: '{{=s.Stock_Adjustment.adjustment_type.mnemonic}} - {{=s.Stock_Adjustment.adjustment_type.description}}',
-                            stk_adj_amt : '{{=locale.format('%.2F',s.Stock_Adjustment.total_amount or 0, grouping = True)}}',
-                            stk_sta_id  : '{{=s.Stock_Adjustment.srn_status_id.description}}',
-                            stk_app_by  :'{{=s.Stock_Adjustment.approved_by}}',
-                        },
-                    {{ pass }}
-                ],
-            }
-        },
-        methods: {     
-            linksClick(row) {
-                window.open("{{=URL('inventory','stock_adjustment_browse_details')}}" + "/" + row);        
-            },
-            printClick(row){
-                window.open("{{=URL('inventory','stock_adjustment_report')}}" + "/" + row);        
-            },
-        }
-    }
-
-    var Ctor = Vue.extend(Main)
-    new Ctor().$mount('#app')
+    $(document).ready( function () {
+        $('.table').bootstrapTable();
+    });
 </script>

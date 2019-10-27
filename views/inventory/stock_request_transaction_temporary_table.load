@@ -41,10 +41,47 @@
     <hr>
     {{=form.custom.end}}
     <div id ="desc" ></div>
-    
+       
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
+    $(".unit_price, .total_amount, .grand_total").prop("readonly", true);
+    var $tblrows = $("#tblIC tbody tr");
+
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var pri = $tblrow.find("[name=unit_price]").val();
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);                        
+                
+            if (parseInt(qty) < parseInt(0)){
+                return alert("Please enter a positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)){                             
+                return alert("Please enter a positive integer.");
+            }
+          
+            if (parseInt(pcs) >= parseInt(uom)){
+                return alert("Pieces value should not be more than or equal to UOM value");
+            }
+
+            if (!isNaN(sub)){
+                $tblrow.find(".total_amount").val(sub.toFixed(2));
+                var grandTotal = 0;
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+                $(".grand_total").val(grandTotal.toFixed(2));            
+            }     
+            ajax("{{=URL("inventory","stock_request_temp_update")}}", ["ctr","quantity","pieces","uom"]);
+        });
+    });
 
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);

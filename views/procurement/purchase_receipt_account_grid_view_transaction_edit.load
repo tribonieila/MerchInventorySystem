@@ -5,7 +5,7 @@
     });
 </script>
 
-
+ 
 <script>
 $(document).ready(function(){
     $('#Purchase_Receipt_landed_cost, #Purchase_Receipt_exchange_rate, #Purchase_Receipt_other_charges, #discount_percentage').change(function(){        

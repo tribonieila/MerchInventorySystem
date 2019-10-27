@@ -1,1 +1,0 @@
-db.define_table('New_Table', Field('prefix_id','reference Prefix_Data', ondelete = 'NO ACTION', writable = False))

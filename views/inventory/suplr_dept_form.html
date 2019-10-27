@@ -2,7 +2,11 @@
 <div class="col-md-12">
     <div class="card card-underline"> 
         <div class="card-head">
-            <span class="card-title">Supplier Department</span>                                                
+            <ul class="nav nav-tabs pull-right data-toggle="tabs">
+                <li class="active"><a  href="#">UPDATE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('suplr_mas')}}";>BROWSE</a></li>
+            </ul>                     
+            <span class="card-title">SUPPLIER MASTER (Department)</span>                            
         </div>
         <div class="card-body tab-content">			
                 {{=form.custom.begin}}					
