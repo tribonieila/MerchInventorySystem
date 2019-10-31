@@ -596,17 +596,17 @@ def sales_order_transaction_temporary():
 
         grand_total += n.Sales_Order_Transaction_Temporary.total_amount
         row.append(TR(
-            TD(ctr),
+            TD(ctr, INPUT(_name="ctr",_hidden='true',_value=n.Sales_Order_Transaction_Temporary.id)),
             TD(n.Sales_Order_Transaction_Temporary.item_code),
             TD(n.Item_Master.item_description.upper()),
             TD(n.Sales_Order_Transaction_Temporary.category_id.mnemonic),
             TD(n.Item_Master.uom_value),
-            TD(n.Sales_Order_Transaction_Temporary.quantity),
-            TD(n.Sales_Order_Transaction_Temporary.pieces),
-            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%d',n.Sales_Order_Transaction_Temporary.discount_percentage or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount, grouping = True),_align = 'right', _style="width:120px;"),
+            TD(INPUT(_class='form-control quantity',_name='quantity',_type='number',_value=n.Sales_Order_Transaction_Temporary.quantity), _align = 'right', _style="width:100px;"),
+            TD(INPUT(_class='form-control pieces',_name='pieces',_type='number',_value=n.Sales_Order_Transaction_Temporary.pieces), _align = 'right', _style="width:100px;"),
+            TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.price_cost or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
+            TD(INPUT(_class='form-control discount_percentage',_name='discount_percentage',_type='number',_value=locale.format('%d',n.Sales_Order_Transaction_Temporary.discount_percentage or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
+            TD(INPUT(_class='form-control net_price',_name='net_price',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.net_price or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
+            TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount, grouping = True)),_align = 'right', _style="width:100px;"),
             TD(btn_lnk)))
     body = TBODY(*row)        
     foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))

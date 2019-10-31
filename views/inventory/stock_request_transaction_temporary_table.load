@@ -79,13 +79,14 @@ $(document).ready(function(){
                 });
                 $(".grand_total").val(grandTotal.toFixed(2));            
             }     
-            ajax("{{=URL("inventory","stock_request_temp_update")}}", ["ctr","quantity","pieces","uom"]);
+            // ajax("{{=URL("inventory","stock_request_temp_update")}}", ["ctr","quantity","pieces","uom"]);
         });
     });
 
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);
     });
+
 
     function nospaces(t){
         if(t.value.match(/\s/g)){
@@ -102,7 +103,7 @@ $(document).ready(function(){
             }, 1);
     });
 
-    $('#no_table_item_code').change(function(){
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');    
         $('#no_table_stock_destination_id').removeAttr('disabled');     
@@ -112,6 +113,10 @@ $(document).ready(function(){
         $('#no_table_stock_source_id').attr('disabled','disabled');
         $('#no_table_stock_destination_id').attr('disabled','disabled');        
         return false;      
+    });
+
+    $("#add").onclick(function(){
+        ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
     });
     $('.delete').click(function(){
         var _id = $(this).attr('data-id');

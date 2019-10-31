@@ -2281,7 +2281,7 @@ def purchase_request_transaction_temporary():
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Purchase_Request_Transaction_Temporary.id, extension = False), **{'_data-id':(n.Purchase_Request_Transaction_Temporary.id)})
         btn_lnk = DIV( dele_lnk)
         row.append(TR(
-            TD(ctr,INPUT(_hidden='true',_value=n.Purchase_Request_Transaction_Temporary.id)),
+            TD(ctr,INPUT(_name='ctr',_hidden='true',_value=n.Purchase_Request_Transaction_Temporary.id)),
             TD(n.Purchase_Request_Transaction_Temporary.item_code),
             TD(n.Item_Master.brand_line_code_id.brand_line_name.upper()),
             TD(n.Item_Master.item_description.upper()),            
@@ -2293,15 +2293,29 @@ def purchase_request_transaction_temporary():
             TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=n.Purchase_Request_Transaction_Temporary.total_amount or 0), _align = 'right', _style="width:100px;"),  
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right', _colspan='2'),TD(INPUT(_class='form-control local_amount',_type='text', _name = 'local_amount', _id='local_amount', _disabled = True, _value = locale.format('%.2F',local_amount or 0, grouping = True))),TD()))    
-    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control grand_total',_type='text', _name = 'grand_total', _id='grand_total', _disabled = True , _value = locale.format('%.2F',net_amount or 0, grouping = True))),TD()))
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right', _colspan='2'),TD(INPUT(_class='form-control local_amount',_type='text', _name = 'local_amount', _id='local_amount',  _value = local_amount or 0)),TD()))    
+    foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control grand_total',_type='text', _name = 'grand_total', _id='grand_total', _value = net_amount or 0)),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount %', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control discount',_type='number', _name = 'discount', _id='discount', _value = 0), _align = 'right'),TD(P(_id='error'))))
-    foot +=  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control foreign_amount', _type='text', _name = 'foreign_amount', _id='foreign_amount', _disabled = True,  _value = locale.format('%.2F',net_amount or 0, grouping = True))),TD()))    
+    foot +=  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control foreign_amount', _type='text', _name = 'foreign_amount', _id='foreign_amount',  _value = net_amount or 0)),TD()))    
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblPrt')
     return dict(form = form, table = table, net_amount = net_amount, _foc = _foc)
 
 def purchase_request_temp_update():
-    print 'control updated'
+    print 'control updated', request.vars.ctr,request.vars.quantity,request.vars.pieces,request.vars.uom
+    if isinstance(request.vars.ctr, list):
+        print 'list'
+        row = 0
+        for x in request.vars.ctr:
+            _qty = (int(request.vars.quantity[row]) * int(request.vars.uom[row])) + int(request.vars.pieces[row])            
+            db(db.Purchase_Request_Transaction_Temporary.id == request.vars.ctr[row]).update(quantity = request.vars.quantity[row], pieces = request.vars.pieces[row], total_pieces = _qty)
+            row+=1
+    else:
+        print 'not list'
+        _qty = (int(request.vars.qty) * int(request.vars.uom)) + int(request.vars.pieces)
+        db(db.Purchase_Request_Transaction_Temporary.id == request.vars.ctr).update(quantity = request.vars.quantity,pieces = request.vars.pieces, total_pieces = _qty)
+
+    
+
     
 @auth.requires_login()
 def procurement_request_form_abort():     

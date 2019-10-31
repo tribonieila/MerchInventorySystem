@@ -3,7 +3,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">STOCK REQUEST TOOL</span>
+            <span class="card-title">STOCK TRANSFER TOOL</span>
         </div>
         <div class="card-body tab-content">     
             {{=table}}                       
@@ -12,8 +12,8 @@
 </div>
 
 <script>
-    $('.redo').click(function(){
-        location.reload(0);
+    $('#redo').click(function(){
+        location.reload();
     });
 </script>
 <script src="{{=URL('static','dist/bootstrap-table-master/bootstrap-table.min.js')}}"></script>

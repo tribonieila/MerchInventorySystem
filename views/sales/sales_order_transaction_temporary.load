@@ -53,7 +53,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-
+    $(".price_cost, .net_price, .total_amount").prop("readonly", true);
+    var $tblrows = $("#tblsot tbody tr");
+    
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);
     });

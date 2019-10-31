@@ -53,52 +53,71 @@
 
 <script>
 $(document).ready(function(){
+    
     $(".price_cost, .total_amount").prop("readonly", true);    
     var $tblrows = $("#tblPrt tbody tr");
 
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        $tblrow.find(".quantity, .pieces").on("change", function(){            
+
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
-            var loc = $tblrow.find("[name=local_amount]").val();
-            var foc = $tblrow.find("[name=foreign_amount]").val();
-            var dis = $tblrow.find("[name=discount]").val();
             
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
             var sub = parseInt(itm, 10) * parseFloat(ppp);
-            
+                        
+            var xch = {{=_foc.exchange_rate_value}}
+            var foc = $("#foreign_amount").val();
+            var loc = $("#local_amount").val();            
+            var dis = $("#discount").val();                       
 
-            
             if (!isNaN(sub)){            
-                var xch = {{=_foc.exchange_rate_value}}        
-                $tblrow.find(".grand_total").val(sub.toFixed(2));                
-                $tblrow.find(".local_amount").val(loc.toFixed(2));
-                $tblrow.find(".foreign_amount").val(foc.toFixed(2));
-                $tblrow.find(".discount").val(dis.toFixed(2));
                 var grandTotal = 0;
                 var discount = 0;
-                var foreign = 0;
-                $(".grand_total").each(function(){
+                var local = 0;
+                var foa = 0;
+                
+                $tblrow.find(".total_amount").val(sub.toFixed(2));                               
+                                
+                $(".total_amount").each(function(){
                     var stval = parseFloat($(this).val());
                     grandTotal += isNaN(stval) ? 0 : stval;
                 });
-                discount = (grandTotal * (100 - dis)) / 100;
-                foreign = discount * foc;
-                $(".foreign_amount").val(foreign.toFixed(2));
-                $(".net_amount").val(grandTotal.toFixed(2));
 
+                foa = (parseFloat(grandTotal) * (100 - parseInt(dis))) / 100;
+                local = parseFloat(xch) * parseFloat(foa);
 
+                //$(".foreign_amount").val(foreign.toFixed(2));
+                $(".grand_total").val(grandTotal.toFixed(2));
+                $(".foreign_amount").val(foa);
+                $(".local_amount").val(local.toFixed(2));
+                //$(".discount").val(discount.toFixed(2));
+                console.log('local',local,'grandtotal', grandTotal, 'foc', foc, 'dis', dis);          
             }
-            ajax("{{=URL("procurement","purchase_request_temp_update")}}");
+
+            ajax("{{=URL("procurement","purchase_request_temp_update")}}",["ctr","quantity","pieces","uom"]);
         });
     });
 
+    $('#discount').change(function(){
+        var xch = {{=_foc.exchange_rate_value}}
+        var var_discount = $("#discount").val();
+        var var_grand_to = $("#grand_total").val();
+        var var_foreign = 0;
+        var var_local = 0;
+        var foreign = parseFloat(var_grand_to) * (100 - parseInt(var_discount)) / 100;
+        $("#foreign_amount").val(foreign);
+        var_local = parseFloat(foreign) * parseFloat(xch)
+        $("#local_amount").val(var_local);
+        
 
+    });
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();

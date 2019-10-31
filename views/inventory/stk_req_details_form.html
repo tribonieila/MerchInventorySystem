@@ -124,7 +124,7 @@
                                     <input class="btn btn-warning" type="button" value="refresh" disabled>   
 
                                 {{ else: }}
-                                    <input class="btn btn-success" type="submit" value="submit"> 
+                                    <input class="btn btn-success" type="submit" id="btnSubmit" value="submit"> 
                                     <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
                                     <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
 
@@ -212,6 +212,7 @@ $(document).ready(function(){
             var uom = $tblrow.find("[name=uom]").val();
             var qty = $tblrow.find("[name=qty]").val();
             var pcs = $tblrow.find("[name=pcs]").val();
+            var ico = $tblrow.find("[name=ico]").val();
             var pri = $tblrow.find("[name=unit_price]").val();
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
@@ -233,11 +234,14 @@ $(document).ready(function(){
                     var stval = parseFloat($(this).val());
                     grandTotal += isNaN(stval) ? 0 : stval;
                 });
-                $(".grand_total").val(grandTotal.toFixed(2));                
-            }          
-            
-            ajax("{{=URL("inventory","stock_request_update")}}", ["ctr","qty","uom","pcs"]);
+                $(".grand_total").val(grandTotal.toFixed(2));   
+                  
+            }                                  
+            // ajax("{{=URL("inventory","stock_request_update")}}", ["ctr","ico","qty","uom","pcs"]);
         });
+    });
+    $("#btnUpdate").onclick(function(){
+        window.location.reload();
     });
 });
 </script>
