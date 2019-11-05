@@ -52,6 +52,63 @@
 
 <script>
 $(document).ready(function(){
+    $(".price_cost, .total_amount, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
+    var $tblrows = $("#tblPr tbody tr");
+    
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var pri = $tblrow.find("[name=price_cost]").val();
+            
+            
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);
+                        
+            var xch = {{=_foc.exchange_rate_value}}
+            var foc = $("#net_amount_foreign").val();
+            var loc = $("#net_amount_local").val();            
+            
+
+            if (!isNaN(sub)){            
+                var grandTotal = 0;
+                var discount = 0;
+                var local = 0;
+                var foa = 0;
+                
+                $tblrow.find(".total_amount").val(sub.toFixed(2));                               
+                                
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+
+                //discount = (parseFloat(grandTotal) * (100 - parseInt(dis))) / 100;
+                local = parseFloat(xch) * parseFloat(grandTotal);
+
+                $(".grand_total").val(grandTotal.toFixed(2));
+                $(".net_amount_foreign").val(grandTotal.toFixed(2));
+                $(".net_amount_local").val(local.toFixed(2));
+            }                        
+        });
+    });
+    $("#discount").change(function(){
+        var xch = {{=_foc.exchange_rate_value}}
+        var grd = $(".grand_total").val();
+        var fox = $(".net_amount_foreign").val();
+        var loc = $(".net_amount_local").val();
+        var dis = $(".discount").val();
+        var discount = 0
+        discount = (parseFloat(grd) * (100 - parseInt(dis))) / 100;
+        local = parseFloat(xch) * parseFloat(discount);
+        $(".net_amount_foreign").val(discount.toFixed(2))
+        $(".net_amount_local").val(local.toFixed(2))
+        console.log('discount change', fox, loc, dis);
+    });
 
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {

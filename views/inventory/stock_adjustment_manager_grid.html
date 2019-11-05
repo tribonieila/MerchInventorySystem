@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                {{ if auth.has_membership(role = 'ACCOUNT USERS'): }}                
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">                    
+                    <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_add_new')}}";>+ ADD NEW</a></li>
+                    <li class="active"><a href="#" >BROWSE</a></li>                    
+                </ul>
+                {{ pass }}
+                <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
+            </div>
+            <div class="card-body tab-content">   
+                {{=table}}      
+            </div>
+        </div>
+    </div>
+    
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+
+<script>
+    $(document).ready( function () {
+        $('.table').bootstrapTable();
+    });
+</script>

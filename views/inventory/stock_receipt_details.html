@@ -9,10 +9,13 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
+            {{ if auth.has_membership(role = 'INVENTORY POS'): }}    
+            {{ else: }}            
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#"> DETAILS</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('stock_receipt')}}";>BROWSE</a></li>
             </ul>
+            {{ pass }}
             <span class="card-title">STOCK RECEIPT</span>
         </div>
         <div class="card-body tab-content">            
@@ -172,7 +175,11 @@
                                         <!-- <input class="btn btn-success" type="submit" value="submit" disabled> -->
                                         <!-- <input class="btn btn-success" type="button" value="CREATE STOCK RECEIPT" disabled> -->
                                         <input class="btn btn-info" type="button" value="create stock receipt" disabled>  
+                                        {{ if auth.has_membership(role = 'INVENTORY POS'): }}    
+                                        <input class="btn btn-warning" type="button" value="print stock receipt" disabled>         
+                                        {{ else: }}      
                                         <input class="btn btn-warning" type="button" value="print stock receipt" onclick="window.open('{{=URL('inventory','stock_receipt_report', args = request.args(0))}}')";>                                
+                                        {{ pass }}
                                     {{ else: }}
                                         <input class="btn btn-success" type="submit" value="create stock receipt" id="btncreate">                                        
                                         <input class="btn btn-warning" type="button" value="print stock receipt" disabled>         

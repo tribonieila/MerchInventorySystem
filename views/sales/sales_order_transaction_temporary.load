@@ -55,6 +55,36 @@
 $(document).ready(function(){
     $(".price_cost, .net_price, .total_amount").prop("readonly", true);
     var $tblrows = $("#tblsot tbody tr");
+
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces, .discount_per").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var pri = $tblrow.find("[name=price_cost]").val();
+            var dis = $tblrow.find("[name=discount_per]").val();
+            
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);                                    
+            
+            var net = (pri * (100 - dis)) / 100            
+            var tot = parseInt(itm, 10) * parseFloat(ppp);
+            var to2 = (tot * (100 - dis)) / 100           
+
+            if (!isNaN(to2)){
+                $tblrow.find(".net_price").val(net.toFixed(2));
+                $tblrow.find(".total_amount").val(to2.toFixed(2));
+                var grandTotal = 0;
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+                $(".grand_total").val(grandTotal.toFixed(2));
+            }
+        });
+    });
     
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);
@@ -75,7 +105,7 @@ $(document).ready(function(){
             }, 1);
     });
     
-    $('#no_table_item_code').change(function(){
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces, #no_table_discount_percentage').change(function(){
         ajax('{{=URL('item_code_description')}}', ['item_code'], '_item_code_description');        
        return false; 
     });
@@ -127,8 +157,4 @@ $(document).ready(function(){
 });
 </script>
 
-
-<script>
-
-</script>
 

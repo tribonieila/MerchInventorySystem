@@ -431,7 +431,15 @@ db.define_table('Location',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
-    
+
+db.define_table('User_Location',
+    Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('location_code_id', 'reference Location', ondelete='NO ACTION', requires=IS_IN_DB(db, db.Location.id,'%(location_code)s %(location_name)s',zero='Choose Location')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
 db.define_table('Gender',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
@@ -731,6 +739,7 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('pieces','integer', default = 0),
     Field('uom', 'integer'),
     Field('total_quantity', 'integer', default = 0),
+    Field('price_cost','decimal(10,4)',default=0),
     Field('average_cost','decimal(10,4)', default = 0),
     Field('total_cost','decimal(10,4)', default = 0),
     Field('ticket_no_id', 'string', length = 10),

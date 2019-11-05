@@ -1,0 +1,2 @@
+{{=table}}
+<a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">add</a>

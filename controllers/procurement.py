@@ -2293,7 +2293,7 @@ def purchase_request_transaction_temporary():
             TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=n.Purchase_Request_Transaction_Temporary.total_amount or 0), _align = 'right', _style="width:100px;"),  
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right', _colspan='2'),TD(INPUT(_class='form-control local_amount',_type='text', _name = 'local_amount', _id='local_amount',  _value = local_amount or 0)),TD()))    
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount (QR)'), _align = 'right', _colspan='2'),TD(INPUT(_class='form-control local_amount',_type='text', _name = 'local_amount', _id='local_amount',  _value = local_amount or 0)),TD('update')))    
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control grand_total',_type='text', _name = 'grand_total', _id='grand_total', _value = net_amount or 0)),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Discount %', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control discount',_type='number', _name = 'discount', _id='discount', _value = 0), _align = 'right'),TD(P(_id='error'))))
     foot +=  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount', _align = 'right', _colspan='2'),TD(_foc.currency_id.mnemonic, INPUT(_class='form-control foreign_amount', _type='text', _name = 'foreign_amount', _id='foreign_amount',  _value = net_amount or 0)),TD()))    
@@ -2503,7 +2503,7 @@ def puchase_request_transaction_view_details():
     if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty.'),TH('Closing Stock'),TH('Order In Transit'),TH('Unit Price'),TH('Total Amount'),TH('Action'),_class='bg-success'))    
     else:
-        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty.'),TH('MRS Price'),TH('Total Amount'),TH('Action'),_class='bg-success'))    
+        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('MRS Price'),TH('Total Amount'),TH('Action'),_class='bg-success'))    
     _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete != True)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = ~db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
     for n in _query:
         ctr += 1
@@ -2515,11 +2515,11 @@ def puchase_request_transaction_view_details():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             response.js = "$('#btnadd').attr('disabled','disabled');"
-            btn_lnk = DIV(edit_lnk, dele_lnk)
+            btn_lnk = DIV(dele_lnk)
         else:
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','puchase_request_transaction_view_edit',args = n.Purchase_Request_Transaction.id, extension = False))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Purchase_Request_Transaction.id, extension = False), **{'_data-id':(n.Purchase_Request_Transaction.id)})
-            btn_lnk = DIV(edit_lnk, dele_lnk)
+            btn_lnk = DIV( dele_lnk)
         if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
             row.append(TR(
                 TD(ctr),
@@ -2540,23 +2540,52 @@ def puchase_request_transaction_view_details():
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%d',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4(_id.currency_id.mnemonic, ' ' ,locale.format('%.2F', _net_price or 0, grouping = True), _align = 'right')),TD('Exc.Rate')))            
         else:
+            _qty = n.Purchase_Request_Transaction.quantity / n.Item_Master.uom_value
+            _pcs = n.Purchase_Request_Transaction.quantity - n.Purchase_Request_Transaction.quantity / n.Item_Master.uom_value * n.Item_Master.uom_value
+            _quantity = INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty)
+            _pieces = INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs)
             row.append(TR(
-                TD(ctr),
+                TD(ctr, INPUT(_name='ctr',_type='number',_hidden='true',_value=n.Purchase_Request_Transaction.id)),
                 TD(n.Purchase_Request_Transaction.item_code_id.item_code),
                 TD(n.Item_Master.brand_line_code_id.brand_line_name.upper()),
                 TD(n.Item_Master.item_description.upper()),
-                TD(n.Purchase_Request_Transaction.uom, _style="width:100px;"),
+                TD(n.Purchase_Request_Transaction.uom,INPUT(_name='uom',_type='number',_hidden='true',_value=n.Purchase_Request_Transaction.uom), _style="width:100px;"),
                 TD(n.Purchase_Request_Transaction.category_id.mnemonic, _style="width:100px;"),            
-                TD(card(n.Purchase_Request_Transaction.quantity,n.Item_Master.uom_value), _align = 'right', _style="width:120px;"),        
-                TD(locale.format('%.2F',n.Purchase_Request_Transaction.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"), 
-                TD(locale.format('%.2F',n.Purchase_Request_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+                TD(_quantity, _align = 'right', _style="width:100px;"),
+                TD(_pieces, _align = 'right', _style="width:100px;"),
+                TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=locale.format('%.2F',n.Purchase_Request_Transaction.price_cost or 0, grouping = True)), _align = 'right', _style="width:120px;"), 
+                TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=locale.format('%.2F',n.Purchase_Request_Transaction.total_amount or 0, grouping = True)), _align = 'right', _style="width:120px;"),  
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount'), _align = 'right'),TD(H4('QR ',locale.format('%.2F',_local_net_price or 0, grouping = True), _align = 'right')),TD(I('(FX : ',_exc_rate.exchange_rate_value,')' ))))            
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F',_total_amount or 0, grouping = True), _align = 'right')),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right'),TD(H4(locale.format('%.2F',_id.discount_percentage or 0, grouping = True), _align = 'right')),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount '), _align = 'right'),TD(H4(_id.currency_id.mnemonic,' ',locale.format('%.2F',_net_price or 0, grouping = True), _align = 'right')),TD()))
-    table = TABLE(*[head, body, foot], _class='table table-bordered', _id = 'tblPr')
+            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(I('(FX : ',_exc_rate.exchange_rate_value,')')),TD(H4('Net Amount in QR'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control net_amount_local',_id='net_amount_local',_name='net_amount_local',_type='text',_value=locale.format('%.2F',_local_net_price or 0, grouping = True)), _align = 'right')),TD(INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success'))))            
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount in ',_id.currency_id.mnemonic ), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=locale.format('%.2F',_total_amount or 0, grouping = True)), _align = 'right')),TD()))
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount % '), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control discount',_name='discount',_id='discount',_type='number',_value=locale.format('%.2F',_id.discount_percentage or 0, grouping = True)), _align = 'right')),TD()))
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount in ', _id.currency_id.mnemonic), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control net_amount_foreign',_name='net_amount_foreign',_type='text',_value=locale.format('%.2F',_net_price or 0, grouping = True)), _align = 'right')),TD()))
+    table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblPr'))
+    if table.accepts(request,session):
+        if request.vars.btnUpdate:
+            print 'update'
+            _pur = db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select().first()
+            if isinstance(request.vars.ctr, list):
+                print 'list'                
+                row = 0
+                for x in request.vars.ctr:
+                    _row = db(db.Purchase_Request_Transaction.id == x).select().first()
+                    _qty = int(request.vars.quantity[row]) * int(request.vars.uom[row]) + int(request.vars.pieces[row])                    
+                    print _qty, _row.quantity
+                    if _row.quantity != _qty:
+                        _row.update_record(quantity = _qty, total_amount = request.vars.total_amount[row])
+                    row+=1
+                    
+            else:                
+                print 'not list'
+                _qty = int(request.vars.quantity) * int(request.vars.uom) + int(request.vars.pieces)                    
+                _pur.update_record(quantity = _qty, total_amount = request.vars.total_amount)
+            db(db.Purchase_Request.id == request.args(0)).update(total_amount_after_discount = request.vars.grand_total)
+            print 'grand_total update: ', request.vars.grand_total
+        else:
+            print 'not update'
+
     
     form = SQLFORM.factory(
         Field('item_code', 'string', length = 25),
@@ -2579,7 +2608,7 @@ def puchase_request_transaction_view_details():
         response.js = "$('#tblPr').get(0).reload();"
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'           
-    return dict(form = form, table = table)    
+    return dict(form = form, table = table, _foc = _foc)    
 
 def validate_purchase_request_transaction_view_details(form):
     # _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()

@@ -1,0 +1,301 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">DETAILS</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+            </ul>
+            <span class="card-title">STOCK REQUEST FORM</span>
+        </div>
+        <div class="card-body tab-content">     
+            {{=form.custom.begin}}       
+            <div class="form-horizontal">                   	
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Request No</label>
+                            <div class="col-sm-8">                                                  
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_no_id}}{{=form.custom.widget.stock_request_no}}" readonly >
+                                <p class="help-block">autogenerate</p>
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Request Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                <input type="text" class="form-control" value="{{=_id.stock_request_date}}" readonly >
+                                <p class="help-block">readonly</p>                            
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Requested By</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}" readonly >
+                                <p class="help-block">readonly</p>                                                                                
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Due Date</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.stock_due_date}}" readonly >
+                                <p class="help-block">readonly</p>                            
+                            </div>
+                        </div>                                           
+                    </div>
+    
+                </div>                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.dept_code_id.dept_code}} - {{=_id.dept_code_id.dept_name}}" readonly >
+                                <p class="help-block">readonly</p>
+                                <input type="text" class="form-control" id="dept_code_id" name="dept_code_id" value="{{=_id.dept_code_id}}" hidden >
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Source</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.stock_source_id.location_code}} - {{=_id.stock_source_id.location_name}}" readonly >
+                                <p class="help-block">readonly</p>    
+                                <input type="text" class="form-control" id="stock_source_id" name="stock_source_id" value="{{=_id.stock_source_id}}" hidden >
+                            </div>
+                        </div>                 
+                    </div>
+                </div>    
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                {{ if _id.srn_status_id == 4 or _id.srn_status_id == 3: }}                       
+                                    {{=form.custom.widget.srn_status_id}}
+                                {{ else: }}                                    
+                                    <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >                                    
+                                    <p class="help-block">readonly</p>                                    
+                                {{ pass }}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Destination</label>
+                            <div class="col-sm-8">                                                                
+                                <input type="text" class="form-control" value="{{=_id.stock_destination_id.location_code}} - {{=_id.stock_destination_id.location_name}}" readonly >
+                                <p class="help-block">readonly</p>    
+                                <input type="text" class="form-control" id="stock_destination_id" name="stock_destination_id" value="{{=_id.stock_destination_id}}" hidden >
+                            </div>
+                        </div>                                               
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">
+                                {{ if _id.srn_status_id == 4 or _id.srn_status_id == 3: }}
+                                    {{=form.custom.widget.remarks}}
+                                {{ else: }}
+                                    <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
+                                    <p class="help-block">readonly</p>    
+                                {{ pass }}
+                            </div>
+                        </div>                  
+                    </div>
+                    <div class="col-md-6">  
+                      <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">
+                                {{ if (_id.srn_status_id == 2) or (_id.srn_status_id == 5) or (_id.srn_status_id == 6): }}
+                                    <input class="btn btn-success" type="button" value="submit" disabled> 
+                                    <!-- <input class="btn btn-info" type="button" value="add new" disabled>  -->
+                                    <input class="btn btn-warning" type="button" value="refresh" disabled>   
+
+                                {{ else: }}
+                                    <input class="btn btn-success" type="submit" id="btnSubmit" value="submit"> 
+                                    <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
+                                    <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
+
+                                
+                                {{ pass }}
+                            </div>                            
+                        </div>                    
+                    </div>
+                </div>  
+            </div>  
+            {{=form.custom.end}}
+            
+            <hr>
+
+            <!-- <div id="tblReqOld"> -->
+ 
+                {{=table}}
+            <!-- </div>                                 -->
+            <hr>
+            <div id="newReqPanel">
+                
+                {{=form2.custom.begin}}
+                <div class="row">                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Item No</label>
+                            <div class="col-sm-8">                                
+                                {{=form2.custom.widget.item_code}}
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Quantity</label>
+                            <div class="col-sm-6"> 
+                                {{=form2.custom.widget.quantity}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Pieces</label>
+                            <div class="col-sm-6">                                
+                                {{=form2.custom.widget.pieces}}
+                            </div>                           
+                        </div>    
+                    </div>                   
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Category</label>
+                            <div class="col-sm-8">                                 
+                                <div id="cat_id"></div>
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-2">                        
+                        <!-- {{=form2.custom.submit}} -->
+                        {{ if (_id.srn_status_id == 2) | (_id.srn_status_id == 5) | (_id.srn_status_id == 6):}}
+                            <button class="btn btn-primary" type="submit" id="btnInsert" disabled>add</button>                        
+                        {{ else: }}
+                            <button class="btn btn-primary" type="submit" id="btnInsert">add</button>                        
+                        {{ pass }}
+                        
+                        
+                    </div>                                                              
+                </div> 
+                {{=form2.custom.end}}
+                <div id = "_item_code_description"></div> 
+                <div id="tblReqNew"></div>              
+            </div>            
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+    $(".unit_price, .total_amount, .grand_total").prop("readonly", true);
+    var $tblrows = $("#tblIC tbody tr");
+
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=qty]").val();
+            var pcs = $tblrow.find("[name=pcs]").val();
+            var ico = $tblrow.find("[name=ico]").val();
+            var pri = $tblrow.find("[name=unit_price]").val();
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);       
+            
+            if (parseInt(qty) < parseInt(0)){
+                return alert("Please enter a positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)){                             
+                return alert("Please enter a positive integer.");
+            }
+          
+            if (parseInt(pcs) >= parseInt(uom)){
+                return alert("Pieces value should not be more than or equal to UOM value");
+            }
+            if(!isNaN(sub)){
+                $tblrow.find(".total_amount").val(sub.toFixed(2));
+                var grandTotal = 0;
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+                $(".grand_total").val(grandTotal.toFixed(2));   
+                  
+            }                                  
+            // ajax("{{=URL("inventory","stock_request_update")}}", ["ctr","ico","qty","uom","pcs"]);
+        });
+    });
+    $("#btnUpdate").onclick(function(){
+        // window.location.reload();
+    });
+});
+</script>
+<script>
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','stk_req_del')}}" + '/'+ _id);                                
+                    location.reload();   
+                }
+
+            }
+        })
+    });</script>
+<script>
+    
+    // $('#newReqPanel').hide();
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
+        ajax('{{=URL('itm_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
+        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
+    });
+    $('#btnrewReq').click(function(){
+        $('#newReqPanel').toggle( "slide" );
+        $('#tblReqOld').toggle( "slide" );
+        $("#no_table_item_code").focus();
+        $('#btnnewReq').attr('disabled','disabled');        
+        return false;
+        
+    })
+    $('#btnInsert').click(function() {
+        window.location.reload();
+        // ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'tblReqNew');
+        // document.getElementById('item_code').value = ''
+        // document.getElementById('quantity').value = '0'
+        // document.getElementById('pieces').value = '0'      
+        // $('#no_table_item_code').focus();        
+        // return false;
+    });
+    $('#del').click(function(){
+        window.location.reload();
+    });
+    
+</script>
