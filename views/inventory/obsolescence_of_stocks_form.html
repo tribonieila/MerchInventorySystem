@@ -2,10 +2,13 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
+            {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}    
+            {{ else: }}
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
             </ul>
+            {{ pass }}
             <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
         <div class="card-body tab-content">                                            

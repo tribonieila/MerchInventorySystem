@@ -3,7 +3,7 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <span class="card-title">{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} Workflow</span>
+                <span class="card-title">{{=auth.user.first_name.upper()}} - {{=auth.user.last_name.upper()}} Workflow</span>
             </div>
             <div class="card-body tab-content">          
                 <div>
@@ -16,6 +16,7 @@
                     <div class="tab-content">
                       <div role="tabpanel" class="tab-pane active" id="stock_request">                                                
                         {{=LOAD('inventory','get_pos_stock_request_workflow_grid.load',ajax=True, target='tblSR')}}
+                        <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">+ create stock request</a>
                       </div> 
                       <div role="tabpanel" class="tab-pane" id="stock_receipt">                        
                         {{=LOAD('inventory','get_pos_stock_receipt_workflow_grid.load',ajax=True)}}

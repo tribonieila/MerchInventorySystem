@@ -696,10 +696,57 @@ def sales_order_transaction_temporary_delete():
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblsot').get(0).reload()"
 
-def get_sales_order_grid():
+def get_sales_order_workflow_grid():    
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    # for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
+    for n in db(db.Sales_Order).select(orderby = ~db.Sales_Order.id):  
+        print 'created by in sales order ', n.created_by, auth.user.id
+        if n.status_id == 7:
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk, clea_lnk)
+
+        if not n.transaction_prefix_id:
+            _sales = 'None'
+        else:
+            _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)
+            _sales = A(_sales, _class='text-primary', _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+        if not n.delivery_note_no_prefix_id:
+            _note = 'None'
+        else:
+            _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+            _note = A(_note, _class='text-warning', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+        if not n.sales_invoice_no_prefix_id:
+            _inv = 'None'            
+        else:
+            _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+            _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
+        row.append(TR(
+            TD(n.sales_order_date),
+            TD(_sales),
+            TD(_note),
+            TD(_inv),
+            TD(n.dept_code_id.dept_name),
+            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.stock_source_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id = 'tblSO')#, **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
+    return dict(table = table)
+
+@auth.requires(lambda: auth.has_membership('FMCG') | auth.has_membership('ROOT'))        
+def get_fmcg_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
+        print 'created by: ', n.created_by, auth.user.id
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -727,14 +774,45 @@ def get_sales_order_grid():
             TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
             TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table', _id = 'tblSO', **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
-    return dict(table = table)
+    table = TABLE(*[head, body], _class='table', _id = 'tblso', **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
+    return dict(table = table)    
+    
+
+@auth.requires(lambda: auth.has_membership('FMCG') | auth.has_membership('ROOT'))        
+def get_fmcg_sales_return_workflow_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Salesman'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db(db.Sales_Return.created_by == auth.user_id).select(orderby = ~db.Sales_Return.id):  
+        if n.status_id == 13:            
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_browse_load_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_browse_load_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk, clea_lnk)
+
+        row.append(TR(
+            TD(n.sales_return_date),
+            TD(n.transaction_prefix_id.prefix,n.sales_return_no),
+            TD(n.dept_code_id.dept_name),
+            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.location_code_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.sales_man_id),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)    
+    
 
 @auth.requires_login()
 def sales_order_browse():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
+        print 'created by: ', n.created_by, auth.user.id
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -1637,11 +1715,19 @@ def sales_return_transaction_temporary_delete():
 
 @auth.requires_login()
 def sales_return_grid():
+    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
     _query = db(db.Sales_Return).select(orderby = ~db.Sales_Return.id)
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):        
-        _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        if not _usr:
+            _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        else:
+            _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Return.id)        
+            
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
-        _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        if not _usr:
+            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        else:
+            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Return.id)                    
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Return.status_id == 12) | (db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
@@ -1679,12 +1765,12 @@ def sales_return_grid():
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
-            # elif n.status_id == 6:
-            #     edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
-            #     appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
+        if auth.has_membership(role = 'ACCOUNT MANAGER'):
+                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
 
         btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, prin_lnk, clea_lnk)
         row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
@@ -1923,11 +2009,18 @@ def get_sales_return_grid():
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 @auth.requires_login()
 def sales_order_manager_grid():
+    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
     _query = db(db.Sales_Order).select(orderby = ~db.Sales_Order.id)
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
-        _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)    
+        if not _usr:
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)                
+        else:
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
-        _query = db((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
+        if not _usr:
+            _query = db((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
+        else:
+            _query = db((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)                    
     elif auth.has_membership(role = 'ACCOUNT USERS'):
         _query = db((db.Sales_Order.status_id == 8) | (db.Sales_Order.status_id == 7)).select(orderby = ~db.Sales_Order.id)
     row = []

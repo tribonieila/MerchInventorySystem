@@ -440,6 +440,14 @@ db.define_table('User_Location',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
 
+db.define_table('User_Department',
+    Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
 db.define_table('Gender',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 

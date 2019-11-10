@@ -1,0 +1,76 @@
+{{extend 'layout.html'}}
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
+                    <!-- <li class="active"><a href="#" >BROWSE</a></li>mngr_req_grid -->
+                </ul>
+                <span class="card-title">STOCK TRANSFER VOUCHERS</span>
+            </div>
+            <div class="card-body tab-content">                
+                {{=table}}                                                
+            </div>
+        </div>                
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    $('.archive').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to archive this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','stock_request_archive')}}" + '/'+ _id);                
+                    location.reload();   
+                }
+
+            }
+        })
+    });
+
+    $('.str').click(function(){
+        var parent = $(this).parent("div").parent("td").parent("tr")
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to generate Stock Transfer Request and Print?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    parent.fadeOut('slow');
+                    ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);
+                    // location.reload();
+                    $("#tbl").load(location.href + " #tbl");
+                    parent.fadeIn('slow');
+                    location.reload();
+                    window.open("{{=URL('inventory','stock_receipt_report')}}" + '/' + _id);
+                } 
+                // else {
+                //     ajax("{{=URL('inventory','gen_rep')}}" + '/'+ _id);
+                // }                
+            }
+        });
+    });
+</script>

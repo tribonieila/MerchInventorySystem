@@ -2,10 +2,13 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
+            {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}
+            {{ else: }}
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request')}}";>BROWSE</a></li>
             </ul>
+            {{ pass }}
             <span class="card-title">PURCHASE REQUEST FORM</span>
         </div>
         <div class="card-body tab-content">                                            

@@ -20,7 +20,10 @@
                     <ul class="nav nav-pills" role="tablist">
                         <li role="presentation"><a href="#purchase_order" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Order<span class="badge">{{=db(db.Purchase_Order.status_id == 17).count()}}</span></a></li>
                         <li role="presentation"><a href="#warehouse_purchase_receipt" aria-controls="warehouse_purchase_receipt" role="tab" data-toggle="tab">Warehouse Purchase Receipt<span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id==18).count()}}</span></a></li>
-                        <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db(db.Stock_Request.srn_status_id == 2).count()}}</span></a></li>
+                        <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db((db.Stock_Request.srn_status_id == 2)).count()}}</span></a></li>
+                        <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt<span class="badge">{{=db(db.Stock_Request.srn_status_id == 2).count()}}</span></a></li>
+                        <li role="presentation"><a href="#stock_corrections" aria-controls="stock_corrections" role="tab" data-toggle="tab">Stock Corrections <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        
+                        <li role="presentation"><a href="#obsolescence_of_stocks" aria-controls="obsolescence_of_stocks" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        
                         <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 9).count()}}</span></a></li>
                         <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        
                     </ul>
@@ -33,12 +36,27 @@
                         </div>                         
                         <div role="tabpanel" class="tab-pane" id="stock_request">                        
                             {{=table}}  
-                        </div>                         
+                            
+                        </div>          
+                        <div role="tabpanel" class="tab-pane" id="stock_receipt">
+                            {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True)}}
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="stock_corrections">
+                            {{=LOAD('inventory','get_stock_corrections_grid.load', ajax = True, target = 'tblcor')}}
+                            <a class="btn btn-primary" id="btnAdd" href="{{=URL('inventory','stock_corrections_add_new', extension = False)}}" role="button">+ create stock corrections</a>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="obsolescence_of_stocks">
+                            {{=LOAD('inventory','get_obsolescence_of_stocks_workflow_grid.load', ajax = True)}}
+                            <a class="btn btn-primary" id="btnAdd" href="{{=URL('inventory','obsolescence_of_stocks_form', extension = False)}}" role="button">+ create obsolescence of stocks</a>
+
+                        </div>
                         <div role="tabpanel" class="tab-pane" id="sales_order">                        
                             {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
+                            <a class="btn btn-primary" id="btnAdd" href="#" role="button">+ create sales order</a>
                         </div>                         
                         <div role="tabpanel" class="tab-pane" id="sales_return">                        
                             {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
+                            <a class="btn btn-primary" id="btnAdd" href="#" role="button">+ create sales return</a>
                         </div>                         
             
                     </div>

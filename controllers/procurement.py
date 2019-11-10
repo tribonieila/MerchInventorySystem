@@ -2158,7 +2158,7 @@ def purchase_request_form():
         session.discount = 0
         db(db.Purchase_Request_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
         session.flash = 'SAVE PURCHASE REQUEST NO ' + str(_skey) + '.'
-        redirect(URL('procurement','purchase_request'))
+        # redirect(URL('procurement','purchase_request'))
     elif form.errors:
         response.flash = 'FORM HAS ERRROS'    
     # session.forget(response)
@@ -2395,6 +2395,58 @@ def purchase_request_item_code_description():
                 TD(0)),_class="bg-info"),_class='table'))            
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock.",_class='alert alert-warning',_role='alert'))        
         
+def get_purchase_request_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    for n in db((db.Purchase_Request.created_by == auth.user.id) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id):
+        purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
+        clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+        insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)        
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_request_transaction_view', args = n.id, extension = False))        
+        if n.status_id ==18:            
+            # insu_lnk = A(I(_class='fas fa-file-medical'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})
+            purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
+            prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle')
+        elif n.status_id == 11:            
+            if n.trade_terms_id == 1:            
+                purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generate Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle generate', _target='_blank', _href = URL('procurement','generate_purchase_order_no_and_insurance_proposal', args = n.id, extension = False))            
+            else:
+                purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generate Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle generate', _target='_blank', callback = URL('procurement','generate_purchase_order_no', args = n.id, extension = False))            
+        elif (n.status_id == 11) or (n.status_id == 17) or (n.status_id == 19) or (n.status_id == 20):
+            prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='_blank', _href = URL('procurement','purchase_request_reports', args = n.id, extension = False))        
+
+        btn_lnk = DIV(view_lnk, insu_lnk, purh_lnk, prin_lnk, clea_lnk)
+        
+        if not n.purchase_request_no_prefix_id:
+            _pr = 'None'
+        else:
+            _pr = str(n.purchase_request_no_prefix_id.prefix) + str(n.purchase_request_no)
+        
+        if not n.purchase_order_no_prefix_id:
+            _po = 'None'
+        else:
+            _po = str(n.purchase_order_no_prefix_id.prefix) + str(n.purchase_order_no)
+        
+        if not n.purchase_receipt_no_prefix_id:
+            _px = 'None'
+        else:
+            _px = str(n.purchase_receipt_no_prefix_id.prefix) + str(n.purchase_receipt_no)
+        row.append(TR(
+            TD(n.purchase_request_date),
+            TD(_pr),
+            # TD(_po),
+            # TD(_px),
+            TD(n.dept_code_id.dept_name),
+            TD(n.supplier_code_id.supp_name),
+            TD(n.supplier_reference_order),
+            TD(n.location_code_id.location_name),
+            TD(n.currency_id.mnemonic,' ', locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True)),            
+            TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id='PRtbl', **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})    
+    return dict(table = table)
 
 @auth.requires_login()
 def purchase_request(): # purchase request grid
@@ -2572,17 +2624,17 @@ def puchase_request_transaction_view_details():
                 for x in request.vars.ctr:
                     _row = db(db.Purchase_Request_Transaction.id == x).select().first()
                     _qty = int(request.vars.quantity[row]) * int(request.vars.uom[row]) + int(request.vars.pieces[row])                    
-                    print _qty, _row.quantity
+                    print 'purchase request: ', x, _qty, _row.quantity, request.vars.quantity[row], request.vars.uom[row], request.vars.pieces[row]
                     if _row.quantity != _qty:
                         _row.update_record(quantity = _qty, total_amount = request.vars.total_amount[row])
-                    row+=1
-                    
+                    row+=1                    
             else:                
                 print 'not list'
                 _qty = int(request.vars.quantity) * int(request.vars.uom) + int(request.vars.pieces)                    
                 _pur.update_record(quantity = _qty, total_amount = request.vars.total_amount)
-            db(db.Purchase_Request.id == request.args(0)).update(total_amount_after_discount = request.vars.grand_total)
+            db(db.Purchase_Request.id == request.args(0)).update(total_amount_after_discount = request.vars.grand_total.replace(",",""))
             print 'grand_total update: ', request.vars.grand_total
+            response.js = "$('#tblPr').get(0).reload()"
         else:
             print 'not update'
 
@@ -2727,13 +2779,21 @@ def puchase_request_transaction_view_edit():
 @auth.requires_login()
 def purchase_request_grid():
     row = []
+    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
     _query = db(db.Purchase_Request).select(orderby = ~db.Purchase_Request.id) 
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'): # wael approval
-        _query = db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id) 
+        if not _usr:
+            _query = db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.archives == False) & (db.Purchase_Request.dept_code_id != 3)).select(orderby = ~db.Purchase_Request.id) 
+        else:
+            _query = db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.archives == False) & (db.Purchase_Request.dept_code_id == 3)).select(orderby = ~db.Purchase_Request.id)                     
     elif auth.has_membership(role = 'INVENTORY'):  # john approval
         _query = db((db.Purchase_Request.status_id == 20) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id) 
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'): # hakim approval
-        _query = db((db.Purchase_Request.status_id == 17) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id) 
+        if not _usr:
+            _query = db((db.Purchase_Request.status_id == 17) & (db.Purchase_Request.archives == False) & (db.Purchase_Request.dept_code_id != 3)).select(orderby = ~db.Purchase_Request.id) 
+        else:
+            _query = db((db.Purchase_Request.status_id == 17) & (db.Purchase_Request.archives == False) & (db.Purchase_Request.dept_code_id == 3)).select(orderby = ~db.Purchase_Request.id) 
+
     elif auth.has_membership(role = 'ACCOUNT USERS'): # manoj approval
         _query = db((db.Purchase_Request.status_id == 18) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id) 
     head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Requested by'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))

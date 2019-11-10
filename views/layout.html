@@ -295,8 +295,7 @@
 
 			</ul>
 			{{pass}}
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT USERS')):}}
-			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT USERS')):}}			
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li ><a href="{{=URL('inventory','account_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a>
@@ -353,6 +352,13 @@
 					<ul>
 						<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
 						<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+						<li><a href="#" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="#" ><span class="title">Sales Return</span></a></li>
+						<li><a href="#" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="#" ><span class="title">Direct Purchase Receipt</span></a></li>
+						<li><a href="#" ><span class="title">Stock Adjustment(+/-)</span></a></li>
+						<li><a href="#" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="#" ><span class="title">Obsolescence of stocks</span></a></li>
 					</ul>
 				</li>			
 			</ul>
@@ -448,7 +454,7 @@
 				<li><a href="{{=URL('inventory','stock_receipt')}}"><div class="gui-icon"><i class="md fas fa-list-ol"></i></div><span class="title">STOCK RECEIPT</span></a></li>							 -->
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a>
 					<ul>
-						<li><a href="#" ><span class="title">Stock Transfer Vouchers</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Transfer Vouchers</span></a></li>
 						<li><a href="#" ><span class="title">Sales Invoice</span></a></li>
 						<li><a href="#" ><span class="title">Purchase Receipt</span></a></li>
 						<!-- <li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Stock Transfer Vouchers</span></a></li> -->
@@ -471,25 +477,17 @@
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li><a href="{{=URL('inventory','mngr_req_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>	
-				<!-- <li><a href="#"><div class="gui-icon"><i class="md fas fa-qrcode"></i></div><span class="title">INVENTORY</span></a>
+				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a>
 					<ul>
-						<li><a href="{{=URL('inventory', 'get_stock_request_grid')}}" ><span class="title">Stock Request</span></a></li>
-
+						<li><a href="{{=URL('inventory','get_stv_sales_mngr_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Sales Return</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Obsolescence of Stocks</span></a></li>
 					</ul>
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
-					<ul>
-						<li><a href="{{=URL('sales', 'get_sales_order_grid')}}" ><span class="title">Sales Order</span></a></li>
-						<li><a href="{{=URL('sales', 'get_sales_return_grid')}}" ><span class="title">Sales Return</span></a></li>
-					</ul>					
-				</li>				
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-shopping-bag"></i></div><span class="title">PROCUREMENT</span></a>
-					<ul>
-						<li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Purchase Request</span></a></li>						
-					</ul>
-				</li>				 -->
-				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
@@ -513,7 +511,15 @@
 						<li><a href="{{=URL('procurement', 'get_purchase_receipt_warehouse_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
 					</ul>
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 3)}}" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 4)}}" ><span class="title">Obsolescence of Stocks</span></a></li>
+					</ul>
+				</li>
 			</ul>
 			{{pass}}
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY POS')):}}
@@ -529,7 +535,20 @@
 					</ul>
 				</li>
 			</ul>
-			{{pass}}							
+			{{pass}}	
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'FMCG')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
+				<li><a href="{{=URL('inventory', 'get_fmcg_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Sales Return</span></a></li>					
+					</ul>
+				</li>
+			</ul>
+			{{pass}}										
 		<!--end .main-menu -->
 				<!-- END MAIN MENU -->
 

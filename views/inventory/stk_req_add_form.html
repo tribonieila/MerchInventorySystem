@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}    
+            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'FMCG') : }}    
             {{ else: }}
                 <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                     <li class="active"><a href="#">+ ADD NEW</a></li>
