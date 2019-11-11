@@ -19,7 +19,7 @@
                         <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">+ create stock request</a>
                       </div> 
                       <div role="tabpanel" class="tab-pane" id="stock_receipt">                        
-                        {{=LOAD('inventory','get_pos_stock_receipt_workflow_grid.load',ajax=True)}}
+                        {{=LOAD('inventory','get_pos_stock_receipt_workflow_grid.load',ajax=True, target='tblSTR')}}
                       </div>
                     </div>                  
                   </div>                

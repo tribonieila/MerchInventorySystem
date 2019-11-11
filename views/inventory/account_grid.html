@@ -6,7 +6,7 @@
                 <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
                 <!-- <li class="active"><a href="#">BROWSE</a></li> -->
             </ul>
-            <span class="card-title">ACCOUNT'S WORKFLOW</span>
+            <span class="card-title">{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} WORKFLOW</span>
         </div> 
         <div class="card-body tab-content">                 
             <div>
@@ -14,23 +14,35 @@
                     <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id == 2).count()}}</span></a></li>
                     <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 8).count()}}</span></a></li>
                     <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 12).count()}}</span></a></li>                        
-                    <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence <span class="badge">{{=db(db.Obsolescence_Stocks.status_id != 15).count()}}</span></a></li>
-                    <!-- <li role="presentation"><a href="#corrections" aria-controls="corrections" role="tab" data-toggle="tab">Corrections <span class="badge">{{=db(db.Stock_Corrections.status_id == 4).count()}}</span></a></li> -->
+                    <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence of Stocks<span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.created_by == auth.user_id)).count()}}</span></a></li>
+                    <li role="presentation"><a href="#corrections" aria-controls="corrections" role="tab" data-toggle="tab">Stock Corrections <span class="badge">{{=db(db.Stock_Corrections.status_id == 4).count()}}</span></a></li>
                     <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.draft == True).count()}}</span></a></li>                        
-                    <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt <span class="badge">{{=db(db.Direct_Purchase_Receipt.id > 0).count()}}</span></a></li>
+                    <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt </a></li>
+                    <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment (+/-)</a></li>
                 </ul>
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane active" id="stock_request">{{=table}}</div>
                     <div role="tabpanel" class="tab-pane" id="sales_order"> {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}</div>
                     <div role="tabpanel" class="tab-pane" id="sales_return"> {{=LOAD('sales','sales_return_grid.load', ajax = True)}}</div>
-                    <div role="tabpanel" class="tab-pane" id="obsolescene">{{=LOAD('inventory','obsol_grid.load', ajax = True)}}</div>
-                    <!-- <div role="tabpanel" class="tab-pane" id="corrections">{{=LOAD('inventory','stock_corrections.load', ajax = True, target = 'tblcor')}}</div> -->
-                    <div role="tabpanel" class="tab-pane" id="purchase_receipt">{{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}</div>
-                    <div role="tabpanel" class="tab-pane" id="direct_purchase_receipt">
-                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ ADD NEW</a>
-                        <br/><br/>
-                        {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}                            
+                    <div role="tabpanel" class="tab-pane" id="obsolescene">
+                        {{=LOAD('inventory','get_obsolescence_of_stocks_workflow_grid.load', ajax = True)}}
+                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','obsolescence_of_stocks_form')}}">+ create Obsolescence of Stocks</a>
                     </div>
+                    <div role="tabpanel" class="tab-pane" id="corrections">
+                        {{=LOAD('inventory','stock_corrections.load', ajax = True, target = 'tblcor')}}
+                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','stock_corrections_add_new')}}">+ create stock corrections</a>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane" id="purchase_receipt">{{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}</div>
+                    <div role="tabpanel" class="tab-pane" id="direct_purchase_receipt">                        
+                        {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}                            
+                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ create new direct purchase</a>                    
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="stock_adjustment">
+                        {{=LOAD('inventory','get_stock_adjustment_workflow_grid.load', ajax = True)}}
+                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','stock_adjustment_add_new')}}">+ create stock adjustment</a>                    
+                    </div>
+
                 </div>
             </div>
         </div>

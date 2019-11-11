@@ -1,7 +1,8 @@
 {{=table}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-    $('.str').click(function(){
+    $("#btnSRP").click(function(){
+        console.log('button click');
         var parent = $(this).parent("div").parent("td").parent("tr")
         var _id = $(this).attr('data-id');
         bootbox.confirm({

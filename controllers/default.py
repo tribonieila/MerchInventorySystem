@@ -11,7 +11,7 @@ def index():
 # ---- administrative task        ----
 def resetstock():
     for x in db().select(db.Stock_File.ALL):
-        x.update_record(opening_stock = 10000, closing_stock = 10000, stock_in_transit = 0, probational_balance = 0, last_transfer_qty = 0, damaged_stock_qty = 0)
+        x.update_record(opening_stock = 10000, closing_stock = 10000, stock_in_transit = 0, probational_balance = 0, last_transfer_qty = 0, damaged_stock_qty = 0, free_stock_qty = 0)
     return locals()
 
 def resettawar():

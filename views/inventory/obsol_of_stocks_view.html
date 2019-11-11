@@ -2,10 +2,11 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
+<!--             
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">VIEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
-            </ul>
+            </ul> -->
             <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -76,7 +77,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id == 15: }}
+                                {{ if _id.status_id == 24: }}
                                     <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
                                 {{ else: }}
                                     {{=form.custom.widget.status_id}}
@@ -101,7 +102,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                        
-                                {{ if _id.status_id == 15: }}        
+                                {{ if _id.status_id == 24: }}        
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">

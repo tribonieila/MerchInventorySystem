@@ -1108,7 +1108,7 @@ db.define_table('Obsolescence_Stocks',
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'sales_order_no')
  
 db.define_table('Obsolescence_Stocks_Transaction',
-    Field('obsolescence_stocks_no_id','reference Sales_Order',ondelete = 'NO ACTION',writable = False),
+    Field('obsolescence_stocks_no_id','reference Obsolescence_Stocks',ondelete = 'NO ACTION',writable = False),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),            
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),

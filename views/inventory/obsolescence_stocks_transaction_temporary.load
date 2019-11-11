@@ -1,4 +1,4 @@
-<hr>
+
 {{=table}}
 {{=form.custom.begin}}
 <div class="row">    

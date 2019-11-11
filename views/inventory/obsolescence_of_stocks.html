@@ -3,7 +3,8 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'ACCOUNT USERS'): }}
+            {{ if auth.has_membership(role = 'ACCOUNT USERS') | auth.has_membership(role = 'ROOT'): }}
+            {{ else: }}
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks_form')}}";>+ ADD NEW</a></li>
                 <li class="active"><a href="#" >BROWSE</a></li>                    
