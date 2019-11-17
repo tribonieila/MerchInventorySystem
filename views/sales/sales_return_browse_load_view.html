@@ -2,10 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#"> VIEW EDIT</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','inventory_manager')}}";>BROWSE</a></li>
-            </ul>
+            </ul> -->
             <span class="card-title">SALES RETURN</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -122,10 +122,10 @@
                             <div class="col-sm-8">                                
                                 {{ if (_id.status_id == 14) or (_id.status_id == 13) or (_id.status_id == 12): }}
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>                                
-                                    <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel</a>
+                                    
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
-                                    <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_return_browse')}}" >cancel</a>                        
+                                    
                                                                                                
                                 {{ pass }}
                                 <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
@@ -137,7 +137,7 @@
                 </div>
             </div>
             <hr>
-            {{=LOAD('sales','sales_return_transaction_table.load', ajax = True)}}
+            {{=LOAD('sales','sales_return_transaction_table.load', ajax = True, args = request.args(0))}}
         </div>
     </div>
 </div>

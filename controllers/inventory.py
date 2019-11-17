@@ -2826,15 +2826,14 @@ def itm_description_():
 def itm_description():   
     # print '-----', request.now, '-------' 
     response.js = "$('#add').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled')"    
-    _itm_code = db(db.Item_Master.item_code == request.vars.item_code).select().first()       
+    _itm_code = db((db.Item_Master.item_code == str(request.vars.item_code)) & (db.Item_Master.dept_code_id == int(session.dept_code_id))).select().first()
     if not _itm_code:        
-        # response.js = "$('#add').attr('disabled','disabled')"
-        return CENTER(DIV("Item code no doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))        
-    else:        
-        _stk_file = db((db.Stock_File.item_code_id == _itm_code.id) & (db.Stock_File.location_code_id == request.vars.stock_source_id)).select().first()
+        print 'department: ', request.vars.dept_code_id
+        return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't belongs to the selected department. ", _class='alert alert-warning',_role='alert'))        
+    else:                
+        _stk_file = db((db.Stock_File.item_code_id == _itm_code.id) & (db.Stock_File.location_code_id == int(request.vars.stock_source_id))).select().first()                
         _item_price = db(db.Item_Prices.item_code_id == _itm_code.id).select().first()        
-        if all([_itm_code, _stk_file, _item_price]):                        
-            # response.js = "$('#add').removeAttr('disabled')"
+        if all([_itm_code, _stk_file, _item_price]):                                    
             if _itm_code.uom_value == 1:
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"                
                 _on_balanced = _stk_file.probational_balance
@@ -2845,13 +2844,14 @@ def itm_description():
                 _on_balanced = card_view(_stk_file.item_code_id, _stk_file.probational_balance)
                 _on_transit = card_view(_stk_file.item_code_id, _stk_file.stock_in_transit)
                 _on_hand = card_view(_stk_file.item_code_id, _stk_file.closing_stock)
+            
             return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Stock-On-Hand'),TH('Stock-On-Transit'),TH('Provisional Balance'))),
             TBODY(TR(TD(_itm_code.item_code),TD(_itm_code.item_description.upper()),TD(_itm_code.group_line_id.group_line_name),TD(_itm_code.brand_line_code_id.brand_line_name),
-            TD(_itm_code.uom_value),TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),TD(_on_hand),TD(_on_transit),TD(_on_balanced)),_class="bg-info"),_class='table'))
-            
-        elif not _stk_file:             
-            return CENTER(DIV("Empty stock file on selected stock source.", _class='alert alert-warning',_role='alert'))            
-            # response.js = "$('#add').attr('disabled','disabled')"               
+            TD(_itm_code.uom_value),TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),TD(_on_hand),TD(_on_transit),TD(_on_balanced)),_class="bg-info"),_class='table'))            
+            response.js = "$('#add').removeAttr('disabled')"
+        elif not _stk_file:                         
+            response.js = "$('#add').attr('disabled','disabled')"   
+            return CENTER(DIV("Empty stock file on selected stock source.", _class='alert alert-warning',_role='alert'))                                    
         elif not _item_price:            
             return CENTER(DIV("Empty retail price.", _class='alert alert-warning',_role='alert'))         
             # response.js = "$('#add').attr('disabled','disabled')"    
@@ -2952,9 +2952,10 @@ def category_option():
             if _id.type_id == 1:
                 return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db(db.Transaction_Item_Category.id == 3).select(orderby=db.Transaction_Item_Category.id)])            
             # if _id.type_id == 3 and _des.location_code_id == 1:
+        # elif int(request.vars.stock_destination_id -- )
         else:
             # print 'else'
-            return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db((db.Transaction_Item_Category.id == 1) |(db.Transaction_Item_Category.id == 3)|(db.Transaction_Item_Category.id == 4)).select(orderby=db.Transaction_Item_Category.id)])
+            return SELECT(_class='form-control', _id='category_id', _name="category_id", *[OPTION(r.description , _value = r.id) for r in db((db.Transaction_Item_Category.id == 1) | (db.Transaction_Item_Category.id == 4)).select(orderby=db.Transaction_Item_Category.id)])
 
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('FMCG') | auth.has_membership('ROOT'))
 def stk_req_add_form():          
@@ -3026,8 +3027,8 @@ def stk_req_add_form():
     return dict(form = form, ticket_no_id = _ticket_no, btnHelp = btnHelp)
  
 def validate_item_code(form):        
-    _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
-    _total_pcs = (int(request.vars.quantity) * int(_id.uom_value)) + int(request.vars.pieces or 0)            
+    _id = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == int(session.dept_code_id))).select().first()
+    # _total_pcs = (int(request.vars.quantity) * int(_id.uom_value)) + int(request.vars.pieces or 0)            
     if not _id:
         form.errors.item_code = 'Item code does not exist or empty.'
         # form.errors.item_code = CENTER(DIV('Item code ',B(str(request.vars.item_code)), ' does not exist or empty.',_class='alert alert-danger',_role='alert'))
@@ -3128,10 +3129,10 @@ def stock_request_transaction_temporary_table():
         Field('pieces', 'integer', default = 0),
         Field('category_id', 'integer', default = 4))
     if form.process(onvalidation = validate_item_code).accepted:
+        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'
         _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
         _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
-        _stk_dest = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_destination_id)).select().first()
-        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'
+        _stk_dest = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_destination_id)).select().first()        
         db.Stock_Transaction_Temp.insert(
             item_code_id = form.vars.item_code_id,
             item_code = request.vars.item_code,
@@ -3161,11 +3162,13 @@ def stock_request_transaction_temporary_table():
             _tmp = db(db.Stock_Transaction_Temp.ticket_no_id == session.ticket_no_id).select().first()        
             _stk_file.stock_in_transit -= int(form.vars.qty)                
             _stk_dest.stock_in_transit += int(form.vars.qty)
-            _stk_file.probational_balance = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)
+            _stk_file.probational_balance = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)            
             _stk_dest.probational_balance = int(_stk_dest.closing_stock) + int(_stk_dest.stock_in_transit)
             # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+            
             _stk_file.update_record()   
             _stk_dest.update_record()
+            
             # print _stk_file.stock_in_transit, _stk_file.probational_balance, int(form.vars.qty)
 
     elif form.errors:        
@@ -3180,7 +3183,7 @@ def stock_request_transaction_temporary_table():
         ctr += 1            
         # save_lnk = A(I(_class='fas fa-save'), _title='Update Row', _type=' button', _role=' button', _class='btn btn-icon-toggle update', callback=URL('inventory','stock_request_temp_update',args=[k.Stock_Transaction_Temp.id,request.vars.quantity], extension = False))
         # save_lnk = A(I(_class='fas fa-save'), _title='Update Row', _type=' button', _role=' button', _class='btn btn-icon-toggle update', callback=URL('inventory','stock_request_temp_update', args = k.Stock_Transaction_Temp.id,request.vars.quantity)) 
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle delete', callback=URL( args = k.Stock_Transaction_Temp.id, extension = False), **{'_data-id':(k.Stock_Transaction_Temp.id)})            
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type=' button', _role=' button', _class='btn btn-icon-toggle delete',_id='delete', callback=URL( args = k.Stock_Transaction_Temp.id, extension = False), **{'_data-id':(k.Stock_Transaction_Temp.id)})            
         btn_lnk = DIV(dele_lnk)
         grand_total += float(k.Stock_Transaction_Temp.amount)
         _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
@@ -3260,24 +3263,6 @@ def stock_request_transaction_temporary_table():
         print session.grand_total
         response.js = "$('#tblIC').get(0).reload();"        
     return dict(form = form, table = table)
-
-def stock_request_temp_update():
-    print 'updated', request.args(0), request.args(1)
-    # _id = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
-    # _im = db(db.Item_Master.id == _id.item_code_id).select().first()
-    # _qty = int(_id.quantity) * int(_im.uom_value) + int(_id.pieces)
-    # _id.update_record(quantity = _qty, )
-
-def stock_request_temp_update_():
-    row = 0
-    if isinstance(request.vars.ctr, list):
-        for x in request.vars.ctr:
-            _qty = request.vars.quantity[row] * request.vars.uom[row] + request.vars.pieces[row] 
-            db(db.Stock_Transaction_Temp.id == x).update(quantity = request.vars['quantity'][row], pieces = request.vars['pieces'][row], qty = _qty)
-            row+=1        
-    else:
-        _qty = request.vars.quantity * request.vars.uom + request.vars.pieces
-        db(db.Stock_Transaction_Temp.id == request.vars.ctr).update(quantity = request.vars.quantity, pieces = request.vars.pieces, qty = _qty)
 
 def push_to_session():
     session.dept_code_id = request.vars.dept_code_id
@@ -3739,6 +3724,42 @@ def stk_req_form():
     table = TABLE(*[head, body], _class='table_class', **{'_data-toggle':'table', '_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
     return dict(table = table)
 
+def get_stock_request_module_grid():
+    row = []
+    _total_amount = _amount = 0
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary' )
+    # print '--- now ---', request.now
+    for n in db(db.Stock_Request.srn_status_id == 4).select(orderby = ~db.Stock_Request.id):
+        _stock_request = n.stock_request_no_id.prefix,n.stock_request_no
+        _stock_request = A(_stock_request, _class='text-primary',_title='Stock Request', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_request_info(n.id)})   
+        if n.stock_transfer_no_id == None: 
+            _stock_transfer = 'None'            
+        else:
+            _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
+            _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_transfer_info(n.id)})   
+        if n.stock_receipt_no_id == None:
+            _stock_receipt = 'None'        
+        else:    
+            _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
+            _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Receipt', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','stk_req_details_form', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(
+            TD(n.stock_request_date),
+            TD(_stock_request),
+            TD(n.stock_source_id.location_name),
+            TD(n.stock_destination_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
+            TD(n.srn_status_id.description),
+            TD(n.srn_status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    # table = TABLE(*[head, body], _class='table_class', _id='table_id',**{'_data-toggle':'table', '_data-classes':'table table-striped',  '_data-search':'true', '_data-show-pagination-switch':'true','_data-pagination':'true'})
+    table = TABLE(*[head, body], _class='table_class', **{'_data-toggle':'table', '_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
+    return dict(table = table)
+
 def get_stock_request_workflow_grid():
     row = []    
     _usr = db(db.User_Location.user_id == auth.user_id).select().first()
@@ -3794,11 +3815,11 @@ def get_stock_request_workflow_grid():
     table = TABLE(*[thead, body], _class='table', _id='tblSR')
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNT USERS') |auth.has_membership(role = 'ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def get_stock_request_grid():
     row = []
-    thead = THEAD(TR(TH('Date'),TH('Stock Requet No.'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-primary'))
-    for n in db(db.Stock_Request.created_by == auth.user_id).select(orderby = ~db.Stock_Request.id):
+    thead = THEAD(TR(TH('Date'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary')
+    for n in db(db.Stock_Request.srn_status_id == 4).select(orderby = ~db.Stock_Request.id):
         if n.stock_transfer_no_id == None: 
             _stock_transfer = 'None'            
         else:
@@ -3815,8 +3836,6 @@ def get_stock_request_grid():
         row.append(TR(
             TD(n.stock_request_date),
             TD(n.stock_request_no_id.prefix,n.stock_request_no),
-            TD(_stock_transfer),
-            TD(_stock_receipt),
             TD(n.stock_source_id.location_name),
             TD(n.stock_destination_id.location_name),
             TD(locale.format('%.3F',n.total_amount or 0, grouping = True),_align ='right'),
@@ -4021,7 +4040,7 @@ def get_warehouse_stock_receipt_grid():
         else:
             # edit_lnk = A(I(_class='fas fa-pencil-alt'),  _title='Edit Row', _type='button', _role='button', _class='btn btn-icon-toggle edit', callback=URL( args = k.Stock_Transaction_Temp.id), data = dict(w2p_disable_with="*"), **{'_data-id':(k.Stock_Transaction_Temp.id),'_data-qt':(k.Stock_Transaction_Temp.quantity), '_data-pc':(k.Stock_Transaction_Temp.pieces)})                        
             #pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle stv', _id='btnSTV',callback=URL(args = n.id, extension = False), **{'_data-id':(n.id)})
-            rec_lnk = A(I(_class='fas fa-user-plus'), _title='Generate Stock Receipt & Print', _type='button ', _role='button', _class='btn btn-icon-toggle srp', _id='btnSRP', callback=URL(args = n.id, extension = False), **{'_data-id':(n.id)})
+            rec_lnk = A(I(_class='fas fa-user-plus'), _title='Generate Stock Receipt & Print', _type='button ', _role='button', _class='btn btn-icon-toggle btnSrp', _id='btnSrp', callback=URL(args = n.id, extension = False), **{'_data-id':(n.id)})
             arch_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')        
         if n.srn_status_id == 5:
             repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -4054,7 +4073,7 @@ def get_warehouse_stock_receipt_grid():
             TD(n.srn_status_id.required_action),
             TD(btn_lnk)))    
     body = TBODY(*row)
-    table = TABLE(*[head, body],_class='table', _id = 'tblStkR')
+    table = TABLE(*[head, body],_class='table')
     return dict(table = table) 
     
 def get_stv_warehouse_grid():
@@ -4346,19 +4365,21 @@ def mngr_req_details():
 def stk_trn_add_form():
     return dict()
 
-def stk_tns_form():
+def get_stock_transaction_grid():
     row = []
     ctr = 0
-    thead = THEAD(TR(TH('Date'),TH('Stock Transfer No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')))
+    thead = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')),_class='bg-primary')
     for n in db(db.Stock_Request.srn_status_id == 5).select(orderby = ~db.Stock_Request.id):
         ctr += 1
+        _stock_request  = n.stock_request_no_id.prefix,n.stock_request_no
         _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
+        
         _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_transfer_info(n.id)})   
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.stock_transfer_date_approved),TD(_stock_transfer),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
+        row.append(TR(TD(n.stock_transfer_date_approved),TD(_stock_request),TD(_stock_transfer),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead, tbody], _class='table',**{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})        
     return dict(table = table)
@@ -4401,17 +4422,20 @@ def stk_tns_add_form():
     return dict(form = form)
 
 # ---- Stock Receipt Master   -----
-def stk_rcpt_form():
+
+def get_stock_receipt_grid():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')))
+    head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')),_class='bg-primary')
     for n in db(db.Stock_Request.srn_status_id == 6).select(orderby = ~db.Stock_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        _stock_request = n.stock_request_no_id.prefix,n.stock_request_no
+        _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
         _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
         _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
-        row.append(TR(TD(n.stock_receipt_date_approved),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
+        row.append(TR(TD(n.stock_receipt_date_approved),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(n.total_amount),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', **{'_data-toggle':'table','_data-classes':'table table-striped','_data-pagination':'true','_data-search':'true'})
     return dict(table = table)
@@ -4632,17 +4656,17 @@ def stock_adjustment_browse():
     if auth.has_membership(role = 'ACCOUNT USERS'): # MANOJ        
         _query = db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
-        _query = db(db.Stock_Adjustment.srn_status_id == 4).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
+        _query = db(db.Stock_Adjustment.srn_status_id == 15).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
     elif auth.has_membership(role = 'ROOT'): # ADMIN
         _query = db().select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
-    head = THEAD(TR(TH('Date'),TH('Adjustment No'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action')),_class='bg-primary')
+    head = THEAD(TR(TH('Date'),TH('Adjustment No'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')),_class='bg-primary')
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stock_adjustment_browse_details', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href=URL('inventory','stock_adjustment_report', args=n.id, extension=False))
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('inventory','stock_adjustment_report', args=n.id, extension=False))
         btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.stock_adjustment_date),TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(n.total_amount),TD(n.srn_status_id.description),TD(btn_lnk)))
+        row.append(TR(TD(n.stock_adjustment_date),TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
@@ -4939,7 +4963,7 @@ def stock_adjustment_manager_details():
 @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
 def stock_adjustment_manager_details_approved():    
     _stk_adj = db(db.Stock_Adjustment.id == request.args(0)).select().first()            
-    _stk_adj.update_record(srn_status_id = 2, approved_by = auth.user_id, date_approved = request.now)    
+    _stk_adj.update_record(srn_status_id = 15, approved_by = auth.user_id, date_approved = request.now)    
     _clo_stk = 0   
     for s in db(db.Stock_Adjustment_Transaction.stock_adjustment_no_id == request.args(0)).select(db.Stock_Adjustment_Transaction.ALL):                  
         _stk_file = db((db.Stock_File.item_code_id == s.item_code_id) & (db.Stock_File.location_code_id == _stk_adj.location_code_id)).select().first()
@@ -5107,7 +5131,7 @@ def stock_adjustment_manager_grid():
     #     _query = (db.Stock_Adjustment.archive == False) | (db.Stock_Adjustment.srn_status_id == 4) | (db.Stock_Adjustment.srn_status_id == 2) & (db.Stock_Adjustment.dept_code_id == _usr.department_id)
     # else:
     _query = (db.Stock_Adjustment.archive == False) | (db.Stock_Adjustment.srn_status_id == 4) | (db.Stock_Adjustment.srn_status_id == 2) 
-    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action'), _class='bg-primary'))  
+    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action')), _class='bg-primary')  
     for i in db(_query).select(orderby = ~db.Stock_Adjustment.id):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_manager_details', args = i.id, extension = False))
         appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
@@ -6046,7 +6070,7 @@ def get_stock_corrections_workflow_reports():
         _query = db((db.Stock_Corrections.status_id == 16) & (db.Stock_Corrections.archive != True) & (db.Stock_Corrections.created_by == auth.user_id)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
         # _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
-        _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
+        _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 16)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ROOT'): # ADMIN
         _query = db().select(orderby = ~db.Stock_Corrections.id)        
     head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
@@ -6082,15 +6106,15 @@ def get_stock_corrections_workflow_reports():
                 clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk)
-            # elif n.status_id == 16:
-            #     view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
-            #     edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
-            #     dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-            #     appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
-            #     btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, appr_lnk, reje_lnk, clea_lnk)
+            elif n.status_id == 16:
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
+                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
+                btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, appr_lnk, reje_lnk, clea_lnk)
         else:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -6668,9 +6692,9 @@ def get_pos_stock_request_workflow_grid():
     row = []
     _total_amount = _amount = 0    
     _loc = db(db.User_Location.user_id == auth.user_id).select().first()
-    _query = db.Stock_Request.created_by == auth.user_id
-    # _query &= db.Stock_Request.stock_source_id == int(_loc.location_code_id)
+    _query = (db.Stock_Request.created_by == auth.user_id) | (db.Stock_Request.stock_source_id == int(_loc.location_code_id))
     _query &= ((db.Stock_Request.srn_status_id == 4) | (db.Stock_Request.srn_status_id == 2) | (db.Stock_Request.srn_status_id == 5) )
+    # _query &= db.Stock_Request.stock_source_id == int(_loc.location_code_id)    
     # _query &= db.Stock_Request.srn_status_id != 6
     
     head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary' )
@@ -6687,14 +6711,13 @@ def get_pos_stock_request_workflow_grid():
         else:    
             _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
             _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Receipt', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
-        if n.srn_status_id == 2:            
+        if (n.srn_status_id == 2) and (n.stock_source_id == int(_loc.location_code_id)):            
             pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle stv', _id='btnSTV',callback=URL(args = n.id, extension = False), **{'_data-id':(n.id)})
-            # pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle', _id='btnSTV',callback=URL('inventory', 'get_generate_stock_transfer', args = n.id, extension = False))
-            
+            # pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle', _id='btnSTV',callback=URL('inventory', 'get_generate_stock_transfer', args = n.id, extension = False))            
         else:
             pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer', _type=' button', _role='button', _class='btn btn-icon-toggle disabled')
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, pst_lnk, dele_lnk)
         row.append(TR(TD(n.stock_request_date),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
@@ -6769,7 +6792,7 @@ def get_stv_sales_mngr_grid():
     row = []
     ctr = 0    
     _query = (db.Stock_Request.stock_receipt_approved_by == auth.user_id) | (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.stock_destination_id != 1) & (db.Stock_Request.srn_status_id == 6)
-    head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
+    head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Requested By'),TH('Approved by'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
     for n in db(db.Stock_Request.srn_status_id == 6).select(orderby = ~db.Stock_Request.id):
         ctr += 1
         view_lnk = A(I(_class='fas fa-search'), _title='View Details Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stock_receipt_details', args = n.id, extension = False))
@@ -6784,9 +6807,10 @@ def get_stv_sales_mngr_grid():
             TD(n.stock_transfer_no_id.prefix,n.stock_transfer_no),
             TD(n.stock_receipt_no_id.prefix,n.stock_receipt_no),
             TD(n.stock_source_id.location_name),
-            TD(n.stock_destination_id.location_name),
-            TD(n.created_by.first_name.upper() + ' ' + n.created_by.last_name.upper()),
+            TD(n.stock_destination_id.location_name),            
             TD(locale.format('%.2F',n.total_amount or 0, grouping = True),_align = 'right'),
+            TD(n.created_by.first_name.upper() + ' ' + n.created_by.last_name.upper()),
+            TD(n.stock_request_approved_by.first_name.upper(), ' ',n.stock_request_approved_by.last_name.upper()),
             TD(n.srn_status_id.description),
             TD(n.srn_status_id.required_action),
             TD(btn_lnk)))    
@@ -7042,36 +7066,22 @@ def stock_receipt_generator():
         _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _stk_rcpt.stock_destination_id)).select().first()
         _stk_src = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _stk_rcpt.stock_source_id)).select().first()
         if _stk_des:            
-            _stk_in_transit = int(_stk_des.stock_in_transit) - int(n.quantity)
-            _clo_stk = int(_stk_des.closing_stock) + int(n.quantity)
-            _damaged_stock = int(_stk_des.damaged_stock_qty) + int(n.quantity)
-            _free_stock = int(_stk_des.free_stock_qty) + int(n.quantity)
-            if int(n.category_id) == 1:                            
-                # print 'DAMAGED', n.quantity, _damaged_stock
-                _stk_des.update_record(damaged_stock_qty = _damaged_stock, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
-            # elif int(n.category_id) == 3:                            
-            #     # print 'FOC',n.quantity, _free_stock
-            #     _stk_des.update_record(free_stock_qty = _free_stock, stock_in_transit = _stk_in_transit, last_transfer_qty = n.quantity, last_transfer_date = request.now)  
-            elif (int(n.category_id) == 4) or (int(n.category_id) == 3):
-                # print 'NORMAL', n.quantity                
-                _stk_des.update_record(closing_stock = _clo_stk, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
-        else:
-            print 'else'
-            db.Stock_File.update_or_insert(closing_stock = _clo_stk, stock_in_transit = _stk_in_transit, last_transfer_qty = n.quantity, last_transfer_date = request.now)
-        if _stk_src:
-            _clo_stk_in_trn = int(_stk_src.closing_stock) - int(n.quantity)
-            _stk_in_trn = int(_stk_src.stock_in_transit) + int(n.quantity)
-            _stk_src.update_record(closing_stock = _clo_stk_in_trn, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
-    # session.flash = 'STOCK RECEIPT GENERATED'
-    # response.js = "$('#tblSR').get(0).reload()"
-            # print 'update stock source'
-            # _min = int(int(_stk_src.closing_stock) - int(srt.quantity))            
-            # _min_or_trn = int(_stk_src.stock_in_transit) - int(srt.quantity)
-            # _stk_src.update_record(closing_stock = _min, stock_in_transit = _min_or_trn, last_transfer_qty = srt.quantity)            
+            _stk_in_transit = int(_stk_des.stock_in_transit) - int(n.quantity) # 1 stock in transit destination
+            _clo_stk = int(_stk_des.closing_stock) + int(n.quantity) # 2 closing stocks in destination
+            _damaged_stock = int(_stk_des.damaged_stock_qty) + int(n.quantity) # 3 damaged stocks in destination
+            _pro_bal = int(_stk_des.closing_stock) + int(_stk_in_transit) # for damaged provisional stocks
+            _nor_bal = int(_clo_stk) + int(_stk_in_transit) # for normal stocks
 
-
+            if int(n.category_id) == 1:  # damaged stocks                            
+                _stk_des.update_record(probational_balance = _pro_bal, damaged_stock_qty = _damaged_stock, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)
             
-    # redirect(URL('inventory','stock_receipt_report',request.args(0)))
+            if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
+                _stk_des.update_record(probational_balance = _nor_bal, closing_stock = _clo_stk, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
+        if _stk_src:
+            _stk_in_trn_src = int(_stk_src.stock_in_transit) + int(n.quantity) # 1 stock in transit source
+            _pro_bal = int(_stk_src.closing_stock) + int(_stk_src.stock_in_transit) # 2 provisional balance in source
+            _clo_stk_in_trn = int(_stk_src.closing_stock) - int(n.quantity) # 3 closing stock in source                        
+            _stk_src.update_record(closing_stock = _clo_stk_in_trn, probational_balance = _pro_bal,stock_in_transit = _stk_in_trn_src,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
 
 ##########          Q U E R Y           ##########
 
@@ -7207,7 +7217,7 @@ def _header_footer_stock_receipt(canvas, doc):
         ['',str(_stk_req.stock_receipt_approved_by.first_name.upper() + ' ' + _stk_req.stock_receipt_approved_by.last_name.upper()),'','',''],
         ['','Name and Signature','','Name and Signature',''],
         [merch,'','','',''],
-        [today.strftime("%A %d. %B %Y, %I:%M%p "),'','','','']], colWidths=[50,'*',50,'*',50])
+        [today.strftime("Printed on %A %d. %B %Y, %I:%M%p "),'','','','']], colWidths=[50,'*',50,'*',50])
     footer.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('FONTSIZE',(0,0),(-1,-1),8),        
@@ -7493,7 +7503,7 @@ def stock_transaction_report():
         _grand_total += _total        
         _stock_on_hand = card(i.Stock_Request_Transaction.item_code_id, _stock, i.Stock_Request_Transaction.uom)
         stk_trn.append([ctr,
-        i.Stock_Request_Transaction.item_code_id.item_code,        
+        Paragraph(i.Stock_Request_Transaction.item_code_id.item_code, style=_style),        
         str(i.Item_Master.brand_line_code_id.brand_line_name)+str('\n')+str(i.Item_Master.item_description.upper())+str('\n')+str(i.Stock_Request_Transaction.remarks)+str('\n')+str('SOH: ')+str(_stock_on_hand),        
         i.Item_Master.uom_id.mnemonic,
         i.Stock_Request_Transaction.category_id.mnemonic,
@@ -7504,7 +7514,7 @@ def stock_transaction_report():
         locale.format('%.2F',_total or 0, grouping = True)])
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     stk_trn.append(['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS','', '','', '','','Total Amount',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    trn_tbl = Table(stk_trn, colWidths = [25,55,'*',30,30,30,50,50,50], repeatRows=1)
+    trn_tbl = Table(stk_trn, colWidths = [25,70,'*',30,30,30,50,50,50], repeatRows=1)
     trn_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),        
@@ -7611,9 +7621,9 @@ def stock_receipt_report():
     for s in db(db.Stock_Request.id == request.args(0)).select(db.Stock_Request.ALL, db.Transaction_Prefix.ALL, left = db.Transaction_Prefix.on(db.Transaction_Prefix.id == db.Stock_Request.stock_request_no_id)):        
         stk_req_no = [
             ['STOCK RECEIPT'],               
-            ['Stock Receipt No',':',str(s.Stock_Request.stock_receipt_no_id.prefix)+str(s.Stock_Request.stock_receipt_no), '','STOCK Receipt DATE:',':',s.Stock_Request.stock_receipt_date_approved.strftime('%d-%m-%Y')],
-            ['Stock Transfer No',':',str(s.Stock_Request.stock_transfer_no_id.prefix)+str(s.Stock_Request.stock_transfer_no), '','Stock Transfer Date:',':',s.Stock_Request.stock_transfer_date_approved.strftime('%d-%m-%Y')],
-            ['Stock Request No',':',str(s.Stock_Request.stock_request_no_id.prefix)+str(s.Stock_Request.stock_request_no),'', 'Stock Request Date:',':',s.Stock_Request.stock_request_date.strftime('%d-%m-%Y')],
+            ['Stock Receipt No',':',str(s.Stock_Request.stock_receipt_no_id.prefix)+str(s.Stock_Request.stock_receipt_no), '','Stock Receipt Date:',':',s.Stock_Request.stock_receipt_date_approved.strftime('%d-%m-%Y, %H:%M:%S %p')],# [today.strftime("Printed on %A %d. %B %Y, %I:%M%p "),'','','','']], colWidths=[50,'*',50,'*',50])
+            ['Stock Transfer No',':',str(s.Stock_Request.stock_transfer_no_id.prefix)+str(s.Stock_Request.stock_transfer_no), '','Stock Transfer Date:',':',s.Stock_Request.stock_transfer_date_approved.strftime('%d-%m-%Y, %H:%M:%S %p')],
+            ['Stock Request No',':',str(s.Stock_Request.stock_request_no_id.prefix)+str(s.Stock_Request.stock_request_no),'', 'Stock Request Date:',':',s.Stock_Request.stock_request_date.strftime('%d-%m-%Y, %H:%M:%S %p')],
             ['Stock Request From', ':',s.Stock_Request.stock_source_id.location_name,'','Stock Request To',':',s.Stock_Request.stock_destination_id.location_name],
             ['Department', ':',s.Stock_Request.dept_code_id.dept_name,'','Remarks:',':',s.Stock_Request.remarks]]
         
@@ -7891,7 +7901,7 @@ def master_item_view():
                     _os = i.Stock_File.opening_stock or 0
                     _cl = i.Stock_File.closing_stock or 0
                     _st = i.Stock_File.stock_in_transit or 0
-                    _av = int(i.Stock_File.closing_stock or 0) - int(i.Stock_File.stock_in_transit or 0)
+                    _av = i.Stock_File.probational_balance or 0#int(i.Stock_File.closing_stock or 0) + int(i.Stock_File.stock_in_transit or 0)
                     _fs = i.Stock_File.free_stock_qty or 0
                     _ds = i.Stock_File.damaged_stock_qty or 0
                 else:

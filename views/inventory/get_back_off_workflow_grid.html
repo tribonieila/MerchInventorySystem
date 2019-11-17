@@ -3,7 +3,7 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <span class="card-title">{{=auth.user.first_name.upper()}} Workflow</span>
+                <span class="card-title">{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} Workflow</span>
             </div>
             <div class="card-body tab-content">          
                 <div>
@@ -11,6 +11,7 @@
                     <ul class="nav nav-pills" role="tablist">
                       <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id==4).count()}}</span></a></li>
                       <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id==4).count()}}</span></a></li>
+                      <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id==4) & (db.Sales_Return.created_by == auth.user_id)).count()}}</span></a></li>
                       <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db(db.Stock_Request.srn_status_id==5).count()}}</span></a></li>                      
 
                     </ul>                  
@@ -25,6 +26,11 @@
                         {{=LOAD('sales','get_sales_order_workflow_grid.load',ajax=True, target='tblSO')}}
                         <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('sales','sales_order_form', extension = False)}}">+ create sales order</a>
                       </div> 
+                      <div role="tabpanel" class="tab-pane" id="sales_return">                        
+                        {{=LOAD('sales','get_sales_return_grid.load',ajax=True)}}
+                        <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('sales','sales_return_form', extension = False)}}">+ create sales return</a>
+                      </div> 
+
                       <div role="tabpanel" class="tab-pane" id="purchase_request">                        
 
                         {{=LOAD('procurement','get_purchase_request_grid.load',ajax=True, target='PRtbl')}}

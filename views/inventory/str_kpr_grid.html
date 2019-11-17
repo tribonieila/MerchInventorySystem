@@ -2,11 +2,6 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <!-- <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_add_form')}}";>+ ADD NEW</a></li> -->
-                    <!-- <li class="active"><a href="#">BROWSE</a></li> -->
-                </ul>
-                <!-- <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span> -->
                 <span class="card-title">{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} WORKFLOW</span>
             </div>
             <div class="card-body tab-content">
@@ -17,23 +12,22 @@
                                 <li role="presentation"><a href="#purchase_order" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Order<span class="badge">{{=db((db.Purchase_Order.status_id == 17) & (db.Purchase_Order.dept_code_id != 3)).count()}}</span></a></li>
                                 <li role="presentation"><a href="#warehouse_purchase_receipt" aria-controls="warehouse_purchase_receipt" role="tab" data-toggle="tab">Warehouse Purchase Receipt<span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id==18).count()}}</span></a></li>
                                 <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db((db.Stock_Request.srn_status_id == 2) & (db.Stock_Request.dept_code_id != 3)).count()}}</span></a></li>
-                                <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt<span class="badge">{{=db((db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.dept_code_id != 3) & (db.Stock_Request.stock_destination_id != 1)).count()}}</span></a></li>
+                                <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt<span class="badge">{{=db((db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.dept_code_id != 3)  & (db.Stock_Request.stock_destination_id != 1)).count()}}</span></a></li>
                                 <li role="presentation"><a href="#stock_corrections" aria-controls="stock_corrections" role="tab" data-toggle="tab">Stock Corrections <span class="badge">{{=db((db.Stock_Corrections.status_id == 4) & (db.Stock_Corrections.dept_code_id != 3) &(db.Stock_Corrections.created_by == auth.user_id)).count()}}</span></a></li>                        
                                 <li role="presentation"><a href="#obsolescence_of_stocks" aria-controls="obsolescence_of_stocks" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id != 3)).count()}}</span></a></li>
+                                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db((db.Sales_Order.status_id == 9) & (db.Sales_Order.dept_code_id != 3)).count()}}</span></a></li>
+                                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id == 14) & (db.Sales_Return.dept_code_id !=3)).count()}}</span></a></li>                                
                         {{ else: }}
                                 <li role="presentation"><a href="#purchase_order" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Order<span class="badge">{{=db(db.Purchase_Order.status_id == 17).count()}}</span></a></li>
                                 <li role="presentation"><a href="#warehouse_purchase_receipt" aria-controls="warehouse_purchase_receipt" role="tab" data-toggle="tab">Warehouse Purchase Receipt<span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id==18).count()}}</span></a></li>
                                 <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db((db.Stock_Request.srn_status_id == 2) & (db.Stock_Request.dept_code_id == 3)).count()}}</span></a></li>                                                    
-                                <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt<span class="badge">{{=db((db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.dept_code_id == 3) & (db.Stock_Request.stock_destination_id == 1)).count()}}</span></a></li>
+                                <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt NOT<span class="badge">{{=db((db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.dept_code_id == 3) & (db.Stock_Request.stock_destination_id == 1)).count()}}</span></a></li>
                                 <li role="presentation"><a href="#stock_corrections" aria-controls="stock_corrections" role="tab" data-toggle="tab">Stock Corrections<span class="badge">{{=db((db.Stock_Corrections.status_id == 4) & (db.Stock_Corrections.dept_code_id == 3) & (db.Stock_Corrections.created_by == auth.user_id)).count()}}</span></a></li>
                                 <li role="presentation"><a href="#obsolescence_of_stocks" aria-controls="obsolescence_of_stocks" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.status_id == 3)).count()}}</span></a></li>
-                        {{ pass }}
-                        
-                        
-                        
-                        
-                        <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 9).count()}}</span></a></li>
-                        <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        
+                                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db((db.Sales_Order.status_id == 9) & (db.Sales_Order.dept_code_id == 3)).count()}}</span></a></li>
+                                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id == 14) & (db.Sales_Return.dept_code_id == 3)).count()}}</span></a></li>                        
+        
+                        {{ pass }}                                                                                                
                     </ul>
                     <div class="tab-content">
                         <div role="tabpanel" class="tab-pane active" id="purchase_order">                        
@@ -47,7 +41,7 @@
                             
                         </div>          
                         <div role="tabpanel" class="tab-pane" id="stock_receipt">
-                            {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True, target = 'tblStkR')}}
+                            {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True)}}
                         </div>
                         <div role="tabpanel" class="tab-pane" id="stock_corrections">
                             {{=LOAD('inventory','get_stock_corrections_grid.load', ajax = True, target = 'tblcor')}}
@@ -73,3 +67,4 @@
         </div>                
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

@@ -6,7 +6,7 @@
                 <li class="active"><a href="#">EDIT VIEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
             </ul>
-            <span class="card-title">SALES ORDER FORM</span>
+            <span class="card-title">SALES INVOICE FORM</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -201,7 +201,7 @@ $(document).ready(function(){
     });
     
     $('#btninvoice').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}')
+        ajax('{{=URL('sales','sales_order_manager_invoice_no_approved', args = request.args(0))}}')
         location.reload();
     });
         

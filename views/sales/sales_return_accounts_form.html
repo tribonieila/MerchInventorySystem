@@ -2,10 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#"> VIEW EDIT</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
-            </ul>
+            </ul> -->
             <span class="card-title">SALES RETURN</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -86,10 +86,10 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id == 12: }}
-                                    {{=form.custom.widget.status_id}}                                    
+                                {{ if _id.status_id == 13: }}
+                                    <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>                                    
                                 {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>
+                                    {{=form.custom.widget.status_id}}                                    
                                 {{ pass }}
                             </div>
                         </div>
@@ -120,7 +120,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                {{ if _id.status_id == 8: }}
+                                {{ if _id.status_id == 13: }}
                                     <input class="btn btn-primary" type="submit" value="create sales return & print" id="btnreturn" disabled>
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="create sales return & print" id="btnreturn">                                                                              
@@ -149,7 +149,8 @@ $(document).ready(function(){
         }
     });
     $('#btnreturn').click(function(){
-        location.reload();
+        window.location.reload();
+        window.open("{{=URL('sales','sales_return_report_account_user', args = request.args(0))}}");
     })
 });
 </script>

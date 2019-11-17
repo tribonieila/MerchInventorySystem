@@ -21,8 +21,6 @@
                 if (result) {
                     parent.fadeOut('slow');
                     ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);
-                    // location.reload();
-                    $("#tbl").load(location.href + " #tbl");
                     parent.fadeIn('slow'); 
                     location.reload();
                     window.open("{{=URL('inventory','stock_receipt_report')}}" + '/' + _id);

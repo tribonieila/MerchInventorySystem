@@ -1,12 +1,5 @@
 {{=table}}
-<script>
-     $('.btn').click(function(){
-        location.reload();
-     });
-
-</script>
-<script>
-    
+<script>   
         $('.delete').click(function(){
             var _id = $(this).attr('data-id');
             var parent = $(this).parent("div").parent("td").parent("tr");

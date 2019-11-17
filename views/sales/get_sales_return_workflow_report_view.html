@@ -2,17 +2,20 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">SALES ORDER FORM</span>
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#"> VIEW EDIT</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('sales_return_browse')}}";>BROWSE</a></li>
+            </ul> -->
+            <span class="card-title">SALES RETURN</span>
         </div>
         <div class="card-body tab-content">                                            
-            <div class="form-horizontal">   
-                {{=form.custom.begin}}	                    
+            <div class="form-horizontal">                                    
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Sales Order No</label>
+                            <label class="col-sm-4 control-label">Sales Return No</label>
                             <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.sales_order_no}}" readonly>                                
+                                <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.sales_return_no}}" readonly>
                             </div>                           
                         </div>                        
                     </div>
@@ -20,16 +23,16 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Date</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.sales_order_date}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.sales_return_date}}" readonly >
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Delivery Due Date</label>
+                            <!-- <label class="col-sm-4 control-label">Delivery Due Date</label>
                             <div class="col-sm-8">
                                 <input type="text" class="form-control" value="{{=_id.delivery_due_date}}" readonly >
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -45,10 +48,10 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Location Source</label>
+                            <label class="col-sm-4 control-label">Location</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.stock_source_id.location_code}} - {{=_id.stock_source_id.location_name}}" readonly >
-                                <input type="text" class="form-control" id="stock_source_id" name="stock_source_id" value="{{=_id.stock_source_id}}" hidden >
+                                <input type="text" class="form-control" value="{{=_id.location_code_id.location_code}} - {{=_id.location_code_id.location_name}}" readonly >
+                                <input type="text" class="form-control" id="location_code_id" name="location_code_id" value="{{=_id.location_code_id}}" hidden >
                             </div>
                         </div>                                           
                     </div>
@@ -72,7 +75,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Order Reference</label>
+                            <label class="col-sm-4 control-label">Sales Return Reference</label>
                             <div class="col-sm-8">
                                     <input type="text" class="form-control" value="{{=_id.customer_order_reference}} " readonly>
                             </div>
@@ -82,11 +85,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9): }}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>                                    
-                                {{ else: }}
-                                    {{=form.custom.widget.status_id}}
-                                {{ pass }}
+                                <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>                                    
                             </div>
                         </div>
                     </div>
@@ -94,42 +93,36 @@
     
                 <div class="row">
                     <div class="col-md-4">
-                        <div class="form-group">
+                        <div class="form-group"> 
                             <label class="col-sm-4 control-label">Address</label>
                             <div class="col-sm-8">
-                                <div id="customer_address"></div>
+                                <address>
+                                    <strong>Unit No. </strong>{{=_id.customer_code_id.unit_no}}<br>
+                                    Bldg. {{=_id.customer_code_id.building_no}}<br>
+                                    {{=_id.customer_code_id.street_no}}, {{=_id.customer_code_id.area_name}} {{=_id.customer_code_id.state}}<br>
+                                    <abbr title="Phone">P:</abbr> {{=_id.customer_code_id.telephone_no}}
+                                </address>
                             </div>
-                        </div>                     
+                        </div>                    
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                            <div class="col-sm-8"> <input type="text" class="form-control" value="{{=_id.remarks}} " readonly>      </div>
                         </div>                                               
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                {{ if (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9): }}
-                                    <input class="btn btn-primary" type="submit" value="submit" disabled>                                
-                                    <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
-                                {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
-                                    <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel sales order</a>                         -->
-                                                                                               
-                                {{ pass }}
-                                <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
-                                <!-- <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a> -->
-                                {{=form.custom.end}}
+                                <input class="btn btn-primary" type="submit" value="submit" disabled>                                
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <hr>
-            {{=LOAD('sales','sales_order_transaction_table.load', ajax = True,args = request.args(0), target ='tblSot')}}
+            {{=LOAD('sales','sales_return_transaction_table.load', args = request.args(0), ajax = True)}}
         </div>
     </div>
 </div>
-

@@ -517,9 +517,15 @@ def validate_sales_order_transaction(form):
                     
         # _unit_price = float(_price.retail_price) / int(_id.uom_value)
         # _total = float(_unit_price) * int(_total_pcs)
-
-        if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
-            form.errors.quantity = 'Quantity should not be more than provisional balance.'
+        if int(_stk_file.stock_in_transit) >=0:
+            if int(_total_pcs) > int(_stk_file.closing_stock):
+                _pro_bal = card(_stk_file.item_code_id, _stk_file.closing_stock, _id.uom_value)
+                form.errors.quantity = 'Quantity should not be more than closing stock of ' + str(_pro_bal)
+        else:
+            if int(_total_pcs) > int(_stk_file.probational_balance):
+                _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
+                form.errors.quantity = 'Quantity should not be more than provisional balance of ' + str(_pro_bal)
+            # if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
         
         form.vars.item_code_id = _id.id
         form.vars.selective_tax = _selective_tax
@@ -540,7 +546,7 @@ def sales_order_transaction_temporary():
     if form.process( onvalidation = validate_sales_order_transaction).accepted:        
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
         _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
-        _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
+        _stk_src = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
         db.Sales_Order_Transaction_Temporary.insert(
             item_code_id = form.vars.item_code_id,
             item_code = form.vars.item_code,
@@ -560,10 +566,9 @@ def sales_order_transaction_temporary():
             response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
         else:            
             response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
-        
-        _stk_file.stock_in_transit += form.vars.total_pieces    
-        _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-        _stk_file.update_record()                  
+        _stk_src.stock_in_transit -= int(form.vars.total_pieces)        
+        _stk_src.probational_balance = int(_stk_src.closing_stock) + int(_stk_src.stock_in_transit)        
+        _stk_src.update_record()                          
         
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -683,7 +688,8 @@ def generate_total_amount(item, qty, pcs):
     # _tamount = float(_uprice) * int(_pcs)    
     # print 'excise tax ', _excise_tax_amount, _unit_price, _total_amount
     return _unit_price
- 
+
+
 @auth.requires_login()
 def sales_order_transaction_temporary_delete():
 
@@ -700,8 +706,51 @@ def get_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     # for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
-    for n in db(db.Sales_Order).select(orderby = ~db.Sales_Order.id):  
-        print 'created by in sales order ', n.created_by, auth.user.id
+    for n in db((db.Sales_Order.created_by == auth.user_id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7)).select(orderby = ~db.Sales_Order.id):          
+        if n.status_id == 7:
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk, clea_lnk)
+
+        if not n.transaction_prefix_id:
+            _sales = 'None'
+        else:
+            _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)
+            _sales = A(_sales, _class='text-primary', _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+        if not n.delivery_note_no_prefix_id:
+            _note = 'None'
+        else:
+            _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+            _note = A(_note, _class='text-warning', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+        if not n.sales_invoice_no_prefix_id:
+            _inv = 'None'            
+        else:
+            _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+            _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
+        row.append(TR(
+            TD(n.sales_order_date),
+            TD(_sales),
+            TD(_note),
+            TD(_inv),
+            TD(n.dept_code_id.dept_name),
+            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.stock_source_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id = 'tblSO')#, **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
+    return dict(table = table)
+
+def get_sales_invoice_workflow_reports():    
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    # for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
+    for n in db((db.Sales_Order.created_by == auth.user_id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id == 7)).select(orderby = ~db.Sales_Order.id):          
         if n.status_id == 7:
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -848,6 +897,41 @@ def sales_order_cancell():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _id.update_record(status_id = 10, update_on = request.now, updated_by = auth.user_id)
     session.flash = 'SALES ORDER CANCELLED'    
+
+@auth.requires_login()
+def get_sales_invoice_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Delivery Note No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id):  
+        if n.status_id == 7:            
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False))            
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+        else:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        btn_lnk = DIV(view_lnk)
+
+        if not n.transaction_prefix_id:
+            _sales = 'None'
+        else:
+            _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)
+            _sales = A(_sales, _class='text-primary', _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+        if not n.delivery_note_no_prefix_id:
+            _note = 'None'
+        else:
+            _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+            _note = A(_note, _class='text-warning', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+        if not n.sales_invoice_no_prefix_id:
+            _inv = 'None'            
+        else:
+            _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+            _inv = A(_inv, _class='text-danger', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
+        row.append(TR(TD(n.sales_order_date),TD(_note),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+            TD(n.status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)
 
 @auth.requires_login()
 def delivery_note_browse():
@@ -1144,8 +1228,11 @@ def sales_order_transaction_table():
 
         btn_lnk = DIV( dele_lnk)
         _qty = n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom        
-        _pcs = n.Sales_Order_Transaction.quantity - n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom * n.Sales_Order_Transaction.uom
-        _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
+        _pcs = n.Sales_Order_Transaction.quantity - n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom * n.Sales_Order_Transaction.uom        
+        if db((db.Sales_Order.id == request.args(0)) & (db.Sales_Order.status_id == 7) | (db.Sales_Order.created_by != auth.user_id)).select().first():
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)
+        else:
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
         row.append(TR(
             TD(ctr,INPUT(_name='ctr',_type='number',_hidden='true',_value=n.Sales_Order_Transaction.id)),
             TD(n.Sales_Order_Transaction.item_code_id.item_code,INPUT(_name='item_code_id',_type='text',_hidden='true',_value=n.Sales_Order_Transaction.item_code_id)),
@@ -1302,13 +1389,20 @@ def sales_return_accounts_form():
 @auth.requires_login()
 def sales_return_accounts_form_approved():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    _query = db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select()    
     _damaged_qty = 0
-    for n in _query:
-        _sf = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()                
-        _damaged_qty = int(_sf.damaged_stock_qty or 0) + int(n.quantity)        
-        _sf.update_record(damaged_stock_qty = _damaged_qty)            
+    for n in db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select():
+        _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first() 
+        _stk_in_trn = int(_stk_des.stock_in_transit) - int(n.quantity)
+        _stk_in_clo = int(_stk_des.closing_stock) + int(n.quantity)
+        _stk_in_pro = int(_stk_des.closing_stock) + int(_stk_in_trn)
+        _stk_in_dam = int(_stk_des.damaged_stock_qty) + int(n.quantity)        
+        _stk_in_nor = int(_stk_in_clo) + int(_stk_in_trn)
+        if int(n.category_id) == 1: # damaged return
+            _stk_des.update_record(probational_balance = _stk_in_pro, damaged_stock_qty = _stk_in_dam, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
+        if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
+            _stk_des.update_record(closing_stock = _stk_in_clo, probational_balance = _stk_in_nor, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
     _id.update_record(status_id = 13, sales_return_date_approved = request.now, sales_return_approved_by = auth.user_id)
+    response.js = "#()."
     session.flash = 'SALES RETURNED APPROVED'
 
 @auth.requires_login()
@@ -1392,7 +1486,23 @@ def sales_return_browse_load_view():
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _id = _id) 
-    
+
+def get_sales_return_grid():
+    row = []
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
+    for n in db((db.Sales_Return.status_id == 4) & (db.Sales_Return.created_by == auth.user_id)).select(orderby = ~db.Sales_Return.id):  
+        view_lnk = A(I(_class='fas fa-search'), _target="#",_title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_return_view', args = n.id, extension = False))
+        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
+        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+            TD(n.status_id.required_action),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    return dict(table = table)  
+
 @auth.requires_login()   
 def sales_return_browse():
     row = []
@@ -1632,7 +1742,7 @@ def sales_return_transaction_temporary():
     if form.process( onvalidation = validate_sales_return_transaction).accepted:        
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
         _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
-        # _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
+        _stk_des = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
         db.Sales_Return_Transaction_Temporary.insert(
             item_code_id = form.vars.item_code_id,
             item_code = form.vars.item_code,
@@ -1652,10 +1762,9 @@ def sales_return_transaction_temporary():
             response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
         else:            
             response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
-
-        # _stk_file.stock_in_transit += form.vars.total_pieces    
-        # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-        # _stk_file.update_record()     
+        _stk_des.stock_in_transit += int(form.vars.total_pieces)
+        _stk_des.probational_balance = int(_stk_des.closing_stock) + int(_stk_des.stock_in_transit)
+        _stk_des.update_record()     
 
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -1705,10 +1814,10 @@ def sales_return_transaction_temporary():
 @auth.requires_login()
 def sales_return_transaction_temporary_delete():
     _id = db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).select().first()    
-    # _stk_file = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()    
-    # _stk_file.stock_in_transit -= _id.total_pieces    
-    # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-    # _stk_file.update_record()        
+    _stk_file = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()    
+    _stk_file.stock_in_transit -= _id.total_pieces    
+    _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
+    _stk_file.update_record()        
     db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).delete()    
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblsot').get(0).reload()"
@@ -1725,54 +1834,47 @@ def sales_return_grid():
             
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
         if not _usr:
-            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
         else:
-            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Return.id)                    
+            _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = ~db.Sales_Return.id)                    
     elif auth.has_membership(role = 'ACCOUNT USERS'):
-        _query = db((db.Sales_Return.status_id == 12) | (db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        _query = db((db.Sales_Return.status_id == 12) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in _query:
         if auth.has_membership(role = 'ROOT'):
-            edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_mngr_grid', args = n.id, extension = False))        
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_mngr_grid', args = n.id, extension = False))        
             appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))
-            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))
-            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))            
             prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
         if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
-            edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_sales_manager', args = n.id, extension = False))        
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_sales_manager', args = n.id, extension = False))        
             appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_sales_manager_approved', args = n.id, extension = False))
             reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_sales_manager_rejected', args = n.id, extension = False))
-            clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')cd ..
+            
         if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             if n.status_id == 14:
-                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_warehouse_form', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_approved', args = n.id, extension = False))
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_reject', args = n.id, extension = False))
-                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_warehouse_form', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_approved', args = n.id, extension = False))
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_reject', args = n.id, extension = False))                
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
         if auth.has_membership(role = 'ACCOUNT USERS'):
             if n.status_id == 12:
-                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_approved', args = n.id, extension = False))
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_rejected', args = n.id, extension = False))
-                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_approved', args = n.id, extension = False))
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_rejected', args = n.id, extension = False))                
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            elif n.status_id == 13:
-                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
+            # elif n.status_id == 13:
+            #     view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
+            #     appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            #     reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                
+            #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
         if auth.has_membership(role = 'ACCOUNT MANAGER'):
-                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
-
-        btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, prin_lnk, clea_lnk)
+                view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Create Sales Return', _type='button ', _role='button', _class='btn btn-icon-toggle')
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle')            
+                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
+        btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk)
         row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
             TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
@@ -1898,30 +2000,30 @@ def sales_return_edit_view():
         if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             redirect(URL('sales','sales_return_warehouse_form', args = _so.id)) # sales/sales_return_warehouse_form/2
         else:
-            redirect(URL('sales_return_view', args = _so.id))
+            redirect(URL('sales_return_browse_load_view', args = _so.id))
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'
-    btn_back = A('RETURN', _class='btn btn-warning', _role='button', _href = URL('sales_return_view', args = _so.id))
+    btn_back = A('RETURN', _class='btn btn-warning', _role='button', _href = URL('sales_return_browse_load_view', args = _so.id))
     return dict(form = form, btn_back = btn_back)    
 
 @auth.requires_login()
 def sales_return_delete_view():
     # initialization of variable    
-    _st = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()    
-    _so = db(db.Sales_Return.id == _st.sales_return_no_id).select().first()    
-    _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.location_code_id)).select().first()    
+    _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()    
+    _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()    
+    _stk_des = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == _so.location_code_id)).select().first()    
     
     # update the stock file table
-    _sf.stock_in_transit -= _st.quantity
-    _sf.probational_balance = _sf.closing_stock - _sf.stock_in_transit
-    _sf.update_record()
+    _stk_des.stock_in_transit -= int(_id.quantity)
+    _stk_des.probational_balance = int(_stk_des.closing_stock) - int(_stk_des.stock_in_transit)
+    _stk_des.update_record()
     
     # update the sales order transaction table
-    _st.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)    
+    _id.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)    
     
     # generate re-computation in sales order transaction table
     _total = 0
-    for n in db((db.Sales_Return_Transaction.sales_return_no_id == _st.sales_return_no_id) & (db.Sales_Return_Transaction.delete == False)).select():
+    for n in db((db.Sales_Return_Transaction.sales_return_no_id == _id.sales_return_no_id) & (db.Sales_Return_Transaction.delete == False)).select():
         _total += n.total_amount
     _discount = float(_total) * int(_so.discount_percentage or 0) / 100
     _total_amount_after_discount = float(_total) - int(_discount)    
@@ -1946,16 +2048,102 @@ def sales_return_form_abort():
         session.flash = 'ABORT'
 
 # ----------  M A N A G E R ' S   G R I D   ----------
+def get_workflow_reports():
+    if int(request.args(0)) == int(1):
+        if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
+            title = 'SALES ORDER GRID'
+        else:
+            title = 'DELIVERY NOTE GRID'
+        row = []
+        # _query = db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id)
+        _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+        if not _usr:
+            _query = db(db.Sales_Order.dept_code_id != 3).select(db.Sales_Order.ALL, orderby = ~db.Sales_Order.id)
+        else:
+            _query = db(db.Sales_Order.dept_code_id == _usr.department_id).select(db.Sales_Order.ALL, orderby = ~db.Sales_Order.id)
+        head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
+        for n in _query:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
+            if not n.transaction_prefix_id:
+                _sales = 'None'
+            else:
+                _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)            
+                _sales = A(_sales,_class='text-primary', _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+            if not n.delivery_note_no_prefix_id:
+                _note = 'None'
+            else:
+                _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+                _note = A(_note,  _class='text-warning', _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+            if not n.sales_invoice_no_prefix_id:
+                _inv = 'None'            
+            else:
+                _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+                _inv = A(_inv, _class='text-danger', _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})        
+            row.append(TR(
+                TD(n.sales_order_date),
+                TD(_sales),
+                TD(_note),
+                TD(_inv),
+                TD(n.dept_code_id.dept_name),
+                # TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+                TD(n.stock_source_id.location_name),
+                TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+                TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),
+                TD(n.status_id.description),
+                TD(n.status_id.required_action),
+                TD(btn_lnk)))
+        body = TBODY(*row)
+        table = TABLE(*[head, body], _class='table', _id='tblso')        
+    if int(request.args(0)) == int(2):
+        title = 'SALES RETURN GRID'
+        row = []
+        _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+        if not _usr:
+            _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
+        else:
+            _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = ~db.Sales_Return.id)   
+        if auth.has_membership(role = 'ACCOUNT USERS') or auth.has_membership(role = 'ACCOUNT MANAGER'):
+            _query = db(db.Sales_Return.archives == False).select(orderby = ~db.Sales_Return.id)   
+        head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+        for n in _query:  
+            view_lnk = A(I(_class='fas fa-search'), _target="#",_title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_sales_return_workflow_report_view', args = n.id, extension = False))
+            prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
+
+            row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+                TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+                TD(n.status_id.required_action),TD(btn_lnk)))
+        body = TBODY(*row)
+        table = TABLE(*[head, body], _class='table')
+    
+    else:
+        title = table = ''        
+    return dict(title = title, table = table)
+
+def get_sales_return_workflow_report_view():
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    return dict(_id = _id)
 
 def get_sales_order_grid():
     row = []
-    _query = db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id)
+    # _query = db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id)
+    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+    if not _usr:
+        _query = db(db.Sales_Order.dept_code_id != 3).select(db.Sales_Order.ALL, orderby = ~db.Sales_Order.id)
+    else:
+        _query = db(db.Sales_Order.dept_code_id == _usr.department_id).select(db.Sales_Order.ALL, orderby = ~db.Sales_Order.id)
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
-        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
         if not n.transaction_prefix_id:
             _sales = 'None'
@@ -1988,29 +2176,12 @@ def get_sales_order_grid():
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblso')
     return dict(table = table)
-
-def get_sales_return_grid():
-    row = []
-    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
-    for n in db((db.Sales_Return.status_id == 13) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id):  
-        view_lnk = A(I(_class='fas fa-search'), _target="#",_title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
-
-        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
-            TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
-            TD(n.status_id.required_action),TD(btn_lnk)))
-    body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
-    return dict(table = table)    
-    
+   
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 @auth.requires_login()
 def sales_order_manager_grid():
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()
-    _query = db(db.Sales_Order).select(orderby = ~db.Sales_Order.id)
+    # _query = db(db.Sales_Order).select(orderby = ~db.Sales_Order.id)
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
         if not _usr:
             _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)                
@@ -2018,11 +2189,16 @@ def sales_order_manager_grid():
             _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
         if not _usr:
+            print 'not fmcg'                 
             _query = db((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
         else:
-            _query = db((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)                    
+            _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)   
+            print 'fmcg'                 
+    elif auth.has_membership(role = 'ACCOUNT MANAGER'):
+        _query = db((db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
     elif auth.has_membership(role = 'ACCOUNT USERS'):
-        _query = db((db.Sales_Order.status_id == 8) | (db.Sales_Order.status_id == 7)).select(orderby = ~db.Sales_Order.id)
+        _query = db((db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
+
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     for n in _query:       
@@ -2058,11 +2234,11 @@ def sales_order_manager_grid():
                 # reje_lnk = A(I(_class='fas fa-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                                   
                 prin_lnk = A(I(_class='fas fa-print'), _title='Print Delivery Note',_type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_delivery_note_report_store_keeper', args = n.id, extension = False))  
                 # clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')          
-        if auth.has_membership(role = 'ACCOUNT USERS'):
+        if auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'ACCOUNT USERS'):
             if n.status_id == 8:
-                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))                            
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')#, callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))
+                edit_lnk = A(I(_class='fas fa-search'), _title='View Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Generate Sales Invoice', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))                            
+                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle')#, callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))
                 # clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
                 # prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')  
             elif n.status_id == 7:            
@@ -2072,7 +2248,7 @@ def sales_order_manager_grid():
                 # clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle',  _href = URL('sales','sales_order_report_account_user', args = n.id, extension = False))   
         
-        btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, prin_lnk, clea_lnk)  
+        btn_lnk = DIV(edit_lnk, appr_lnk, reje_lnk, prin_lnk)  
         if not n.transaction_prefix_id:
             _sales = 'None'
         else:
@@ -2154,7 +2330,7 @@ def sales_order_view_account_user():
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process().accepted:
         session.flash = 'RECORD UPDATED'
-        redirect(URL('inventory', 'str_kpr_grid'))
+        # redirect(URL('inventory', 'str_kpr_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     ctr = 0
@@ -2332,9 +2508,20 @@ def sales_order_manager_invoice_no_approved():
 
     for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select():
         _stk_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
-        _diff = _stk_file.closing_stock - n.quantity
-        _transit = _stk_file.stock_in_transit - n.quantity
-        _stk_file.update_record(closing_stock = _diff, stock_in_transit = _transit, last_transfer_quantity = _diff, last_transfer_date = request.now)
+        _transit = int(_stk_file.stock_in_transit) + int(n.quantity)
+        _pro_bal = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)
+        _clo_stk = int(_stk_file.closing_stock) - int(n.quantity)
+        _stk_file.update_record(
+            closing_stock = _clo_stk, 
+            stock_in_transit = _transit, 
+            probational_balance = _pro_bal, 
+            last_transfer_quantity = n.quantity, 
+            last_transfer_date = request.now)
+        print _transit, _pro_bal, _clo_stk
+        # OLD STATEMENTS
+        # _diff = _stk_file.closing_stock - n.quantity
+        # _transit = _stk_file.stock_in_transit - n.quantity
+        # _stk_file.update_record(closing_stock = _diff, stock_in_transit = _transit, last_transfer_quantity = _diff, last_transfer_date = request.now)
     session.flash = 'SALES INVOICE APPROVED'
     response.js = "$('#tblso').get(0).reload()"
 
@@ -2344,7 +2531,7 @@ def sale_order_manager_invoice_no_rejected():
     session.flash = 'SALES INVOICE REJECTED'
     response.js = "$('#tblso').get(0).reload()"
 
-def sale_order_manager_invoice_no_form_approved():
+def sale_order_manager_invoice_no_form_approved(): # from forms approval
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'INV')).select().first()        
     _skey = _trns_pfx.current_year_serial_key
@@ -3140,7 +3327,7 @@ def sales_return_report_account_user():
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT USERS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNT USERS') |  auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
 def sales_order_report_account_user(): # print direct to printer
     row = []
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -3148,7 +3335,8 @@ def sales_order_report_account_user(): # print direct to printer
         _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
             ['SALES INVOICE'],
-            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y')],
+            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),
+            '','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y')],
             ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
             ['','','','','Location', ':',n.stock_source_id.location_name],       

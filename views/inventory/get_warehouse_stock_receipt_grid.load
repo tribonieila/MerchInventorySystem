@@ -1,8 +1,7 @@
 {{=table}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
 <script>
-    $("#btnSRP").click(function(){
-        console.log('button click');
+    $("#btnSrp").click(function(){        
         var parent = $(this).parent("div").parent("td").parent("tr")
         var _id = $(this).attr('data-id');
         bootbox.confirm({
@@ -20,18 +19,17 @@
             },
             callback: function (result) {
                 if (result) {
+                    console.log('approved');
                     parent.fadeOut('slow');
-                    ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);
-                    // location.reload();
-                    $("#tbl").load(location.href + " #tbl");
+                    ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);                  
                     parent.fadeIn('slow');
                     location.reload();
                     window.open("{{=URL('inventory','stock_receipt_report')}}" + '/' + _id);
-                } 
-                // else {
-                //     ajax("{{=URL('inventory','gen_rep')}}" + '/'+ _id);
-                // }                
+                } else {
+                    console.log('not approved');
+                }    
             }
         });
     });
 </script>
+

@@ -3,7 +3,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'ACCOUNT USERS') | auth.has_membership(role = 'ROOT'): }}
+            {{ if auth.has_membership(role = 'ACCOUNT USERS') | auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'ROOT'): }}
             {{ else: }}
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li><a href="#" onclick=window.location="{{=URL('stock_corrections_add_new')}}";>+ ADD NEW</a></li>

@@ -107,7 +107,7 @@ $(document).ready(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');    
         $('#no_table_stock_destination_id').removeAttr('disabled');     
-        ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
+        ajax('{{=URL('itm_description')}}',['item_code', 'dept_code_id','stock_source_id'], 'desc'); 
         ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
         $('#no_table_dept_code_id').attr('disabled','disabled');
         $('#no_table_stock_source_id').attr('disabled','disabled');
@@ -115,10 +115,11 @@ $(document).ready(function(){
         return false;      
     });
 
-    $("#add").onclick(function(){
+    $("#add").click(function(){
         ajax('{{=URL('itm_description')}}',['item_code', 'stock_source_id'], 'desc'); 
     });
-    $('.delete').click(function(){
+    $(".delete").click(function(){
+        console.log('delete');
         var _id = $(this).attr('data-id');
         bootbox.confirm({
             size: "small",
@@ -139,6 +140,6 @@ $(document).ready(function(){
                 }
             }
         })
-    });       
+    });           
 });
 </script>    
