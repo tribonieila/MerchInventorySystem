@@ -53,7 +53,7 @@
 <script>
 $(document).ready(function(){
     $(".price_cost, .total_amount, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
-    var $tblrows = $("#tblPr tbody tr");
+    var $tblrows = $("#tblPRT tbody tr");
     
     $tblrows.each(function(index){
         var $tblrow = $(this);

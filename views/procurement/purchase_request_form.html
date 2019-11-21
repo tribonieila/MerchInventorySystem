@@ -75,7 +75,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Currency</label>
-                            <div class="col-sm-3"><div id = "_supplier_code_currency"></div></div>
+                            <div class="col-sm-3" id="_supplier_code_currency"></div>
                             <label class="col-sm-2 control-label">Trade Terms</label>
                             <div class="col-sm-3">
                                 {{=form.custom.widget.trade_terms_id}}
@@ -103,8 +103,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                <!-- {{=form.custom.widget.remarks}} -->
-                                <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea>
+                                {{=form.custom.widget.remarks}}
+                                <!-- <textarea class="form-control" rows="3" id="remarks" name="remarks"></textarea> -->
                             </div>
                         </div>             
                     </div>
@@ -126,7 +126,7 @@
                     {{=LOAD('procurement','payment_details.load', ajax = True)}}
                 </div>
                 <div id = "order_panel">
-                    {{=LOAD('procurement','purchase_request_transaction_temporary.load', ajax = True, target = 'tblPrt')}}
+                    {{=LOAD('procurement','purchase_request_transaction_temporary.load', ajax = True, target = 'tblPRT')}}
                 </div>
             </div>          
         </div>

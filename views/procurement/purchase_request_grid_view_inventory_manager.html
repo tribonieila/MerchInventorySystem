@@ -82,7 +82,8 @@
                                 {{ if not _id.currency_id: }}
                                     <input type="text" class="form-control" value="None" readonly>
                                 {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
+                                    <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>
+                                    <p class='help-block'>{{=_id.currency_id.mnemonic}}</p>
                                 {{ pass }}
                             </div>
                             <div>
@@ -116,12 +117,8 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" rows="3" id="remarks" name="remarks">{{=_id.remarks}}</textarea>
-                                <!-- <div id="IDremarks"></div> -->
-                            </div>
-                        </div>                         
-        
+                            <div class="col-sm-8"><input type="text" class="form-control" value="{{=_id.remarks}}" readonly></div>
+                        </div>                                 
                     </div>   
                     <div class="col-md-4">
                         <div class="form-group">
@@ -146,7 +143,7 @@
     
                 <hr>
                 <div id = "order_panel">
-                    {{=LOAD('procurement','puchase_request_transaction_view_details.load', ajax = True, args = request.args(0))}}
+                    {{=LOAD('procurement','purchase_request_transaction_view_details.load', ajax = True, args = request.args(0))}}
                 </div>
             </div>          
         </div>

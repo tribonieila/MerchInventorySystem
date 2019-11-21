@@ -2,10 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">EDIT VIEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','mngr_req_grid')}}";>BROWSE</a></li>
-            </ul>
+            </ul> -->
             <span class="card-title">PURCHASE REQUEST FORM</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -79,7 +79,8 @@
                                     {{ if not _id.currency_id: }}
                                         <input type="text" class="form-control" value="None" readonly>
                                     {{ else: }}
-                                        <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
+                                        <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>
+                                        <p class='help-block'>{{=_id.currency_id.mnemonic}}</p>
                                     {{ pass }}
                                 </div>
                                 <div>
@@ -112,10 +113,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">                                    
-                                <textarea class="form-control" rows="3" id="remarks" name="remarks" >{{=_id.remarks}}</textarea>
-                                
-                            </div>
+                            <div class="col-sm-8">{{=_id.remarks}}</div>
                         </div>             
                     </div>
 
@@ -138,7 +136,7 @@
     
                 <hr>
                 <div id = "order_panel">
-                    {{=LOAD('procurement','puchase_request_transaction_view_details.load', ajax = True, args = request.args(0))}}
+                    {{=LOAD('procurement','purchase_request_transaction_view_details.load', ajax = True, args = request.args(0))}}
                     
                 </div>
             </div>          

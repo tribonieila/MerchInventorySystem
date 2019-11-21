@@ -2,10 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">EDIT VIEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_receipt_grid')}}";>BROWSE</a></li>
-            </ul>
+            </ul> -->
             <span class="card-title">PURCHASE RECEIPT FORM</span>
         </div>
         <div class="card-body tab-content">                            
@@ -85,17 +85,35 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-4"></div>
-                            
+                            <label class="col-sm-4 control-label"></label>   
+                                {{ if _pr.posted == True: }}                         
+                                <a class="btn btn-primary" id="btnApproved" href="#" role="button" disabled = True>approved</a>
+                                <a class="btn btn-danger" id="btnReject" href="#" role="button" disabled = True>reject</a>     
+                                {{ else: }}                                                                                                                 
+                                <a class="btn btn-primary" id="btnApproved" href="#" role="button">approved</a>
+                                <a class="btn btn-danger" id="btnReject" href="#" role="button">reject</a>     
+                                {{ pass }}
                         </div>
                     </div>                 
                 
             </div>
             <hr>
-            {{=table}}
-
-                  
+            {{=table}}                  
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function(){
+    $("#btnApproved").click(function(){
+        console.log('Approved');
+        ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0))}}")      
+        location.reload()  
+    });
+    $("#btnReject").click(function(){
+        console.log('Reject');
+        ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0))}}")
+        location.reload()  
+    });
+});
+</script>

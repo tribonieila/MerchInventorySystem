@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # ---- index page        ----
+
+def testing():
+    
+    return locals()
 # @auth.requires(lambda: auth.has_membership('ROOT'))
+
 @auth.requires_login()
 # @auth.requires_membership('ROOT')
 def index():

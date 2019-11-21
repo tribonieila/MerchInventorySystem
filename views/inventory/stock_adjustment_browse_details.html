@@ -78,7 +78,11 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
+                                {{ if _stk_adj.srn_status_id == 2 or _stk_adj.srn_status_id == 15:}}
+                                    <input type="text" class="form-control" value="{{=_stk_adj.srn_status_id.description}}"readonly >
+                                {{ else: }}
                                 {{=form.custom.widget.srn_status_id}}
+                                {{ pass }}
                             </div>
                         </div>                    
                     </div>
@@ -86,7 +90,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{ if _stk_adj.srn_status_id == 2:}}
+                                {{ if _stk_adj.srn_status_id == 2 or _stk_adj.srn_status_id == 15:}}
                                 <input class="btn btn-primary" type="submit" value="Submit" disabled>
                                 {{ else: }}
                                 <input class="btn btn-primary" type="submit" value="Submit">

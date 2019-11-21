@@ -53,9 +53,8 @@
 
 <script>
 $(document).ready(function(){
-    
     $(".price_cost, .total_amount").prop("readonly", true);    
-    var $tblrows = $("#tblPrt tbody tr");
+    var $tblrows = $("#tblPRT tbody tr");
 
     $tblrows.each(function(index){
         var $tblrow = $(this);
@@ -97,11 +96,10 @@ $(document).ready(function(){
                 $(".grand_total").val(grandTotal.toFixed(2));
                 $(".foreign_amount").val(foa);
                 $(".local_amount").val(local.toFixed(2));
-                //$(".discount").val(discount.toFixed(2));
-                console.log('local',local,'grandtotal', grandTotal, 'foc', foc, 'dis', dis);          
+                //$(".discount").val(discount.toFixed(2));                
             }
 
-            ajax("{{=URL("procurement","purchase_request_temp_update")}}",["ctr","quantity","pieces","uom"]);
+            //ajax("{{=URL("procurement","purchase_request_temp_update")}}",["ctr","quantity","pieces","uom"]);
         });
     });
 
@@ -137,8 +135,7 @@ $(document).ready(function(){
         }
     }    
 
-    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
-        console.log('changes');
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
         ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
@@ -190,7 +187,7 @@ $('.delete').click(function(){
         callback: function (result) {
             if (result) {
                 ajax("{{=URL('procurement','purchase_request_transaction_temporary_delete')}}" + '/'+ _id);
-                       
+                
             }
 
         }

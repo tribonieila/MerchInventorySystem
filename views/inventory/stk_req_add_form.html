@@ -101,7 +101,15 @@
                             <div class="col-sm-8">                                    
                                 <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                 <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
+                                {{ if auth.has_membership(role = 'INVENTORY POS'): }}
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_pos_workflow_grid')}}">abort</a>
+                                {{ elif auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_back_off_workflow_grid')}}">abort</a>
+                                {{ elif auth.has_membership(role = 'FMCG'): }}
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_fmcg_workflow_grid')}}">abort</a>
+                                {{ else: }}
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
+                                {{ pass }}
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>
                             </div>                            
                         </div>                    
@@ -110,7 +118,7 @@
                 {{=form.custom.end}} 
             </div>  
             <div id = "request_panel">                                            
-                {{=LOAD('inventory','stock_request_transaction_temporary_table.load', ajax = True, target = 'tblIC')}}
+                {{=LOAD('inventory','stock_request_transaction_temporary_table.load', ajax = True, target = 'tblSRT')}}
             </div>
         </div>
     </div>

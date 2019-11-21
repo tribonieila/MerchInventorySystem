@@ -1,12 +1,5 @@
-
-
-
     {{=form}}
-
-
-
     <hr>
-
     {{=form2.custom.begin}}
     <div class="row">    
         <div class="col-md-2">

@@ -122,16 +122,9 @@
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
                                     {{ if (_id.srn_status_id == 2) or (_id.srn_status_id == 5) or (_id.srn_status_id == 6): }}
-                                        <input class="btn btn-success" type="button" value="submit" disabled> 
-                                        <!-- <input class="btn btn-info" type="button" value="add new" disabled>  -->
-                                        <input class="btn btn-warning" type="button" value="refresh" disabled>   
-    
+                                        <input class="btn btn-success" type="button" value="submit" disabled>     
                                     {{ else: }}
-                                        <input class="btn btn-success" type="submit" id="btnSubmit" value="submit"> 
-                                        <!-- <input class="btn btn-info" type="button" value="add new" id="btnrewReq">  -->
-                                        <input class="btn btn-warning" type="button" value="refresh" onclick="window.location.reload()">    
-    
-                                    
+                                        <input class="btn btn-success" type="submit" id="btnSubmit" value="submit">                                         
                                     {{ pass }}
                                 </div>                            
                             </div>                    
@@ -141,109 +134,9 @@
                 {{=form.custom.end}}
                 
                 <hr>
-                {{=table}}
+                {{=LOAD('inventory','get_stock_request_transaction_table.load',ajax=True, args = request.args(0), target='tblSRT')}}
+                               
           
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-<script>
-$(document).ready(function(){
-    $(".unit_price, .total_amount, .grand_total").prop("readonly", true);
-    var $tblrows = $("#tblIC tbody tr");
-
-    $tblrows.each(function(index){
-        var $tblrow = $(this);
-        $tblrow.find(".quantity, .pieces").on("change", function(){
-            var ctr = $tblrow.find("[name=ctr]").val();
-            var uom = $tblrow.find("[name=uom]").val();
-            var qty = $tblrow.find("[name=qty]").val();
-            var pcs = $tblrow.find("[name=pcs]").val();
-            var ico = $tblrow.find("[name=ico]").val();
-            var pri = $tblrow.find("[name=unit_price]").val();
-            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
-            var ppp = parseFloat(pri) / parseInt(uom);
-            var sub = parseInt(itm, 10) * parseFloat(ppp);       
-            
-            if (parseInt(qty) < parseInt(0)){
-                return alert("Please enter a positive integer.");
-            } else if (parseInt(pcs) < parseInt(0)){                             
-                return alert("Please enter a positive integer.");
-            }
-          
-            if (parseInt(pcs) >= parseInt(uom)){
-                return alert("Pieces value should not be more than or equal to UOM value");
-            }
-            if(!isNaN(sub)){
-                $tblrow.find(".total_amount").val(sub.toFixed(2));
-                var grandTotal = 0;
-                $(".total_amount").each(function(){
-                    var stval = parseFloat($(this).val());
-                    grandTotal += isNaN(stval) ? 0 : stval;
-                });
-                $(".grand_total").val(grandTotal.toFixed(2));   
-                  
-            }                                  
-            // ajax("{{=URL("inventory","stock_request_update")}}", ["ctr","ico","qty","uom","pcs"]);
-        });
-    });
-    $("#btnUpdate").onclick(function(){
-        // window.location.reload();
-    });
-});
-</script>
-<script>
-    $('.delete').click(function(){
-        var _id = $(this).attr('data-id');
-        bootbox.confirm({
-            size: "small",
-            message: "Would you like to delete this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    ajax("{{=URL('inventory','stk_req_del')}}" + '/'+ _id);                                
-                    location.reload();   
-                }
-
-            }
-        })
-    });</script>
-<script>
-    
-    // $('#newReqPanel').hide();
-    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
-        ajax('{{=URL('itm_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
-        ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
-    });
-    $('#btnrewReq').click(function(){
-        $('#newReqPanel').toggle( "slide" );
-        $('#tblReqOld').toggle( "slide" );
-        $("#no_table_item_code").focus();
-        $('#btnnewReq').attr('disabled','disabled');        
-        return false;
-        
-    })
-    $('#btnInsert').click(function() {
-        window.location.reload();
-        // ajax('{{=URL('itm_view')}}', ['ticket_no_id','item_code', 'quantity', 'pieces','category_id', 'dept_code_id', 'stock_source_id','stock_destination_id'], 'tblReqNew');
-        // document.getElementById('item_code').value = ''
-        // document.getElementById('quantity').value = '0'
-        // document.getElementById('pieces').value = '0'      
-        // $('#no_table_item_code').focus();        
-        // return false;
-    });
-    $('#del').click(function(){
-        window.location.reload();
-    });
-    
-</script>

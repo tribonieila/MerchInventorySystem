@@ -37,7 +37,7 @@
 
 $(document).ready(function(){
 
-    $('#no_table_new_item_code').change(function(){
+    $('#no_table_new_item_code, #no_table_item_description, #no_table_uom, #no_table_quantity, #no_table_pieces').change(function(){
         ajax('{{=URL('procurement','warehouse_add_new_item', args = request.args(0))}}', ['new_item_code'], '_item_code_description');     
         return false;
     });

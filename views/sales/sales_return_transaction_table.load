@@ -1,5 +1,32 @@
 {{=table}}
-
+<script>
+$(document).ready(function(){
+    $(".price_cost, .net_price, .total_amount, .grand_total").prop("readonly", true);
+    var $tblrows = $("#tblSR tbody tr");
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var pri = $tblrow.find("[name=net_price]").val();
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);     
+            if(!isNaN(sub)){                
+                $tblrow.find(".total_amount").val(sub.toFixed(2));                
+                var grandTotal = 0;
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;                    
+                });
+                $(".grand_total").val(grandTotal.toFixed(2));            
+            }                     
+        });        
+    });
+});
+</script>
 <script>
     
         $('.delete').click(function(){

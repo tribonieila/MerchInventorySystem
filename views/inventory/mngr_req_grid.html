@@ -13,24 +13,27 @@
         <div class="card-body tab-content">            
             <div>
               <ul class="nav nav-pills" role="tablist">
-                <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id == 4).count()}}</span></a></li>
-                <!-- <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment <span class="badge">{{=db(db.Stock_Adjustment.srn_status_id == 4).count()}}</span></a></li> -->
-                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 4).count()}}</span></a></li>
-                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db(db.Sales_Return.status_id == 4).count()}}</span></a></li>                
-                {{ if db(db.Purchase_Request.dept_code_id == 3).select().first(): }}
-                
-                    <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.dept_code_id == 3)).count()}}</span></a></li>
-                
+                {{ _usr = db(db.User_Department.user_id == auth.user_id).select().first() }}
+                {{ if not _usr: }}
+                <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db((db.Stock_Request.srn_status_id == 4) & (db.Stock_Request.dept_code_id != 3)).count()}}</span></a></li>                
+                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db((db.Sales_Order.status_id == 4) & (db.Sales_Order.dept_code_id != 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id == 4) & (db.Sales_Order.dept_code_id != 3)).count()}}</span></a></li>                
+                <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.dept_code_id != 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#obsolescence" aria-controls="obsolescence" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id != 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#leave_application" aria-controls="leave_application" role="tab" data-toggle="tab">Leave Application <span class="badge">0</span></a></li>
                 {{ else: }}
-                
-                    <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id == 19)).count()}}</span></a></li>
-                
+                <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db((db.Stock_Request.srn_status_id == 4) & (db.Stock_Request.dept_code_id == 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db((db.Sales_Order.status_id == 4) & (db.Sales_Order.dept_code_id == 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id == 4) & (db.Sales_Return.dept_code_id == 3)).count()}}</span></a></li>                
+                <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.dept_code_id == 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#obsolescence" aria-controls="obsolescence" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id == 3)).count()}}</span></a></li>
+                <li role="presentation"><a href="#leave_application" aria-controls="leave_application" role="tab" data-toggle="tab">Leave Application <span class="badge">0</span></a></li>
                 {{ pass }}
-                {{ if db(db.Obsolescence_Stocks.dept_code_id == 3).select().first(): }}
-                    <li role="presentation"><a href="#obsolescence" aria-controls="obsolescence" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id == 3)).count()}}</span></a></li>
-                {{ else: }}
-                    <li role="presentation"><a href="#obsolescence" aria-controls="obsolescence" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id != 3)).count()}}</span></a></li>
-                {{ pass }}
+
+                
+                    
+                    
+                    
               </ul>
               <div class="tab-content"> 
                 <div role="tabpanel" class="tab-pane active" id="stock_request">                        
@@ -50,6 +53,12 @@
                 </div>                     
                 <div role="tabpanel" class="tab-pane" id="obsolescence">                        
                   {{=LOAD('inventory','get_obsolescence_of_stocks_workflow_grid.load', ajax = True)}}
+                  
+                </div>                     
+                <div role="tabpanel" class="tab-pane" id="leave_application">                        
+                  <div class="alert alert-info" role="alert">
+                    <strong>Heads up!</strong> Were on progress...
+                  </div>
                   
                 </div>                     
 

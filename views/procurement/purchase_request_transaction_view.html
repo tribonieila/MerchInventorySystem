@@ -145,7 +145,7 @@
     
                 <hr>
                 <div id = "order_panel">
-                    {{=LOAD('procurement','puchase_request_transaction_view_details.load', ajax = True, args = request.args(0))}}
+                    {{=LOAD('procurement','purchase_request_transaction_view_details.load', ajax = True, target = 'tblPRT',args = request.args(0))}}
                 </div>
             </div>      
         </div>

@@ -2,10 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_order')}}";>BROWSE</a></li>
-            </ul>
             <span class="card-title">PURCHASE ORDER FORM</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -79,12 +75,13 @@
                                 {{ if not _id.currency_id: }}
                                     <input type="text" class="form-control" value="None" readonly>
                                 {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
+                                    <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>
+                                    <p class='help-block'>{{=_id.currency_id.mnemonic}}</p>
                                 {{ pass }}
                             </div>
                             <div>
                                 <label class="col-sm-2 control-label">Trade Terms</label>
-                                <div class="col-sm-3">
+                                <div class="col-sm-3">                                    
                                     <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>                                    
                                 </div>
                             </div>
@@ -116,10 +113,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                                 <label class="col-sm-4 control-label">Remarks</label>
-                                <div class="col-sm-8">
-                                    <textarea class="form-control" rows="3" id="remarks" name="remarks">{{=_id.remarks}}</textarea>
-                                        <!-- purchase_request_browse_view
-                                    {{=form.custom.widget.remarks}} -->
+                                <div class="col-sm-8"><input type="text" class="form-control" value="{{=_id.remarks}}" readonly>
                                 </div>
                             </div>             
                         </div>
