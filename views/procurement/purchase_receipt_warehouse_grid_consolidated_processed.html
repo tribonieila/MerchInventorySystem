@@ -13,7 +13,6 @@
             <br>
             
             {{=form}}
-
             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new_item.load', ajax = True, args = request.args(0))}}
         </div>
     </div>
@@ -25,7 +24,28 @@
 
 $(document).ready(function(){
 
-        
+    $("#del").click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','warehouse_delete_item')}}" + '/'+ _id);                                        
+                }
+            }            
+        })
+    });
     $('#btnRefresh').click(function(){
         location.reload();
     });

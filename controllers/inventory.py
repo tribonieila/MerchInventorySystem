@@ -1760,13 +1760,21 @@ def itm_link_form():
 def item_master_profile():
     _query = db(db.Item_Master.id == request.args(0)).select().first()
     if _query:        
+        if not _query.uom_id:
+            _uom_des = 'None'
+        else:
+            _uom_des = _query.uom_id.description
+        if not _query.supplier_uom_id:
+            _uom_sup = 'None'
+        else:
+            _uom_sup = _query.supplier_uom_id.description
         tbody1 = TBODY(
             TR(TD('Item Code'),TD('Description En'),TD('Description AR'),TD('Supplier Ref.'),TD('Barcode Int.'),TD('Barcode Loc.'),TD('Purchase Point'), _class='active'),
             TR(TD(_query.item_code),TD(_query.item_description),TD(_query.item_description_ar),TD(_query.supplier_item_ref),TD(_query.int_barcode),TD(_query.loc_barcode),TD(_query.purchase_point)))
         table1 = TABLE(*[tbody1],_class = 'table table-bordered')
         tbody2 = TBODY(
             TR(TD('IB'),TD('UOM'),TD('Pack Size'),TD('Supplier UOM'),TD('Pack Size'),TD('Weight'),TD('Type'),TD('Selective Tax'), _class='active'),
-            TR(TD(_query.ib),TD(_query.uom_value),TD(_query.uom_id.description),TD(_query.supplier_uom_value),TD(_query.supplier_uom_id.description),TD(_query.weight_value, ' ', _query.weight_id),TD(_query.type_id.description),TD(_query.selectivetax)))
+            TR(TD(_query.ib),TD(_query.uom_value),TD(_uom_des),TD(_query.supplier_uom_value),TD(_uom_sup),TD(_query.weight_value, ' ', _query.weight_id),TD(_query.type_id.description),TD(_query.selectivetax)))
         table2 = TABLE(*[tbody2], _class = 'table table-bordered')
         tbody3 = TBODY(
             TR(TD('Division'),TD('Department'),TD('Supplier'),TD('Product'),TD('Subproduct'),_class='active'),

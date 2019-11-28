@@ -1,5 +1,5 @@
 {{extend 'layout.html'}}
-<div class="col-md-12">
+<div class="col-md-12" onload="Alert()">
     <div class="card card-underline">
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs"> 
@@ -114,9 +114,10 @@
         </div>
     </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
 <script>
 $(document).ready(function(){
+
     // {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
         $('#TrnxDetails').hide();
         $('#btnProceed').attr('disabled','disabled');
@@ -146,6 +147,8 @@ $(document).ready(function(){
     $('#no_table_supplier_account_code').change(function(){        
         ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
     });
+
+
 
 });
 </script>

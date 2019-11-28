@@ -13,7 +13,7 @@
                 <ul class="nav nav-pills" role="tablist">
                     <li role="presentation"><a href="#delivery_note" aria-controls="delivery_note" role="tab" data-toggle="tab">Delivery Note <span class="badge">{{=db(db.Sales_Order.status_id == 8).count()}}</span></a></li>
                     <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return Request <span class="badge">{{=db(db.Sales_Return.status_id == 12).count()}}</span></a></li>                        
-                    <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.draft == True).count()}}</span></a></li>                        
+                    <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt </a></li>
                     <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment (+/-)<span class="badge">{{=db(db.Stock_Adjustment.srn_status_id == 4).count()}}</span></a></li>
                     <li role="presentation"><a href="#corrections" aria-controls="corrections" role="tab" data-toggle="tab">Stock Corrections <span class="badge">{{=db((db.Stock_Corrections.status_id == 4) | (db.Stock_Corrections.status_id == 1)).count()}}</span></a></li>
@@ -25,8 +25,12 @@
                  class="tab-content">
                     <!-- <div role="tabpanel" class="tab-pane" id="delivery_note">DELIVERY NOTE</div> -->
                     <!-- <div role="tabpanel" class="tab-pane active" id="stock_request">{{=table}}</div> -->
-                    <div role="tabpanel" class="tab-pane" id="delivery_note"> {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}</div>
-                    <div role="tabpanel" class="tab-pane" id="sales_return"> {{=LOAD('sales','sales_return_grid.load', ajax = True)}}</div>
+                    <div role="tabpanel" class="tab-pane" id="delivery_note"> 
+                        {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="sales_return"> 
+                        {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
+                    </div>
                     <div role="tabpanel" class="tab-pane" id="obsolescene">
                         {{=LOAD('inventory','get_obsolescence_of_stocks_workflow_grid.load', ajax = True)}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','obsolescence_of_stocks_form')}}">+ create Obsolescence of Stocks</a>
@@ -35,8 +39,9 @@
                         {{=LOAD('inventory','stock_corrections.load', ajax = True, target = 'tblcor')}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','stock_corrections_add_new')}}">+ create stock corrections</a>
                     </div>
-
-                    <div role="tabpanel" class="tab-pane" id="purchase_receipt">{{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}</div>
+                    <div role="tabpanel" class="tab-pane" id="purchase_receipt">
+                        {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}
+                    </div>
                     <div role="tabpanel" class="tab-pane" id="direct_purchase_receipt">                        
                         {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}                            
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ create new direct purchase</a>                    
