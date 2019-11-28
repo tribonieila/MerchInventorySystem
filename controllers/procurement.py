@@ -1674,27 +1674,28 @@ def purchase_receipt_account_validate_transaction(): # .load
     form = FORM(TABLE(*[head, body, foot], _class= 'table', _id = 'POTtbl'))
     if form.accepts(request, session):    
     # if form.process().accepted:
-        
+        _prx =0
         if request.vars.btnSubmit:            
             
             db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(status_id = 25, received = True)
             db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).update(status_id = 25)
 
             _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
+            _prx = int(_pr.id) + 1
             _tp = db((db.Transaction_Prefix.dept_code_id == session.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
             _skey = _tp.current_year_serial_key
             _skey += 1                                            
             _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)   
-            db.Direct_Purchase_Receipt.insert(
+            db.Purchase_Receipt.insert(
+                purchase_receipt_no_id_consolidated = request.args(0),
                 purchase_receipt_no_prefix_id = _tp.id,
-                purchase_receipt_no = _skey,                        
+                purchase_receipt_no = _skey,    
+                purchase_receipt_date_approved = request.now,
+                purchase_receipt_date = request.now,                
                 dept_code_id = _pr.dept_code_id,
                 supplier_code_id = _pr.supplier_code_id,
                 mode_of_shipment = _pr.mode_of_shipment,
                 location_code_id = _pr.location_code_id,
-                # total_amount = _pr.total_amount,
-                # total_amount_after_discount = _pr.total_amount_after_discount,
-                currency_id = _pr.currency_id,
                 exchange_rate = _pr.exchange_rate,
                 trade_terms_id = _pr.trade_terms_id,
                 landed_cost = _pr.landed_cost,
@@ -1705,24 +1706,38 @@ def purchase_receipt_account_validate_transaction(): # .load
                 supplier_account_code = _pr.supplier_account_code,
                 supplier_account_code_description = _pr.supplier_account_code_description,
                 discount_percentage = _pr.discount_percentage,
-                # supplier_reference_order = _pr.supplier_reference_order,
-                status_id = _pr.status_id)                               
+                currency_id = _pr.currency_id,
+                status_id = _pr.status_id)    
+            _npr = db(db.Purchase_Receipt.purchase_receipt_no == _skey).select().first()                           
+            for t in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.excessed == True)).select():
+                db.Purchase_Receipt_Transaction.insert(
+                    purchase_receipt_no_id_consolidated = _prx,
+                    purchase_receipt_no_id = _npr.id,
+                    item_code_id = t.item_code_id,
+                    category_id = t.category_id,
+                    quantity = t.quantity,
+                    receive_quantity = t.receive_quantity,
+                    uom = t.uom,
+                    difference_quantity = t.difference_quantity,
+                    price_cost = t.price_cost,
+                    total_amount = t.total_amount,
+                    average_cost = t.average_cost,
+                    sale_cost = t.sale_cost,
+                    wholesale_price = t.wholesale_price,
+                    retail_price = t.retail_price,
+                    vansale_price = t.vansale_price,
+                    selective_tax = t.selective_tax,
+                    selective_tax_foc = t.selective_tax_foc,
+                    vat_percentage = t.vat_percentage,
+                    excessed = False,
+                    remarks = t.remarks)
+            
+            print 'excess items'            
 
-            _dpr = db(db.Direct_Purchase_Receipt.purchase_receipt_no == _skey).select().first()                
-            session._dpr = _dpr.id
-            _exs = db(db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)).select().first()                
-            db.Direct_Purchase_Receipt_Transaction.insert(
-                purchase_receipt_no_id = _dpr.id,
-                item_code_id = _exs.item_code_id,
-                category_id = 2,
-                quantity = _exs.quantity,
-                uom = _exs.uom,
-                price_cost = _exs.price_cost,
-                excessed = True)         
-            print 'direct purchase'            
             session.flash = 'RECORD SAVED'                    
             redirect(URL('inventory','account_grid', extension=False), client_side=True)
         elif request.vars.btnDraft:
+            db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(draft = True)
             response.flash = 'SAVE AS DRAFT'        
         elif request.vars.btnValidate:
             db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(received = True)
@@ -1860,21 +1875,6 @@ def purchase_receipt_account_validate_transaction(): # .load
                                     vansale_price = _prtc.vansale_price,
                                     received = True)                                                                                       
                                 print 'excess', row
-
-                            # db.Purchase_Receipt_Transaction.update_or_insert(
-                            #     purchase_receipt_no_id_consolidated = request.args(0),
-                            #     purchase_receipt_no_id = _pr.id,
-                            #     item_code_id = request.vars['item_code_id'][row],
-                            #     category_id = request.vars['category_id'][row],
-                            #     uom = request.vars['uom'][row],
-                            #     quantity = request.vars['_cquantity'][row],                
-                            #     price_cost = float(request.vars['price_cost'][row].replace(',','')),                                                 
-                            #     total_amount = _price_per_piece * int(request.vars['_cquantity'][row]),
-                            #     average_cost = _prtc.average_cost,
-                            #     sale_cost = _prtc.sale_cost,
-                            #     wholesale_price = _prtc.wholesale_price,
-                            #     retail_price = _prtc.retail_price,
-                            #     vansale_price = _prtc.vansale_price)     
                     except: 
                         n = 0
                     row += 1
