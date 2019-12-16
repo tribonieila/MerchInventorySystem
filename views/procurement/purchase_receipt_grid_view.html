@@ -85,7 +85,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label class="col-sm-4 control-label"></label>   
+                            <label class="col-sm-4 control-label"></label>                               
                                 {{ if _pr.posted == True: }}                         
                                 <a class="btn btn-primary" id="btnApproved" href="#" role="button" disabled = True>approved</a>
                                 <a class="btn btn-danger" id="btnReject" href="#" role="button" disabled = True>reject</a>     
@@ -105,15 +105,13 @@
 
 <script>
 $(document).ready(function(){
-    $("#btnApproved").click(function(){
-        console.log('Approved');
+    $("#btnApproved").click(function(){        
         ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0))}}")      
-        location.reload()  
+        window.location.replace("{{=URL('inventory','account_manager_workflow')}}");
     });
-    $("#btnReject").click(function(){
-        console.log('Reject');
+    $("#btnReject").click(function(){        
         ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0))}}")
-        location.reload()  
+        window.location.replace("{{=URL('inventory','account_manager_workflow')}}");
     });
 });
 </script>

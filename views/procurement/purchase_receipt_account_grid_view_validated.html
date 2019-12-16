@@ -76,7 +76,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">                    
-                                    <label class="col-sm-4 control-label">Other Charges (QR)</label>
+                                    <label class="col-sm-4 control-label">Other Charges</label>
                                     <div class="col-sm-4">{{=form3.custom.widget.other_charges}}</div>
                                 </div>
                             </div>
@@ -84,25 +84,20 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Custom Duty Charges (QR)</label>
+                                    <label class="col-sm-4 control-label">Custom Duty Charges</label>
                                     <div class="col-sm-4">{{=form3.custom.widget.custom_duty_charges}}</div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Selective Tax (QR)</label>
+                                    <label class="col-sm-4 control-label">Selective Tax</label>
                                     <div class="col-sm-4">{{=form3.custom.widget.selective_tax}}</div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label"></label>
-                                    <div class="col-sm-8">
-                                        <input class="btn btn-success" type="submit" value="submit" id="btnSubmit">
-                                        <input class="btn btn-primary" type="button" value="Proceed" id="btnProceed">
-                                        <input class="btn btn-danger" type="button" value="abort" id="btnAbort">
-                                    </div>
-                                </div>
+                                <label class="col-sm-4 control-label"></label>
+                                <div class="col-sm-4"><input class="btn btn-primary" type="button" value="Proceed" id="btnProceed"></div>
+                                
                             </div>
                         </div>                 
                     {{=form3.custom.end}}
@@ -110,43 +105,47 @@
                 
                 <hr>
             </div>
-            <div id = "TrnxDetails">
+            
                             
-                    {{=LOAD('procurement','purchase_receipt_account_validate_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
+                    {{=LOAD('procurement','purchase_receipt_account_validated_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
                      
     
-            </div>
+            
         </div>
     </div>
 </div>
 
 <script>
-$(document).ready(function(){    
-    $('#TrnxDetails').hide();
-    $('#btnProceed').attr('disabled','disabled');
-    $('#btnSubmit').attr('disabled','disabled');    
-    // $('#TrnxDetails').show();
-    
+$(document).ready(function(){
+
+    // {{ if not db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first(): }}
+        $('#TrnxDetails').hide();
+        $('#btnProceed').attr('disabled','disabled');
+
+    // {{ else: }}
+        $('#TrnxDetails').show();
+
+    // {{ pass }}
     $('#no_table_supplier_account_code, #no_table_trade_terms_id').change(function(){
         if ($('#no_table_supplier_account_code').val() && $('#no_table_trade_terms_id').val()) {
             $('#btnProceed').removeAttr('disabled');                 
-        } else {        
-            $('#btnProceed').attr('disabled','disabled');                
+        } else {
+            
+            $('#btnProceed').attr('disabled','disabled');
+            
+            // $('#TrnxDetails').slideUp('slow');            
         }        
     });
     
     $('#btnProceed').click(function(){
         ajax('{{=URL('procurement','session_receipt')}}', ['landed_cost', 'exchange_rate']);        
         $('#TrnxDetails').slideDown();
-        $('#btnSubmit').removeAttr('disabled');  
+        $('#btnSubmit').attr('disabled','disabled');  
         $('#btnProceed').attr('disabled','disabled');  
        
     });
     $('#no_table_supplier_account_code').change(function(){        
         ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
-    });
-    $("#btnAbort").click(function(){
-        document.location="{{=URL('inventory','account_grid')}}";
     });
 
 

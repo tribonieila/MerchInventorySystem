@@ -3073,6 +3073,7 @@ def validate_item_code(form):
     # _total_pcs = (int(request.vars.quantity) * int(_id.uom_value)) + int(request.vars.pieces or 0)            
     if not _id:
         form.errors.item_code = 'Item code does not exist or empty.'
+        
         # form.errors.item_code = CENTER(DIV('Item code ',B(str(request.vars.item_code)), ' does not exist or empty.',_class='alert alert-danger',_role='alert'))
     elif not db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first():        
         form.errors.item_code =  'Item code is zero in stock file'
@@ -3115,6 +3116,7 @@ def validate_item_code(form):
             # form.errors._price = CENTER(DIV('Cannot request this item because retail price is zero',_class='alert alert-danger',_role='alert'))
 
         if _exist:
+            response.js = "jQuery(console.log('error'))"
             form.errors.item_code = 'Item code ' + str(form.vars.item_code) + ' already exist.'
             # print 'exist'
             # return CENTER(DIV('The same item already added on the grid.',_class='alert alert-danger',_role='alert'))            
@@ -3162,6 +3164,7 @@ def validate_item_code(form):
         # response.js = "('#no_table_item_code').setfocus()"
 
 def stock_request_transaction_temporary_table():
+    response.js = "jQuery(console.log('loading'))"
     ctr = 0
     row = []        
     grand_total = 0
@@ -3325,7 +3328,6 @@ def del_item():
 
     db(db.Stock_Transaction_Temp.id == request.args(0)).delete()        
     response.js = "$('#tblSRT').get(0).reload()"
-
 
 def stock_request_transaction_temporary_table_edit():    
     _tmp = db(db.Stock_Transaction_Temp.id == request.args(0)).select().first()
@@ -3503,6 +3505,7 @@ def get_stock_request_transaction_table():
         _stk_src.update_record()   
         _stk_des.update_record()
     return dict(table = table, form2=form2)
+
 def validate_updated_item_code(form2):    
     _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
     if not _id:

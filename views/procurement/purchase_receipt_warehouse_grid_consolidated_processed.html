@@ -8,10 +8,9 @@
             </ul>
             <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
         </div>
-        <div class="card-body tab-content">                                      
+        <div class="card-body tab-content">                                            
             {{=table}}
-            <br>
-            
+            <br>            
             {{=form}}
             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new_item.load', ajax = True, args = request.args(0))}}
         </div>
@@ -19,12 +18,9 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-
 <script>
 
-$(document).ready(function(){
-
-    $("#del").click(function(){
+$(".deleteNew").click(function(){
         var _id = $(this).attr('data-id');
         bootbox.confirm({
             size: "small",
@@ -41,10 +37,66 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('procurement','warehouse_delete_item')}}" + '/'+ _id);                                        
+                    ajax("{{=URL('procurement','warehouse_delete_new_item')}}" + '/'+ _id);       
+                    window.location.reload();                                 
                 }
             }            
         })
+    });
+    $(".delete").click(function(){
+        
+        var _id = $(this).attr('data-id');
+        console.log('delete', _id);
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','warehouse_delete_item')}}" + '/'+ _id);               
+                    window.location.reload();                         
+                }
+            }            
+        })
+    });
+</script>
+<script>
+
+$(document).ready(function(){
+    var $tblrows = $("#PTtbl tbody tr");
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            console.log('changes.');
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var tqt = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            if (parseInt(qty) < parseInt(0)){
+                return alert("Please enter a positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)){
+                return alert("Please enter a positive integer.");
+            }
+        });
+    });
+    $("#btnSubmit").click(function(){
+        var $tblrows = $("#PTtbl tbody tr");
+        $tblrows.each(function(index){            
+            var $tblrow = $(this);
+            if ($tblrow.find("[name=quantity]").val() <= 0) {
+                alert('Zero quantity not allowed.')
+                location.replace("{{=URL('inventory','str_kpr_grid')}}")    
+            }
+        });        
     });
     $('#btnRefresh').click(function(){
         location.reload();

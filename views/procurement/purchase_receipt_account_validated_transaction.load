@@ -72,6 +72,11 @@
         
         
     });
+    $('#btnValidate').click(function(){        
+        ajax('{{=URL('procurement','validate', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
+        //$( "#POTtbl" ).load(window.location.href + " #POTtbl" );
+        
+    });   
 
     $('#btnadd').click(function(){
         $( "#POTtbl" ).load(window.location.href + " #POTtbl" );
@@ -89,11 +94,11 @@ $(document).ready(function(){
 
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        $tblrow.find(".invoice_quantity, .pieces, .price_cost").on("change", function(){
+        $tblrow.find(".quantity, .pieces, .price_cost").on("change", function(){
 
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
-            var qty = $tblrow.find("[name=invoice_quantity]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
 
@@ -122,8 +127,7 @@ $(document).ready(function(){
 
                 $(".total_net_amount").val(total_net_amount.toFixed(2));
 
-                // foa = (parseFloat(total_net_amount) * (100 - parseInt(dis))) / 100;
-                foa = parseFloat(total_net_amount) - parseFloat(dis);
+                foa = (parseFloat(total_net_amount) * (100 - parseInt(dis))) / 100;
                 local = parseFloat(xch) * parseFloat(foa);
                 landed_cost = parseFloat(lnd) * parseFloat(foa);
                 purch = parseFloat()
@@ -145,6 +149,11 @@ $(document).ready(function(){
         t.value=t.value.replace(/\s/g,'0');
         }
     }    
+
+    $('#btnAbort').click(function(){
+        console.log('abort');
+        window.location.href = '{{=URL('inventory','account_grid', extension = False)}}';
+    });    
 
     $('.delete').click(function(){
         var _id = $(this).attr('data-ct');
@@ -188,9 +197,7 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);
-                    console.log('delete', _idd);
-                    //location.reload();
+                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete_cons')}}" + '/'+ _idd);                                        
                 }
 
             }
@@ -270,8 +277,7 @@ $(document).ready(function(){
         var _for = $('#foreign_total_amount').val();
         var _loc = $('#local_total_amount').val();
 
-        //_for = ((parseFloat(_ton) * (100 - parseFloat(_dis))) / 100) + parseFloat(_oth)
-        _for = parseFloat(_ton) - parseFloat(_dis)
+        _for = ((parseFloat(_ton) * (100 - parseFloat(_dis))) / 100) + parseFloat(_oth)
         _loc = parseFloat(_for) * parseFloat(_exc)      
         _pur = parseFloat(_for) * parseFloat(_lan)
         
@@ -282,7 +288,6 @@ $(document).ready(function(){
         $('#purchase_value').val(Number(_pur.toFixed(3)).toLocaleString());                   
         //$('#purchase_value').val(_pur.format());                   
     };
-
 
     function errAlert(){
         bootbox.alert({

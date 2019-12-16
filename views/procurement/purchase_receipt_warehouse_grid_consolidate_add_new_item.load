@@ -1,17 +1,9 @@
 <hr>
-<!-- <label class="radio-inline">
-  <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> Normal Item
-</label>
-<label class="radio-inline">
-  <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> New Item
-</label> -->
-
 {{=form2.custom.begin}}
 <table class="table">
     <thead>
         <tr>
-            <th id="normal_label">Item Code</th>
-            <th id="new_label">Ref Code</th>
+            <th>Item Code</th>            
             <th>Description</th>
             <th>UOM</th>
             <th>Prod. Date</th>
@@ -24,8 +16,7 @@
     </thead>
     <tbody>
         <tr>
-            <td id="normal_field">{{=form2.custom.widget.new_item_code}}</td>
-            <td id="new_field">{{=form2.custom.widget.supplier_item_ref}}</td>
+            <td>{{=form2.custom.widget.new_item_code}}</td>            
             <td>{{=form2.custom.widget.item_description}} </td>
             <td>{{=form2.custom.widget.uom}}</td>
             <td>{{=form2.custom.widget.production_date}}</td>
@@ -46,16 +37,6 @@
 <script>
 
 $(document).ready(function(){
-    $("#new_label, #new_field").hide();
-    $("#inlineRadio1").change(function(){
-        $("#new_label, #new_field").hide();
-        $("#normal_label, #normal_field").show();
-    });
-    $("#inlineRadio2").change(function(){
-        $("#normal_label, #normal_field").hide();
-        $("#new_label, #new_field").show();
-    });
-
     $('#no_table_new_item_code').change(function(){
         ajax('{{=URL('procurement','warehouse_add_new_item', args = request.args(0))}}', ['new_item_code'], '_item_code_description');     
         return false;

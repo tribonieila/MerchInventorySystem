@@ -10,7 +10,7 @@
                         <ul class="nav nav-pills" role="tablist">
                             <li role="presentation"><a href="#delivery_note" aria-controls="delivery_note" role="tab" data-toggle="tab">Delivery Note <span class="badge">{{=db(db.Sales_Order.status_id == 8).count()}}</span></a></li>
                             <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return Request <span class="badge">{{=db(db.Sales_Return.status_id == 14).count()}}</span></a></li>                        
-                            <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt.posted == False).count()}}</span></a></li>                        
+                            <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db(db.Purchase_Receipt.status_id == 25).count()}}</span></a></li>                        
                             <!-- <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id == 8).count()}}</span></a></li> -->
                             
                             <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db(db.Obsolescence_Stocks.status_id == 23).count()}}</span></a></li>

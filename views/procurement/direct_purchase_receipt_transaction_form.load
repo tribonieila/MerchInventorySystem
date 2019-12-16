@@ -38,7 +38,7 @@
         <div class="form-group">
             <label class="col-sm-4 control-label">Category</label>
             <div class="col-sm-8"> 
-                <div id="_category_id"></div>
+                {{=form.custom.widget.category_id}}
                 
             </div>
         </div>                    
