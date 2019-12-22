@@ -8,109 +8,107 @@
             </ul>
             <span class="card-title">PURCHASE RECIEPT FORM</span>
         </div>
-        <div class="card-body tab-content">                                            
-            <div class="form-horizontal">   
-                {{=table}}
-                <hr>
-                
-                <div class="form-horizontal">
-                    {{=form3.custom.begin}}        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Location</label>
-                                    <div class="col-sm-8">{{=form3.custom.widget.location_code_id}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Supplier/Acct Code</label>
-                                    <div class="col-sm-8">{{=form3.custom.widget.supplier_account_code}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">                    
-                                    <label class="col-sm-4 control-label">Supplier/Account Name</label>
-                                    <div class="col-sm-8">
-                                        {{ if frm:}}
-                                            {{=form3.custom.widget.supplier_account_code_description}}                                        
-                                        {{ else: }}
-                                            <div id = "_supplier_code_id"></div>
-                                        {{ pass }}
-                                    </div>
-                                </div>
-                            </div>
+        <div class="card-body tab-content">                                                        
+            {{=table}}
+            <hr>                                
+            <div class="form-horizontal">
+                {{=form.custom.begin}}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location</label>
+                            <div class="col-sm-8"><input type="text" class="form-control" value="{{=pr.location_code_id.location_name}}" readonly></div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Currency</label>
-                                    <div class="col-sm-8">{{=form3.custom.widget.currency_id}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Trade Terms</label>
-                                    <div class="col-sm-8">{{=form3.custom.widget.trade_terms_id}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">                    
-                                    <label class="col-sm-4 control-label">Supplier Invoice</label>
-                                    <div class="col-sm-8">{{=form3.custom.widget.supplier_invoice}}</div>
-                                </div>
-                            </div>
-                        </div>   
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Exchange Rate</label>
-                                    <div class="col-sm-4">{{=form3.custom.widget.exchange_rate}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Landed Cost Rate</label>
-                                    <div class="col-sm-4">{{=form3.custom.widget.landed_cost}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">                    
-                                    <label class="col-sm-4 control-label">Other Charges</label>
-                                    <div class="col-sm-4">{{=form3.custom.widget.other_charges}}</div>
-                                </div>
-                            </div>
-                        </div>          
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Custom Duty Charges</label>
-                                    <div class="col-sm-4">{{=form3.custom.widget.custom_duty_charges}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Selective Tax</label>
-                                    <div class="col-sm-4">{{=form3.custom.widget.selective_tax}}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="col-sm-4 control-label"></label>
-                                <div class="col-sm-4"><input class="btn btn-primary" type="button" value="Proceed" id="btnProceed"></div>
-                                
-                            </div>
-                        </div>                 
-                    {{=form3.custom.end}}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Supplier/Acct Code</label>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_account_code}}</div>
+                        </div>
+                    </div>       
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Supplier/Account Name</label>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_account_code_description}}</div>
+                        </div>
+                    </div>    
+                </div> 
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Currency</label>
+                            <div class="col-sm-8">{{=form.custom.widget.currency_id}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Trade Terms</label>
+                            <div class="col-sm-8">{{=form.custom.widget.trade_terms_id}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">                    
+                            <label class="col-sm-4 control-label">Supplier Invoice</label>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_invoice}}</div>
+                        </div>
+                    </div>                                                                                  
                 </div>
-                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Exchange Rate</label>
+                            <div class="col-sm-4">{{=form.custom.widget.exchange_rate}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Landed Cost Rate</label>
+                            <div class="col-sm-4">{{=form.custom.widget.landed_cost}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">                    
+                            <label class="col-sm-4 control-label">Other Charges</label>
+                            <div class="col-sm-4">{{=form.custom.widget.other_charges}}</div>
+                        </div>
+                    </div>                        
+                </div>     
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Custom Duty Charges</label>
+                            <div class="col-sm-4">{{=form.custom.widget.custom_duty_charges}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Selective Tax</label>
+                            <div class="col-sm-4">{{=form.custom.widget.selective_tax}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                        </div>
+                        
+                    </div>
+                </div>                                          
                 <hr>
-            </div>
-            
-                            
-                    {{=LOAD('procurement','purchase_receipt_account_validated_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
-                     
-    
-            
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="col-sm-9"></div>
+                        <div class="col-sm-3">
+                            <input class="btn btn-success" type="submit" value="submit" id="btnSubmit">
+                            <input class="btn btn-primary" type="button" value="Proceed" id="btnProceed" disabled="True">
+                            <input class="btn btn-danger" type="button" value="abort" id="btnAbort">    
+                        </div>
+                    </div>
+                </div>
+                {{=form.custom.end}}
+            </div>            
+            <hr>
+            {{=LOAD('procurement','purchase_receipt_account_validated_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
         </div>
     </div>
 </div>

@@ -125,25 +125,32 @@
                     </div>   
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                         
-                                {{ if _id.status_id == 20: }}       
-                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])">
-                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}', ['remarks'])">                                    
-                                    <button class="btn btn-info" onclick=" window.open('{{=URL('procurement','purchase_history', args = request.args(0))}}','_blank')"> Purchase History</button>
-                                    <!-- <input type="button" value="Open Window" onclick="window.open('http://www.google.com')"> -->
-                                {{ else: }}
-                                    <input class="btn btn-success" type="button" value="approved" disabled>
-                                    <input class="btn btn-warning" type="button" value="reject" disabled>                            
-                                    <button class="btn btn-info" disabled> Purchase History</button>
-                                    
-                                {{ pass }}                                            
-                                {{=form.custom.end}}
+                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <div class="col-sm-8">            
+                                {{=form.custom.widget.proforma_file}}             
                             </div>        
                         </div>  
                     </div>
                 </div>
-    
+                <hr>
+                <div class="row">
+                    <div class="col-md-9"></div>
+                    <div class="col-md-3">
+                        {{ if _id.status_id == 20: }}       
+                            <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])">
+                            <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}', ['remarks'])">                                    
+                            <button class="btn btn-info" onclick=" window.open('{{=URL('procurement','purchase_history', args = request.args(0))}}','_blank')"> Purchase History</button>
+                            <!-- <input type="button" value="Open Window" onclick="window.open('http://www.google.com')"> -->
+                        {{ else: }}
+                            <input class="btn btn-success" type="button" value="approved" disabled>
+                            <input class="btn btn-warning" type="button" value="reject" disabled>                            
+                            <button class="btn btn-info" disabled> Purchase History</button>
+                            
+                        {{ pass }}                                            
+                        {{=form.custom.end}}
+
+                    </div>
+                </div>
                 <hr>
                 <div id = "order_panel">
                     {{=LOAD('procurement','purchase_request_transaction_view_details.load', ajax = True, target='tblPRT',args = request.args(0))}}
