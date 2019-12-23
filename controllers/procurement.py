@@ -652,13 +652,12 @@ def puchase_receipt_account_grid(): # manoj
             _supplier = _ow.supplier_code_id.supp_name
             _location = _ow.location_code_id.location_name
         else:
-            _department = n.dept_code_id.dept_name
+            _department = 1 #n.dept_code_id.dept_name
             _supplier = n.supplier_code_id.supp_name
             _location = n.location_code_id.location_name        
         _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == n.id).select().first()
         
-        if _pr:
-            
+        if _pr:            
             if int(n.purchase_receipt_no) == int(_pr.purchase_receipt_no) or (n.id == _pr.purchase_receipt_no_id_consolidated):                
                 for m in db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == n.id) & ((db.Purchase_Receipt.status_id == 18) | (db.Purchase_Receipt.status_id == 25))).select():
                     if m.submitted == True:                    
@@ -1128,6 +1127,7 @@ def purchase_receipt_account_grid_view_validate():
         ctr += 1
         _prwc = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()
         _id = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == n.id).select().first()
+        
         _po = db(db.Purchase_Order.id == _id.purchase_order_no_id).select().first()
         # print '_purchase_receipt: ', _id.purchase_receipt_no_id, _id.purchase_order_no_id
         session.dept_code_id = _po.dept_code_id
@@ -1251,7 +1251,7 @@ def purchase_receipt_account_grid_view_validate_():
     return dict(table = table, form3 = form3, frm = frm)
 
 @auth.requires_login()
-def purchase_receipt_account_validate_transaction(): # .load new version below
+def purchase_receipt_account_validate_transaction2(): # .load new version below
     _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
     if db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt.posted == True)).select().first():
         response.js = "$('#btnProceed').attr('disabled','disabled');$('#btnSubmit').attr('disabled','disabled');$('#btnValidate').attr('disabled','disabled');$('#btnAbort').attr('disabled','disabled');$('#btnadd').attr('disabled','disabled');$('.del').attr('disabled','disabled');$('.delete').attr('disabled','disabled');;$('.dele').attr('disabled','disabled');" 
@@ -1267,7 +1267,8 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
     # head = THEAD(TR(TH('Suppler/Acct Codes'),TH('Supplier Name'),TH('Exchange Rate'),TH('Landed Cost'),TH('Other Charges'),TH('Custom Duty Charges'),TH('Discount'),TH('Selective Tax'),TH('Supplier Invoice'),TH(),TH(),TH(),TH(),_class='bg-success'))        
     # head += TR(TD('#'),TD('Item Code'),TD('Item Description'),TH('UOM'),TH('Category'),TH('Invoice Qty'),TH('Warehouse Receipt Qty'),TH('Quantity'),TH('Pieces'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'))
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty'),TH('Warehouse Receipt Qty'),TH('Invoice Qty'),TH('Invoice Pcs'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))        
-    for n in db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.delete == False)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction_Consolidated.ALL, orderby =  db.Purchase_Receipt_Transaction_Consolidated.id, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction_Consolidated.item_code_id)):        
+    for n in db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.delete == False)).select(db.Item_Master.ALL, db.Purchase_Receipt_Transaction_Consolidated.ALL, orderby =  db.Purchase_Receipt_Transaction_Consolidated.id | db.Purchase_Receipt_Transaction_Consolidated.item_code_id, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Receipt_Transaction_Consolidated.item_code_id)):        
+        print
         ctr += 1        
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = n.Purchase_Receipt_Transaction_Consolidated.id, extension = False), **{'_data-ct':(n.Purchase_Receipt_Transaction_Consolidated.id)})
         btn_lnk = DIV(dele_lnk)                
@@ -1382,7 +1383,7 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
                             if int(request.vars['quantity'][row]) != int(_invoice_quantity): # not equal                            
                                 if int(request.vars['quantity'][row]) < int(_invoice_quantity): # shorts
                                     _remarks = 'shorts by ' #+ str(_difference)
-                                    # _prtc.update_record(invoiced_quantity = _invoice_quantity, difference_quantity = _difference, item_remarks = _remarks)
+                                    _prtc.update_record(invoiced_quantity =  int(request.vars['quantity'][row]), difference_quantity = _difference)
                                     print 'shorts'
                                     db.Purchase_Receipt_Transaction_Consolidated.insert(
                                         purchase_receipt_no_id_consolidated = request.args(0),
@@ -1390,8 +1391,8 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
                                         item_code_id = request.vars['item_code_id'][row],
                                         category_id = 5,
                                         uom = request.vars['uom'][row],
-                                        quantity = _difference,
-                                        invoiced_quantity = int(request.vars['invoice_quantity'][row]),
+                                        # quantity = _difference,
+                                        invoiced_quantity = _difference,
                                         price_cost = request.vars['price_cost'][row],
                                         difference_quantity = _difference,
                                         total_amount = _price_per_piece * int(_difference),
@@ -1405,7 +1406,7 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
                                 elif int(request.vars['quantity'][row]) > int(_invoice_quantity): # excess   
                                     _difference = int(request.vars['quantity'][row]) - int(_invoice_quantity)
                                     _remarks = 'excess by ' #+ str(_difference)
-                                    _prtc.update_record(quantity = _invoice_quantity, invoiced_quantity = _invoice_quantity, difference_quantity = _difference)
+                                    _prtc.update_record(invoiced_quantity = _invoice_quantity, difference_quantity = _difference)
                                     print 'excess'
                                     db.Purchase_Receipt_Transaction_Consolidated.insert(
                                         purchase_receipt_no_id_consolidated = request.args(0),
@@ -1413,8 +1414,8 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
                                         item_code_id = request.vars['item_code_id'][row],
                                         category_id = 2,
                                         uom = request.vars['uom'][row],
-                                        quantity = _difference,
-                                        invoiced_quantity = int(request.vars['invoice_quantity'][row]),
+                                        # quantity = _difference,
+                                        invoiced_quantity = _difference,
                                         price_cost = request.vars['price_cost'][row],
                                         difference_quantity = _difference,
                                         total_amount = _price_per_piece * int(_difference),
@@ -1532,37 +1533,23 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
                         )                
                 
                 # generate GRV
-                _chk = db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.category_id == 2)).count()
+                _id = db(db.Purchase_Receipt_Warehouse_Consolidated.id == request.args(0)).select().first()
+                _chk = db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.category_id == 2)).count()
                 if int(_chk) >= 1:                
-                    db.Purchase_Receipt.insert(
-                        purchase_receipt_no_id_consolidated = request.args(0),
+                    db.Purchase_Receipt_Warehouse_Consolidated.insert(                        
                         purchase_receipt_no_prefix_id = _tp.id,
-                        purchase_receipt_no = _skey,    
+                        purchase_receipt_no = _skey,
+                        purchase_receipt_approved_by = auth.user_id,
                         purchase_receipt_date_approved = request.now,
-                        purchase_receipt_date = request.now,   
-                        purchase_receipt_approved_by = auth.user_id,             
-                        dept_code_id = _pr.dept_code_id,
-                        supplier_code_id = _pr.supplier_code_id,
-                        mode_of_shipment = _pr.mode_of_shipment,
-                        location_code_id = _pr.location_code_id,
-                        exchange_rate = _pr.exchange_rate,
-                        trade_terms_id = _pr.trade_terms_id,
-                        landed_cost = _pr.landed_cost,
-                        other_charges = _pr.other_charges,
-                        custom_duty_charges = _pr.custom_duty_charges,
-                        selective_tax = _pr.selective_tax,
-                        supplier_invoice = _pr.supplier_invoice,
-                        supplier_account_code = _pr.supplier_account_code,
-                        supplier_account_code_description = _pr.supplier_account_code_description,
-                        discount_percentage = _pr.discount_percentage,
-                        currency_id = _pr.currency_id,
-                        status_id = _pr.status_id,                                    
-                        validated = True)         
-                    _epr = db(db.Purchase_Receipt.purchase_receipt_no == _skey).select().first()
-                    for y in db((db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt_Transaction.category_id == 2)).select():
+                        location_code_id = _id.location_code_id,
+                        supplier_code_id = _id.supplier_code_id,
+                        status_id = _id.status_id ,
+                        received = True)
+                    _epr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == _skey).select().first()
+                    for y in db((db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == request.args(0)) & (db.Purchase_Receipt_Transaction_Consolidated.category_id == 2)).select():
                         y.update_record(purchase_receipt_no_id = _epr.id)
                     session.flash = 'Generated GRV' + str(_skey) + str(' for exist item(s).')
-                db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(validated = True)
+                # db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).update(validated = True)
                 response.flash = 'RECORD VALIDATED'        
                 response.js = "$('#POTtbl').get(0).reload();"     
     elif form.errors:
@@ -1623,7 +1610,7 @@ def purchase_receipt_account_validate_transaction(): # .load new version below
     return dict(form = form, form2 = form2, form3 = 'form3',  _table = _table, _po = _po, _pr = _pr)    
 
 @auth.requires_login()
-def purchase_receipt_account_validate_transaction2(): # .load new version below
+def purchase_receipt_account_validate_transaction(): # .load new version below
     _pr = db(db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)).select().first()
     if db((db.Purchase_Receipt.purchase_receipt_no_id_consolidated == request.args(0)) & (db.Purchase_Receipt.posted == True)).select().first():
         response.js = "$('#btnProceed').attr('disabled','disabled');$('#btnSubmit').attr('disabled','disabled');$('#btnValidate').attr('disabled','disabled');$('#btnAbort').attr('disabled','disabled');$('#btnadd').attr('disabled','disabled');$('.del').attr('disabled','disabled');$('.delete').attr('disabled','disabled');;$('.dele').attr('disabled','disabled');" 
