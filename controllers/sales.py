@@ -346,9 +346,10 @@ def sales_order_form():
                 category_id = n.category_id,
                 quantity = n.total_pieces,
                 uom = _item.uom_value,
-                price_cost = n.price_cost,
+                # price_cost = n.price_cost,
+                price_cost =  (_pric.wholesale_price / _item.uom_value),
                 average_cost = _pric.average_cost,
-                # sale_cost = _pric.sale_cost,
+                sale_cost = (n.net_price / _item.uom_value),
                 wholesale_price = _pric.wholesale_price,
                 retail_price = _pric.retail_price,
                 vansale_price = _pric.vansale_price,
@@ -432,9 +433,13 @@ def item_code_description():
                 TD(_on_balanced)),_class="bg-info"),_class='table'))            
         else:
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
+def test():
+    for n in db(db.Item_Master.supplier_code_id == 5).select():
+        n.update_record(selectivetax = 100)
 
 @auth.requires_login()
-def validate_sales_order_transaction(form):        
+def validate_sales_order_transaction(form):      
+    _selective_tax_total = _selective_tax_total_foc = 0    
     _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
     # print 'session', request.vars.item_code, session.stock_source_id
     if not _id:
@@ -457,7 +462,7 @@ def validate_sales_order_transaction(form):
             form.vars.pieces = 0
 
         _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces or 0)
-        
+        _item_discount = int(request.vars.discount_percentage)
         if not _price:
             form.errors.item_code = "Item code does'nt have price."
         
@@ -468,41 +473,90 @@ def validate_sales_order_transaction(form):
         _excise_tax_amount = 0
         _unit_price = 0
         _total_excise_tax = _net_price = _total_excise_tax_foc = 0
-        _selective_tax = _selective_tax_foc =  0       
-        _total_amount = 0
+        _selective_tax = _selective_tax_foc = _retail_price_per_uom = 0     
+        _total_amount = _tax_per_uom = _wholesale_price_per_uom = 0 
+        _retail_price_per_uom = _price.retail_price / _id.uom_value     
+        _wholesale_price_per_uom = _price.wholesale_price / _id.uom_value
+
+        if _id.selectivetax > 0:
+            if int(_retail_price_per_uom) <= 8:
+                if int(_id.uom_value) == 20:
+                    _tax_per_uom = 4
+                else:
+                    _tax_per_uom = 8
+            else:
+                _tax_per_uom = _retail_price_per_uom
+        else:
+            _tax_per_uom = 0
+
+
         if _exist:            
             form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'           
             # computation for excise tax foc
-            _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-            _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
-            _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-            _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+            # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+            # _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
+            # _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+            # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
 
             # form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))                    
         else:
-            if int(request.vars.category_id) == 3:
-                
-                # computation for excise tax foc
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
-                _selective_tax_foc += _excise_tax_price_per_piece * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+            if int(request.vars.category_id) == 3:                
+                # computation for excise tax foc        
+                _selective_tax = 0
+                if float(_id.selectivetax) == 0:
+                    _selective_tax_foc = 0
+                else:
+                    _selective_tax_foc =  float(_tax_per_uom) * _id.uom_value
+
+                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc
+                _selective_tax_total_foc += float(_tax_per_uom) * _total_pcs
+                _net_price_at_wholesale = 0.0
+                _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
+                # print '_selective_tax_total_foc: ', _selective_tax_total_foc
+                # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+                # _selective_tax_foc += _excise_tax_price_per_piece * _total_pcs
+                # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
 
                 # _stk_file.stock_in_transit += _total_pcs    
                 # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
                 # _stk_file.update_record()    
             else:
-                _selective_tax_foc = 0
+                # _selective_tax = 0
                 # computation for excise tax
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
-                _selective_tax += _excise_tax_price_per_piece * _total_pcs                
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+                _selective_tax_foc = _unit_price1 = 0
+                if float(_id.selectivetax) == 0:
+                    _selective_tax = 0
+
+                else:
+                    _selective_tax =  float(_tax_per_uom) * _id.uom_value            
+                
+                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax
+                
+                _selective_tax_total += float(_tax_per_uom) * _total_pcs
+                
+                # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+                # _selective_tax += _excise_tax_price_per_piece * _total_pcs                
+                # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
                 
                 # computation for price per unit
-                _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0))) / 100
-                _price_per_piece = _net_price / _id.uom_value
-                _total_amount = _total_pcs * _price_per_piece
+                if float(_id.selectivetax) == 0: # without selective tax
+                    _net_price = 0
+                    _net_price = _unit_price - ((_unit_price * _item_discount) / 100)
+                    _total_amount = _net_price / _id.uom_value * _total_pcs
+                else:   # with selective tax
+                    _net_price = 0
+                    _net_price_at_wholesale = 0.0
+                    _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
+                    
+                    _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
+                    # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
+                    _total_amount = _net_price / _id.uom_value * _total_pcs
+
+                # _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0))) / 100
+                # _price_per_piece = _net_price / _id.uom_value
+                # _total_amount = _total_pcs * _price_per_piece
         
                 # _stk_file.stock_in_transit += _total_pcs    
                 # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
@@ -528,12 +582,13 @@ def validate_sales_order_transaction(form):
             # if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
         
         form.vars.item_code_id = _id.id
-        form.vars.selective_tax = _selective_tax
-        form.vars.selective_tax_foc = _selective_tax_foc
+        form.vars.selective_tax = _selective_tax_total
+        form.vars.selective_tax_foc = _selective_tax_total_foc
         form.vars.total_pieces = _total_pcs
-        form.vars.price_cost = _unit_price
+        form.vars.price_cost = float(_unit_price)
         form.vars.total_amount = _total_amount
         form.vars.net_price = _net_price
+        form.vars.wholesale_price = _net_price_at_wholesale
 
 @auth.requires_login()            
 def sales_order_transaction_temporary():       
@@ -554,6 +609,7 @@ def sales_order_transaction_temporary():
             pieces = form.vars.pieces,
             total_pieces = form.vars.total_pieces,
             price_cost = form.vars.price_cost,
+            wholesale_price = form.vars.wholesale_price,
             total_amount = form.vars.total_amount,
             discount_percentage = form.vars.discount_percentage,
             category_id = form.vars.category_id,
@@ -588,7 +644,7 @@ def sales_order_transaction_temporary():
         btn_lnk = DIV( dele_lnk)
         _selective_tax += n.Sales_Order_Transaction_Temporary.selective_tax
         _selective_tax_foc += n.Sales_Order_Transaction_Temporary.selective_tax_foc
-        if _selective_tax > 0.0:            
+        if (_selective_tax > 0.0) or (_selective_tax_foc > 0.0):            
             _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
             _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
             response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
@@ -601,14 +657,14 @@ def sales_order_transaction_temporary():
             TD(ctr, INPUT(_name="ctr",_hidden='true',_value=n.Sales_Order_Transaction_Temporary.id)),
             TD(n.Sales_Order_Transaction_Temporary.item_code, INPUT(_name='item_code_id',_type='text',_hidden='true',_value=n.Sales_Order_Transaction_Temporary.item_code_id)),
             TD(n.Item_Master.item_description.upper()),
-            TD(n.Sales_Order_Transaction_Temporary.category_id.mnemonic),
+            TD(n.Sales_Order_Transaction_Temporary.category_id.mnemonic, INPUT(_name='wholesale_price',_type='number',_hidden='true',_value=n.Sales_Order_Transaction_Temporary.wholesale_price)),
             TD(n.Item_Master.uom_value, INPUT(_name='uom',_type='number',_hidden='true',_value=n.Item_Master.uom_value)),
             TD(INPUT(_class='form-control quantity',_name='quantity',_type='number',_value=n.Sales_Order_Transaction_Temporary.quantity), _align = 'right', _style="width:100px;"),
             TD(INPUT(_class='form-control pieces',_name='pieces',_type='number',_value=n.Sales_Order_Transaction_Temporary.pieces), _align = 'right', _style="width:100px;"),
-            TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=n.Sales_Order_Transaction_Temporary.price_cost or 0), _align = 'right', _style="width:100px;"),  
+            TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.price_cost or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
             TD(INPUT(_class='form-control discount_per',_name='discount_per',_type='number',_value=locale.format('%d',n.Sales_Order_Transaction_Temporary.discount_percentage or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
-            TD(INPUT(_class='form-control net_price',_name='net_price',_type='text',_value=n.Sales_Order_Transaction_Temporary.net_price or 0), _align = 'right', _style="width:100px;"),  
-            TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Sales_Order_Transaction_Temporary.total_amount or 0),_align = 'right', _style="width:100px;"),
+            TD(INPUT(_class='form-control net_price',_name='net_price',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.net_price or 0, grouping = True)), _align = 'right', _style="width:100px;"),  
+            TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount or 0, grouping = True)),_align = 'right', _style="width:100px;"),
             TD(btn_lnk)))
     body = TBODY(*row)        
     foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control grand_total', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD(_btnUpdate)))

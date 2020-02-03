@@ -100,7 +100,7 @@ def validate_outgoing_mail(form):
     _ip = db(db.Insurance_Master.id == request.vars.insurance_master_id).select().first()
     _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
     _skey = _pre.serial_key
-    _skey += 1    
+    _skey += 1    f
     _usr_f = str(auth.user.first_name.upper())
     _usr_l = str(auth.user.last_name.upper())
     _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]

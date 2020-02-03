@@ -160,9 +160,11 @@ $(document).ready(function(){
                                     { text: '{{=d.dept_code}} - {{=d.dept_name}}', value: '{{=d.id}}', 
                             children: [ { text: 'Choose Supplier', value: null}, {{for s in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL):}}
                                         { text: '{{=s.supp_code}} - {{=s.supp_name}}', value: '{{=s.id}}',
-                                children: [ { text: 'Choose Group Line', value: null}, {{for g in db((db.GroupLine.status_id == 1) & (db.GroupLine.supplier_id == s.id)).select(db.GroupLine.ALL):}}
-                                            { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
-                                    children: [ { text: 'Choose Brand Line', value: null}, {{for b in db((db.Brand_Line.status_id == 1) & (db.Brand_Line.group_line_id == g.id)).select(db.Brand_Line.ALL):}}
+                                children: [ { text: 'Choose Group Line', value: null}, 
+
+                                {{for g in db((db.Sub_Group_Line.status_id == 1) & (db.Sub_Group_Line.supplier_code_id == s.id)).select(db.GroupLine.ALL, db.Sub_Group_Line.ALL, left = db.Sub_Group_Line.on(db.GroupLine.id == db.Sub_Group_Line.group_line_code_id) ):}}
+                                            { text: '{{=g.GroupLine.group_line_code}} - {{=g.GroupLine.group_line_name}}', value: '{{=g.GroupLine.id}}',
+                                    children: [ { text: 'Choose Brand Line', value: null}, {{for b in db((db.Brand_Line.status_id == 1) & (db.Brand_Line.group_line_id == g.GroupLine.id)).select(db.Brand_Line.ALL):}}
                                                 { text: '{{=b.brand_line_code}} - {{=b.brand_line_name}}', value: '{{=b.id}}',
                                         children: [ { text: 'Choose Brand Classification', value: null}, {{for c in db((db.Brand_Classification.status_id == 1) & (db.Brand_Classification.brand_line_code_id == b.id)).select(db.Brand_Classification.ALL):}}
                                                     { text: '{{=c.brand_cls_code}} - {{=c.brand_cls_name}}', value: '{{=c.id}}'}, {{pass}} ], }, {{pass}} ], }, {{pass}} ], }, {{pass}} ],  }, {{pass}} ], }, {{pass}}];

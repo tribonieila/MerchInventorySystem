@@ -2,7 +2,7 @@
 
 auth = Auth(globals(),db)
 
-
+ 
 # Duplicate Entry error = SAME VALUE ALREADY EXIST OR EMPTY
 # error_message = 'Record already exist or empty.'
 
@@ -999,9 +999,8 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('quantity','integer', default = 0),
     Field('pieces','integer', default = 0),
     Field('total_pieces','integer', default = 0),
-    Field('price_cost','decimal(15,6)', default = 0),
-    Field('wholesale_price', 'decimal(10,2)', default = 0),
-    Field('total_amount','decimal(15,6)', default = 0),
+    Field('price_cost','decimal(10,6)', default = 0),
+    Field('total_amount','decimal(10,6)', default = 0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('net_price', 'decimal(10,2)',default =0),
     Field('taxable_value','decimal(10,2)', default = 0),
@@ -1011,7 +1010,7 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('tax_amount','decimal(10,2)', default = 0),
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('stock_source_id','reference Location', ondelete = 'NO ACTION'),
-    Field('remarks','string'),    
+    Field('remarks','string'),
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
@@ -1204,8 +1203,6 @@ db.define_table('Sales_Invoice',
     Field('sales_order_no', 'integer',  writable = False),    
     Field('delivery_note_id','integer', writable = False),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION'),
-    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
@@ -1227,7 +1224,6 @@ db.define_table('Sales_Invoice_Transaction',
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),    
     Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),

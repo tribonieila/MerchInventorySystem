@@ -851,7 +851,15 @@ def groupline_edit_form():
         response.flash = 'ENTRY HAS ERRORS'
     else:
         response.flash = 'PLEASE FILL OUT THE FORM'
-    return dict(form = form, ctr_val = ctr_val.prefix_id.prefix+ctr_val.group_line_code)
+    row = []    
+    head = THEAD(TR(TH('#'),TH('Department'),TH('Supplier'),TH('Status')))
+    ctr = 0
+    for n in db(db.Supplier_Master.id == ctr_val.supplier_id).select(orderby = db.Supplier_Master.id):   
+        ctr+=1     
+        row.append(TR(TD(ctr),TD(n.dept_code_id.dept_name),TD(n.supp_code, ' - ' ,n.supp_name),TD(n.status_id.status)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class= 'table')
+    return dict(form = form, ctr_val = ctr_val.prefix_id.prefix+ctr_val.group_line_code, table = table)
 
 @auth.requires_login()
 def sbgplne_lnk():
@@ -927,11 +935,23 @@ def brndlne_mas():
     table = TABLE(*[thead,tbody],_class='table table-striped')        
     return dict(table=table)
 
+def showgroupline_():    
+    print request.vars.group_line_id, request.vars.supplier_id
+    _spl = db((db.GroupLine.id == request.vars.group_line_id) & (db.GroupLine.supplier_id == request.vars.supplier_id)).select().first()
+    if not _spl:
+        print 'nothing'
+    else:
+        print 'success'
+        for n in db(db.Brand_Line.group_line_id == request.vars.group_line_id).select():
+            print n.brand_line_name
+    
+
+
 def showgroupline():
     row = []
     ctr = 0
     head = THEAD(TR(TH('#'),TH('Brand Line Code'),TH('Brand Line Name')))
-    for g in db(db.Brand_Line.group_line_id == request.vars.group_line_id).select():
+    for g in db((db.Brand_Line.group_line_id == request.vars.group_line_id) & (db.Brand_Line.supplier_id == request.vars.supplier_id)).select():
         ctr += 1
         row.append(TR(TD(ctr),TD(g.prefix_id.prefix,g.brand_line_code),TD(g.brand_line_name)))
     body = TBODY(*row)
@@ -947,7 +967,8 @@ def brndlne_add_form():
         _ckey = str(_skey).rjust(5,'0')
         ctr_val = pre.prefix + _ckey
         form = SQLFORM.factory(
-            Field('group_line_id', 'reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line')),
+            Field('group_line_id', 'reference GroupLine', requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_name)s - %(group_line_code)s', zero = 'Choose Group Line')),
+            Field('supplier_id', 'reference Supplier_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero =  'Choose Supplier')),
             Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
             Field('brand_line_code', 'string', default = _ckey),
             Field('brand_line_name','string',length=50, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Brand_Line.brand_line_name')]),
@@ -956,6 +977,7 @@ def brndlne_add_form():
             response.flash = 'RECORD SAVE'
             db.Brand_Line.insert(prefix_id = pre.id,
             group_line_id = form.vars.group_line_id,
+            supplier_id = form.vars.supplier_id,
             dept_code_id = form.vars.dept_code_id,
             brand_line_code = _ckey,
             brand_line_name = form.vars.brand_line_name,
@@ -971,7 +993,7 @@ def brndlne_add_form():
 @auth.requires_login()
 def brndlne_edit_form():
     db.Brand_Line_Department.brand_line_code_id.writable = False
-    db.Brand_Line.dept_code_id.writable = False
+    # db.Brand_Line.dept_code_id.writable = False
     ctr_val = db(db.Brand_Line.id == request.args(0)).select().first()
     form = SQLFORM(db.Brand_Line, request.args(0), deletable = True)
     if form.process().accepted:

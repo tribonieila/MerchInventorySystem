@@ -154,11 +154,10 @@ if configuration.get('scheduler.enabled'):
 # auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
 auth.enable_record_versioning(db)
 db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv', pool_size=0)
-db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
+# db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
 
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB?driver={ODBC Driver 17 for SQL Server}") # production
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Test?driver={ODBC Driver 17 for SQL Server}") # testing
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
 # db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
 
- 
