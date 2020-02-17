@@ -682,12 +682,28 @@ db.define_table('Adjustment_Type',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
-db.define_table('Merch_Stock_Transaction',
-    Field('voucher_no','string', length = 15), # 10 length
-    Field('location_code', 'string', length = 10),   # from location master
+db.define_table('Merch_Stock_Header',
+    Field('voucher_no','integer'), # 10 length
+    Field('location', 'integer'),   # from location master
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
     Field('transaction_date', 'date'), # from date of transaction
     Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
+    Field('total_amount','decimal(15,6)', default = 0),
+    Field('discount_percentage','decimal(15,6)', default = 0),
+    Field('discount_added','decimal(15,6)', default = 0),
+    Field('total_selective_tax','decimal(15,6)', default = 0),
+    Field('total_selective_tax_foc','decimal(15,6)', default = 0),
+    Field('stock_destination','integer'),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Merch_Stock_Transaction',
+    Field('voucher_no','integer'), # 10 length
+    Field('location', 'integer'),   # from location master
+    Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
+    Field('transaction_date', 'date'), # from date of transaction    
     Field('item_code', 'string', length = 15), # item master
     Field('uom', 'integer'), # from transaction
     Field('quantity', 'integer'), # from transaction
@@ -703,6 +719,7 @@ db.define_table('Merch_Stock_Transaction',
     Field('sales_lady_code', 'string',length = 10), # sales, pos
     Field('supplier_code','string', length = 10), # from item code
     Field('dept_code','string', length = 20), # from item master
+    Field('stock_destination','integer'), # destination of stock transfer
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),

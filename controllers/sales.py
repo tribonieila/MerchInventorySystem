@@ -394,19 +394,18 @@ def discount_session():
         
 @auth.requires_login()
 def item_code_description():
-    response.js = "$('#btnadd').removeAttr('disabled')"
-    response.js = "$('#no_table_pieces').removeAttr('disabled')"   
-    response.js = "$('#discount').removeAttr('disabled')"    
+    response.js = "$('#btnadd, #no_table_pieces, #discount').removeAttr('disabled')"
     _icode = db(db.Item_Master.item_code == request.vars.item_code).select().first()    
     # _icode = db((db.Item_Master.item_code == request.vars.item_code.upper()) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
     
     if not _icode:
-        response.js = "$('#btnadd').attr('disabled','disabled')"
+        # response.js = "$('#btnadd').attr('disabled','disabled')"
         return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))       
     else:        
-        response.js = "$('#btnadd').removeAttr('disabled')"
-        _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
+        # response.js = "$('#btnadd').removeAttr('disabled')"
+        _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()          
         _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
+
         if _sfile:               
             if _icode.uom_value == 1:                
                 response.js = "$('#no_table_pieces').attr('disabled','disabled'), $('#btnadd').removeAttr('disabled')"                
@@ -431,15 +430,19 @@ def item_code_description():
                 TD(_on_hand),
                 TD(_on_transit),
                 TD(_on_balanced)),_class="bg-info"),_class='table'))            
+
         else:
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
+
+        
 def test():
     for n in db(db.Item_Master.supplier_code_id == 5).select():
         n.update_record(selectivetax = 100)
+from decimal import Decimal
 
 @auth.requires_login()
 def validate_sales_order_transaction(form):      
-    _selective_tax_total = _selective_tax_total_foc = 0    
+    _selective_tax_total = _selective_tax_total_foc = _selective_tax_per_uom = 0    
     _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
     # print 'session', request.vars.item_code, session.stock_source_id
     if not _id:
@@ -463,9 +466,18 @@ def validate_sales_order_transaction(form):
 
         _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces or 0)
         _item_discount = int(request.vars.discount_percentage)
+        
         if not _price:
             form.errors.item_code = "Item code does'nt have price."
         
+        if _price.selective_tax_price != None or 0: # >= request.vars.discount_percentage:
+            print 'with tax'
+            if request.vars.discount_percentage != None or 0:
+                form.errors.discount_percentage = 'discount not allowed'
+        else:
+            print 'without tax'
+            # form.errors.discount_percentage = 'Discount not allowed. ' 
+
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
             form.errors.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
                 
@@ -477,18 +489,14 @@ def validate_sales_order_transaction(form):
         _total_amount = _tax_per_uom = _wholesale_price_per_uom = 0 
         _retail_price_per_uom = _price.retail_price / _id.uom_value     
         _wholesale_price_per_uom = _price.wholesale_price / _id.uom_value
+        _selective_tax_per_uom = _price.selective_tax_price 
 
-        if _id.selectivetax > 0:
-            if int(_retail_price_per_uom) <= 8:
-                if int(_id.uom_value) == 20:
-                    _tax_per_uom = 4
-                else:
-                    _tax_per_uom = 8
-            else:
-                _tax_per_uom = _retail_price_per_uom
+
+        if _id.selectivetax > 0:           
+             
+            _tax_per_uom = _selective_tax_per_uom
         else:
             _tax_per_uom = 0
-
 
         if _exist:            
             form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'           
@@ -510,8 +518,8 @@ def validate_sales_order_transaction(form):
 
                 _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc
                 _selective_tax_total_foc += float(_tax_per_uom) * _total_pcs
-                _net_price_at_wholesale = 0.0
-                _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
+                # _net_price_at_wholesale = 0.0
+                # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
                 # print '_selective_tax_total_foc: ', _selective_tax_total_foc
                 # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
                 # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
@@ -529,11 +537,11 @@ def validate_sales_order_transaction(form):
                     _selective_tax = 0
 
                 else:
-                    _selective_tax =  float(_tax_per_uom) * _id.uom_value            
+                    _selective_tax =  float(_selective_tax_per_uom or 0) #* _id.uom_value
+
+                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + (float(_selective_tax or 0) * _id.uom_value)
                 
-                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax
-                
-                _selective_tax_total += float(_tax_per_uom) * _total_pcs
+                _selective_tax_total += float(_selective_tax) * _total_pcs
                 
                 # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
                 # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
@@ -541,18 +549,18 @@ def validate_sales_order_transaction(form):
                 # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
                 
                 # computation for price per unit
-                if float(_id.selectivetax) == 0: # without selective tax
-                    _net_price = 0
-                    _net_price = _unit_price - ((_unit_price * _item_discount) / 100)
-                    _total_amount = _net_price / _id.uom_value * _total_pcs
-                else:   # with selective tax
-                    _net_price = 0
-                    _net_price_at_wholesale = 0.0
-                    _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
+                # if float(_id.selectivetax) == 0: # without selective tax
+                _net_price = 0
+                _net_price = _unit_price - ((_unit_price * _item_discount) / 100) #+ (float(_selective_tax or 0) * _id.uom_value)
+                _total_amount = _net_price / _id.uom_value * _total_pcs
+                # else:   # with selective tax
+                #     _net_price = 0
+                #     _net_price_at_wholesale = 0.0
+                #     _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
                     
-                    _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
-                    # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
-                    _total_amount = _net_price / _id.uom_value * _total_pcs
+                #     _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
+                #     # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
+                #     _total_amount = _net_price / _id.uom_value * _total_pcs
 
                 # _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0))) / 100
                 # _price_per_piece = _net_price / _id.uom_value
@@ -588,7 +596,7 @@ def validate_sales_order_transaction(form):
         form.vars.price_cost = float(_unit_price)
         form.vars.total_amount = _total_amount
         form.vars.net_price = _net_price
-        form.vars.wholesale_price = _net_price_at_wholesale
+        form.vars.wholesale_price = _price.wholesale_price
 
 @auth.requires_login()            
 def sales_order_transaction_temporary():       
@@ -640,7 +648,7 @@ def sales_order_transaction_temporary():
         ctr += 1      
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Sales_Order_Transaction_Temporary.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Sales_Order_Transaction_Temporary.id),'_data-qt':(n.Sales_Order_Transaction_Temporary.quantity), '_data-pc':(n.Sales_Order_Transaction_Temporary.pieces)})
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Sales_Order_Transaction_Temporary.id), **{'_data-id':(n.Sales_Order_Transaction_Temporary.id)})
-        _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
+        _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')
         btn_lnk = DIV( dele_lnk)
         _selective_tax += n.Sales_Order_Transaction_Temporary.selective_tax
         _selective_tax_foc += n.Sales_Order_Transaction_Temporary.selective_tax_foc
@@ -748,7 +756,6 @@ def generate_total_amount(item, qty, pcs):
 
 @auth.requires_login()
 def sales_order_transaction_temporary_delete():
-
     _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()    
     _s = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()    
     _s.stock_in_transit -= _id.total_pieces

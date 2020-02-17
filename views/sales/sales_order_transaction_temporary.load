@@ -53,7 +53,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    $(".price_cost, .net_price, .total_amount, .discount_per").prop("readonly", true);
+    $(".price_cost, .net_price, .total_amount, .discount_per, .quantity, .pieces").prop("readonly", true);
     var $tblrows = $("#tblsot tbody tr");
 
     $tblrows.each(function(index){
