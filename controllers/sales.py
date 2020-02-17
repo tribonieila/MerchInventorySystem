@@ -471,11 +471,8 @@ def validate_sales_order_transaction(form):
             form.errors.item_code = "Item code does'nt have price."
         
         if _price.selective_tax_price != None or 0: # >= request.vars.discount_percentage:
-            print 'with tax'
-            if request.vars.discount_percentage != None or 0:
+            if int(request.vars.discount_percentage) >= 1:
                 form.errors.discount_percentage = 'discount not allowed'
-        else:
-            print 'without tax'
             # form.errors.discount_percentage = 'Discount not allowed. ' 
 
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
@@ -492,8 +489,7 @@ def validate_sales_order_transaction(form):
         _selective_tax_per_uom = _price.selective_tax_price 
 
 
-        if _id.selectivetax > 0:           
-             
+        if _id.selectivetax > 0:                        
             _tax_per_uom = _selective_tax_per_uom
         else:
             _tax_per_uom = 0
