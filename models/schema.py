@@ -996,17 +996,20 @@ db.define_table('Sales_Order_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(10,6)', default = 0),
+    Field('price_cost', 'decimal(10,6)', default = 0), # per outer
+    Field('packet_price_cost', 'decimal(10,6)', default = 0), # per packet
     Field('total_amount','decimal(10,6)', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
-    Field('sale_cost', 'decimal(10,2)', default = 0),
+    Field('sale_cost', 'decimal(10,2)', default = 0), # packet
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('net_price', 'decimal(10,2)',default =0),
-    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('packet_selective_tax','decimal(10,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(10,6)', default = 0, label = 'Selective Tax'), # packet
     Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),            
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),

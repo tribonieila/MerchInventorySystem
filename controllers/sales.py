@@ -346,8 +346,9 @@ def sales_order_form():
                 category_id = n.category_id,
                 quantity = n.total_pieces,
                 uom = _item.uom_value,
-                # price_cost = n.price_cost,
-                price_cost =  (_pric.wholesale_price / _item.uom_value),
+                price_cost = n.price_cost,
+                # price_cost =  (_pric.wholesale_price / _item.uom_value),
+                packet_price_cost = (n.price_cost / _item.uom_value),
                 average_cost = _pric.average_cost,
                 sale_cost = (n.net_price / _item.uom_value),
                 wholesale_price = _pric.wholesale_price,
@@ -356,6 +357,8 @@ def sales_order_form():
                 discount_percentage = n.discount_percentage,
                 selective_tax = n.selective_tax,
                 selective_tax_foc = n.selective_tax_foc,
+                packet_selective_tax = (n.selective_tax / _item.uom_value),
+                packet_selective_tax_foc = (n.selective_tax_foc / _item.uom_value),
                 net_price = n.net_price,
                 total_amount = n.total_amount)
             _grand_total += n.total_amount
@@ -472,7 +475,7 @@ def validate_sales_order_transaction(form):
         
         if _price.selective_tax_price != None or 0: # >= request.vars.discount_percentage:
             if int(request.vars.discount_percentage) >= 1:
-                form.errors.discount_percentage = 'discount not allowed'
+                form.errors.discount_percentage = 'Discount not allowed'
             # form.errors.discount_percentage = 'Discount not allowed. ' 
 
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
@@ -1259,6 +1262,7 @@ def sales_order_transaction_table():
         # selective tax computation
         _selective_tax += n.Sales_Order_Transaction.selective_tax or 0
         _selective_tax_foc += n.Sales_Order_Transaction.selective_tax_foc or 0
+        
         if _selective_tax > 0.0:
             _div_tax = DIV(H4('TOTAL SELECTIVE TAX: ',locale.format('%.2F', _selective_tax or 0, grouping = True)))            
         else:
@@ -1283,6 +1287,9 @@ def sales_order_transaction_table():
         btn_lnk = DIV( dele_lnk)
         _qty = n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom        
         _pcs = n.Sales_Order_Transaction.quantity - n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom * n.Sales_Order_Transaction.uom        
+        
+        _cst = (n.Sales_Order_Transaction.price_cost * n.Sales_Order_Transaction.uom) + (n.Sales_Order_Transaction.selective_tax / n.Sales_Order_Transaction.uom)
+        # _pri = _qty * n.Sales_Order_Transaction.uom
         if db((db.Sales_Order.id == request.args(0)) & (db.Sales_Order.status_id == 7) | (db.Sales_Order.created_by != auth.user_id)).select().first():
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)
         else:
