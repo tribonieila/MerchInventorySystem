@@ -60,10 +60,10 @@
 <script type="text/javascript">
     jQuery(document).ready(function($){
 
-        var data = [ {{ for g in db(db.GroupLine.status_id == 1).select(orderby = db.GroupLine.group_line_code): }}
-            { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
+        var data = [ {{ for g in db(db.GroupLine.status_id == 1).select(orderby = db.GroupLine.group_line_name): }}
+            { text: '{{=g.group_line_name}} - {{=g.group_line_code}}', value: '{{=g.id}}',
                 children: [ {{ for b in db(db.Brand_Line.group_line_id == g.id).select(orderby = db.Brand_Line.brand_line_name): }}
-                    { text: '{{=b.brand_line_code}} - {{=b.brand_line_name}}', value: '{{=b.id}}'}, {{pass}}
+                    { text: '{{=b.brand_line_name}} - {{=b.brand_line_code}}', value: '{{=b.id}}'}, {{pass}}
                 ], }, {{ pass }}
         ]; 
         
@@ -79,8 +79,7 @@
 </script> 
 
 <script>
-    $('#no_table_brand_line_code_id').change(function() {
-        console.log('click');
+    $('#no_table_brand_line_code_id').change(function() {        
         ajax('{{=URL('showbrandclass')}}', ['brand_line_code_id'], 'brandclasslist');                
         return false;
     });

@@ -311,11 +311,11 @@ def sales_order_form():
     form = SQLFORM.factory(
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-        Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
+        Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.location_group_code_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
         Field('customer_code_id','reference Customer', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
         Field('delivery_due_date', 'date', default = request.now),
-        Field('remarks', 'string'),        
+        Field('remarks', 'string'),         
         Field('status_id','reference Stock_Status', default = 4, requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
     if form.process().accepted:        
         ctr = db((db.Transaction_Prefix.prefix_key == 'SOR') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
@@ -2780,7 +2780,8 @@ def sales_return_help():
     table = TABLE(*[head, body], _class = 'display', _id = 'example', _style = "width:100%")
     return dict(table = table)    
 # -----------------     R  E  P  O  R  T  S     -----------------
-
+import arabic_reshaper
+from bidi.algorithm import get_display
 from reportlab.platypus import *
 from reportlab.platypus.flowables import Image
 from reportlab.lib.utils import ImageReader
@@ -2796,10 +2797,25 @@ from uuid import uuid4
 from cgi import escape
 from functools import partial
 import os
-from reportlab.pdfgen import canvas
+from reportlab.pdfgen import canvas    
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
+# pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
+style = ParagraphStyle(name='Normal',fontName="Arabic", fontSize=25)
+style.alignment=TA_RIGHT
+arabic_text = u'إذا أخذنا بعين'
+arabic_text = arabic_reshaper.reshape(arabic_text) # join characters
+arabic_text = get_display(arabic_text) # change orientation by using bidi   
 
-# from reportlab.rl_config.TTFSearchPath.append(str(settings.BASE_DIR) + '/app/lib/reportlabs/fonts')
-# from pdfmetrics.registerFont(TTFont('Copperplate', 'Copperplate-Gothic-Bold.ttf'))
+def arabic_shapers():
+    print 'arabic_text: ', arabic_text
+    # doc.build([Paragraph(arabic_text, style)])    0
+    # pdf_data = open(tmpfilename,"rb").read()
+    # os.unlink(tmpfilename)
+    # response.headers['Content-Type']='application/pdf'
+    # return pdf_data
 
 import string
 from num2words import num2words
@@ -2819,12 +2835,13 @@ styleN = styles['Normal']
 styleH = styles['Heading1']
 _style = ParagraphStyle('Courier',fontName="Courier", fontSize=8, leading = 10)
 _table_heading = ParagraphStyle('Courier',fontName="Courier", fontSize=7, leading = 10)
+
 styles.add(ParagraphStyle(name='Wrap', fontSize=8, wordWrap='LTR', firstLineIndent = 0,alignment = TA_LEFT))
 row = []
 ctr = 0
-tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
+
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
+
 logo_path = request.folder + 'static/images/Merch.jpg'
 text_path = request.folder + 'static/fonts/reports/'
 img = Image(logo_path)
@@ -2837,18 +2854,19 @@ _limage.drawHeight = 2.55*inch * _limage.drawHeight / _limage.drawWidth
 _limage.drawWidth = 2.25 * inch
 _limage.hAlign = 'CENTER'
 
-
 merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
-def sales_invoice_footer(canvas, doc):    
+
+
+def sales_invoice_footer(canvas, doc):     
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _id = db(db.Sales_Order.id == request.args(0)).select().first()    
-
+        
     # Header 'Stock Request Report'
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
-            ['SALES INVOICE'],
+            [Paragraph(arabic_text,_arabic)],
             ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y')],
             ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
@@ -2891,12 +2909,11 @@ def sales_order_store_keeper_header_footer_report(canvas, doc):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-
     # Header 'Stock Request Report'
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
-            ['SALES ORDER'],
+            [arabic_text],
             ['Sales Order No. ', ':',str(n.transaction_prefix_id.prefix)+str(n.sales_order_no),'','Sales Order Date ',':',n.sales_order_date.strftime('%d-%m-%Y')],
             ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
@@ -3061,19 +3078,14 @@ def sales_order_report_store_keeper():
         ('TOPPADDING',(0,1),(6,-1),0),
         ('BOTTOMPADDING',(0,1),(6,-1),0),
         ('VALIGN',(0,0),(-1,-1),'TOP')]))
-
-    _others = [
-        ['Remarks',':',_id.remarks],
-        ['Customer Sales Order Ref. ',':',n.customer_order_reference],            
-        ]
+    _others = [['Remarks',':',_id.remarks],['Customer Sales Order Ref. ',':',n.customer_order_reference]]
     _others_table = Table(_others, colWidths=[120,25,'*'])
     _others_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('TOPPADDING',(0,0),(-1,-1),0),
-        ('BOTTOMPADDING',(0,0),(-1,-1),0),
-    ]))
+        ('BOTTOMPADDING',(0,0),(-1,-1),0)]))
 
     _ap = [[_id.created_by.first_name.upper() + ' ' + _id.created_by.last_name.upper(),'',_id.sales_order_approved_by.first_name.upper() + ' ' + _id.sales_order_approved_by.last_name.upper()],['Prepared by:','','Approved by:']]
     _ap_tbl = Table(_ap, colWidths='*')
@@ -3093,12 +3105,13 @@ def sales_order_report_store_keeper():
     row.append(Spacer(1,2*cm))
     row.append(_ap_tbl)
   
-
     doc.build(row, onFirstPage=sales_order_store_keeper_header_footer_report, onLaterPages = sales_order_store_keeper_header_footer_report)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
     return pdf_data
+
+
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_delivery_note_report_store_keeper():
@@ -3436,6 +3449,7 @@ def sales_return_report_account_user():
     
     doc.build(row, onFirstPage=sales_return_accounts_header_footer_report, onLaterPages = sales_return_accounts_header_footer_report, canvasmaker=PageNumCanvas)
     # doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer)
+    # doc.build([Paragraph(arabic_text, style)])   
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
@@ -3449,15 +3463,13 @@ def sales_order_report_account_user(): # print direct to printer
         _customer = n.customer_code_id.customer_name.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
             ['SALES INVOICE'],
-            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),
-            '','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
-            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
+            ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
+            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
-            ['','','','','Location', ':',n.stock_source_id.location_name],       
-            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
+            ['','','','','Location', ':',n.stock_source_id.location_name],
+            ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],
             ['','','','','','',''],
-            ['','','','','','',''],             
-            
+            ['','','','','','',''],            
             ]
     _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     _so_tbl.setStyle(TableStyle([

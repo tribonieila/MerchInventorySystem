@@ -27,7 +27,7 @@ Merch_HR_DB
 Merch_RootDB
 m3rch_admin_db
 m3rch_asset_db
-m3rch_finance_db
+m3rch_finances_db
 m3rch_fleet_db
 m3rch_hr_db
 m3rch_root_db
@@ -39,7 +39,7 @@ Merch ERP/IT Admin  -   :3000/m3rch_root_db
  - Merch Inventory  -   :3010/m3rch_inv_db
  - Merch Sales      -   :3020/m3rch_inv_db
  - Merch Procurement-   :3030/m3rch_inv_db
- - Merch Finance    -   :3040/m3rch_finance_db
+ - Merch Finances   -   :3040/m3rch_finance_db
  - Merch Assets     -   :3050/m3rch_assets_db
  - Merch HR         -   :3060/m3rch_hr_db  
  - Merch Off Admin  -   :3070/m3rch_off_admin_db

@@ -809,7 +809,7 @@ def groupline_mas():
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#'))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('groupline_edit_form', args = n.GroupLine.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#'))
-        supp_lnk = A(I(_class='fas fa-paper-plane'), _title='Go To Supplier(s)', _type='button  ', _role='button', _class='btn btn-icon-toggle', _target='#', _href=URL('sbgplne_lnk', args = n.GroupLine.id))
+        supp_lnk = A(I(_class='fas fa-paper-plane'), _title='Go To Associates', _type='button  ', _role='button', _class='btn btn-icon-toggle', _target='#', _href=URL('sbgplne_lnk', args = n.GroupLine.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, supp_lnk)
         row.append(TR(TD(n.GroupLine.id),TD(n.GroupLine.prefix_id.prefix,n.GroupLine.group_line_code),TD(n.GroupLine.group_line_name),TD(n.Supplier_Master.supp_code),TD(n.Supplier_Master.supp_name),TD(n.GroupLine.status_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
@@ -830,7 +830,7 @@ def groupline_add_form():
             Field('status_id', 'reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
             response.flash = 'RECORD SAVE'
-            db.GroupLine.insert(supplier_id = form.vars.supplier_id,group_line_code = _ckey, group_line_name = form.vars.group_line_name,status_id = form.vars.status_id)
+            db.GroupLine.insert(prefix_id = pre.id, supplier_id = form.vars.supplier_id,group_line_code = _ckey, group_line_name = form.vars.group_line_name,status_id = form.vars.status_id)
             pre.update_record(serial_key = _skey)
         elif form.errors:
             response.flash = 'ENTRY HAS ERRORS'
@@ -1049,7 +1049,9 @@ def brndclss_mas():
         TD(n.Brand_Classification.brand_cls_name),
         TD(n.GroupLine.group_line_name),
         TD(n.Brand_Classification.dept_code_id.dept_name),
-        TD(n.Brand_Line.brand_line_name),TD(n.Brand_Classification.status_id.status),TD(btn_lnk)))
+        TD(n.Brand_Line.brand_line_name),
+        TD(n.Brand_Classification.status_id.status),
+        TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')        
     return dict(table=table)
@@ -1076,9 +1078,9 @@ def brndclss_add_form():
         _ckey = str(_skey).rjust(5, '0')
         ctr_val = pre.prefix + _ckey
         form = SQLFORM.factory(
-    	    Field('group_line_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_code)s - %(group_line_name)s', zero = 'Choose Group Line')), #ERROR - * Field should not be empty
+    	    Field('group_line_id','reference GroupLine', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.GroupLine.id, '%(group_line_name)s - %(group_line_code)s', zero = 'Choose Group Line')), #ERROR - * Field should not be empty
             Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
-            Field('brand_line_code_id','reference Brand_Line', label = 'Brand Line Code',requires = IS_IN_DB(db, db.Brand_Line.id, '%(brand_line_code)s - %(brand_line_name)s', orderby = db.Brand_Line.brand_line_name,  zero= 'Choose Brand Line')),
+            Field('brand_line_code_id','reference Brand_Line', label = 'Brand Line Code',requires = IS_IN_DB(db, db.Brand_Line.id, ' %(brand_line_name)s - %(brand_line_code)s', orderby = db.Brand_Line.brand_line_name,  zero= 'Choose Brand Line')),
             Field('brand_cls_name','string',length=50, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Brand_Classification.brand_cls_name')]),
             Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
@@ -3186,7 +3188,7 @@ def validate_item_code(form):
         # response.js = "('#no_table_item_code').setfocus()"
 
 def stock_request_transaction_temporary_table():
-    response.js = "jQuery(console.log('loading'))"
+    # response.js = "jQuery(console.log('loading'))"
     ctr = 0
     row = []        
     grand_total = 0
