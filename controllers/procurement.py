@@ -3522,7 +3522,7 @@ def purchase_request_form():
         db.Purchase_Request.insert(
             purchase_request_no_prefix_id = ctr.id,
             purchase_request_no = ctr.current_year_serial_key,
-            purchase_request_date = request.now,
+            purchase_request_date = request.now, 
             dept_code_id = form.vars.dept_code_id,
             supplier_code_id = form.vars.supplier_code_id,
             mode_of_shipment = form.vars.mode_of_shipment,

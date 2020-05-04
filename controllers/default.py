@@ -23,7 +23,10 @@ def resettawar():
     for x in db((db.Stock_File.item_code_id == 1) & (db.Stock_File.location_code_id == 2)).select():
         x.update_record(opening_stock = 0, closing_stock = 0)
     return locals()
-    
+def zero():
+    for n in db().select(db.Item_Prices.ALL):
+        n.update_record(selective_tax_percentage = 0, selective_tax_price = 0)
+        
 def init_stock():
     for i in db().select(db.Item_Master.ALL, orderby = db.Item_Master.id):        
         if db((db.Stock_File.item_code_id == i.id) & (db.Stock_File.location_code_id == 2)).select().first():
@@ -31,7 +34,8 @@ def init_stock():
         else:            
             # print 'no stock:: ', i.item_code
             db.Stock_File.insert(item_code_id = i.id, location_code_id = 2, opening_stock = 0, closing_stock = 0, previous_year_closing_stock = 0, stock_in_transit = 0, free_stock_qty = 0, reorder_qty = 0, last_transfer_qty = 0, probational_balance = 0, damaged_stock_qty = 0 )
-            
+
+         
 import arabic_reshaper
 from bidi.algorithm import get_display
 from reportlab.platypus import *

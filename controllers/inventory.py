@@ -883,11 +883,11 @@ def sbgplne_lnk():
     for n in query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sub_Group_Line.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sbgplne_lnk_edit_form', args = n.Sub_Group_Line.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Sub_Group_Line.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback=URL('sbgplne_lnk_delete_form', args = n.Sub_Group_Line.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
         row.append(TR(TD(n.Sub_Group_Line.id),TD(n.Sub_Group_Line.supplier_code_id.supp_code),TD(n.Supplier_Master.supp_name),TD(n.Sub_Group_Line.status_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
-    table = TABLE(*[thead,tbody],_class='table table-striped')    
+    table = TABLE(*[thead,tbody],_class='table table-striped', _id='tblSG')    
     return dict(form = form, table=table, ctr_val = ctr_val)
 
 @auth.requires_login()
@@ -900,6 +900,12 @@ def sbgplne_lnk_edit_form():
     else:
         response.flash = 'PLEASE FILL OUT THE FORM'
     return dict(form = form)
+
+def sbgplne_lnk_delete_form():
+    response.flash = 'RECORD DELETED'
+    db(db.Sub_Group_Line.id == request.args(0)).delete()        
+    response.js = "jQuery($('#tblSG').load(window.location.href + ' #tblSG'))"
+    
 
 @auth.requires_login()
 def sbgplne_lnk_add_form():
@@ -3028,7 +3034,7 @@ def stk_req_add_form():
     ctr = db(db.Transaction_Prefix.prefix_key == 'SRN').select().first()
     _skey = ctr.current_year_serial_key 
     _skey += 1        
-    _ticket_no = id_generator()
+    _ticket_no = id_generator() 
     session.ticket_no_id = _ticket_no
     # session.grand_total = 0
     form = SQLFORM.factory(       
@@ -7266,11 +7272,12 @@ styleN = styles["BodyText"]
 # styleN = styles['Normal']
 styleH = styles['Heading1']
 _style = ParagraphStyle(name='BodyText', fontSize=7)
+_courier = ParagraphStyle('Courier',fontName="Courier", fontSize=7, leading = 10)
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20, showBoundary=1)
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=90, leftMargin=20, rightMargin=20, bottomMargin=130)#,showBoundary=1)
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
@@ -7290,9 +7297,11 @@ def _landscape_header(canvas, doc):
     header = Table([[_limage],['PRICE LIST REPORT']], colWidths='*')
     header.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('FONTSIZE',(0,0),(-1,-1),12),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),
         ('ALIGN', (0,0), (0,-1), 'CENTER')]))
     header.wrapOn(canvas, doc.width, doc.topMargin)
-    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .1 * cm)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin + .2 * cm)
 
     # Footer
     today = date.today()
@@ -7301,11 +7310,12 @@ def _landscape_header(canvas, doc):
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('TEXTCOLOR',(0,0),(0,0), colors.gray),
         ('FONTSIZE',(0,1),(0,1),8),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),
         ('ALIGN',(0,1),(0,1),'RIGHT'),
         ('LINEABOVE',(0,1),(0,1),0.25, colors.gray)
         ]))
     footer.wrap(doc.width, doc.bottomMargin)
-    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - .7 * inch)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - 1 * inch)
 
     # Release the canvas
     canvas.restoreState()
@@ -8171,28 +8181,39 @@ def price_list_report_print():
     _rep = [['#','Item Code','Supplier Ref.','Product','Subproduct','Group Line','Brand Line','Brand Classification','Description','UOM','Unit','Whole Price','Retail Price']]
     for n in db(db.Item_Master.supplier_code_id == request.args(0)).select(db.Item_Master.ALL, db.Item_Prices.ALL, orderby = db.Item_Master.product_code_id | db.Item_Master.subproduct_code_id | db.Item_Master.group_line_id | db.Item_Master.brand_line_code_id | db.Item_Master.brand_cls_code_id ,  left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)):
         ctr += 1
+        if n.Item_Master.product_code_id == None:
+            _product = 'None'
+        else:
+            _product = n.Item_Master.product_code_id.product_name
+        if n.Item_Master.uom_id == None:
+            _uom = 'None'
+        else:
+            _uom = n.Item_Master.uom_id.mnemonic
         _rep.append([ctr,
         n.Item_Master.item_code,
         n.Item_Master.supplier_item_ref,        
-        n.Item_Master.product_code_id,    
-        n.Item_Master.subproduct_code_id.subproduct_name,
+        Paragraph(_product,style=_courier),    
+        Paragraph(n.Item_Master.subproduct_code_id.subproduct_name,style=_courier),
         n.Item_Master.group_line_id.group_line_name,
-        n.Item_Master.brand_line_code_id.brand_line_name,
-        Paragraph(n.Item_Master.brand_cls_code_id.brand_cls_name, style = _style),            
-        Paragraph(n.Item_Master.item_description, style = _style),            
+        Paragraph(n.Item_Master.brand_line_code_id.brand_line_name,style=_courier),
+        Paragraph(n.Item_Master.brand_cls_code_id.brand_cls_name, style = _courier),            
+        Paragraph(n.Item_Master.item_description, style = _courier),            
         n.Item_Master.uom_value,
-        n.Item_Master.uom_id.mnemonic,
+        _uom,
         locale.format('%.2F',n.Item_Prices.wholesale_price or 0, grouping = True),
         locale.format('%.2F',n.Item_Prices.retail_price or 0, grouping = True)])
-    _rep_tbl = Table(_rep, colWidths=[20,55,80,90,65,65,65,110,'*',30,30,50,50], repeatRows=1)
+    _rep_tbl = Table(_rep, colWidths=[20,55,'*','*','*','*','*','*','*',30,30,'*','*'], repeatRows=1)
     # _rep_tbl = Table(_rep, colWidths=(50*mm, 50*mm), rowHeights=(10*mm, 250*mm))
     _rep_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 1)),
-        ('BACKGROUND',(0,0),(-1,0),colors.Color(0, 0, 0, 0.2)),
+        # ('BACKGROUND',(0,0),(-1,0),colors.Color(0, 0, 0, 0.2)),
         ('FONTSIZE',(0,0),(-1,0),8),
         ('FONTSIZE',(0,1),(-1,-1),7),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),
         ('VALIGN',(0,1),(-1,-1),'TOP'),
         ('ALIGN', (9,1), (12,-1), 'RIGHT'),
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEABOVE', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
     ]))
     row.append(_rep_tbl)
     doc.pagesize = landscape(A4)
@@ -8240,8 +8261,44 @@ def price_list_report():
     elif form.errors:
         response.flash = 'ERROR'
     return dict(form = form)
+
+def stock_value_report():
+    form = SQLFORM.factory(
+        Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+        Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'All Supplier')),
+        Field('location_code_id', 'reference Location',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
+    if form.process().accepted:
+        response.flash = 'SUCCESS'
+        # redirect(URL('price_list_report_print', args = form.vars.supplier_code_id))
+    elif form.errors:
+        response.flash = 'ERROR'
+    return dict(form = form)
+
+def get_stock_value_report():
+    print 'get_stock_value_report', request.vars.dept_code_id, request.vars.supplier_code_id, request.vars.location_code_id
+    row = []
+    ctr = 0
+    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Description'),TH('UOM'),TH('Type'),TH('Whole Price'),TH('Retail Price'),TH('Amount Cost'),TH('Total Stock Qty'),TH('Total Stock Value')))
+    
+    if int(request.vars.supplier_code_id) > 0:
+        _supplier = db.Item_Master.supplier_code_id == request.vars.supplier_code_id
+        print 'True:',request.vars.supplier_code_id
+    # else:
+    #     print 'False',request.vars.supplier_code_id
+    #     _supplier = db.Item_Master.supplier_code_id == request.vars.supplier_code_id
+    if request.vars.location_code_id != "":
+        print 'Location True: ', request.vars.location_code_id
+    
+        
+    # _location = db.Location.id == request.vars.location_code_id
     
 
+    # _query = db.Item_Master.dept_code_id == request.vars.dept_code_id
+    # _query &= db.Item_Master.supplier_code_id == request.vars.supplier_code_id
+    
+    #### create to _query for all supplier and location or by supplier and location ### ----
+    _query = db.Item_Master.dept_code_id == request.vars.dept_code_id
+    return XML(DIV('get_stock_value_report',request.vars.dept_code_id, request.vars.supplier_code_id, request.vars.location_code_id))
 
 def reprint():
     _id = db(db.Stock_Request.id == 11).select().first()

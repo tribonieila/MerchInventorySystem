@@ -737,6 +737,7 @@ db.define_table('Stock_Adjustment',
     Field('srn_status_id','reference Stock_Status', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('approved_by', 'reference auth_user', writable = False),
     Field('date_approved', 'datetime'),
+    Field('total_selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
     Field('archive','boolean', default = False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
@@ -755,6 +756,7 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
     Field('delete', 'boolean', default = False),
     # Field('total_cost','decimal(10,4)', default = 0, compute = lambda p: (p['average_cost'] / p['uom']) * p['quantity']), # remove 
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),

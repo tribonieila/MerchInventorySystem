@@ -398,7 +398,7 @@ def discount_session():
 @auth.requires_login()
 def item_code_description():
     response.js = "$('#btnadd, #no_table_pieces, #discount').removeAttr('disabled')"
-    _icode = db(db.Item_Master.item_code == request.vars.item_code).select().first()    
+    _icode = db(db.Item_Master.item_code == request.vars.item_code).select().first()        
     # _icode = db((db.Item_Master.item_code == request.vars.item_code.upper()) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
     
     if not _icode:
@@ -427,7 +427,7 @@ def item_code_description():
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),
-                TD(_icode.selectivetax),
+                TD(_iprice.selective_tax_price),
                 TD(_iprice.retail_price),
                 TD(locale.format('%.2F',_iprice.wholesale_price or 0, grouping = True)),
                 TD(_on_hand),
@@ -489,10 +489,11 @@ def validate_sales_order_transaction(form):
         _total_amount = _tax_per_uom = _wholesale_price_per_uom = 0 
         _retail_price_per_uom = _price.retail_price / _id.uom_value     
         _wholesale_price_per_uom = _price.wholesale_price / _id.uom_value
-        _selective_tax_per_uom = _price.selective_tax_price 
+        # _selective_tax_per_uom = _price.selective_tax_price 
+        _selective_tax_per_uom = _price.selective_tax_price / _id.uom_value
 
 
-        if _id.selectivetax > 0:                        
+        if _price.selective_tax_price > 0:                        
             _tax_per_uom = _selective_tax_per_uom
         else:
             _tax_per_uom = 0
@@ -510,7 +511,7 @@ def validate_sales_order_transaction(form):
             if int(request.vars.category_id) == 3:                
                 # computation for excise tax foc        
                 _selective_tax = 0
-                if float(_id.selectivetax) == 0:
+                if float(_price.selective_tax_price) == 0:
                     _selective_tax_foc = 0
                 else:
                     _selective_tax_foc =  float(_tax_per_uom) * _id.uom_value
@@ -520,7 +521,7 @@ def validate_sales_order_transaction(form):
                 # _net_price_at_wholesale = 0.0
                 # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
                 # print '_selective_tax_total_foc: ', _selective_tax_total_foc
-                # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                # _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
                 # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
                 # _selective_tax_foc += _excise_tax_price_per_piece * _total_pcs
                 # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
@@ -532,7 +533,7 @@ def validate_sales_order_transaction(form):
                 # _selective_tax = 0
                 # computation for excise tax
                 _selective_tax_foc = _unit_price1 = 0
-                if float(_id.selectivetax) == 0:
+                if float(_price.selective_tax_price) == 0:
                     _selective_tax = 0
 
                 else:
@@ -917,7 +918,7 @@ def sales_order_browse():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
-        print 'created by: ', n.created_by, auth.user.id
+        # print 'created by: ', n.created_by, auth.user.id
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
