@@ -7246,7 +7246,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.rl_config import defaultPageSize
 from reportlab.lib.units import inch, cm, mm
-from reportlab.lib.pagesizes import letter, A4, landscape
+from reportlab.lib.pagesizes import letter, A4, A3,landscape
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER, TA_JUSTIFY
 from reportlab.lib import colors
@@ -7278,6 +7278,7 @@ ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20, showBoundary=1)
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
+a3 = SimpleDocTemplate(tmpfilename,pagesize=A3, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 logo_path = request.folder + 'static/images/Merch.jpg'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
@@ -8190,7 +8191,7 @@ def price_list_report_print():
         else:
             _uom = n.Item_Master.uom_id.mnemonic
         _rep.append([ctr,
-        n.Item_Master.item_code,
+        Paragraph(n.Item_Master.item_code,style=_courier),
         n.Item_Master.supplier_item_ref,        
         Paragraph(_product,style=_courier),    
         Paragraph(n.Item_Master.subproduct_code_id.subproduct_name,style=_courier),
@@ -8202,7 +8203,7 @@ def price_list_report_print():
         _uom,
         locale.format('%.2F',n.Item_Prices.wholesale_price or 0, grouping = True),
         locale.format('%.2F',n.Item_Prices.retail_price or 0, grouping = True)])
-    _rep_tbl = Table(_rep, colWidths=[20,55,'*','*','*','*','*','*','*',30,30,'*','*'], repeatRows=1)
+    _rep_tbl = Table(_rep, colWidths=[20,'*','*','*','*','*','*','*','*',30,30,'*','*'], repeatRows=1)
     # _rep_tbl = Table(_rep, colWidths=(50*mm, 50*mm), rowHeights=(10*mm, 250*mm))
     _rep_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 1)),
@@ -8216,8 +8217,8 @@ def price_list_report_print():
         ('LINEABOVE', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
     ]))
     row.append(_rep_tbl)
-    doc.pagesize = landscape(A4)
-    doc.build(row, onFirstPage=_landscape_header, onLaterPages= _landscape_header)    
+    a3.pagesize = landscape(A3)
+    a3.build(row, onFirstPage=_landscape_header, onLaterPages= _landscape_header)    
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
@@ -8266,7 +8267,7 @@ def stock_value_report():
     form = SQLFORM.factory(
         Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'All Supplier')),
-        Field('location_code_id', 'reference Location',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
+        Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
     if form.process().accepted:
         response.flash = 'SUCCESS'
         # redirect(URL('price_list_report_print', args = form.vars.supplier_code_id))
@@ -8274,31 +8275,47 @@ def stock_value_report():
         response.flash = 'ERROR'
     return dict(form = form)
 
-def get_stock_value_report():
-    print 'get_stock_value_report', request.vars.dept_code_id, request.vars.supplier_code_id, request.vars.location_code_id
+def get_stock_value_report():    
     row = []
-    ctr = 0
-    thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Description'),TH('UOM'),TH('Type'),TH('Whole Price'),TH('Retail Price'),TH('Amount Cost'),TH('Total Stock Qty'),TH('Total Stock Value')))
-    
-    if int(request.vars.supplier_code_id) > 0:
-        _supplier = db.Item_Master.supplier_code_id == request.vars.supplier_code_id
-        print 'True:',request.vars.supplier_code_id
-    # else:
-    #     print 'False',request.vars.supplier_code_id
-    #     _supplier = db.Item_Master.supplier_code_id == request.vars.supplier_code_id
-    if request.vars.location_code_id != "":
-        print 'Location True: ', request.vars.location_code_id
-    
-        
-    # _location = db.Location.id == request.vars.location_code_id
-    
+    ctr = 0    
+    if int(request.vars.supplier_code_id) == 0:        
+        _query = db.Item_Master.dept_code_id == request.vars.dept_code_id    
+    else:   
+        _query = (db.Item_Master.dept_code_id == request.vars.dept_code_id) & (db.Item_Master.supplier_code_id == request.vars.supplier_code_id)
 
-    # _query = db.Item_Master.dept_code_id == request.vars.dept_code_id
-    # _query &= db.Item_Master.supplier_code_id == request.vars.supplier_code_id
+    if request.vars.location_code_id == "":
+        _query_stock = None
+        print 'None: ',request.vars.location_code_id
+    else:
+        _query_stock = db.Stock_File.location_code_id == request.vars.location_code_id
+        print 'Not None',request.vars.location_code_id
+    #### create to _query for all supplier and location or by supplier and location ### ----   
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Description'),TH('UOM'),TH('Type'),TH('Whole Price'),TH('Retail Price'),TH('Amount Cost'),TH('Total Stock Qty'),TH('Total Stock Value')))        
+    _query = db(_query).select(db.Item_Master.ALL, db.Item_Prices.ALL, left = db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id))
     
-    #### create to _query for all supplier and location or by supplier and location ### ----
-    _query = db.Item_Master.dept_code_id == request.vars.dept_code_id
-    return XML(DIV('get_stock_value_report',request.vars.dept_code_id, request.vars.supplier_code_id, request.vars.location_code_id))
+    for n in _query:
+        ctr += 1       
+        if request.vars.location_code_id == "": # selected all location
+            _stock_file = db(db.Stock_File.item_code_id == n.Item_Master.id).select().first()                   
+        else: # selected 1 location only            
+            _stock_file = db((db.Stock_File.item_code_id == n.Item_Master.id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()
+        if n.Item_Master.product_code_id == None:
+            _product = 'None'
+        else:
+            _product = n.Item_Master.product_code_id.product_name
+        if not _stock_file:
+            _stock_file_item = _stock_file.closing_stock
+        else:
+            _stock_file_item = _stock_file.closing_stock
+        row.append(TR(
+            TD(ctr),
+            TD(n.Item_Master.item_code),
+            TD(n.Item_Master.supplier_item_ref),
+            TD(_product),
+            TD(_stock_file_item),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD()))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table',_id='tblSVR')
+    return XML(DIV(table))
 
 def reprint():
     _id = db(db.Stock_Request.id == 11).select().first()

@@ -700,7 +700,7 @@ db.define_table('Merch_Stock_Header',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Merch_Stock_Transaction',
-    Field('voucher_no','integer'), # 10 length
+    Field('voucher_no','string',length=25), # 10 length
     Field('location', 'integer'),   # from location master
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
     Field('transaction_date', 'date'), # from date of transaction    
@@ -876,7 +876,7 @@ db.define_table('Customer_Account_Type',# cash, credit, bill
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
-db.define_table('Customer_Group_Code',
+db.define_table('Customer_Group_Code',# assets, receivable, payables, journals
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
@@ -885,26 +885,49 @@ db.define_table('Customer_Group_Code',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+db.define_table('Area_Name',
+    Field('area_name', 'string',length=50),
+    Field('zone_no','integer'),    
+    Field('municipality','string',legnth=50),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False),format='area_name')
+
 db.define_table('Customer',
     Field('customer_account_no','string',length = 15),
     Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Group_Code.id,'%(description)s', zero = 'Choose Group Code')), 
     Field('customer_name','string', length = 50),
     Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Category.id,'%(description)s', zero = 'Choose Category')), 
     Field('customer_account_type', 'reference Customer_Account_Type', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Account_Type.id,'%(description)s', zero = 'Choose Account Type')), 
-    # Field('account_type', ), account receivable
-    Field('po_box_no', 'integer'),
+    Field('parent_outlet','string',length=50),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
+    Field('cr_no','string',length=25),
+    Field('po_box_no', 'integer'),    
     Field('unit_no', 'integer'),
     Field('building_no', 'integer'),
     Field('street_no', 'integer'),
     Field('zone', 'integer'),
-    Field('telephone_no','string',length = 25),
-    Field('fax_no','string',length = 25),
-    Field('email_address','string', length = 50),
-    Field('area_name','string', length = 25),
+    Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name')), 
     Field('state','string', length = 50),
     Field('country','string', length = 50),
+    Field('telephone_no','string',length = 25),
+    Field('mobile_no','string',length = 25),
+    Field('fax_no','string',length = 25),
+    Field('email_address','string', length = 50),
+    Field('contact_person','string',length = 25),
+    Field('longtitude','string',length=50),
+    Field('latitude','string',length=50),
+    
+    Field('outlet_category','string',length=50),
+    Field('outlet_type','string',length=50),
+    Field('outlet_classification','string',length=50),
+
+
     Field('sponsor_name','string', length = 50),
-    # Field('sponsor_id','string', length = 50),
+    Field('sponsor_id','string', length = 50),
+    Field('sponsor_contact_no','string', length = 50),
+    
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
