@@ -296,7 +296,7 @@
 
 			</ul>
 			{{pass}}
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT USERS')):}}			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')):}}			
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li ><a href="{{=URL('inventory','account_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a>
@@ -365,7 +365,7 @@
 			</ul>
 			{{pass}}
 
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNT MANAGER')):}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS MANAGER')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>				
 				<li><a href="{{=URL('inventory', 'account_manager_workflow')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>

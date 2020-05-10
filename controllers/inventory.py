@@ -8269,14 +8269,66 @@ def stock_value_report():
         Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'All Supplier')),
         Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
     if form.process().accepted:
-        response.flash = 'SUCCESS'
-        # redirect(URL('price_list_report_print', args = form.vars.supplier_code_id))
+        response.flash = 'SUCCESS'        
+        redirect(URL('inventory','get_stock_value_report', args =[request.vars.dept_code_id,request.vars.supplier_code_id, request.vars.location_code_id]))
     elif form.errors:
         response.flash = 'ERROR'
     return dict(form = form)
 
-def get_stock_value_report():    
-    print '--- * == * ---'
+def get_stock_value_report():
+    ctr = 0
+    if int(request.vars.supplier_code_id) == 0:        
+        _query = db.Item_Master.dept_code_id == request.vars.dept_code_id            
+    else:           
+        _query = (db.Item_Master.dept_code_id == request.vars.dept_code_id) & (db.Item_Master.supplier_code_id == request.vars.supplier_code_id)
+    if request.vars.location_code_id == "":
+        _query_stock = db.Item_Master.id == db.Stock_File.item_code_id        
+    else:
+        _query_stock = db.Stock_File.location_code_id == request.vars.location_code_id
+            
+    _row = [['#','Item Code','Supplier Ref.','Product','SubProduct','Group Line','Brand Line','Brand Classification','Description','UOM','Type','Whole Price','Retail Price','Amount Cost','Stock Qty','Stock Value']]
+    _query = db((_query) & (_query_stock)).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)])
+    for n in _query:
+        ctr += 1       
+        if n.Item_Master.product_code_id == None:
+            _product = 'None'
+        else:
+            _product = n.Item_Master.product_code_id.product_name
+        if n.Item_Master.subproduct_code_id == None:
+            _subprod = 'None'
+        else:
+            _subprod = n.Item_Master.subproduct_code_id.subproduct_name
+        if n.Item_Master.group_line_id == None:
+            _groupln = 'None'
+        else:
+            _groupln = n.Item_Master.group_line_id.group_line_name
+        if n.Item_Master.brand_line_code_id == None:
+            _brandln = 'None'
+        else:
+            _brandln = n.Item_Master.brand_line_code_id.brand_line_name
+        if n.Item_Master.brand_cls_code_id == None:
+            _brandcl = 'None'
+        else:
+            _brandcl = n.Item_Master.brand_cls_code_id.brand_cls_name
+        if n.Item_Master.uom_id == None:
+            _uom = 'None'
+        else:
+            _uom = n.Item_Master.uom_id.mnemonic            
+        _row.append([
+            ctr,n.Item_Master.item_code,n.Item_Master.supplier_item_ref,_product,_subprod,_groupln,_brandln,_brandcl,n.Item_Master.item_description,
+                n.Item_Master.uom_value,_uom,n.Item_Prices.wholesale_price,n.Item_Prices.retail_price,n.Item_Prices.most_recent_landed_cost,n.Stock_File.closing_stock])
+    _row_tbl = Table(_row,colWidths='*')
+    _row_tbl.setStyle(TableStyle([('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))])) 
+    row.append(_row_tbl)
+    doc.build(row)
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    
+    return pdf_data         
+
+def get_stock_value_report_():    
+    # print '--- * == * ---'
     row = []
     ctr = 0    
     if int(request.vars.supplier_code_id) == 0:        
@@ -8297,52 +8349,59 @@ def get_stock_value_report():
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Product'),TH('Subproduct'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Description'),TH('UOM'),TH('Type'),TH('Whole Price'),TH('Retail Price'),TH('Amount Cost'),TH('Total Stock Qty'),TH('Total Stock Value')))        
     _query = db((_query) & (_query_stock)).select(db.Item_Master.ALL, db.Item_Prices.ALL, db.Stock_File.ALL, 
     left = [db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id), db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id)])
-    print _supplier, _location
-    for n in _query:        
-        ctr += 1       
-        print ctr, n.Item_Master.item_code, n.Item_Prices.wholesale_price, n.Stock_File.closing_stock
-        # if n.Item_Master.product_code_id == None:
-        #     _product = 'None'
-        # else:
-        #     _product = n.Item_Master.product_code_id.product_name
-        # if n.Item_Master.subproduct_code_id == None:
-        #     _subprod = 'None'
-        # else:
-        #     _subprod = n.Item_Master.subproduct_code_id.subproduct_name
-        # if n.Item_Master.group_line_id == None:
-        #     _groupln = 'None'
-        # else:
-        #     _groupln = n.Item_Master.group_line_id.group_line_name
-        # if n.Item_Master.brand_line_code_id == None:
-        #     _brandln = 'None'
-        # else:
-        #     _brandln = n.Item_Master.brand_line_code_id.brand_line_name
-        # if n.Item_Master.brand_cls_code_id.brand_cls_name == None:
-        #     _brandcl = 'None'
-        # else:
-        #     _brandcl = n.Item_Master.brand_cls_code_id.brand_cls_name
-        # if n.Item_Master.uom_id == None:
-        #     _uom = 'None'
-        # else:
-        #     _uom = n.Item_Master.uom_id.mnemonic
-        # row.append(TR(
-        #     TD(ctr),
-        #     TD(n.Item_Master.item_code),
-        #     TD(n.Item_Master.supplier_item_ref),
-        #     # TD(_product),                
-        #     # TD(_subprod),
-        #     # TD(_groupln),
-        #     # TD(_brandln),
-        #     # TD(_brancl), 
-        #     # TD(n.Item_Master.item_description),
-        #     # TD(n.Item_Master.uom_value),
-        #     # TD(_uom),
-        #     # TD(n.Item_Prices.wholesale_price),
-        #     # TD(n.Item_Prices.retail_price),            
-        #     TD(),TD(n.Stock_File.closing_stock),TD()))
-    body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table',_id='tblSVR')
-    return XML(DIV('table'))
+    # print _supplier, _location
+    if _query:
+        for n in _query:        
+            ctr += 1       
+            # print ctr, n.Item_Master.item_code, n.Item_Prices.wholesale_price, n.Stock_File.closing_stock
+            if n.Item_Master.product_code_id == None:
+                _product = 'None'
+            else:
+                _product = n.Item_Master.product_code_id.product_name
+            if n.Item_Master.subproduct_code_id == None:
+                _subprod = 'None'
+            else:
+                _subprod = n.Item_Master.subproduct_code_id.subproduct_name
+            if n.Item_Master.group_line_id == None:
+                _groupln = 'None'
+            else:
+                _groupln = n.Item_Master.group_line_id.group_line_name
+            if n.Item_Master.brand_line_code_id == None:
+                _brandln = 'None'
+            else:
+                _brandln = n.Item_Master.brand_line_code_id.brand_line_name
+            if n.Item_Master.brand_cls_code_id == None:
+                _brandcl = 'None'
+            else:
+                _brandcl = n.Item_Master.brand_cls_code_id.brand_cls_name
+            if n.Item_Master.uom_id == None:
+                _uom = 'None'
+            else:
+                _uom = n.Item_Master.uom_id.mnemonic
+            row.append(TR(
+                TD(ctr),
+                TD(n.Item_Master.item_code),
+                TD(n.Item_Master.supplier_item_ref),
+                TD(_product),                
+                TD(_subprod),
+                TD(_groupln),
+                TD(_brandln),
+                TD(_brandcl), 
+                TD(n.Item_Master.item_description),
+                TD(n.Item_Master.uom_value),
+                TD(_uom),
+                TD(n.Item_Prices.wholesale_price),
+                TD(n.Item_Prices.retail_price),            
+                TD(n.Item_Prices.most_recent_landed_cost), # amount cost
+                TD(n.Stock_File.closing_stock),
+                TD())) # total stock value
+        body = TBODY(*row)
+        table = TABLE(*[head, body], _class='table',_id='tblSVR')
+        return XML(DIV(table))
+    else:
+        # return 
+        return CENTER(DIV(B('INFO! '),'No item record yet.',_class='alert alert-info',_role='alert'))
+
 
 def reprint():
     _id = db(db.Stock_Request.id == 11).select().first()

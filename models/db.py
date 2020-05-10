@@ -153,7 +153,7 @@ if configuration.get('scheduler.enabled'):
 # -------------------------------------------------------------------------
 # auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
 auth.enable_record_versioning(db)
-db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv',fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
+db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv') #,fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
 d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,fake_migrate_all=True,do_connect=True)
 # db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
 
@@ -161,7 +161,7 @@ d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,f
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Test?driver={ODBC Driver 17 for SQL Server}") # testing
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
 # db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
-# auth = Auth(globals(),db)
+auth = Auth(globals(),db)
 
 db.define_table(
     auth.settings.table_user_name,
@@ -182,7 +182,7 @@ custom_auth_table.password.requires = [CRYPT()]
 custom_auth_table.email.requires =   IS_EMAIL(error_message=auth.messages.invalid_email)
 
 auth.settings.table_user = custom_auth_table # tell auth to use custom_auth_table
-auth.define_tables(fake_migrate=True)
+auth.define_tables(username = True)
 
 d2.define_table(
     auth.settings.table_user_name,
@@ -203,28 +203,25 @@ d2.define_table('auth_membership',
     Field('user_id','reference auth_user',ondelete='NO ACTION'),
     Field('group_id','reference auth_group',ondelete='NO ACTION'))
 
-for n in db().select(orderby = db.auth_user.id): # copy all username from hr_db to mpv_inv_db
-    print 'user id: ', n.id
-    # _id = db(db.auth_user.id == n.id).select().first()
-    # if _id:
-    #     _id.update_record(first_name=n.first_name,last_name=n.last_name,username=n.username,email=n.email,password=n.password)
-    # else:        
-    #     db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,username=n.username,email=n.email,password=n.password)
+for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
+    _id = db(db.auth_user.id == n.id).select().first()
+    if _id:            
+        _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
+    else:        
+        db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
 
-# for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db
-#     print n.id
-    # _id = db(db.auth_group.id == n.id).select().first()
-    # if _id:
-    #     # print 'true'
-    #     _id.update_record(role=n.role,description=n.description)
-    # else:
-    #     # print 'false',#n.id
-    #     db.auth_group.insert(role=n.role,description=n.description)
+for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
+    _id = db(db.auth_group.id == n.id).select().first()
+    if _id:
+        _id.update_record(role=n.role,description=n.description)
+    else:
+        db.auth_group.insert(role=n.role,description=n.description)
 
-# for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db
-#     print n.id
-    # _id = db(db.auth_membership.id == n.id).select().first()
-    # if _id:
-    #     _id.update_record(user_id=n.user_id,group_id=n.group_id)
-    # else:
-    #     db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
+
+for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
+    _id = db(db.auth_membership.id == n.id).select().first()
+    if _id:
+        _id.update_record(user_id=n.user_id,group_id=n.group_id)
+    else:
+        db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
+

@@ -34,7 +34,7 @@
 <script src="{{=URL('static','js/cascade.js')}}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-    $(".table").DataTable();
+    // $(".table").DataTable();
     var data = [
         {{for d in db(db.Department.status_id == 1).select(db.Department.ALL, orderby = db.Department.id):}}
         { text: "{{=d.dept_code}} - {{=d.dept_name}}", value:"{{=d.id}}",
@@ -51,7 +51,9 @@ $(document).ready(function(){
 });
 
     function clickSubmit(){
-        ajax("{{=URL('inventory','get_stock_value_report')}}",['dept_code_id','supplier_code_id','location_code_id'],'idSVR')
+        ajax("{{=URL('inventory','get_stock_value_report')}}",['dept_code_id','supplier_code_id','location_code_id'])
+        
+
     }
     
 </script>
