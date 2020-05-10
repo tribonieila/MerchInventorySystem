@@ -8270,7 +8270,7 @@ def stock_value_report():
         Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
     if form.process().accepted:
         response.flash = 'SUCCESS'        
-        redirect(URL('inventory','get_stock_value_report', args =[request.vars.dept_code_id,request.vars.supplier_code_id, request.vars.location_code_id]))
+        # redirect(URL('inventory','get_stock_value_report', args =[form.vars.dept_code_id,form.vars.supplier_code_id, form.vars.location_code_id]))
     elif form.errors:
         response.flash = 'ERROR'
     return dict(form = form)
