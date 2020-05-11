@@ -8265,17 +8265,25 @@ def price_list_report():
 
 def stock_value_report():
     form = SQLFORM.factory(
-        Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-        Field('supplier_code_id', 'reference Supplier_Master', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'All Supplier')),
-        Field('location_code_id', 'reference Location', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location')))
+        Field('dept_code_id','reference Department', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s',zero = 'Choose Department')),
+        Field('supplier_code_id', 'reference Supplier_Master',label='Supplier Code',requires=IS_EMPTY_OR(IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'All Supplier'))),
+        Field('location_code_id', 'reference Location', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location'))))
     if form.process().accepted:
         response.flash = 'SUCCESS'        
-        # redirect(URL('inventory','get_stock_value_report', args =[form.vars.dept_code_id,form.vars.supplier_code_id, form.vars.location_code_id]))
+        redirect(URL('inventory','get_stock_value_report', args =[form.vars.dept_code_id,form.vars.supplier_code_id, form.vars.location_code_id]))
     elif form.errors:
-        response.flash = 'ERROR'
+        response.flash = 'ERROR'        
     return dict(form = form)
 
 def get_stock_value_report():
+    print '--=*=--'
+    print 'get_stock_value_report: ', request.args(0), request.args(1),request.args(2)
+    # redirect(URL('inventory','get_stock_value_report_print', args=request.vars.dept_code_id), client_side=True)
+
+def get_stock_value_report_print():
+    print 'get_stock_value_report_print', request.args(0)
+
+def get_stock_value_report_():
     ctr = 0
     if int(request.vars.supplier_code_id) == 0:        
         _query = db.Item_Master.dept_code_id == request.vars.dept_code_id            

@@ -95,6 +95,38 @@ def customer_group_code_edit_form():
 
 # ----------    C U S T O M E R  F O R M    ----------
 @auth.requires_login()
+def get_area_name_grid():
+    row = []
+    head = THEAD(TR(TH('#'),TH('Area Name'),TH('Zone'),TH('Municipality'),TD('Action')))
+    for n in db().select(db.Area_Name.ALL, orderby = db.Area_Name.id):
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('view_customer_details', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('put_area_name_id', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(n.id),TD(n.area_name),TD(n.zone_no),TD(n.municipality),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body],_class='table')
+    return dict(table = table)
+
+@auth.requires_login()
+def post_area_name():
+    form = SQLFORM(db.Area_Name)
+    if form.process().accepted:
+        response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+@auth.requires_login()
+def put_area_name_id():
+    form = SQLFORM(db.Area_Name, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM UPDATED'
+    elif form.errors:
+        response.flash = 'FOR HAS ERROR'
+    return dict(form = form)
+
+@auth.requires_login()
 def customer_grid():
     row = []
     head = THEAD(TR(TH('#'),TH('Account No.'),TH('Group Code'),TH('Name'),TH('Category'),TH('Type'),TH('Action'),_class='bg-primary'))
@@ -128,6 +160,7 @@ def customer_add_edit_form():
         redirect(URL('customer_grid'))
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
+        print form.errors
     return dict(form = form)
 
 @auth.requires_login()
