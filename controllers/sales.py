@@ -383,14 +383,21 @@ def get_sales_man_customer_id():
     elif form.errors:        
         response.flash = 'FORM HAS ERRRO'
 
-    head = THEAD(TR(TH('#'),TH('Customer'),TH('Status'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Account No'),TH('Customer'),TH('Status'),TH('Action')))
     for n in db(db.Sales_Man_Customer.sales_man_id == request.args(0)).select():
         ctr += 1
-        row.append(TR(TD(ctr),TD(n.customer_id),TD(n.status_id.status),TD()))
+        view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')        
+        edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled') 
+        dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback= URL('put_sales_man_customer_delete_id',args = n.id))        
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.customer_id.customer_account_no),TD(n.customer_id.customer_group_code_id.description,' - ',n.customer_id.customer_name),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
-    
+    table = TABLE(*[head, body], _class='table')    
     return dict(form = form, table = table)
+
+def put_sales_man_customer_delete_id():    
+    db(db.Sales_Man_Customer.id == request.args(0)).delete()
+
 # ----------    SALES ORDER FORM    ----------
 @auth.requires_login()
 def sales_order_form_testing():        
