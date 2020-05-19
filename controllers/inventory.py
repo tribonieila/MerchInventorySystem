@@ -1945,7 +1945,7 @@ def item_prices_grid():
     thead = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand Line'),TH('Item Description'),TH('Most Recent Cost'),TH('Average Cost'),TH('Most Recent Landed Cost'),TH('Status'),TH('Actions')))
     for n in db(db.Item_Master).select(db.Item_Prices.ALL, db.Item_Master.ALL, left = db.Item_Prices.on(db.Item_Master.id == db.Item_Prices.item_code_id)):        
         ctr += 1        
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.Item_Prices.id))        
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Item_Prices.id))        
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','item_prices_edit', args = n.Item_Prices.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Item_Prices.id))
         # prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))

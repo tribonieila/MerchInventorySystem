@@ -1,0 +1,36 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ UPDATE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('get_sales_man_grid')}}";>BROWSE</a></li>
+            </ul>        
+            <span class="card-title">Sales Man Form</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form}}
+            <hr>
+            <div id="tblCustomer">
+            {{=LOAD('sales','get_sales_man_customer_id.load',ajax = True, args = request.args(0))}}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    $("#tblCustomer").hide();
+    if ($("#Sales_Man_van_sales").prop("checked")){        
+        $("#tblCustomer").show();
+    } else {        
+        $("#tblCustomer").hide();
+    }
+    $("#Sales_Man_van_sales").click(function(){        
+        if ($("#Sales_Man_van_sales").is(":checked")){            
+            $("#tblCustomer").slideDown();
+        } else {            
+            $("#tblCustomer").slideUp();
+        }
+    });
+});
+</script>

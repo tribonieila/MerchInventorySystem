@@ -158,6 +158,7 @@ d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,f
 # db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
 
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB?driver={ODBC Driver 17 for SQL Server}", migrate=False,fake_migrate_all=True,do_connect=True) # production
+# db = DAL("mssql4://SA:M3rch2018@localhost:1433/m3rch_inv_db?driver={ODBC Driver 17 for SQL Server}", pool_size=0) # production
 # d2 = DAL("mssql4://SA:M3rch2018@localhost:1433/m3rch_hr_db?driver={ODBC Driver 17 for SQL Server}", migrate=False,fake_migrate_all=True,do_connect=True) # production
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Test?driver={ODBC Driver 17 for SQL Server}") # testing
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
@@ -204,25 +205,32 @@ d2.define_table('auth_membership',
     Field('user_id','reference auth_user',ondelete='NO ACTION'),
     Field('group_id','reference auth_group',ondelete='NO ACTION'))
 
-# for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
-#     _id = db(db.auth_user.id == n.id).select().first()
-#     if _id:            
-#         _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
-#     else:        
-#         db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
+d2.define_table('Employee_Master',
+    Field('title','string',length = 25, requires = IS_IN_SET(['Mr.','Ms.','Mrs.','Mme'], zero = 'Title')),
+    Field('first_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]),
+    Field('middle_name','string',length = 50),
+    Field('last_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]))
+    
+for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
+    
+    _id = db(db.auth_user.id == n.id).select().first()
+    if _id:            
+        _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
+    else:   
+        db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
 
-# for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
-#     _id = db(db.auth_group.id == n.id).select().first()
-#     if _id:
-#         _id.update_record(role=n.role,description=n.description)
-#     else:
-#         db.auth_group.insert(role=n.role,description=n.description)
+for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
+    _id = db(db.auth_group.id == n.id).select().first()
+    if _id:
+        _id.update_record(role=n.role,description=n.description)
+    else:
+        db.auth_group.insert(role=n.role,description=n.description)
 
 
-# for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
-#     _id = db(db.auth_membership.id == n.id).select().first()
-#     if _id:
-#         _id.update_record(user_id=n.user_id,group_id=n.group_id)
-#     else:
-#         db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
+for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
+    _id = db(db.auth_membership.id == n.id).select().first()
+    if _id:
+        _id.update_record(user_id=n.user_id,group_id=n.group_id)
+    else:
+        db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
 

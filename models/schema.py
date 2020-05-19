@@ -9,16 +9,16 @@
 # auth.settings.actions_disabled=['register', 'request_reset_password','retrieve_username']
 # if request.controller != 'appadmin': auth.settings.actions_disabled +=['register']
 
-db.define_table('Division_Group',
-    Field('division_group_name','string',label = 'Division',length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Division_Group.division_group_name')]))
+# db.define_table('Division_Group',
+#     Field('division_group_name','string',label = 'Division',length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Division_Group.division_group_name')]))
 
-db.define_table('Department_Group',
-    Field('division_group_id','reference Division_Group', ondelete = 'NO ACTION', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
-    Field('department_group_name','string',label = 'Department', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Department_Group.department_group_name')]))
+# db.define_table('Department_Group',
+#     Field('division_group_id','reference Division_Group', ondelete = 'NO ACTION', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
+#     Field('department_group_name','string',label = 'Department', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Department_Group.department_group_name')]))
 
-db.define_table('Section_Group',
-    Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
-    Field('section_group_name','string',label = 'Section', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db, 'Section_Group.section_group_name')]))
+# db.define_table('Section_Group',
+#     Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
+#     Field('section_group_name','string',label = 'Section', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db, 'Section_Group.section_group_name')]))
 
 # db.define_table(
 #     auth.settings.table_user_name,
@@ -867,6 +867,15 @@ db.define_table('Customer_Category', # hypermarket, restaurant
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+db.define_table('Customer_Classification', # hypermarket, restaurant
+    Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
+    Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Customer_Account_Type',# cash, credit, bill
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
     Field('description', 'string', length = 50, requires = [IS_LENGTH(50), IS_UPPER()]), 
@@ -909,6 +918,7 @@ db.define_table('Customer',
     Field('street_no', 'integer'),
     Field('zone', 'integer'),
     Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name')), 
+    Field('area_name','string', length = 150),
     Field('state','string', length = 50),
     Field('country','string', length = 50),
     Field('telephone_no','string',length = 25),
@@ -970,13 +980,36 @@ db.define_table('Customer_Bank_Detail',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
-db.define_table('Sales_Man',
-    Field('employee_id','string', length = 10),
-    Field('name','string', length = 25),
+db.define_table('Employee_Master',
+    Field('title','string',length = 25, requires = IS_IN_SET(['Mr.','Ms.','Mrs.','Mme'], zero = 'Title')),    
+    Field('first_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]),
+    Field('middle_name','string',length = 50),
+    Field('last_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
-    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'employee_id')
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'customer_account_no')
+
+db.define_table('Sales_Man',
+    Field('users_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('mv_code','string',length=25),    
+    Field('employee_id','reference Employee_Master', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Employee_Master, '%(first_name)s %(middle_name)s %(last_name)s', zero = 'Choose Employee')),    
+    Field('van_sales','boolean',label ='Van Sales',default=False),
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Sales_Man_Customer',
+    Field('sales_man_id','reference Sales_Man',ondelete='NO ACTION', writable = False, readable = False),
+    Field('users_id', db.auth_user, ondelete = 'NO ACTION', writable = False, readable = False),
+    Field('customer_id', 'reference Customer', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer, '%(customer_name)s', zero = 'Choose Customer')),        
+    Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Sales_Order',       
     Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
@@ -1941,3 +1974,10 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
 
 # intpart,decimalpart = int(test), test-int(test) 
 # print(num2words(intpart).replace('-', ' ') + ' and ' + str( int(decimalpart * (10 ** (len(str(decimalpart)) - 2)))) +  ' cent')
+
+for n in d2().select(orderby = d2.Employee_Master.id):
+    _id = db(db.Employee_Master.id == n.id).select().first()
+    if _id:        
+        _id.update_record(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)
+    else:        
+        db.Employee_Master.insert(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)

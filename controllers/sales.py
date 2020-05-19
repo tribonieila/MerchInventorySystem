@@ -138,7 +138,7 @@ def customer_grid():
         cred_lnk = A(I(_class='fas fa-credit-card'), _title='Credit Limit', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_credit_limit_add_form', args = n.id))
         bank_lnk = A(I(_class='fas fa-money-check'), _title='Bank Details', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_bank_details', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, cont_lnk, cred_lnk,bank_lnk)
-        row.append(TR(TD(n.id),TD(n.customer_account_no),TD(n.customer_group_code_id.description),TD(n.customer_name),TD(n.customer_category_id.description),TD(n.customer_account_type.description),TD(btn_lnk)))
+        row.append(TR(TD(n.id),TD(n.customer_account_no),TD(n.customer_group_code_id),TD(n.customer_name),TD(n.customer_category_id),TD(n.customer_account_type.description),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')
     return dict(table = table)
@@ -321,6 +321,76 @@ def view_bank():
     else:
         return CENTER(DIV(B('INFO! '),'No customer bank detail.',_class='alert alert-info',_role='alert'))
 
+# ----------    SALES MAN FORM    ----------
+@auth.requires_login()
+def get_sales_man_grid():
+    row = []
+    ctr = 0
+    head = THEAD(TR(TH('#'),TH('MV Code'),TH('Name'),TH('Van Sales'),TH('Status'),TH('Action')))
+    for n in db(db.Sales_Man.status_id == 1).select():
+        ctr+=1
+        view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','put_sales_man_id', args = n.id))
+        edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = (URL('sales','put_sales_man_id', args = n.id)))         
+        dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))        
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.mv_code),TD(n.employee_id.title,n.employee_id.first_name,' ',n.employee_id.middle_name,' ',n.employee_id.last_name),TD(n.van_sales),TD(n.status_id.status),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head,body],_class='table')
+    return dict(table=table)
+
+@auth.requires_login()
+def post_sales_man():
+    form = SQLFORM.factory(db.Sales_Man)
+    if form.process().accepted:
+        response.flash = 'FORM SAVE'        
+        db.Sales_Man.insert(
+            users_id = form.vars.users_id,
+            employee_id = form.vars.employee_id,
+            mv_code = form.vars.mv_code,
+            van_sales = form.vars.van_sales,
+            status_id = form.vars.status_id
+        )
+        _id = db(db.Sales_Man.users_id == form.vars.users_id).select().first()
+        if db(db.Sales_Man_Customer.users_id == form.vars.users_id).select().first():
+            db(db.Sales_Man_Customer.users_id == form.vars.users_id).update(sales_man_id = _id.id)
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+@auth.requires_login()
+def put_sales_man_id():
+    form = SQLFORM(db.Sales_Man, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM UPDATED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+def get_user_id():
+    session.users_id = request.vars.users_id    
+
+@auth.requires_login()
+def get_sales_man_customer_id():    
+    row = []
+    ctr = 0
+    form = SQLFORM.factory(db.Sales_Man_Customer)
+    if form.process().accepted:
+        db.Sales_Man_Customer.insert(
+            users_id = session.users_id,
+            customer_id = form.vars.customer_id,
+            status_id = form.vars.status_id)        
+        response.flash = 'FORM SAVE'
+    elif form.errors:        
+        response.flash = 'FORM HAS ERRRO'
+
+    head = THEAD(TR(TH('#'),TH('Customer'),TH('Status'),TH('Action')))
+    for n in db(db.Sales_Man_Customer.sales_man_id == request.args(0)).select():
+        ctr += 1
+        row.append(TR(TD(ctr),TD(n.customer_id),TD(n.status_id.status),TD()))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')
+    
+    return dict(form = form, table = table)
 # ----------    SALES ORDER FORM    ----------
 @auth.requires_login()
 def sales_order_form_testing():        
@@ -336,7 +406,7 @@ def sales_order_form_testing():
 
 @auth.requires_login()
 def sales_order_form():
-    _query = db().select(left = db.Department.on(db.Department.dept_name == db.Department_Group.department_group_name))
+    # _query = db().select(left = db.Department.on(db.Department.dept_name == db.Department_Group.department_group_name))
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = 0

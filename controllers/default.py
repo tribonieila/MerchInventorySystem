@@ -35,7 +35,12 @@ def init_stock():
             # print 'no stock:: ', i.item_code
             db.Stock_File.insert(item_code_id = i.id, location_code_id = 2, opening_stock = 0, closing_stock = 0, previous_year_closing_stock = 0, stock_in_transit = 0, free_stock_qty = 0, reorder_qty = 0, last_transfer_qty = 0, probational_balance = 0, damaged_stock_qty = 0 )
 
-         
+def generate():
+    for n in db().select(orderby = db.Customer_Category.id):
+        print n.id
+        # db.Customer_Classification.insert(mnemonic = n.mnemonic, description=n.description,status_id=n.status_id)
+    return dict()
+
 import arabic_reshaper
 from bidi.algorithm import get_display
 from reportlab.platypus import *
@@ -57,7 +62,7 @@ import os
 from reportlab.pdfgen import canvas    
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
+# pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
 style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=15)
@@ -104,23 +109,23 @@ _ar_department = arabic_reshaper.reshape(_ar_department)
 _ar_location = arabic_reshaper.reshape(_ar_location)
 _ar_sales_man = arabic_reshaper.reshape(_ar_sales_man)
 
-_ar_item_code = Paragraph(get_display(_ar_item_code), item_style)
+# _ar_item_code = Paragraph(get_display(_ar_item_code), item_style)
 # _ar_item_code = Paragraph('Item Code' + "<br/>" + get_display(_ar_item_code), item_style)
-_ar_item_description = Paragraph(get_display(_ar_item_description),item_style)
-_ar_uom = Paragraph(get_display(_ar_uom),item_style)
-_ar_category = Paragraph(get_display(_ar_category),item_style)
-_ar_qty = Paragraph(get_display(_ar_qty),item_style)
-_ar_unit_price = Paragraph(get_display(_ar_unit_price),item_style)
-_ar_discount = Paragraph(get_display(_ar_discount),item_style)
-_ar_net_price = Paragraph(get_display(_ar_net_price),item_style)
-_ar_amount = Paragraph(get_display(_ar_amount),item_style)
-_ar_invoice_no = Paragraph(get_display(_ar_invoice_no),item_style)
-_ar_customer_code = Paragraph(get_display(_ar_customer_code),item_style)
-_ar_invoice_date = Paragraph(get_display(_ar_invoice_date),item_style)
-_ar_transaction_type = Paragraph(get_display(_ar_transaction_type),item_style)
-_ar_department = Paragraph(get_display(_ar_department),item_style)
-_ar_location = Paragraph(get_display(_ar_location),item_style)
-_ar_sales_man = Paragraph(get_display(_ar_sales_man),item_style)
+# _ar_item_description = Paragraph(get_display(_ar_item_description),item_style)
+# _ar_uom = Paragraph(get_display(_ar_uom),item_style)
+# _ar_category = Paragraph(get_display(_ar_category),item_style)
+# _ar_qty = Paragraph(get_display(_ar_qty),item_style)
+# _ar_unit_price = Paragraph(get_display(_ar_unit_price),item_style)
+# _ar_discount = Paragraph(get_display(_ar_discount),item_style)
+# _ar_net_price = Paragraph(get_display(_ar_net_price),item_style)
+# _ar_amount = Paragraph(get_display(_ar_amount),item_style)
+# _ar_invoice_no = Paragraph(get_display(_ar_invoice_no),item_style)
+# _ar_customer_code = Paragraph(get_display(_ar_customer_code),item_style)
+# _ar_invoice_date = Paragraph(get_display(_ar_invoice_date),item_style)
+# _ar_transaction_type = Paragraph(get_display(_ar_transaction_type),item_style)
+# _ar_department = Paragraph(get_display(_ar_department),item_style)
+# _ar_location = Paragraph(get_display(_ar_location),item_style)
+# _ar_sales_man = Paragraph(get_display(_ar_sales_man),item_style)
 
 def print_arabic():
     print 'arabic_text: ', arabic_text

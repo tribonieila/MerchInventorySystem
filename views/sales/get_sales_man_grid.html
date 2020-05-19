@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class=""><a href="#" onclick=window.location="{{=URL('post_sales_man')}}";>+ ADD NEW</a></li>
+                <li class="active"><a href="#">BROWSE</a></li>
+            </ul>        
+            <span class="card-title">Sales Man Grid</span>
+        </div>
+        <div class="card-body tab-content">               
+            {{=table}}
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $(".table").DataTable();
+    });    
+</script>

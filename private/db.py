@@ -6,7 +6,7 @@
 # -------------------------------------------------------------------------
 from gluon.contrib.appconfig import AppConfig
 from gluon.tools import Auth, Crud
-# import psycopg2  
+# import psycopg2 
 # -------------------------------------------------------------------------
 # This scaffolding model makes your app work on Google App Engine too
 # File is released under public domain and you can use without limitations
@@ -153,8 +153,77 @@ if configuration.get('scheduler.enabled'):
 # -------------------------------------------------------------------------
 # auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
 auth.enable_record_versioning(db)
-# db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv', pool_size=0)
+# db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv') #,fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
+# d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,fake_migrate_all=True,do_connect=True)
+# db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
 
-db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
-# db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB_Test?driver={SQL Server}") # testing
-# db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB_Dev?driver={SQL Server}") # development
+# db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB?driver={ODBC Driver 17 for SQL Server}", migrate=False,fake_migrate_all=True,do_connect=True) # production
+db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rch_inv_db?driver={ODBC Driver 17 for SQL Server}") # production
+d2 = DAL("mssql4://SA:M3rch2018@localhost:1433/m3rch_hr_db?driver={ODBC Driver 17 for SQL Server}", migrate=False,fake_migrate_all=True,do_connect=True) # production
+# db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Test?driver={ODBC Driver 17 for SQL Server}") # testing
+# db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
+# db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
+auth = Auth(globals(),db)
+
+db.define_table(
+    auth.settings.table_user_name,
+    Field('first_name', length=128),
+    Field('last_name', length=128),
+    Field('username', unique = True, readable = False),
+    Field('email', length=128), # required
+    Field('password', 'password', length=512,readable=False, label='Password'), # required
+    Field('registration_key', length=512, writable=False, readable=False, default=''),# required
+    Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
+    Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
+
+## do not forget validators
+custom_auth_table = db[auth.settings.table_user_name] # get the custom_auth_table
+custom_auth_table.first_name.requires =   IS_NOT_EMPTY(error_message=auth.messages.is_empty)
+custom_auth_table.last_name.requires =   IS_NOT_EMPTY(error_message=auth.messages.is_empty)
+custom_auth_table.password.requires = [CRYPT()]
+custom_auth_table.email.requires =   IS_EMAIL(error_message=auth.messages.invalid_email)
+
+auth.settings.table_user = custom_auth_table # tell auth to use custom_auth_table
+auth.define_tables(username = True)
+
+d2.define_table(
+    auth.settings.table_user_name,
+    Field('first_name', length=128),
+    Field('last_name', length=128),
+    Field('username', unique = True, readable = False),
+    Field('email', length=128), # required
+    Field('password', 'password', length=512,readable=False, label='Password'), # required
+    Field('registration_key', length=512, writable=False, readable=False, default=''),# required
+    Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
+    Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
+
+d2.define_table('auth_group',
+    Field('role','string'),
+    Field('description','text'))
+
+d2.define_table('auth_membership',
+    Field('user_id','reference auth_user',ondelete='NO ACTION'),
+    Field('group_id','reference auth_group',ondelete='NO ACTION'))
+
+# for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
+#     _id = db(db.auth_user.id == n.id).select().first()
+#     if _id:            
+#         _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
+#     else:        
+#         db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
+
+# for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
+#     _id = db(db.auth_group.id == n.id).select().first()
+#     if _id:
+#         _id.update_record(role=n.role,description=n.description)
+#     else:
+#         db.auth_group.insert(role=n.role,description=n.description)
+
+
+# for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
+#     _id = db(db.auth_membership.id == n.id).select().first()
+#     if _id:
+#         _id.update_record(user_id=n.user_id,group_id=n.group_id)
+#     else:
+#         db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
+
