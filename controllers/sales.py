@@ -412,8 +412,12 @@ def sales_order_form_testing():
     return dict(form = form)
 
 @auth.requires_login()
-def sales_order_form():
-    # _query = db().select(left = db.Department.on(db.Department.dept_name == db.Department_Group.department_group_name))
+def sales_order_form():    
+    _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
+    if _usr.van_sales == True:
+        _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.customer_id == db.Customer.id)
+    else:
+        _query_cstmr = db.Customer
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = 0
@@ -422,7 +426,7 @@ def sales_order_form():
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.location_group_code_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-        Field('customer_code_id','reference Customer', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+        Field('customer_code_id','reference Master_Account', requires = IS_IN_DB(db(), db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
         Field('delivery_due_date', 'date', default = request.now),
         Field('remarks', 'string'),         

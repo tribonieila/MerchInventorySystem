@@ -1980,13 +1980,13 @@ def master_account():
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     row = []
-    thead = THEAD(TR(TH('#'),TH('Account Code'),TH('Account Name'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Account Code'),TH('Account Name'),TH('Account Type'),TH('Action')))
     for n in db(db.Master_Account).select():
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('master_account_edit_form', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.id),TD(n.account_code),TD(n.account_name),TD(btn_lnk)))
+        row.append(TR(TD(n.id),TD(n.account_code),TD(n.account_name),TD(n.master_account_type_id),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')        
     return dict(form=form, table = table)          
@@ -1994,7 +1994,7 @@ def master_account():
 def master_account_edit_form():
     form = SQLFORM(db.Master_Account, request.args(0))
     if form.process().accepted:
-        respose.flash = 'RECORD UPDATED'
+        response.flash = 'RECORD UPDATED'
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form)

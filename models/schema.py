@@ -995,6 +995,31 @@ db.define_table('Sales_Man',
     Field('mv_code','string',length=25),    
     Field('employee_id','reference Employee_Master', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Employee_Master, '%(first_name)s %(middle_name)s %(last_name)s', zero = 'Choose Employee')),    
     Field('van_sales','boolean',label ='Van Sales',default=False),
+    Field('parent_outlet','string',length=50),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
+    Field('cr_no','string',length=25),
+    Field('po_box_no', 'integer'),    
+    Field('unit_no', 'integer'),
+    Field('building_no', 'integer'),
+    Field('street_no', 'integer'),
+    Field('zone', 'integer'),
+    Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name')), 
+    Field('area_name','string', length = 150),
+    Field('state','string', length = 50),
+    Field('country','string', length = 50),
+    Field('telephone_no','string',length = 25),
+    Field('mobile_no','string',length = 25),
+    Field('fax_no','string',length = 25),
+    Field('email_address','string', length = 50),
+    Field('contact_person','string',length = 25),
+    Field('longtitude','string',length=50),
+    Field('latitude','string',length=50),    
+    Field('outlet_category','string',length=50),
+    Field('outlet_type','string',length=50),
+    Field('outlet_classification','string',length=50),
+    Field('sponsor_name','string', length = 50),
+    Field('sponsor_id','string', length = 50),
+    Field('sponsor_contact_no','string', length = 50),   
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -1171,7 +1196,12 @@ db.define_table('Sales_Return_Transaction_Temporary',
 
 db.define_table('Master_Account',
     Field('account_code','string', length = 15),
-    Field('account_name','string', length = 50))
+    Field('account_name','string', length = 50),    
+    Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Obsolescence_Stocks',       
     Field('transaction_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
@@ -1981,3 +2011,17 @@ for n in d2().select(orderby = d2.Employee_Master.id):
         _id.update_record(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)
     else:        
         db.Employee_Master.insert(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)
+# master_account_type_id #Customer,Accounts,Supplier,Employees    
+for n in db().select(orderby = db.Customer.id): # Customer
+    _id = db(db.Master_Account.account_code == n.customer_account_no).select().first()
+    if _id:
+        _id.update_record(account_code=n.customer_account_no, account_name=n.customer_name, master_account_type_id='C')
+    else:
+        db.Master_Account.insert(account_code = n.customer_account_no, account_name=n.customer_name,master_account_type_id='C')
+
+for n in db().select(orderby = db.Supplier_Master.id): # Suppliers
+    _id = db(db.Master_Account.account_code == n.supp_code).select().first()
+    if _id:
+        _id.update_record(account_code=n.supp_code, account_name=n.supp_name, master_account_type_id='S')
+    else:
+        db.Master_Account.insert(account_code = n.supp_code, account_name=n.supp_name,master_account_type_id='S')
