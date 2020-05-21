@@ -432,16 +432,6 @@ def sales_order_form():
         _query_cstmr = db.Master_Account            
         _default = 0
 
-    
-    # if not _usr:
-    #     _query_cstmr = db.Master_Account            
-    #     _default = 0
-    # elif _usr.van_sales == True: # Van sales limited customer
-    #     _query_cstmr = db.Master_Account.account_code == _usr.mv_code 
-    #     _default = db(db.Master_Account.account_code == _usr.mv_code).select(db.Master_Account.id).first()        
-    # else: # Sales Man - Customer, Staff, Accounts Only
-    #     _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.master_account_type_id == db.Master_Account.master_account_type_id)
-    #     _default = 0
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = 0
