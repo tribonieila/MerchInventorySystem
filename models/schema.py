@@ -981,6 +981,7 @@ db.define_table('Customer_Bank_Detail',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Employee_Master',
+    Field('account_code', 'string', length = 10),
     Field('title','string',length = 25, requires = IS_IN_SET(['Mr.','Ms.','Mrs.','Mme'], zero = 'Title')),    
     Field('first_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]),
     Field('middle_name','string',length = 50),
@@ -1029,7 +1030,7 @@ db.define_table('Sales_Man',
 db.define_table('Sales_Man_Customer',
     Field('sales_man_id','reference Sales_Man',ondelete='NO ACTION', writable = False, readable = False),
     Field('users_id', db.auth_user, ondelete = 'NO ACTION', writable = False, readable = False),
-    Field('customer_id', 'reference Customer', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer, '%(customer_name)s', zero = 'Choose Customer')),        
+    Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -2005,12 +2006,13 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
 # intpart,decimalpart = int(test), test-int(test) 
 # print(num2words(intpart).replace('-', ' ') + ' and ' + str( int(decimalpart * (10 ** (len(str(decimalpart)) - 2)))) +  ' cent')
 
-for n in d2().select(orderby = d2.Employee_Master.id):
-    _id = db(db.Employee_Master.id == n.id).select().first()
+for n in d2().select(d2.Employee_Master.ALL, d2.Employee_Employment_Details.ALL, orderby = d2.Employee_Master.id, left = d2.Employee_Employment_Details.on(d2.Employee_Employment_Details.employee_id == d2.Employee_Master.id)):
+    _id = db(db.Employee_Master.id == n.Employee_Master.id).select().first()
     if _id:        
-        _id.update_record(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)
+        _id.update_record(account_code=n.Employee_Employment_Details.account_code, title = n.Employee_Master.title, first_name=n.Employee_Master.first_name,middle_name=n.Employee_Master.middle_name,last_name=n.Employee_Master.last_name)
     else:        
-        db.Employee_Master.insert(title = n.title, first_name=n.first_name,middle_name=n.middle_name,last_name=n.last_name)
+        db.Employee_Master.insert(account_code=n.Employee_Employment_Details.account_code, title = n.Employee_Master.title, first_name=n.Employee_Master.first_name,middle_name=n.Employee_Master.middle_name,last_name=n.Employee_Master.last_name)
+
 # master_account_type_id #Customer,Accounts,Supplier,Employees    
 for n in db().select(orderby = db.Customer.id): # Customer
     _id = db(db.Master_Account.account_code == n.customer_account_no).select().first()
@@ -2025,3 +2027,19 @@ for n in db().select(orderby = db.Supplier_Master.id): # Suppliers
         _id.update_record(account_code=n.supp_code, account_name=n.supp_name, master_account_type_id='S')
     else:
         db.Master_Account.insert(account_code = n.supp_code, account_name=n.supp_name,master_account_type_id='S')
+
+for n in db().select(orderby = db.Employee_Master.id):
+    _id = db(db.Master_Account.account_code == n.account_code).select().first()
+    _str = str(n.title) + str(n.first_name) + ' ' + str(n.middle_name) + ' ' + str(n.last_name)
+    if _id:
+        _id.update_record(account_code=n.account_code, account_name=_str, master_account_type_id='E') 
+    else:
+        db.Master_Account.insert(account_code = n.account_code, account_name=_str,master_account_type_id='E') 
+
+for n in db().select(orderby = db.Sales_Man.id):
+    _id = db(db.Master_Account.account_code == n.mv_code).select().first()
+    _str = str(n.employee_id.title) + str(n.employee_id.first_name) + ' ' + str(n.employee_id.middle_name) + ' ' + str(n.employee_id.last_name)
+    if _id:
+        _id.update_record(account_code=n.mv_code, account_name=_str,master_account_type_id='A')
+    else:
+        db.Master_Account.insert(account_code=n.mv_code, account_name=_str,master_account_type_id='A')

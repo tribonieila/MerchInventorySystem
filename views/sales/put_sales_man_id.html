@@ -21,15 +21,15 @@
 $(document).ready(function(){
     $("#tblCustomer").hide();
     if ($("#Sales_Man_van_sales").prop("checked")){        
-        $("#tblCustomer").show();
+        $("#tblCustomer").hide();        
     } else {        
-        $("#tblCustomer").hide();
+        $("#tblCustomer").show();
     }
     $("#Sales_Man_van_sales").click(function(){        
         if ($("#Sales_Man_van_sales").is(":checked")){            
-            $("#tblCustomer").slideDown();
-        } else {            
             $("#tblCustomer").slideUp();
+        } else {                        
+            $("#tblCustomer").slideDown();
         }
     });
 });

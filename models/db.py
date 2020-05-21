@@ -210,10 +210,15 @@ d2.define_table('Employee_Master',
     Field('first_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]),
     Field('middle_name','string',length = 50),
     Field('last_name','string',length = 50, requires = [IS_UPPER(), IS_NOT_EMPTY()]))
-    
+
+d2.define_table('Employee_Employment_Details',
+    Field('employee_id', 'reference Employee_Master', ondelete = 'NO ACTION', writable = False),
+    Field('employee_no', 'integer'),
+    Field('account_code', 'string', length = 10))
+
 for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
     
-    _id = db(db.auth_user.id == n.id).select().first()
+    _id = db(db.auth_user.first_name == n.first_name).select().first()
     if _id:            
         _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
     else:   

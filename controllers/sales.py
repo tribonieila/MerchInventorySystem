@@ -369,28 +369,35 @@ def put_sales_man_id():
 def get_user_id():
     session.users_id = request.vars.users_id    
 
+def validate_sales_man_customer_id(form):
+    _id = db(db.Sales_Man.id == request.args(0)).select().first()
+    if _id:
+        form.vars.users_id = _id.users_id
+        form.vars.sales_man_id = _id.id        
+    else:        
+        form.vars.users_id = _id.users_id
+        form.vars.sales_man_id = _id.id
+    # form.vars.users_id = session.users_id
+
 @auth.requires_login()
 def get_sales_man_customer_id():    
     row = []
     ctr = 0
-    form = SQLFORM.factory(db.Sales_Man_Customer)
-    if form.process().accepted:
-        db.Sales_Man_Customer.insert(
-            users_id = session.users_id,
-            customer_id = form.vars.customer_id,
-            status_id = form.vars.status_id)        
+    _id = db(db.Sales_Man_Customer.sales_man_id == request.args(0)).select().first()
+    form = SQLFORM(db.Sales_Man_Customer)
+    if form.process(onvalidation = validate_sales_man_customer_id).accepted:
         response.flash = 'FORM SAVE'
     elif form.errors:        
         response.flash = 'FORM HAS ERRRO'
 
-    head = THEAD(TR(TH('#'),TH('Account No'),TH('Customer'),TH('Status'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Group Account'),TH('Status'),TH('Action')))
     for n in db(db.Sales_Man_Customer.sales_man_id == request.args(0)).select():
         ctr += 1
         view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')        
         edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled') 
         dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback= URL('put_sales_man_customer_delete_id',args = n.id))        
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.customer_id.customer_account_no),TD(n.customer_id.customer_group_code_id.description,' - ',n.customer_id.customer_name),TD(n.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.master_account_type_id),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table')    
     return dict(form = form, table = table)
@@ -414,10 +421,27 @@ def sales_order_form_testing():
 @auth.requires_login()
 def sales_order_form():    
     _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
-    if _usr.van_sales == True:
-        _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.customer_id == db.Customer.id)
-    else:
-        _query_cstmr = db.Customer
+    if auth.has_membership('SALES'):
+        if _usr.van_sales == True: # Van sales limited customer
+            _query_cstmr = db.Master_Account.account_code == _usr.mv_code 
+            _default = db(db.Master_Account.account_code == _usr.mv_code).select(db.Master_Account.id).first()        
+        else: # Sales Man - Customer, Staff, Accounts Only
+            _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.master_account_type_id == db.Master_Account.master_account_type_id)
+            _default = 0
+    elif auth.has_membership('ROOT') | auth.has_membership('ACCOUNTS'):                
+        _query_cstmr = db.Master_Account            
+        _default = 0
+
+    
+    # if not _usr:
+    #     _query_cstmr = db.Master_Account            
+    #     _default = 0
+    # elif _usr.van_sales == True: # Van sales limited customer
+    #     _query_cstmr = db.Master_Account.account_code == _usr.mv_code 
+    #     _default = db(db.Master_Account.account_code == _usr.mv_code).select(db.Master_Account.id).first()        
+    # else: # Sales Man - Customer, Staff, Accounts Only
+    #     _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.master_account_type_id == db.Master_Account.master_account_type_id)
+    #     _default = 0
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = 0
@@ -426,7 +450,7 @@ def sales_order_form():
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.location_group_code_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-        Field('customer_code_id','reference Master_Account', requires = IS_IN_DB(db(), db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
+        Field('customer_code_id','reference Master_Account', default = int(_default), requires = IS_IN_DB(db(_query_cstmr), db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
         Field('delivery_due_date', 'date', default = request.now),
         Field('remarks', 'string'),         
