@@ -56,7 +56,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Man</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.created_by.first_name.upper()}} {{=_id.created_by.last_name.upper()}} " readonly>
+                                <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.title}}{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}}, {{=_id.sales_man_id.employee_id.account_code}} " readonly>
                             </div>
                         </div>
                     </div>    
@@ -66,7 +66,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Customer</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.customer_code_id.customer_name}} " readonly>
+                                <input type="text" class="form-control" value="{{=_id.customer_code_id.account_code}} - {{=_id.customer_code_id.account_name}} " readonly>
                             </div>
                         </div>                    
                     </div>

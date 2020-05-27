@@ -3496,6 +3496,7 @@ def validate_date_range(form):
     else:
         form.vars.status_id = 19
 
+@auth.requires_membership('ROOT')
 @auth.requires_login()
 def purchase_request_form():
     session.currency_id = 5
@@ -3830,7 +3831,8 @@ def purchase_request_item_code_description():
                 TD(0),
                 TD(0)),_class="bg-info"),_class='table'))            
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock.",_class='alert alert-warning',_role='alert'))        
-        
+
+# @auth.requires_membership('ROOT')
 def get_purchase_request_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
@@ -5293,6 +5295,7 @@ def get_purchase_receipt_grid():
 # ----------------------------- PURCHASE ORDER TOP ----------------------
 # -----------------------------------------------------------------------
 
+# @auth.requires_membership('ROOT')
 @auth.requires_login()
 def get_purchase_order_grid(): # purchase_order_table_grid
     row = []
