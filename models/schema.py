@@ -933,11 +933,10 @@ db.define_table('Customer',
     Field('outlet_type','string',length=50),
     Field('outlet_classification','string',length=50),
 
-
     Field('sponsor_name','string', length = 50),
     Field('sponsor_id','string', length = 50),
     Field('sponsor_contact_no','string', length = 50),
-    
+    ## upload files to fill in here (5 fields)
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
