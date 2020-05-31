@@ -11,6 +11,8 @@ def testing():
 # @auth.requires_membership('ROOT')
 def index():
     response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
+    for n in db().select(db.Stock_File.ALL):
+        n.update_record(order_in_transit=0,free_stock_qty=0,reorder_qty=0,last_transfer_qty=0,probational_balance=0,damaged_stock_qty=0)
     return dict(message=T('Welcome to MERCH - ERP'))
 
 # ---- administrative task        ----

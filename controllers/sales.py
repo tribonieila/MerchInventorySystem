@@ -321,6 +321,8 @@ def view_bank():
     else:
         return CENTER(DIV(B('INFO! '),'No customer bank detail.',_class='alert alert-info',_role='alert'))
 
+def view_documents():
+    return CENTER(DIV(B('INFO! '),'In progress.',_class='alert alert-info',_role='alert'))
 # ----------    SALES MAN FORM    ----------
 @auth.requires_login()
 def get_sales_man_grid():
@@ -340,19 +342,20 @@ def get_sales_man_grid():
 
 @auth.requires_login()
 def post_sales_man():
-    form = SQLFORM.factory(db.Sales_Man)
+    form = SQLFORM(db.Sales_Man)
+    # form = SQLFORM.factory(db.Sales_Man)
     if form.process().accepted:
         response.flash = 'FORM SAVE'        
-        db.Sales_Man.insert(
-            users_id = form.vars.users_id,
-            employee_id = form.vars.employee_id,
-            mv_code = form.vars.mv_code,
-            van_sales = form.vars.van_sales,
-            status_id = form.vars.status_id
-        )
-        _id = db(db.Sales_Man.users_id == form.vars.users_id).select().first()
-        if db(db.Sales_Man_Customer.users_id == form.vars.users_id).select().first():
-            db(db.Sales_Man_Customer.users_id == form.vars.users_id).update(sales_man_id = _id.id)
+        # db.Sales_Man.insert(
+        #     users_id = form.vars.users_id,
+        #     employee_id = form.vars.employee_id,
+        #     mv_code = form.vars.mv_code,
+        #     van_sales = form.vars.van_sales,
+        #     status_id = form.vars.status_id
+        # )
+        # _id = db(db.Sales_Man.users_id == form.vars.users_id).select().first()
+        # if db(db.Sales_Man_Customer.users_id == form.vars.users_id).select().first():
+        #     db(db.Sales_Man_Customer.users_id == form.vars.users_id).update(sales_man_id = _id.id)
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
     return dict(form = form)
@@ -597,7 +600,7 @@ def validate_sales_order_transaction(form):
             form.vars.pieces = 0
 
         _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces or 0)
-        _item_discount = int(request.vars.discount_percentage)
+        _item_discount = int(request.vars.discount_percentage or 0)
         
         if not _price:
             form.errors.item_code = "Item code does'nt have price."

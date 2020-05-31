@@ -15,6 +15,7 @@
                     <li role="presentation" class="active"><a href="#customer" aria-controls="customer" role="tab" data-toggle="tab">Customer Profile</a></li>
                     <li role="presentation"><a href="#contact" aria-controls="contact" role="tab" data-toggle="tab">Contact Person</a></li>
                     <li role="presentation"><a href="#bank" aria-controls="bank" role="tab" data-toggle="tab">Bank Details</a></li>
+                    <li role="presentation"><a href="#documents" aria-controls="bank" role="tab" data-toggle="tab">Documents</a></li>
                     
                 </ul>
                 
@@ -23,6 +24,7 @@
                     <div role="tabpanel" class="tab-pane fade in active" id="customer"><br>{{=LOAD('sales','view_customer_info', args = request.args(0))}}</div>
                     <div role="tabpanel" class="tab-pane fade in" id="contact"><br>{{=LOAD('sales','view_contact', args = request.args(0))}}</div>
                     <div role="tabpanel" class="tab-pane fade in" id="bank"><br>{{=LOAD('sales','view_bank', args = request.args(0))}}</div>                    
+                    <div role="tabpanel" class="tab-pane fade in" id="documents"><br>{{=LOAD('sales','view_documents')}}</div>                    
                 </div>
             </div>            
         </div>

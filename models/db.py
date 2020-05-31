@@ -216,26 +216,26 @@ d2.define_table('Employee_Employment_Details',
     Field('employee_no', 'integer'),
     Field('account_code', 'string', length = 10))
 
-for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
+# for n in d2().select(orderby = d2.auth_user.id): # copy all username from hr_db to mpv_inv_db    
     
-    _id = db(db.auth_user.first_name == n.first_name).select().first()
-    if _id:            
-        _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
-    else:   
-        db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
+#     _id = db(db.auth_user.first_name == n.first_name).select().first()
+#     if _id:            
+#         _id.update_record(first_name = n.first_name, last_name=n.last_name,email=n.email)
+#     else:   
+#         db.auth_user.insert(first_name=n.first_name,last_name=n.last_name,email=n.email)
 
-for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
-    _id = db(db.auth_group.id == n.id).select().first()
-    if _id:
-        _id.update_record(role=n.role,description=n.description)
-    else:
-        db.auth_group.insert(role=n.role,description=n.description)
+# for n in d2().select(orderby = d2.auth_group.id): # copy all group name from hr_db to mpv_inv_db    
+#     _id = db(db.auth_group.id == n.id).select().first()
+#     if _id:
+#         _id.update_record(role=n.role,description=n.description)
+#     else:
+#         db.auth_group.insert(role=n.role,description=n.description)
 
 
-for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
-    _id = db(db.auth_membership.id == n.id).select().first()
-    if _id:
-        _id.update_record(user_id=n.user_id,group_id=n.group_id)
-    else:
-        db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
+# for n in d2().select(orderby = d2.auth_membership.id): # copy all memberships from hr_db to mpv_inv_db    
+#     _id = db(db.auth_membership.id == n.id).select().first()
+#     if _id:
+#         _id.update_record(user_id=n.user_id,group_id=n.group_id)
+#     else:
+#         db.auth_membership.insert(user_id=n.user_id,group_id=n.group_id)
 
