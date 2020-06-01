@@ -353,9 +353,9 @@ def post_sales_man():
         #     van_sales = form.vars.van_sales,
         #     status_id = form.vars.status_id
         # )
-        # _id = db(db.Sales_Man.users_id == form.vars.users_id).select().first()
-        # if db(db.Sales_Man_Customer.users_id == form.vars.users_id).select().first():
-        #     db(db.Sales_Man_Customer.users_id == form.vars.users_id).update(sales_man_id = _id.id)
+        _id = db(db.Sales_Man.users_id == request.vars.users_id).select().first()
+        if db(db.Sales_Man_Customer.users_id == form.vars.users_id).select().first():
+            db(db.Sales_Man_Customer.users_id == form.vars.users_id).update(sales_man_id = _id.id)
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
     return dict(form = form)
@@ -371,6 +371,7 @@ def put_sales_man_id():
 
 def get_user_id():
     session.users_id = request.vars.users_id    
+    print 'get_user_id',session.users_id
 
 def validate_sales_man_customer_id(form):
     _id = db(db.Sales_Man.id == request.args(0)).select().first()
@@ -378,9 +379,34 @@ def validate_sales_man_customer_id(form):
         form.vars.users_id = _id.users_id
         form.vars.sales_man_id = _id.id        
     else:        
-        form.vars.users_id = _id.users_id
-        form.vars.sales_man_id = _id.id
+        form.vars.users_id = request.vars.users_id
+        # form.vars.sales_man_id = _id.id
     # form.vars.users_id = session.users_id
+
+def validate_sales_man(form):
+    _id = db(db.Sales_Man.id == form.vars.sales_man_id).select().first()
+    form.vars.users_id = _id.users_id
+
+@auth.requires_login()
+def get_sales_man_customer_grid():
+    form = SQLFORM(db.Sales_Man_Customer)
+    if form.process(onvalidation = validate_sales_man).accepted:
+        response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    ctr = 0
+    row = []
+    head = THEAD(TR(TH('#'),TH('Sales Man'),TH('Account Type'),TH('Status'),TH('Action')))
+    for n in db(db.Sales_Man_Customer).select():
+        ctr += 1
+        view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')        
+        edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled') 
+        dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback= URL('put_sales_man_customer_delete_id',args = n.id))        
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.sales_man_id.employee_id.first_name,' ',n.sales_man_id.employee_id.last_name),TD(n.master_account_type_id),TD(n.status_id.status),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table')    
+    return dict(form = form, table = table)
 
 @auth.requires_login()
 def get_sales_man_customer_id():    
@@ -539,17 +565,17 @@ def item_code_description():
     else:        
         # response.js = "$('#btnadd').removeAttr('disabled')"
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()          
-        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
-
+        _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()                
         if _sfile:               
+            _provational_balanced = int(_sfile.closing_stock) + int(_sfile.stock_in_transit)
             if _icode.uom_value == 1:                
                 response.js = "$('#no_table_pieces').attr('disabled','disabled'), $('#btnadd').removeAttr('disabled')"                
-                _on_balanced = _sfile.probational_balance
+                _on_balanced = _provational_balanced
                 _on_transit = _sfile.stock_in_transit
                 _on_hand = _sfile.closing_stock                      
             else:
                 response.js = "$('#no_table_pieces').removeAttr('disabled')"                
-                _on_balanced = card(_icode.id, _sfile.probational_balance, _icode.uom_value)
+                _on_balanced = card(_icode.id, _provational_balanced, _icode.uom_value)
                 _on_transit = card(_icode.id, _sfile.stock_in_transit, _icode.uom_value)
                 _on_hand = card(_icode.id, _sfile.closing_stock, _icode.uom_value)
             return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
@@ -711,12 +737,13 @@ def validate_sales_order_transaction(form):
                     
         # _unit_price = float(_price.retail_price) / int(_id.uom_value)
         # _total = float(_unit_price) * int(_total_pcs)
-        if int(_stk_file.stock_in_transit) >=0:
-            if int(_total_pcs) > int(_stk_file.closing_stock):
+        _provational_balanced = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)
+        if int(_stk_file.stock_in_transit) >=0:            
+            if int(_total_pcs) > int(_stk_file.closing_stock): # pro = closing + transit
                 _pro_bal = card(_stk_file.item_code_id, _stk_file.closing_stock, _id.uom_value)
                 form.errors.quantity = 'Quantity should not be more than closing stock of ' + str(_pro_bal)
-        else:
-            if int(_total_pcs) > int(_stk_file.probational_balance):
+        else:            
+            if int(_total_pcs) > int(_provational_balanced):             
                 _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
                 form.errors.quantity = 'Quantity should not be more than provisional balance of ' + str(_pro_bal)
             # if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
@@ -736,7 +763,7 @@ def sales_order_transaction_temporary():
         Field('item_code', 'string', length = 25),
         Field('quantity','integer', default = 0),
         Field('pieces','integer', default = 0),
-        Field('discount_percentage', 'decimal(10,2)', default = 0),
+        Field('discount_percentage', 'integer', default = 0),
         Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
     if form.process( onvalidation = validate_sales_order_transaction).accepted:        
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
@@ -807,7 +834,7 @@ def sales_order_transaction_temporary():
             TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=locale.format('%.2F',n.Sales_Order_Transaction_Temporary.total_amount or 0, grouping = True)),_align = 'right', _style="width:100px;"),
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control grand_total', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD(_btnUpdate)))
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(INPUT(_class='form-control grand_total', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
     foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
     table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblsot'))
     if table.accepts(request, session):
@@ -1812,15 +1839,16 @@ def sales_return_item_code_description():
         response.js = "$('#btnadd').removeAttr('disabled')"     
         _iprice = db(db.Item_Prices.item_code_id == _icode.id).select().first()
         _sfile = db((db.Stock_File.item_code_id == _icode.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()        
-        if _sfile:               
+        if _sfile:           
+            _provational_balanced = int(_sfile.closing_stock) + int(_sfile.stock_in_transit)
             if _icode.uom_value == 1:
                 response.js = "$('#no_table_pieces').attr('disabled','disabled')"
-                _on_balanced = _sfile.probational_balance
+                _on_balanced = _provational_balanced
                 _on_transit = _sfile.stock_in_transit
                 _on_hand = _sfile.closing_stock      
             else:
                 response.js = "$('#no_table_pieces').removeAttr('disabled')"                
-                _on_balanced = card(_icode.id, _sfile.probational_balance, _icode.uom_value)
+                _on_balanced = card(_icode.id, _provational_balanced, _icode.uom_value)
                 _on_transit = card(_icode.id, _sfile.stock_in_transit, _icode.uom_value)
                 _on_hand = card(_icode.id, _sfile.closing_stock, _icode.uom_value)            
             return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
