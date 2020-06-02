@@ -328,14 +328,14 @@ def view_documents():
 def get_sales_man_grid():
     row = []
     ctr = 0
-    head = THEAD(TR(TH('#'),TH('MV Code'),TH('Name'),TH('Van Sales'),TH('Status'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('MV Code'),TH('Name'),TH('Van Sales'),TH('Section'),TH('Status'),TH('Action')))
     for n in db(db.Sales_Man.status_id == 1).select():
         ctr+=1
         view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','put_sales_man_id', args = n.id))
         edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = (URL('sales','put_sales_man_id', args = n.id)))         
         dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))        
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.mv_code),TD(n.employee_id.title,n.employee_id.first_name,' ',n.employee_id.middle_name,' ',n.employee_id.last_name),TD(n.van_sales),TD(n.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.mv_code),TD(n.employee_id.title,n.employee_id.first_name,' ',n.employee_id.middle_name,' ',n.employee_id.last_name),TD(n.van_sales),TD(n.section_id),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head,body],_class='table')
     return dict(table=table)
@@ -469,7 +469,7 @@ def sales_order_form():
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.location_group_code_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-        Field('customer_code_id','reference Master_Account', default = int(_default), requires = IS_IN_DB(db(_query_cstmr), db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
+        Field('customer_code_id','reference Master_Account', default = int(_default), requires = IS_IN_DB(db(_query_cstmr), db.Master_Account.id, '%(account_name)s, %(account_code)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
         Field('delivery_due_date', 'date', default = request.now),
         Field('remarks', 'string'),         
@@ -489,6 +489,7 @@ def sales_order_form():
             customer_order_reference = form.vars.customer_order_reference,
             delivery_due_date = form.vars.delivery_due_date,
             remarks = form.vars.remarks,   
+            section_id = _usr.section_id,
             sales_man_id = _usr.id,         
             status_id = form.vars.status_id)
         _id = db(db.Sales_Order.sales_order_no == ctr.current_year_serial_key).select().first()        
@@ -542,10 +543,10 @@ def sales_order_form_abort():
         for n in _query:
             _id = db(db.Item_Master.id == n.item_code_id).select().first()
             _s = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == n.stock_source_id)).select().first()
-            _quantity = n.quantity * _id.uom_value + n.pieces
-            _s.stock_in_transit -= _quantity
-            _s.probational_balance = int(_s.closing_stock) - int(_s.stock_in_transit)
-            _s.update_record()
+            _quantity = n.quantity * _id.uom_value + n.pieces            
+            _s.stock_in_transit += int(_quantity)                        
+            _s.probational_balance = int(_s.closing_stock) + int(_s.stock_in_transit)
+            _s.update_record()            
             db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).delete()            
         session.flash = 'ABORT'
  
@@ -916,8 +917,8 @@ def generate_total_amount(item, qty, pcs):
 @auth.requires_login()
 def sales_order_transaction_temporary_delete():
     _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()    
-    _s = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()    
-    _s.stock_in_transit -= _id.total_pieces
+    _s = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
+    _s.stock_in_transit += _id.total_pieces
     _s.probational_balance = int(_s.closing_stock) - int(_s.stock_in_transit)
     _s.update_record()        
     db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()    
@@ -1002,7 +1003,7 @@ def get_sales_invoice_workflow_reports():
             TD(_note),
             TD(_inv),
             TD(n.dept_code_id.dept_name),
-            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),
             TD(n.stock_source_id.location_name),
             TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
             TD(n.status_id.description),
@@ -1460,10 +1461,10 @@ def sales_order_transaction_table():
             TD(n.Item_Master.item_description),
             TD(n.Sales_Order_Transaction.category_id.mnemonic, _style = 'width:120px'),
             TD(n.Sales_Order_Transaction.uom,INPUT(_name='uom',_type='number',_hidden='true',_value=n.Sales_Order_Transaction.uom), _style = 'width:120px'),
-            TD(INPUT(_class='form-control quantity',_name='quantity',_type='number',_value=_qty), _style = 'width:80px'),
-            TD(INPUT(_class='form-control pieces',_name='pieces',_type='number',_value=_pcs), _style = 'width:80px'),
+            TD(INPUT(_class='form-control quantity',_name='quantity',_type='number',_value=_qty,_readonly=True), _style = 'width:80px'),
+            TD(INPUT(_class='form-control pieces',_name='pieces',_type='number',_value=_pcs,_readonly=True), _style = 'width:80px'),
             TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=n.Sales_Order_Transaction.price_cost or 0), _align = 'right', _style = 'width:100px'),
-            TD(INPUT(_class='form-control discount_per',_name='discount_per',_type='number',_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
+            TD(INPUT(_class='form-control discount_per',_name='discount_per',_type='number',_readonly=True,_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
             TD(INPUT(_class='form-control net_price',_name='net_price',_type='text',_value=n.Sales_Order_Transaction.net_price or 0), _align = 'right', _style = 'width:100px'),
             TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Sales_Order_Transaction.total_amount or 0), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
@@ -2461,14 +2462,18 @@ def sales_order_manager_grid():
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
         if not _usr:
             _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)                
-        else:
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
+        elif _usr.section_id == 'N':            
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'N') & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)
+        else:            
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'F') & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
-        if not _usr:            
-            _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id != 3)).select(orderby = ~db.Sales_Order.id)
-        else:
-            _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id == 3)).select(orderby = ~db.Sales_Order.id)                           
+        # if not _usr:            
+        #     print 'not usr'
+        #     _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id != 3)).select(orderby = ~db.Sales_Order.id)
+        # else:
+        #     print 'in usr'
+        _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id == 3)).select(orderby = ~db.Sales_Order.id)                           
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
         
     elif auth.has_membership(role = 'ACCOUNT MANAGER'):
@@ -3078,7 +3083,7 @@ def sales_order_store_keeper_header_footer_report(canvas, doc):
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _customer = n.customer_code_id.account_code + str('\n') + str(n.customer_code_id.account_name) #+ str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
-            [arabic_text],
+            ['SALES ORDER'],
             ['Sales Order No. ', ':',str(n.transaction_prefix_id.prefix)+str(n.sales_order_no),'','Sales Order Date ',':',n.sales_order_date.strftime('%d-%m-%Y')],
             ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],

@@ -3673,7 +3673,7 @@ def on_hand(e):
     _i = db(db.Item_Master.id == e).select().first()
     if _i.uom_value == 1:
         _closing = db((db.Stock_File.item_code_id == _i.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
-        _on_hand = _closing.closing_stock
+        _on_hand = _closing.closing_stock or 0
         return _on_hand
     else:
         _s = db((db.Stock_File.item_code_id == _i.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
@@ -3686,12 +3686,12 @@ def on_balance(e):
     _i = db(db.Item_Master.id == e).select().first()
     if _i.uom_value == 1:
         _balance = db((db.Stock_File.item_code_id == _i.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
-        _on_balance = _balance.probational_balance
+        _on_balance = _balance.probational_balance or 0
         return _on_balance
     else:
         _s = db((db.Stock_File.item_code_id == _i.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
-        _outer = int(_s.probational_balance) / int(_i.uom_value)        
-        _pcs = int(_s.probational_balance) - int(_outer * _i.uom_value)    
+        _outer = (int(_s.closing_stock or 0) + int(_s.stock_in_transit or 0)) / int(_i.uom_value)        
+        _pcs = (int(_s.closing_stock or 0) + int(_s.stock_in_transit or 0)) - int(_outer * _i.uom_value)    
         _on_balance = str(_outer) + ' ' + str(_pcs) + '/' + str(_i.uom_value)
         return _on_balance
 
@@ -3704,7 +3704,7 @@ def on_transit(e):
     else:
         _s = db((db.Stock_File.item_code_id == _i.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
         _outer_transit = int(_s.stock_in_transit or 0) / int(_i.uom_value)
-        _pcs_transit = int(_s.stock_in_transit) - int(_outer_transit * _i.uom_value)
+        _pcs_transit = int(_s.stock_in_transit or 0) - int(_outer_transit * _i.uom_value)
         _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_i.uom_value)
         return _on_transit
 

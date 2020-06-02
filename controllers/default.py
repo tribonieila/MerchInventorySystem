@@ -11,8 +11,6 @@ def testing():
 # @auth.requires_membership('ROOT')
 def index():
     response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
-    for n in db().select(db.Stock_File.ALL):
-        n.update_record(order_in_transit=0,free_stock_qty=0,reorder_qty=0,last_transfer_qty=0,probational_balance=0,damaged_stock_qty=0)
     return dict(message=T('Welcome to MERCH - ERP'))
 
 # ---- administrative task        ----
@@ -64,6 +62,7 @@ import os
 from reportlab.pdfgen import canvas    
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
@@ -73,10 +72,15 @@ style.alignment=TA_CENTER
 item_style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=8)
 item_style.alignment=TA_RIGHT
 
-sales_invoice = u'فاتورة المبيعات'
-sales_invoice = arabic_reshaper.reshape(sales_invoice) # join characters
-sales_invoice = get_display(sales_invoice) # change orientation by using bidi    
+heading_style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=20)
+heading_style.alignment=TA_CENTER
 
+
+
+
+# sales_invoice = get_display(sales_invoice) # change orientation by using bidi    
+
+_ar_sales_invoice = u'فاتورة المبيعات'
 _ar_item_code = u'رمز الصنف'
 _ar_item_description = u'وصف السلعة'
 _ar_uom = u'ام'
@@ -93,6 +97,11 @@ _ar_transaction_type = u'نوع المعاملة'
 _ar_department = u'قسم'
 _ar_location = u'موقعك'
 _ar_sales_man = u'مندوب مبيعات'
+_ar_total_amount = u'المبلغ الإجمالي'
+_ar_net_amount = u'كمية الشبكة'
+
+_ar_total_selective_task = u'إجمالي الضريبة الانتقائية'
+_ar_total_selective_task_foc = u'إجمالي الضريبة الانتقائية الضريبية'
 
 _ar_item_code = arabic_reshaper.reshape(_ar_item_code)
 _ar_item_description = arabic_reshaper.reshape(_ar_item_description)
@@ -110,24 +119,36 @@ _ar_transaction_type = arabic_reshaper.reshape(_ar_transaction_type)
 _ar_department = arabic_reshaper.reshape(_ar_department)
 _ar_location = arabic_reshaper.reshape(_ar_location)
 _ar_sales_man = arabic_reshaper.reshape(_ar_sales_man)
+_ar_sales_invoice = arabic_reshaper.reshape(_ar_sales_invoice) # join characters
+_ar_total_selective_task = arabic_reshaper.reshape(_ar_total_selective_task)
+_ar_total_selective_task_foc = arabic_reshaper.reshape(_ar_total_selective_task_foc)
 
-# _ar_item_code = Paragraph(get_display(_ar_item_code), item_style)
+_ar_total_amount = arabic_reshaper.reshape(_ar_total_amount)
+_ar_net_amount = arabic_reshaper.reshape(_ar_net_amount)
+
+
+_ar_item_code = Paragraph(get_display(_ar_item_code), item_style)
 # _ar_item_code = Paragraph('Item Code' + "<br/>" + get_display(_ar_item_code), item_style)
-# _ar_item_description = Paragraph(get_display(_ar_item_description),item_style)
-# _ar_uom = Paragraph(get_display(_ar_uom),item_style)
-# _ar_category = Paragraph(get_display(_ar_category),item_style)
-# _ar_qty = Paragraph(get_display(_ar_qty),item_style)
-# _ar_unit_price = Paragraph(get_display(_ar_unit_price),item_style)
-# _ar_discount = Paragraph(get_display(_ar_discount),item_style)
-# _ar_net_price = Paragraph(get_display(_ar_net_price),item_style)
-# _ar_amount = Paragraph(get_display(_ar_amount),item_style)
-# _ar_invoice_no = Paragraph(get_display(_ar_invoice_no),item_style)
-# _ar_customer_code = Paragraph(get_display(_ar_customer_code),item_style)
-# _ar_invoice_date = Paragraph(get_display(_ar_invoice_date),item_style)
-# _ar_transaction_type = Paragraph(get_display(_ar_transaction_type),item_style)
-# _ar_department = Paragraph(get_display(_ar_department),item_style)
-# _ar_location = Paragraph(get_display(_ar_location),item_style)
-# _ar_sales_man = Paragraph(get_display(_ar_sales_man),item_style)
+_ar_item_description = Paragraph(get_display(_ar_item_description),item_style)
+_ar_uom = Paragraph(get_display(_ar_uom),item_style)
+_ar_category = Paragraph(get_display(_ar_category),item_style)
+_ar_qty = Paragraph(get_display(_ar_qty),item_style)
+_ar_unit_price = Paragraph(get_display(_ar_unit_price),item_style)
+_ar_discount = Paragraph(get_display(_ar_discount),item_style)
+_ar_net_price = Paragraph(get_display(_ar_net_price),item_style)
+_ar_amount = Paragraph(get_display(_ar_amount),item_style)
+_ar_invoice_no = Paragraph(get_display(_ar_invoice_no),item_style)
+_ar_customer_code = Paragraph(get_display(_ar_customer_code),item_style)
+_ar_invoice_date = Paragraph(get_display(_ar_invoice_date),item_style)
+_ar_transaction_type = Paragraph(get_display(_ar_transaction_type),item_style)
+_ar_department = Paragraph(get_display(_ar_department),item_style)
+_ar_location = Paragraph(get_display(_ar_location),item_style)
+_ar_sales_man = Paragraph(get_display(_ar_sales_man),item_style)
+_ar_total_selective_task = Paragraph(get_display(_ar_total_selective_task),item_style)
+_ar_total_selective_task_foc = Paragraph(get_display(_ar_total_selective_task_foc),item_style)
+_ar_total_amount = Paragraph(get_display(_ar_total_amount),item_style)
+_ar_net_amount = Paragraph(get_display(_ar_net_amount),item_style)
+_ar_sales_invoice = Paragraph(get_display(_ar_sales_invoice),heading_style)
 
 def print_arabic():
     print 'arabic_text: ', arabic_text
@@ -188,7 +209,7 @@ def sales_invoice_footer(canvas, doc):
         _customer = n.customer_code_id.account_name#.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
             ['SALES INVOICE'],            
-            [sales_invoice],#            sales_invoice
+            [_ar_sales_invoice],#            sales_invoice
             # [Paragraph(sales_invoice,_style)],
             ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),':',_ar_invoice_no,'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y'),':',_ar_invoice_date],
             ['Customer Code',':',n.customer_code_id.account_code,':',_ar_customer_code,'','Transaction Type',':','Credit',':',_ar_transaction_type],             
@@ -198,11 +219,12 @@ def sales_invoice_footer(canvas, doc):
             ['','','','','','','']]
     header = Table(_so, colWidths=[100,10,'*',10,'*',20,'*',10,'*',10,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,0),(-1,0)),
         ('SPAN',(0,1),(-1,1)),
         ('SPAN',(0,4),(4,-1)),        
         ('ALIGN',(0,0),(0,0),'CENTER'),        
+        ('ALIGN',(0,1),(-1,1),'CENTER'),
         ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
         ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
         ('FONTSIZE',(0,0),(0,0),15),
@@ -817,7 +839,7 @@ def sales_order_report_account_user(): # print direct to printer
         
         ]))
     ctr = 0
-    _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount'],
+    _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Total'],
     ['',_ar_item_code,_ar_item_description,_ar_uom,_ar_category,_ar_qty,_ar_unit_price,_ar_discount,_ar_net_price,_ar_amount]]        
     _grand_total = 0
     _total_amount = 0        
@@ -859,9 +881,9 @@ def sales_order_report_account_user(): # print direct to printer
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
-    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax,'',_ar_total_selective_task,'','','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'',_ar_total_selective_task_foc,'','','','Discount %',':',_ar_discount,locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
+    _st.append([_amount_in_words,'','','','','','Net Amount',':',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
@@ -873,9 +895,9 @@ def sales_order_report_account_user(): # print direct to printer
         
         # ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),
         # ('LINEBELOW', (0,1), (-1,1), 0.25, colors.Color(0, 0, 0, 1)),
-        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.Color(0, 0, 0, 1)),
-        ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25,  colors.black,None, (2,2)),
+        ('LINEABOVE', (0,-1), (-1,-1), 0.25,  colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25,  colors.black,None, (2,2)),
         ('LINEBELOW', (0,2), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
         # ('TOPPADDING',(0,-3),(-1,-1),5),
         # ('BOTTOMPADDING',(0,-1),(-1,-1),5),        

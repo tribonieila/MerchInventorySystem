@@ -684,6 +684,14 @@ db.define_table('Adjustment_Type',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'mnemonic')
 
+db.define_table('Dbf_Batch_Table',
+    Field('batch_code','string',length=25),    
+    Field('status_id','reference Record_Status', ondelete = 'NO ACTION',label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')), 
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False),format = 'batch_code')
+
 db.define_table('Merch_Stock_Header',
     Field('voucher_no','integer'), # 10 length
     Field('location', 'integer'),   # from location master
@@ -696,6 +704,7 @@ db.define_table('Merch_Stock_Header',
     Field('total_selective_tax','decimal(15,6)', default = 0),
     Field('total_selective_tax_foc','decimal(15,6)', default = 0),
     Field('stock_destination','integer'),
+    Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Dbf_Batch_Table.id,'%()s',zero = 'Choose Batch Code')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -1077,6 +1086,7 @@ db.define_table('Sales_Order',
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('sales_invoice_date_approved','date', writable = False),
     
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('archives', 'boolean', default = False),    
@@ -1451,7 +1461,7 @@ db.define_table('Purchase_Request_Transaction',
     Field('delete', 'boolean', default = False),    
     Field('item_remarks', 'string'),
     # Field('item_remarks_created_by',db.auth_user,ondelete='NO ACTION',default=auth.user_id,writable=False,readable=False),
-    # Field('item_remarks_created_by',db.auth_user,ondelete='NO ACTION',default=auth.user_id,writable=False,readable=False),
+    # Field('item_remarks_created_by',db.auth_user,ondelete='NO ACTION',default=auth.user_id,writable=False,readable=False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -1685,6 +1695,8 @@ db.define_table('Purchase_Receipt_Transaction',
     Field('consolidated','boolean', default = False),
     Field('partial','boolean', default = False), 
     Field('received','boolean', default = False),
+    Field('old_average_cost','decimal(15,4)', default = 0),
+    Field('old_landed_cost','decimal(10,6)', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -1986,6 +1998,7 @@ db.define_table('Monthly_Stocks',
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 
 from num2words import num2words
 
