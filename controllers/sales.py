@@ -137,7 +137,8 @@ def customer_grid():
         cont_lnk = A(I(_class='fas fa-user-plus'), _title='Add Contact Person', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_contact_person_add_form', args = n.id))
         cred_lnk = A(I(_class='fas fa-credit-card'), _title='Credit Limit', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_credit_limit_add_form', args = n.id))
         bank_lnk = A(I(_class='fas fa-money-check'), _title='Bank Details', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_bank_details', args = n.id))
-        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, cont_lnk, cred_lnk,bank_lnk)
+        docu_lnk = A(I(_class='fas fa-upload'), _title='Upload Documents', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('customer_documents', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, cont_lnk, cred_lnk,bank_lnk,docu_lnk)
         row.append(TR(TD(n.id),TD(n.customer_account_no),TD(n.customer_group_code_id),TD(n.customer_name),TD(n.customer_category_id),TD(n.customer_account_type.description),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')
@@ -248,6 +249,9 @@ def customer_bank_details():
     table = TABLE(*[head, body], _class='table')
     return dict(form = form, table = table)
 
+@auth.requires_login()
+def customer_documents():
+    return dict()
 def validate_customer_bank_details(form):
     form.vars.customer_id = request.args(0)
     
@@ -2332,16 +2336,16 @@ def get_workflow_reports():
         row = []
         # _query = db(db.Sales_Order.status_id == 7).select(orderby = ~db.Sales_Order.id)
         _usr = db(db.User_Department.user_id == auth.user_id).select().first()
-        if not _usr:        
-            _query = db(db.Sales_Order.dept_code_id != 3).select(orderby = ~db.Sales_Order.id)
-        else:            
-            _query = db(db.Sales_Order.dept_code_id == _usr.department_id).select(orderby = ~db.Sales_Order.id)
+        # if not _usr:        
+        #     _query = db(db.Sales_Order.dept_code_id != 3).select(orderby = ~db.Sales_Order.id)
+        # else:            
+        _query = db((db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.status_id >= 8)).select(orderby = ~db.Sales_Order.id)
         head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
         for n in _query:
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('#', args = n.id))
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-            prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_order_delivery_note_report_store_keeper', args = n.id))
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
             if not n.transaction_prefix_id:
                 _sales = 'None'
@@ -2608,6 +2612,7 @@ def sales_order_view_account_user():
     db.Sales_Order.total_selective_tax.writable = False
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
+    db.Sales_Order.section_id.writable = False
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 7) | (db.Stock_Status.id == 8)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 8
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -2616,6 +2621,7 @@ def sales_order_view_account_user():
         session.flash = 'RECORD UPDATED'
         # redirect(URL('inventory', 'str_kpr_grid'))
     elif form.errors:
+        print form.errors
         response.flash = 'FORM HAS ERROR'    
     ctr = 0
     row = []                
@@ -2709,6 +2715,7 @@ def sales_order_manager_view():
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
     db.Sales_Order.status_id.writable = False    
+    db.Sales_Order.section_id.writable = False
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process(onvalidation = validate_mngr_approved).accepted:

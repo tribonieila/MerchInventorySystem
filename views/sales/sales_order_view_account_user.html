@@ -190,15 +190,15 @@
 
 <script>
 $(document).ready(function(){    
-    $('#btninvoice').attr('disabled','disabled');    
-    $('#Sales_Order_status_id').change(function(){
-        var _var = $(this).find(":selected").val()
-        if (_var == 7) {
-            $('#btninvoice').removeAttr('disabled');
-        } else {
-            $('#btninvoice').attr('disabled','disabled');
-        }
-    });
+    // $('#btninvoice').attr('disabled','disabled');    
+    // $('#Sales_Order_status_id').change(function(){
+    //     var _var = $(this).find(":selected").val()
+    //     if (_var == 7) {
+    //         $('#btninvoice').removeAttr('disabled');
+    //     } else {
+    //         $('#btninvoice').attr('disabled','disabled');
+    //     }
+    // });
     
     $('#btninvoice').click(function(){
         ajax('{{=URL('sales','sales_order_manager_invoice_no_approved', args = request.args(0))}}')

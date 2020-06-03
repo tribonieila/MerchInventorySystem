@@ -1048,7 +1048,7 @@ db.define_table('Sales_Man',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Sales_Man_Customer',
-    Field('sales_man_id','reference Sales_Man',ondelete='NO ACTION',requires = IS_IN_DB(db, db.Sales_Man.id,'%(id)s', zero = 'Choose Sales Man')),
+    Field('sales_man_id','reference Sales_Man',ondelete='NO ACTION',requires = IS_IN_DB(db, db.Sales_Man.id,'%(mv_code)s', zero = 'Choose Sales Man')),
     Field('users_id', db.auth_user, ondelete = 'NO ACTION', writable = False, readable = False),
     Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),    

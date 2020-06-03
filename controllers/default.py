@@ -62,7 +62,8 @@ import os
 from reportlab.pdfgen import canvas    
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
+# pdfmetrics.registerFont(TTFont('Arabic', '../fonts/ae_Arab.ttf'))
+pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
@@ -874,15 +875,25 @@ def sales_order_report_account_user(): # print direct to printer
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
         # _st.append(['','','','','','','','','',''])
     if not _id.total_selective_tax:
-        _selective_tax = _selective_tax_foc = ''
+        _selective_tax = _selective_tax_foc = _show_ar_total_selective_task= _show_ar_total_selective_task_foc=''
     else:
         _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
+        
+        _show_ar_total_selective_task = _ar_total_selective_task
+        
+    if _id.total_selective_tax_foc > 0:
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True)),'', _ar_total_selective_task_foc
+    else:
+        _selective_tax_foc = ''
+    if _id.discount_percentage > 0:
+        _discount = 'Discount %',':',_ar_discount,locale.format('%.2F',_id.discount_percentage or 0, grouping = True)
+    else:
+        _discount = ''
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax,'',_ar_total_selective_task,'','','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'',_ar_total_selective_task_foc,'','','','Discount %',':',_ar_discount,locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
+    _st.append([_selective_tax,'',_show_ar_total_selective_task,'','','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'','','',_discount])
     _st.append([_amount_in_words,'','','','','','Net Amount',':',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
