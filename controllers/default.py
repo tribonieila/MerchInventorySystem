@@ -874,13 +874,16 @@ def sales_order_report_account_user(): # print direct to printer
             _net_price,
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
         # _st.append(['','','','','','','','','',''])
-    if not _id.total_selective_tax:
-        _selective_tax = _selective_tax_foc = _show_ar_total_selective_task= _show_ar_total_selective_task_foc=''
+    # if not _id.total_selective_tax:
+    #     _selective_tax = _selective_tax_foc = _show_ar_total_selective_task= _show_ar_total_selective_task_foc=''
+    # else:
+    #     _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
+        
+    #     _show_ar_total_selective_task = _ar_total_selective_task
+    if _id.total_selective_tax > 0:
+        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True)),'',_ar_total_selective_task
     else:
-        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
-        
-        _show_ar_total_selective_task = _ar_total_selective_task
-        
+        _selective_tax = ''
     if _id.total_selective_tax_foc > 0:
         _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True)),'', _ar_total_selective_task_foc
     else:
@@ -892,12 +895,12 @@ def sales_order_report_account_user(): # print direct to printer
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax,'',_show_ar_total_selective_task,'','','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'','','',_discount])
+    _st.append([_selective_tax,'','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'','',_discount])
     _st.append([_amount_in_words,'','','','','','Net Amount',':',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         ('BOTTOMPADDING',(0,0),(-1,0),0),
         ('TOPPADDING',(0,1),(-1,1),0),
 
