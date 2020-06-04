@@ -978,13 +978,17 @@ def get_sales_invoice_workflow_reports():
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     # for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
     for n in db((db.Sales_Order.created_by == auth.user_id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id == 7)).select(orderby = ~db.Sales_Order.id):          
-        if n.status_id == 7:
-            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
-        else:
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
-            clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
-        btn_lnk = DIV(view_lnk, clea_lnk)
+        # if n.status_id == 7:
+        #     clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
+        #     view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+        # else:
+        #     view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
+        #     clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
+        # btn_lnk = DIV(view_lnk, clea_lnk)
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_order_view', args = n.id, extension = False))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')#, _href=URL('customer_category_edit_form', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')#, _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
 
         if not n.transaction_prefix_id:
             _sales = 'None'
@@ -3144,7 +3148,7 @@ def sales_order_delivery_note_footer_report(canvas, doc):
         _so = [
             ['DELIVERY NOTE'],
             ['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')],
-            ['Customer Code',':',n.customer_code_id.customer_account_no,'','Transaction Type',':','Credit'],             
+            ['Customer Code',':',n.customer_code_id.account_code,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
             ['','','','','Location', ':',n.stock_source_id.location_name],       
             ['','','','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper())],            
@@ -3883,21 +3887,22 @@ def sales_order_transaction_table_reports():
     ctr = 0
     _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount %','Net Price','Amount']]        
     _grand_total = 0
-    _total_amount = 0        
+    _total_amount = _selective_tax_sum = _selective_tax_foc_sum = 0        
     _total_excise_tax = 0      
-    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
+    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1        
         _grand_total += float(t.Sales_Order_Transaction.total_amount or 0)        
         _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
         _grand_total = float(_grand_total) - int(_discount)
-
+        _selective_tax_sum += t.Sales_Order_Transaction.selective_tax or 0
+        _selective_tax_foc_sum += t.Sales_Order_Transaction.selective_tax_foc or 0
         if t.Item_Master.uom_value == 1:
             _qty = t.Sales_Order_Transaction.quantity
         else:
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
 
         if t.Sales_Order_Transaction.category_id == 3:
-            _net_price = 'FOC'
+            _net_price = 'FOC-Price'
         else:
             _net_price = locale.format('%.2F',t.Sales_Order_Transaction.net_price or 0, grouping = True)
         if t.Sales_Order_Transaction.category_id != 4:
@@ -3912,15 +3917,19 @@ def sales_order_transaction_table_reports():
             locale.format('%d',t.Sales_Order_Transaction.discount_percentage or 0, grouping = True), 
             _net_price, 
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
-    if not _id.total_selective_tax:
+    if _selective_tax_sum > 0:
+        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_selective_tax_sum or 0, grouping = True))        
+    else:
         _selective_tax = ''
-    else:
-        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))        
     
-    if not _id.total_selective_tax_foc:
+        
+    
+    if _selective_tax_foc_sum > 0:
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_selective_tax_foc_sum or 0, grouping = True))      
+    else:    
         _selective_tax_foc = ''
-    else:
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))      
+    
+        
 
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
@@ -3957,7 +3966,7 @@ def delivery_note_transaction_table_reports():
 
     _total_amount = 0        
     _total_excise_tax = 0    
-    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
+    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1        
         _total_qty += t.Sales_Order_Transaction.quantity
 
@@ -3966,7 +3975,8 @@ def delivery_note_transaction_table_reports():
         else:
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
         if t.Sales_Order_Transaction.category_id != 4:
-            _category = t.Sales_Order_Transaction.category_id.mnemonic
+            # _category = t.Sales_Order_Transaction.category_id.mnemonic
+            _category = 'FOC-Price'
         else:
             _category = ''        
         _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Sales_Order_Transaction.uom,_category, _qty])

@@ -151,6 +151,11 @@ _ar_total_amount = Paragraph(get_display(_ar_total_amount),item_style)
 _ar_net_amount = Paragraph(get_display(_ar_net_amount),item_style)
 _ar_sales_invoice = Paragraph(get_display(_ar_sales_invoice),heading_style)
 
+
+arabic_text = u'إذا أخذنا بعين'
+arabic_text = arabic_reshaper.reshape(arabic_text) # join characters
+arabic_text = get_display(arabic_text) # change orientation by using bidi   
+
 def print_arabic():
     print 'arabic_text: ', arabic_text
     doc.build([Paragraph(arabic_text, style)])    
@@ -226,12 +231,12 @@ def sales_invoice_footer(canvas, doc):
         ('SPAN',(0,4),(4,-1)),        
         ('ALIGN',(0,0),(0,0),'CENTER'),        
         ('ALIGN',(0,1),(-1,1),'CENTER'),
-        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),   
         ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
         ('FONTSIZE',(0,0),(0,0),15),
         ('FONTSIZE',(0,1),(-1,1),8),                
         ('FONTSIZE',(0,2),(-1,-1),8),                
-        # ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('VALIGN',(0,4),(4,-1),'TOP'),
         # ('TOPPADDING',(0,0),(-1,0),20),        
         ('BOTTOMPADDING',(0,0),(-1,0),0),
         ('BOTTOMPADDING',(0,2),(-1,-1),0),
@@ -845,7 +850,7 @@ def sales_order_report_account_user(): # print direct to printer
     _grand_total = 0
     _total_amount = 0        
     _total_excise_tax = 0    
-    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
+    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1        
         _grand_total += float(t.Sales_Order_Transaction.total_amount or 0)        
         _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
@@ -857,7 +862,7 @@ def sales_order_report_account_user(): # print direct to printer
             _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
 
         if t.Sales_Order_Transaction.category_id == 3:
-            _net_price = 'FOC'
+            _net_price = 'FOC-Price'
         else:
             _net_price = locale.format('%.2F',t.Sales_Order_Transaction.net_price or 0, grouping = True)
         if t.Sales_Order_Transaction.category_id != 4:
@@ -881,13 +886,17 @@ def sales_order_report_account_user(): # print direct to printer
         
     #     _show_ar_total_selective_task = _ar_total_selective_task
     if _id.total_selective_tax > 0:
-        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True)),'',_ar_total_selective_task
+        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True)) + '\n' + str(_ar_total_selective_task)
+        print _id.total_selective_tax
+        _show_ar_total_selective_task = _ar_total_selective_task
     else:
-        _selective_tax = ''
+        _selective_tax = _show_ar_total_selective_task = ''
     if _id.total_selective_tax_foc > 0:
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True)),'', _ar_total_selective_task_foc
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True)) + str('\n') + str(_ar_total_selective_task_foc)
+        _show_ar_total_selective_task_foc = _ar_total_selective_task_foc
     else:
-        _selective_tax_foc = ''
+        _selective_tax_foc = _show_ar_total_selective_task_foc = ''
+        
     if _id.discount_percentage > 0:
         _discount = 'Discount %',':',_ar_discount,locale.format('%.2F',_id.discount_percentage or 0, grouping = True)
     else:
@@ -895,34 +904,28 @@ def sales_order_report_account_user(): # print direct to printer
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax,'','','Total Amount',':',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'','',_discount])
-    _st.append([_amount_in_words,'','','','','','Net Amount',':',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax,'','','','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'','',_show_ar_total_selective_task_foc ,'','',_discount])
+    _st.append([_amount_in_words,'','','','','','','Net Amount :',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
         ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        # ('SPAN',(2,4),(5,4)),
         ('BOTTOMPADDING',(0,0),(-1,0),0),
         ('TOPPADDING',(0,1),(-1,1),0),
-
         ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
         ('LINEBELOW', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
-        
-        # ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),
-        # ('LINEBELOW', (0,1), (-1,1), 0.25, colors.Color(0, 0, 0, 1)),
         ('LINEABOVE', (0,-3), (-1,-3), 0.25,  colors.black,None, (2,2)),
         ('LINEABOVE', (0,-1), (-1,-1), 0.25,  colors.black,None, (2,2)),
         ('LINEBELOW', (0,-1), (-1,-1), 0.25,  colors.black,None, (2,2)),
         ('LINEBELOW', (0,2), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
-        # ('TOPPADDING',(0,-3),(-1,-1),5),
-        # ('BOTTOMPADDING',(0,-1),(-1,-1),5),        
-        # ('TOPPADDING',(0,-2),(-1,-2),0),
-        # ('BOTTOMPADDING',(0,-3),(-2,-2),0),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
         ('FONTNAME', (0, -1), (9, -1), 'Courier-Bold', 12),                
         ('FONTSIZE',(0,0),(-1,1),7),
         ('FONTSIZE',(0,1),(-1,-1),8),
         ('VALIGN',(0,2),(-1,-1),'TOP'),        
-        # ('ALIGN',(5,0),(9,-1),'RIGHT'),
+        ('ALIGN', (5,2), (-1,-1), 'RIGHT'),
+        
     ]))    
 
     _others = [        
