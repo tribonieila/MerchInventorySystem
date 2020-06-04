@@ -849,12 +849,14 @@ def sales_order_report_account_user(): # print direct to printer
     ['',_ar_item_code,_ar_item_description,_ar_uom,_ar_category,_ar_qty,_ar_unit_price,_ar_discount,_ar_net_price,_ar_amount]]        
     _grand_total = 0
     _total_amount = 0        
-    _total_excise_tax = 0    
+    _total_excise_tax = _selective_tax_sum = _selective_tax_foc_sum = 0    
     for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1        
         _grand_total += float(t.Sales_Order_Transaction.total_amount or 0)        
         _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
         _grand_total = float(_grand_total) - int(_discount)
+        _selective_tax_sum += t.Sales_Order_Transaction.selective_tax
+        _selective_tax_foc_sum += t.Sales_Order_Transaction.selective_tax_foc
 
         if t.Item_Master.uom_value == 1:
             _qty = t.Sales_Order_Transaction.quantity
@@ -878,21 +880,13 @@ def sales_order_report_account_user(): # print direct to printer
             locale.format('%.2F',t.Sales_Order_Transaction.discount_percentage or 0, grouping = True), 
             _net_price,
             locale.format('%.2F',t.Sales_Order_Transaction.total_amount or 0, grouping = True)])
-        # _st.append(['','','','','','','','','',''])
-    # if not _id.total_selective_tax:
-    #     _selective_tax = _selective_tax_foc = _show_ar_total_selective_task= _show_ar_total_selective_task_foc=''
-    # else:
-    #     _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
-        
-    #     _show_ar_total_selective_task = _ar_total_selective_task
-    if _id.total_selective_tax > 0:
-        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True)) + '\n' + str(_ar_total_selective_task)
-        print _id.total_selective_tax
-        _show_ar_total_selective_task = _ar_total_selective_task
+
+    if _selective_tax_sum > 0:
+        _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_selective_tax_sum or 0, grouping = True))
     else:
-        _selective_tax = _show_ar_total_selective_task = ''
-    if _id.total_selective_tax_foc > 0:
-        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True)) + str('\n') + str(_ar_total_selective_task_foc)
+        _selective_tax = ''
+    if _selective_tax_foc_sum > 0:
+        _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_selective_tax_foc_sum or 0, grouping = True))
         _show_ar_total_selective_task_foc = _ar_total_selective_task_foc
     else:
         _selective_tax_foc = _show_ar_total_selective_task_foc = ''
@@ -905,11 +899,11 @@ def sales_order_report_account_user(): # print direct to printer
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
     _st.append([_selective_tax,'','','','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'','',_show_ar_total_selective_task_foc ,'','',_discount])
+    _st.append([_selective_tax_foc,'','','' ,'','',_discount])
     _st.append([_amount_in_words,'','','','','','','Net Amount :',_ar_net_amount,locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         # ('SPAN',(2,4),(5,4)),
         ('BOTTOMPADDING',(0,0),(-1,0),0),
         ('TOPPADDING',(0,1),(-1,1),0),
