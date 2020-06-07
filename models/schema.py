@@ -711,6 +711,7 @@ db.define_table('Merch_Stock_Header',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Merch_Stock_Transaction',
+    Field('merch_stock_header_id','reference Merch_Stock_Header',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Merch_Stock_Header.id,'%(voucher_no)s',zero='Choose Transaction')),
     Field('voucher_no','string',length=25), # 10 length
     Field('location', 'integer'),   # from location master
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8

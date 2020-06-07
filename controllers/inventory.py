@@ -7321,6 +7321,34 @@ def _landscape_header(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
+def _stock_value_header(canvas, doc):
+    canvas.saveState()
+    header = Table([[_limage],['STOCK VALUE REPORT']], colWidths='*')
+    header.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('FONTSIZE',(0,0),(-1,-1),12),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),
+        ('ALIGN', (0,0), (0,-1), 'CENTER')]))
+    header.wrapOn(canvas, doc.width, doc.topMargin)
+    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin + .2 * cm)
+
+    # Footer
+    today = date.today()
+    footer = Table([[merch],[today.strftime("%A %d. %B %Y")]], colWidths=[None])
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('TEXTCOLOR',(0,0),(0,0), colors.gray),
+        ('FONTSIZE',(0,1),(0,1),8),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),
+        ('ALIGN',(0,1),(0,1),'RIGHT'),
+        ('LINEABOVE',(0,1),(0,1),0.25, colors.gray)
+        ]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin - 1 * inch)
+
+    # Release the canvas
+    canvas.restoreState()
+
 def _transfer_header_footer(canvas, doc):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
@@ -8270,18 +8298,63 @@ def stock_value_report():
         Field('location_code_id', 'reference Location', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'All Location'))))
     if form.process().accepted:
         response.flash = 'SUCCESS'        
-        redirect(URL('inventory','get_stock_value_report', args =[form.vars.dept_code_id,form.vars.supplier_code_id, form.vars.location_code_id]))
+        # redirect(URL('inventory','get_stock_value_report', args =[form.vars.dept_code_id,form.vars.supplier_code_id, form.vars.location_code_id]))
     elif form.errors:
         response.flash = 'ERROR'        
     return dict(form = form)
 
-def get_stock_value_report():
-    print '--=*=--'
-    print 'get_stock_value_report: ', request.args(0), request.args(1),request.args(2)
+       
+def get_stock_value_view():
+    # response.js = "jQuery($('#btnSubmit').attr)"
+    row = []
+    ctr = _total = 0
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Supplier Ref.'),TH('Group Line'),TH('Brand Line'),TH('Brand Classification'),TH('Description'),TH('UOM'),TH('Type'),TH('Average Cost'),TH('Closing Stock'),TH('Closing Stock Value')))
+
+    if request.vars.supplier_code_id == "":
+        _query_supplier = db.Item_Master.supplier_code_id > 0
+    else:        
+        _query_supplier = db.Item_Master.supplier_code_id == request.vars.supplier_code_id
+    if request.vars.location_code_id == "":
+        _query_location = db.Stock_File.location_code_id > 0        
+    else:
+        _query_location = db.Stock_File.location_code_id == request.vars.location_code_id
+
+    _query = db((db.Item_Master.dept_code_id == request.vars.dept_code_id) & (_query_supplier) & (_query_location)).select(db.Item_Master.ALL, db.Stock_File.ALL, db.Item_Prices.ALL, orderby = db.Item_Master.id, left = [db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)])
+    
+    session.dept_code_id = request.vars.dept_code_id
+    session.supplier_code_id = request.vars.supplier_code_id
+    session.location_code_id = request.vars.location_code_id
+    
+    if _query:
+        response.js = 'jQuery($("#btnPrint").removeAttr("disabled"))'
+        for n in _query:
+            ctr+=1
+            _stock_value = int(n.Stock_File.closing_stock or 0) * int(n.Item_Prices.average_cost or 0)
+            _total += _stock_value
+            row.append(TR(
+                TD(ctr),
+                TD(n.Item_Master.item_code),
+                TD(n.Item_Master.supplier_item_ref),
+                TD(n.Item_Master.group_line_id.group_line_name),
+                TD(n.Item_Master.brand_line_code_id.brand_line_name),
+                TD(n.Item_Master.brand_cls_code_id.brand_cls_name),                                
+                TD(n.Item_Master.item_description),
+                TD(n.Item_Master.uom_value),
+                TD(n.Item_Master.uom_id.mnemonic),
+                TD(n.Stock_File.closing_stock),
+                TD(n.Item_Prices.average_cost),
+                TD(locale.format('%.2F',_stock_value or 0, grouping = True))))
+        body = TBODY(*row)
+        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('TOTAL: '),TD(locale.format('%.2F',_total or 0, grouping = True))))
+        table = TABLE(*[head, body, foot],_class='table')
+        return XML(table)
+
+    else:
+        response.js = 'jQuery($("#btnPrint").attr("disabled","disabled"))'
+        # <div class="alert alert-warning" role="alert">...</div>
+        return XML(DIV('No records found.',_class="alert alert-warning"))
     # redirect(URL('inventory','get_stock_value_report_print', args=request.vars.dept_code_id), client_side=True)
 
-def get_stock_value_report_print():
-    print 'get_stock_value_report_print', request.args(0)
 
 def get_stock_value_report_():
     ctr = 0
@@ -8335,7 +8408,53 @@ def get_stock_value_report_():
     
     return pdf_data         
 
-def get_stock_value_report_():    
+def get_stock_value_print():
+    ctr = _total= 0    
+    if session.supplier_code_id == "":
+        _query_supplier = db.Item_Master.supplier_code_id > 0        
+    else:        
+        _query_supplier = db.Item_Master.supplier_code_id == int(session.supplier_code_id)        
+    if session.location_code_id == "":        
+        _query_location = db.Stock_File.location_code_id > 0                
+    else:        
+        _query_location = db.Stock_File.location_code_id == int(session.location_code_id)
+    _row = [['#','Item Code','Supplier Ref.','Group Line','Brand Line','Brand Classfication','Description','UOM','Type','Ave. Cost','Cl. STK','Cl. STK Val.']]
+    _query = db((db.Item_Master.dept_code_id == int(session.dept_code_id)) & (_query_supplier) & (_query_location)).select(db.Item_Master.ALL, db.Stock_File.ALL, db.Item_Prices.ALL, orderby = db.Item_Master.id, left = [db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)])  
+    for n in _query:
+        ctr+=1
+        _stock_value = int(n.Stock_File.closing_stock or 0) * int(n.Item_Prices.average_cost or 0)
+        _total += _stock_value
+        _row.append([
+            ctr,
+            n.Item_Master.item_code,
+            n.Item_Master.supplier_item_ref,
+            n.Item_Master.group_line_id.group_line_name,
+            n.Item_Master.brand_line_code_id.brand_line_name,
+            n.Item_Master.brand_cls_code_id.brand_cls_name,
+            n.Item_Master.item_description,
+            n.Item_Master.uom_value,
+            n.Item_Master.uom_id.mnemonic,
+            n.Stock_File.closing_stock,
+            n.Item_Prices.average_cost,
+            locale.format('%.2F',_stock_value or 0, grouping = True)])
+    _row.append(['','','','','','','','','','','TOTAL',locale.format('%.2F',_total or 0, grouping = True)])
+    _row_tbl = Table(_row,colWidths=[20,70,'*',80,'*','*','*',30,30,70,70,70], repeatRows=1)
+    _row_tbl.setStyle(TableStyle([
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0,0,0,0.2)),
+        ('FONTSIZE',(0,0),(-1,0),8),
+        ('FONTSIZE',(0,1),(-1,-1),7),
+        ('FONTNAME',(0,0),(-1,-1), 'Courier'),        
+    ]))
+    row.append(_row_tbl)
+    a3.pagesize = landscape(A3)
+    a3.build(row, onFirstPage=_stock_value_header, onLaterPages= _stock_value_header)    
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    return pdf_data
+
+
+def get_stock_value_print_():    
     # print '--- * == * ---'
     row = []
     ctr = 0    
