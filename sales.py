@@ -736,11 +736,10 @@ def validate_sales_order_transaction(form):
         if _total_pcs == 0:
             form.errors.quantity = 'Zero quantity not accepted.'
 
-        if int(request.vars.pieces or 0) >= int(_id.uom_value):
+        if int(form.vars.pieces) >= int(_id.uom_value):
             form.errors.pieces = 'Pieces should not be more than UOM value.'
             # form.errors.pieces = CENTER(DIV(B('DANGER! '),' Pieces value should be not more than uom value ' + str(int(_id.uom_value)),_class='alert alert-danger',_role='alert'))                       
-        if form.vars.pieces == "":
-            form.vars.pieces = 0            
+                    
         # _unit_price = float(_price.retail_price) / int(_id.uom_value)
         # _total = float(_unit_price) * int(_total_pcs)
         _provational_balanced = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)
@@ -808,7 +807,7 @@ def sales_order_transaction_temporary():
     _div_tax = _div_tax_foc = DIV('')
     _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Discount %'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
-    _query = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)])    
+    _query = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == 'NRLD7D').select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)])    
     for n in _query:
         ctr += 1      
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Sales_Order_Transaction_Temporary.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Sales_Order_Transaction_Temporary.id),'_data-qt':(n.Sales_Order_Transaction_Temporary.quantity), '_data-pc':(n.Sales_Order_Transaction_Temporary.pieces)})
@@ -1384,11 +1383,7 @@ def sales_order_delete_view():
     # generate re-computation in sales order transaction table
     _total = 0
     for n in db((db.Sales_Order_Transaction.sales_order_no_id == _st.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select():
-        if _total < 0:
-            response.js = "jQuery(console.log('should not 0'))"
-        else:
-            response.js = "jQuery(console.log('deleted'))"
-            _total += n.total_amount
+        _total += n.total_amount
     _discount = float(_total) * int(_so.discount_percentage or 0) / 100
     _total_amount_after_discount = float(_total) - int(_discount)    
     
@@ -1482,7 +1477,7 @@ def sales_order_transaction_table():
             TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Sales_Order_Transaction.total_amount or 0), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
     body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=locale.format('%.2F',_grand_total or 0, grouping = True))), _align = 'right', _style="width:120px;"),TD()))
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=locale.format('%.2F',_grand_total or 0, grouping = True))), _align = 'right', _style="width:120px;"),TD(_btnUpdate)))
     foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control discount_percentage_head',_name='discount_percentage_head',_type='number',_value=locale.format('%d',0 or 0, grouping = True)), _align = 'right')),TD()))
     table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblSot'))
     if table.accepts(request,session):
@@ -1522,41 +1517,6 @@ def sales_order_transaction_table():
         else:
             print 'not updated'
     return dict(table = table)        
-
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
-def sales_order_utility_tool():    
-    head = THEAD(TR(TH('Date'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Quantity'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Focal Person'),TH('Action')), _class='bg-primary')
-    for k in db(db.Sales_Order_Transaction_Temporary).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)]):
-        redo_lnk = A(I(_class='fas fa-redo'), _title='Redo Row', _type='button ', _role='button',_id='redo', _class='btn btn-icon-toggle btnRedo', callback=URL('sales','sales_order_tool_redo', args = k.Sales_Order_Transaction_Temporary.id))
-        btn_lnk = DIV(redo_lnk, _class="hidden-sm action-buttons")
-
-        row.append(TR(            
-            TD(k.Sales_Order_Transaction_Temporary.created_on),
-            TD(k.Item_Master.item_code),
-            TD(k.Item_Master.item_description.upper()),
-            TD(k.Item_Master.uom_value),
-            TD(card(k.Item_Master.id, k.Sales_Order_Transaction_Temporary.total_pieces, k.Item_Master.uom_value)),            
-            TD(locale.format('%.2f',k.Item_Prices.retail_price or 0, grouping =  True), _align='right'),
-            TD(locale.format('%.2f',k.Sales_Order_Transaction_Temporary.total_amount or 0, grouping = True), _align='right'),            
-            TD(k.Sales_Order_Transaction_Temporary.remarks),
-            TD(k.Sales_Order_Transaction_Temporary.created_by.first_name.upper(),' ',k.Sales_Order_Transaction_Temporary.created_by.last_name.upper()),
-            TD(btn_lnk)))
-    body = TBODY(*row)
-    table = TABLE(*[head, body], _id='tblsot',_class='table', **{'_data-toggle':'table','_data-search':'true', '_data-show-pagination-switch':'true','_data-pagination':'true'})
-    return dict(table = table)
-
-def sales_order_tool_redo():
-    _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()
-    if not _id:
-        redirect(URL('inventory','stock_utility_tool'))
-    else:
-        _stk_src = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
-        _stk_src.stock_in_transit -= _id.total_pieces
-        _stk_src.probational_balance = _stk_src.closing_stock - _stk_src.stock_in_transit
-        _stk_src.update_record()
-        db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()
-        session.flash = 'ITEM REDO'        
-        response.js = "$('#tblsot').get(0).reload()"
 
 # ----------    S A L E S     R E T U R N   ----------
 @auth.requires_login()

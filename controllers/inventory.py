@@ -5366,7 +5366,9 @@ def stock_request_tool_redo():
         db(db.Stock_Transaction_Temp.id == request.args(0)).delete()
         session.flash = 'ITEM REDO'
 
+
 # ---- Stock Adjustment End   -----    
+
 # -----------   OBSOLESCENCE STOCKS     -----------------
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'INVENTORY SALES MANAGER')| auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
@@ -8340,9 +8342,9 @@ def get_stock_value_view():
                 TD(n.Item_Master.brand_cls_code_id.brand_cls_name),                                
                 TD(n.Item_Master.item_description),
                 TD(n.Item_Master.uom_value),
-                TD(n.Item_Master.uom_id.mnemonic),
-                TD(n.Stock_File.closing_stock),
+                TD(n.Item_Master.uom_id.mnemonic),                
                 TD(n.Item_Prices.average_cost),
+                TD(n.Stock_File.closing_stock),
                 TD(locale.format('%.2F',_stock_value or 0, grouping = True))))
         body = TBODY(*row)
         foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('TOTAL: '),TD(locale.format('%.2F',_total or 0, grouping = True))))
@@ -8433,9 +8435,9 @@ def get_stock_value_print():
             n.Item_Master.brand_cls_code_id.brand_cls_name,
             n.Item_Master.item_description,
             n.Item_Master.uom_value,
-            n.Item_Master.uom_id.mnemonic,
-            n.Stock_File.closing_stock,
+            n.Item_Master.uom_id.mnemonic,            
             n.Item_Prices.average_cost,
+            n.Stock_File.closing_stock,
             locale.format('%.2F',_stock_value or 0, grouping = True)])
     _row.append(['','','','','','','','','','','TOTAL',locale.format('%.2F',_total or 0, grouping = True)])
     _row_tbl = Table(_row,colWidths=[20,70,'*',80,'*','*','*',30,30,70,70,70], repeatRows=1)

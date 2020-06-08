@@ -89,10 +89,12 @@ $(document).ready(function(){
         nospaces(this);
     });
 
+    
     function nospaces(t){
         if(t.value.match(/\s/g)){
         alert('Sorry, you are not allowed to enter any spaces');
         t.value=t.value.replace(/\s/g,'0');
+        
         }
     }    
         
@@ -108,7 +110,26 @@ $(document).ready(function(){
         ajax('{{=URL('item_code_description')}}', ['item_code'], '_item_code_description');        
        return false; 
     });
-    
+
+    $("#btnadd").click(function(){
+        if (!document.getElementById("no_table_quantity").value)
+        {
+            nospaces(this);
+            document.getElementById("no_table_quantity").value = 0;
+        }
+        if (!document.getElementById("no_table_pieces").value)
+        {
+            nospaces(this);
+            document.getElementById("no_table_pieces").value = 0;
+        }
+        if (!document.getElementById("no_table_discount_percentage").value)
+        {
+            nospaces(this);
+            document.getElementById("no_table_discount_percentage").value = 0;
+        }
+
+    });
+
     $('#discount').change(function(){
         var _g = {{=grand}}
         var gt = 0;

@@ -41,6 +41,21 @@ def generate():
         # db.Customer_Classification.insert(mnemonic = n.mnemonic, description=n.description,status_id=n.status_id)
     return dict()
 
+def get_users_group():
+    grid = SQLFORM.grid(db.auth_group)
+    return dict(grid = grid)
+ 
+def get_users_group_member():
+    grid = SQLFORM.grid(db.auth_membership)
+    return dict(grid = grid)
+
+def get_users_grid():
+    grid = SQLFORM.grid(db.auth_user)
+    return dict(grid = grid)
+
+def get_task():
+    genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
+    
 import arabic_reshaper
 from bidi.algorithm import get_display
 from reportlab.platypus import *

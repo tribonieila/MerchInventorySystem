@@ -1072,12 +1072,12 @@ db.define_table('Sales_Order',
     Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(10,4)', default = 0),    
-    Field('total_amount_after_discount','decimal(10,4)', default = 0),    
-    Field('total_selective_tax', 'decimal(10,2)', default = 0),
-    Field('total_selective_tax_foc', 'decimal(10,2)', default = 0),
-    Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
-    Field('total_vat_amount', 'decimal(10,2)', default = 0),
+    Field('total_amount','decimal(20,4)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,4)', default = 0),    
+    Field('total_selective_tax', 'decimal(20,2)', default = 0),
+    Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
+    Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_order_date_approved','datetime', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),
@@ -1107,21 +1107,21 @@ db.define_table('Sales_Order_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(10,6)', default = 0), # per outer
-    Field('packet_price_cost', 'decimal(10,6)', default = 0), # per packet
-    Field('total_amount','decimal(10,6)', default = 0),
-    Field('average_cost','decimal(10,4)', default = 0),
-    Field('sale_cost', 'decimal(10,2)', default = 0), # packet
-    Field('wholesale_price', 'decimal(10,2)', default = 0),
-    Field('retail_price', 'decimal(10,2)',default = 0),
-    Field('vansale_price', 'decimal(10,2)',default =0),
-    Field('discount_percentage', 'decimal(10,2)',default =0),
-    Field('net_price', 'decimal(10,2)',default =0),
-    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
-    Field('packet_selective_tax','decimal(10,6)', default = 0, label = 'Selective Tax'), # packet
-    Field('packet_selective_tax_foc','decimal(10,6)', default = 0, label = 'Selective Tax'), # packet
-    Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),            
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet
+    Field('total_amount','decimal(20,6)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,2)', default = 0), # packet
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
@@ -1134,16 +1134,16 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('quantity','integer', default = 0),
     Field('pieces','integer', default = 0),
     Field('total_pieces','integer', default = 0),
-    Field('price_cost','decimal(15,6)', default = 0),
-    Field('wholesale_price', 'decimal(10,2)', default = 0),
-    Field('total_amount','decimal(15,6)', default = 0),
-    Field('discount_percentage', 'decimal(10,2)',default =0),
-    Field('net_price', 'decimal(10,2)',default =0),
-    Field('taxable_value','decimal(10,2)', default = 0),
-    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),  
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax FOC'),  
-    Field('tax_percentage','decimal(10,2)', default = 0),
-    Field('tax_amount','decimal(10,2)', default = 0),
+    Field('price_cost','decimal(20,6)', default = 0),
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('total_amount','decimal(20,6)', default = 0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('taxable_value','decimal(20,2)', default = 0),
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'),  
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax FOC'),  
+    Field('tax_percentage','decimal(20,2)', default = 0),
+    Field('tax_amount','decimal(20,2)', default = 0),
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('stock_source_id','reference Location', ondelete = 'NO ACTION'),
     Field('remarks','string'),    
@@ -1161,8 +1161,8 @@ db.define_table('Sales_Return',
     # Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(10,4)', default = 0),    
-    Field('total_amount_after_discount','decimal(10,4)', default = 0),    
+    Field('total_amount','decimal(10,6)', default = 0),    
+    Field('total_amount_after_discount','decimal(10,6)', default = 0),    
     Field('total_selective_tax', 'decimal(10,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(10,2)', default = 0),
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
@@ -1184,8 +1184,8 @@ db.define_table('Sales_Return_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(10,6)', default = 0),
-    Field('total_amount','decimal(10,6)', default = 0),
+    Field('price_cost', 'decimal(20,6)', default = 0),
+    Field('total_amount','decimal(20,6)', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
     Field('sale_cost', 'decimal(10,2)', default = 0),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
@@ -1208,8 +1208,8 @@ db.define_table('Sales_Return_Transaction_Temporary',
     Field('quantity','integer', default = 0),
     Field('pieces','integer', default = 0),
     Field('total_pieces','integer', default = 0),
-    Field('price_cost','decimal(10,6)', default = 0),
-    Field('total_amount','decimal(10,6)', default = 0),
+    Field('price_cost','decimal(20,6)', default = 0),
+    Field('total_amount','decimal(20,6)', default = 0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('net_price', 'decimal(10,2)',default =0),
     Field('taxable_value','decimal(10,2)', default = 0),
@@ -2021,6 +2021,7 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
     )
     return words
 
+genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
 # i.number_to_words(49)
 
 # from num2words import num2words
@@ -2062,7 +2063,7 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
 
 # for n in db().select(orderby = db.Sales_Man.id):
 #     _id = db(db.Master_Account.account_code == n.mv_code).select().first()
-#     _str = str(n.employee_id.title) + str(n.employee_id.first_name) + ' ' + str(n.employee_id.middle_name) + ' ' + str(n.employee_id.last_name)
+#     _str = str(n.employee_id.first_name) + ' ' + str(n.employee_id.middle_name) + ' ' + str(n.employee_id.last_name)
 #     if _id:
 #         _id.update_record(account_code=n.mv_code, account_name=_str,master_account_type_id='A')
 #     else:
