@@ -5316,7 +5316,7 @@ def stock_request_manager_grid():
     table = TABLE(*[head, body], _class = 'table', _id = 'tblsr', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+# @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def stock_utility_tool():    
     return dict()
 
@@ -8331,7 +8331,7 @@ def get_stock_value_view():
         response.js = 'jQuery($("#btnPrint").removeAttr("disabled"))'
         for n in _query:
             ctr+=1
-            _stock_value = int(n.Stock_File.closing_stock or 0) * int(n.Item_Prices.average_cost or 0)
+            _stock_value = int(n.Stock_File.closing_stock or 0) * (int(n.Item_Prices.average_cost or 0) / int(n.Item_Master.uom_value or 0))
             _total += _stock_value
             row.append(TR(
                 TD(ctr),
@@ -8424,7 +8424,7 @@ def get_stock_value_print():
     _query = db((db.Item_Master.dept_code_id == int(session.dept_code_id)) & (_query_supplier) & (_query_location)).select(db.Item_Master.ALL, db.Stock_File.ALL, db.Item_Prices.ALL, orderby = db.Item_Master.id, left = [db.Stock_File.on(db.Stock_File.item_code_id == db.Item_Master.id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Item_Master.id)])  
     for n in _query:
         ctr+=1
-        _stock_value = int(n.Stock_File.closing_stock or 0) * int(n.Item_Prices.average_cost or 0)
+        _stock_value = int(n.Stock_File.closing_stock or 0) * (int(n.Item_Prices.average_cost or 0) / int(n.Item_Master.uom_value or 0))
         _total += _stock_value
         _row.append([
             ctr,

@@ -636,9 +636,9 @@ def validate_sales_order_transaction(form):
         if not _price:
             form.errors.item_code = "Item code does'nt have price."
         
-        if _price.selective_tax_price != None or 0: # >= request.vars.discount_percentage:
-            if int(request.vars.discount_percentage) >= 1:
-                form.errors.discount_percentage = 'Discount not allowed'
+        # if _price.selective_tax_price > 0: # >= request.vars.discount_percentage:
+        if int(request.vars.discount_percentage) > 50:
+            form.errors.discount_percentage = 'Discount not allowed'
             # form.errors.discount_percentage = 'Discount not allowed. ' 
 
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
@@ -681,6 +681,7 @@ def validate_sales_order_transaction(form):
 
                 _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc
                 _selective_tax_total_foc += float(_tax_per_uom) * _total_pcs
+                
                 # _net_price_at_wholesale = 0.0
                 # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
                 # print '_selective_tax_total_foc: ', _selective_tax_total_foc
@@ -712,18 +713,19 @@ def validate_sales_order_transaction(form):
                 # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
                 
                 # computation for price per unit
-                # if float(_id.selectivetax) == 0: # without selective tax
-                _net_price = 0
-                _net_price = _unit_price - ((_unit_price * _item_discount) / 100) #+ (float(_selective_tax or 0) * _id.uom_value)
-                _total_amount = _net_price / _id.uom_value * _total_pcs
-                # else:   # with selective tax
-                #     _net_price = 0
-                #     _net_price_at_wholesale = 0.0
-                #     _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
+                if float(_price.selective_tax_price) == 0: # without selective tax
+                    _net_price = 0
+                    _net_price = _unit_price - ((_unit_price * _item_discount) / 100) #+ (float(_selective_tax or 0) * _id.uom_value)
+                    _total_amount = _net_price / _id.uom_value * _total_pcs                    
+                else:   # with selective tax                    
+                    # _net_price = 0
+                    # _net_price_at_wholesale = 0.0
+                    # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
                     
-                #     _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
-                #     # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
-                #     _total_amount = _net_price / _id.uom_value * _total_pcs
+                    _net_price = (float(_price.wholesale_price) * (100 - _item_discount) / 100) + float(_price.selective_tax_price)
+                    # _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
+                    # # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
+                    _total_amount = (_net_price / _id.uom_value) * _total_pcs
 
                 # _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0))) / 100
                 # _price_per_piece = _net_price / _id.uom_value
@@ -750,7 +752,8 @@ def validate_sales_order_transaction(form):
                 form.errors.quantity = 'Quantity should not be more than closing stock of ' + str(_pro_bal)
         else:            
             if int(_total_pcs) > int(_provational_balanced):             
-                _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
+                _pro_bal = card(_stk_file.item_code_id, _stk_file.closing_stock, _id.uom_value)
+                # _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
                 form.errors.quantity = 'Quantity should not be more than provisional balance of ' + str(_pro_bal)
             # if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
         
@@ -924,7 +927,7 @@ def sales_order_transaction_temporary_delete():
     _id = db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).select().first()    
     _s = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
     _s.stock_in_transit += _id.total_pieces
-    _s.probational_balance = int(_s.closing_stock) - int(_s.stock_in_transit)
+    _s.probational_balance = int(_s.closing_stock) - int(_id.total_pieces)
     _s.update_record()        
     db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()    
     response.flash = 'RECORD DELETED'
@@ -934,7 +937,8 @@ def get_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     # for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id):  
-    for n in db((db.Sales_Order.created_by == auth.user_id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7)).select(orderby = ~db.Sales_Order.id):          
+    for n in db((db.Sales_Order.created_by == auth.user_id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7)  & (db.Sales_Order.status_id != 10)).select(orderby = ~db.Sales_Order.id):          
+        
         if n.status_id == 7:
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -1207,16 +1211,20 @@ def sales_order_view():
     db.Sales_Order.total_selective_tax.writable = False
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
-    db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)| (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
-    db.Sales_Order.status_id.default = 4
+    db.Sales_Order.section_id.writable = False    
+    db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4)| (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    db.Sales_Order.status_id.default = 4    
     session.sales_order_no_id = request.args(0)    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     session.stock_source_id = _id.stock_source_id
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process().accepted:
-        response.flash = 'RECORD UPDATED'
+        response.flash = 'RECORD UPDATED'        
+        if int(request.vars.status_id) == 10:
+            cancelled()
+        redirect(URL('inventory','get_back_off_workflow_grid'))
     elif form.errors:
-        response.flash = 'FORM HAS ERROR'    
+        response.flash = 'FORM HAS ERROR'            
     ctr = 0
     row = []                
     grand_total = 0    
@@ -1255,6 +1263,15 @@ def sales_order_view():
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD()))
     table = TABLE(*[head, body, foot], _class='table table-striped', _id = 'tblsot')
     return dict(form = form, table = table, _id = _id) 
+
+def cancelled():
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    for n in db((db.Sales_Order_Transaction.sales_order_no_id == int(_id.id)) & (db.Sales_Order_Transaction.delete == False)).select():
+        _stk_src = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
+        _stk_src.stock_in_transit += n.quantity
+        _stk_src.probational_balance = _stk_src.closing_stock - _stk_src.stock_in_transit
+        _stk_src.update_record()    
+    
 
 @auth.requires_login()
 def sales_order_transaction_permanent():    
@@ -1374,8 +1391,8 @@ def sales_order_delete_view():
     _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.stock_source_id)).select().first()    
     
     # update the stock file table
-    _sf.stock_in_transit -= _st.quantity
-    _sf.probational_balance = _sf.closing_stock - _sf.stock_in_transit
+    _sf.stock_in_transit += _st.quantity
+    _sf.probational_balance += _st.quantity
     _sf.update_record()
     
     # update the sales order transaction table
@@ -1523,7 +1540,7 @@ def sales_order_transaction_table():
             print 'not updated'
     return dict(table = table)        
 
-@auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+# @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def sales_order_utility_tool():    
     head = THEAD(TR(TH('Date'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Quantity'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Focal Person'),TH('Action')), _class='bg-primary')
     for k in db(db.Sales_Order_Transaction_Temporary).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)]):
@@ -1551,7 +1568,7 @@ def sales_order_tool_redo():
         redirect(URL('inventory','stock_utility_tool'))
     else:
         _stk_src = db((db.Stock_File.item_code_id == _id.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
-        _stk_src.stock_in_transit -= _id.total_pieces
+        _stk_src.stock_in_transit += _id.total_pieces
         _stk_src.probational_balance = _stk_src.closing_stock - _stk_src.stock_in_transit
         _stk_src.update_record()
         db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()

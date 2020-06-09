@@ -644,6 +644,7 @@ db.define_table('Stock_Transaction_Temp',
 
 db.define_table('Stock_File',
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('item_code','string',length=25),
     Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
     Field('opening_stock', 'integer', default = 0),
     Field('closing_stock', 'integer', default = 0),
@@ -717,6 +718,7 @@ db.define_table('Merch_Stock_Transaction',
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
     Field('transaction_date', 'date'), # from date of transaction    
     Field('item_code', 'string', length = 15), # item master
+    Field('category_id','string', lenght=10), # n-normal, p-promotional
     Field('uom', 'integer'), # from transaction
     Field('quantity', 'integer'), # from transaction
     Field('average_cost','decimal(10,6)', default = 0), # average cost
@@ -793,6 +795,7 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
 
 db.define_table('Item_Prices',
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),
+    Field('item_code','string',length=25),
     Field('most_recent_cost', 'decimal(16,4)', default = 0),
     Field('average_cost', 'decimal(16,4)', default = 0),
     Field('most_recent_landed_cost', 'decimal(16,4)', default = 0),
@@ -2021,7 +2024,7 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
     )
     return words
 
-genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
+# genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
 # i.number_to_words(49)
 
 # from num2words import num2words

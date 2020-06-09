@@ -10,7 +10,24 @@ def testing():
 @auth.requires_login()
 # @auth.requires_membership('ROOT')
 def index():
-    response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
+    for n in db().select(db.Stock_File.ALL):
+        _closing_stock = n.closing_stock
+        # print _closing_stock
+        n.update_record(probational_balance = _closing_stock)
+    # print '-- '
+    # response.flash = T("Welcome to MERCH - ERP",language="ar-ar"  )
+    # for n in db().select(orderby = db.Item_Master.id):
+    #     _s = db(db.Stock_File.item_code_id == n.id).select().first()
+    #     _p = db(db.Item_Prices.item_code_id == n.id).select().first()
+    #     if _s:
+    #         print 'stock file ', n.id, _s.item_code_id
+    #     # else:
+    #     #     print 'item price false ', n.id
+    #     if _p:
+    #         print 'item price: ', n.id, _p.item_code_id
+    #     # else:
+    #     #     print 'item price false: ', n.id
+
     return dict(message=T('Welcome to MERCH - ERP'))
 
 # ---- administrative task        ----

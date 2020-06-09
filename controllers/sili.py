@@ -105,3 +105,9 @@ def section_group():
     #     response.flash = 'FORM HAS ERROR'
     table = SQLFORM.grid(db.Section_Group)
     return dict(table = table)
+
+def section_tools():
+    for n in db().select(db.Stock_File.ALL):
+        _closing_stock = n.closing_stock
+        # print _closing_stock
+        n.update_record(stock_in_transit = 0, order_in_transit = 0,probational_balance = _closing_stock)
