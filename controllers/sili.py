@@ -146,11 +146,15 @@ def get_sales_order_sync(): #  transaction 3
         # print 'id: ', n.Sales_Order.sales_order_no,n.Sales_Order_Transaction.sales_order_no_id
         _chk_sal = db(db.Stock_Header_Consolidation.transaction_no == n.Sales_Order.sales_order_no).select().first()
         if _chk_sal:
-            print 'update: ', n.Sales_Order.id
+            print 'update: ', n.Sales_Order.id, n.Sales_Order.stock_source_id
+            db.Stock_Header_Consolidation.update(
+                transaction_no = n.Sales_Order.sales_order_no,
+                location_code_id = n.Sales_Order.stock_source_id
+            )
         else:
             print 'insert: ', n.Sales_Order.id
-        #     db.Stock_Header_Consolidation.insert(
-        #         transaction_no = n.sales_invoice_no,
+            db.Stock_Header_Consolidation.insert(
+                transaction_no = n.Sales_Order.sales_order_no)
         #         location_code_id = x,
         #         transaction_type = x,
         #         customer_code_id = x,
