@@ -693,17 +693,63 @@ db.define_table('Dbf_Batch_Table',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False),format = 'batch_code')
 
+db.define_table('Stock_Header_Consolidation',
+    Field('transaction_no','string',length = 25), # 25 length
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
+    Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8    
+    Field('customer_code_id','string',length=50),    # create normal
+    Field('transaction_date', 'date'), # from date of transaction
+    Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
+    Field('total_amount','decimal(20,6)', default = 0),
+    Field('discount_percentage','decimal(20,6)', default = 0),
+    Field('discount_added','decimal(20,6)', default = 0),
+    Field('total_selective_tax','decimal(20,6)', default = 0),
+    Field('total_selective_tax_foc','decimal(20,6)', default = 0),
+    Field('stock_destination','reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
+    Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Dbf_Batch_Table.id,'%()s',zero = 'Choose Batch Code')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+db.define_table('Stock_Transaction_Consolidation',
+    Field('transaction_no_id','reference Stock_Header_Consolidation',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Stock_Header_Consolidation.id,'%(transaction_no)s',zero='Choose Transaction')),    
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
+    Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
+    Field('transaction_date', 'date'), # from date of transaction    
+    Field('item_code', 'string', length = 25), # item master
+    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
+    Field('uom', 'integer'), # from transaction
+    Field('quantity', 'integer'), # from transaction
+    Field('average_cost','decimal(20,6)', default = 0), # average cost
+    Field('price_cost', 'decimal(20,6)', default = 0), # pieces
+    Field('sale_cost','decimal(20,6)', default = 0), # after discount
+    Field('discount', 'integer', default = 0), # normal discount from pos
+    Field('wholesale_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('retail_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('vansale_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
+    Field('selected_tax','decimal(20,2)'), # in sales
+    Field('sales_lady_code', 'string',length = 10), # sales, pos
+    Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),
+    Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+    Field('stock_destination', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Merch_Stock_Header',
     Field('voucher_no','integer'), # 10 length
     Field('location', 'integer'),   # from location master
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
     Field('transaction_date', 'date'), # from date of transaction
     Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
-    Field('total_amount','decimal(15,6)', default = 0),
-    Field('discount_percentage','decimal(15,6)', default = 0),
-    Field('discount_added','decimal(15,6)', default = 0),
-    Field('total_selective_tax','decimal(15,6)', default = 0),
-    Field('total_selective_tax_foc','decimal(15,6)', default = 0),
+    Field('total_amount','decimal(20,6)', default = 0),
+    Field('discount_percentage','decimal(20,6)', default = 0),
+    Field('discount_added','decimal(20,6)', default = 0),
+    Field('total_selective_tax','decimal(20,6)', default = 0),
+    Field('total_selective_tax_foc','decimal(20,6)', default = 0),
     Field('stock_destination','integer'),
     Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Dbf_Batch_Table.id,'%()s',zero = 'Choose Batch Code')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -721,15 +767,15 @@ db.define_table('Merch_Stock_Transaction',
     Field('category_id','string', lenght=10), # n-normal, p-promotional
     Field('uom', 'integer'), # from transaction
     Field('quantity', 'integer'), # from transaction
-    Field('average_cost','decimal(10,6)', default = 0), # average cost
-    Field('price_cost', 'decimal(10,6)', default = 0), # pieces
-    Field('sale_cost','decimal(10,6)', default = 0), # after discount
+    Field('average_cost','decimal(20,6)', default = 0), # average cost
+    Field('price_cost', 'decimal(20,6)', default = 0), # pieces
+    Field('sale_cost','decimal(20,6)', default = 0), # after discount
     Field('discount', 'integer', default = 0), # normal discount from pos
-    Field('wholesale_price', 'decimal(10,2)', default = 0), # from item prices
-    Field('retail_price', 'decimal(10,2)', default = 0), # from item prices
-    Field('vansale_price', 'decimal(10,2)', default = 0), # from item prices
-    Field('tax_amount', 'decimal(10,2)', default = 0), # in sales
-    Field('selected_tax','decimal(10,2)'), # in sales
+    Field('wholesale_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('retail_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('vansale_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
+    Field('selected_tax','decimal(20,2)'), # in sales
     Field('sales_lady_code', 'string',length = 10), # sales, pos
     Field('supplier_code','string', length = 10), # from item code
     Field('dept_code','integer'), # from item master
@@ -1072,7 +1118,7 @@ db.define_table('Sales_Order',
     Field('sales_order_date', 'date', default = request.now),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('stock_source_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-    Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
+    Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    # create normal
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
     Field('total_amount','decimal(20,4)', default = 0),    

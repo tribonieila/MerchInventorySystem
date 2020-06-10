@@ -111,3 +111,77 @@ def section_tools():
         _closing_stock = n.closing_stock
         # print _closing_stock
         n.update_record(stock_in_transit = 0, order_in_transit = 0,probational_balance = _closing_stock)
+    return dict()
+
+def get_stock_file_grid():    
+    return dict(grid = SQLFORM.grid(db.Stock_File))
+
+def get_item_price_grid():
+    return dict(grid = SQLFORM.grid(db.Item_Prices))
+
+def get_sales_order_utility():    
+    _qty = _stk_in_transit = _stk_in_probati = 0
+    for n in db(db.Sales_Order.status_id == 4).select(db.Sales_Order_Transaction.item_code_id, db.Sales_Order.stock_source_id, groupby = db.Sales_Order_Transaction.item_code_id | db.Sales_Order.stock_source_id, left = db.Sales_Order_Transaction.on(db.Sales_Order_Transaction.sales_order_no_id == db.Sales_Order.id)):
+        _sum = db.Sales_Order_Transaction.quantity.sum()
+        _qty = db((db.Sales_Order_Transaction.item_code_id == n.Sales_Order_Transaction.item_code_id) & (db.Sales_Order_Transaction.delete == False)).select(_sum).first()[_sum]        
+        _stk = db((db.Stock_File.location_code_id == n.Sales_Order.stock_source_id) & (db.Stock_File.item_code_id == n.Sales_Order_Transaction.item_code_id)).select().first()
+        _stk_in_transit = -abs(_qty)
+        _stk_in_probati = _stk.closing_stock - abs(_qty)
+        _stk.update_record(stock_in_transit = _stk_in_transit, probational_balance = _stk_in_probati)            
+    return dict()
+
+def get_sales_order_in_temporary_utility():    
+    _qty = _stk_in_transit = _stk_in_probati = 0
+    for n in db().select(db.Sales_Order_Transaction_Temporary.ALL):
+        for y in db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == n.stock_source_id)).select():            
+            _stk_in_transit = y.stock_in_transit - -abs(n.total_pieces)
+            _stk_in_probati = y.closing_stock - abs(_stk_in_transit)
+            y.update_record(stock_in_transit=_stk_in_transit, probational_balance=_stk_in_probati)
+            db(db.Sales_Order_Transaction_Temporary.id == n.id).delete()
+    return dict()
+
+def get_sales_order_sync(): #  transaction 3
+    print '-- ', request.now
+    for n in db(db.Sales_Order.status_id == 7).select(orderby = db.Sales_Order.id, left = db.Sales_Order.on(db.Sales_Order.id == db.Sales_Order_Transaction.sales_order_no_id)):
+        # print 'id: ', n.Sales_Order.sales_order_no,n.Sales_Order_Transaction.sales_order_no_id
+        _chk_sal = db(db.Stock_Header_Consolidation.transaction_no == n.Sales_Order.sales_order_no).select().first()
+        if _chk_sal:
+            print 'update: ', n.Sales_Order.id
+        else:
+            print 'insert: ', n.Sales_Order.id
+        #     db.Stock_Header_Consolidation.insert(
+        #         transaction_no = n.sales_invoice_no,
+        #         location_code_id = x,
+        #         transaction_type = x,
+        #         customer_code_id = x,
+        #         transaction_date = x,
+        #         account = x,
+        #         total_amount = x,
+        #         discount_percentage = x,
+        #         discount_added = x,
+        #         total_selective_tax = x,
+        #         total_selective_tax_foc = x,
+        #         stock_destination = x,
+        #         batch_code_id = x)
+        #     _stk_head = db().select(db.Stock_Header_Consolidation.ALL).select().last()
+
+        #     for y in db(db.Stock_Transaction_Consolidation.transaction_no_id != _stk_head.id).select():
+        #         db.Stock_Transaction_Consolidation.insert(
+        #             transaction_no_id = _stk_head.id,
+        #             location_code_id = _stk_head.location_code_id,
+        #             transaction_type = x,
+        #             transaction_date = x,
+        #             item_code = x,
+
+
+        #         )
+    return dict()
+
+    # 1 GRV
+    # 2 CREDIT
+    # 3 CASH   
+    # 4 SALES retrun  
+    # 5 STV 
+    # 6 STOCK ADJUSTMENT -
+    # 7 STOCK ADJUSTMENT + 
+    

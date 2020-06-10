@@ -456,13 +456,19 @@ def sales_order_form():
     _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
     if auth.has_membership('INVENTORY BACK OFFICE'):
         if _usr.van_sales == True: # Van sales => limited customer
+            _query_dept = db.Department.id == 3
+            _defa_dept = 3
             _query_cstmr = db.Master_Account.account_code == _usr.mv_code 
             _default = db(db.Master_Account.account_code == _usr.mv_code).select(db.Master_Account.id).first()        
         else: # Sales Man => Customer, Staff, Accounts Only
             _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.master_account_type_id == db.Master_Account.master_account_type_id)
+            _query_dept = db.Department.id == 3
+            _defa_dept = 3
             _default = 0
     elif auth.has_membership('ROOT') | auth.has_membership('ACCOUNTS'): # All in Master Accounts                
+        _query_dept = db.Department.id > 0
         _query_cstmr = db.Master_Account            
+        _defa_dept = 0
         _default = 0
 
     ticket_no_id = id_generator()
@@ -471,7 +477,7 @@ def sales_order_form():
     _total_selective_tax = _total_selective_tax_foc = 0
     form = SQLFORM.factory(
         Field('sales_order_date', 'date', default = request.now),
-        Field('dept_code_id','reference Department', requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
+        Field('dept_code_id','reference Department', requires = IS_IN_DB(db(_query_dept), db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('stock_source_id','reference Location', default = 1, requires = IS_IN_DB(db(db.Location.location_group_code_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
         Field('customer_code_id','reference Master_Account', default = int(_default), requires = IS_IN_DB(db(_query_cstmr), db.Master_Account.id, '%(account_name)s, %(account_code)s', zero = 'Choose Customer')),    
         Field('customer_order_reference','string', length = 25),
@@ -641,7 +647,7 @@ def validate_sales_order_transaction(form):
             form.errors.discount_percentage = 'Discount not allowed'
             # form.errors.discount_percentage = 'Discount not allowed. ' 
 
-        if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
+        if ((_price.retail_price == 0.0 or _price.wholesale_price == 0.0)) and ((_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO')):
             form.errors.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
                 
         # if _exist == request.vars.item_code and (request.vars.category_id != 3):
@@ -752,8 +758,8 @@ def validate_sales_order_transaction(form):
                 form.errors.quantity = 'Quantity should not be more than closing stock of ' + str(_pro_bal)
         else:            
             if int(_total_pcs) > int(_provational_balanced):             
-                _pro_bal = card(_stk_file.item_code_id, _stk_file.closing_stock, _id.uom_value)
-                # _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
+                # _pro_bal = card(_stk_file.item_code_id, _stk_file.closing_stock, _id.uom_value)
+                _pro_bal = card(_stk_file.item_code_id, _stk_file.probational_balance, _id.uom_value)
                 form.errors.quantity = 'Quantity should not be more than provisional balance of ' + str(_pro_bal)
             # if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
         
