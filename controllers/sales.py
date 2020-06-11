@@ -2807,7 +2807,7 @@ def sale_order_manager_delivery_note_approved_form():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     if _id.status_id == 8:
         print '==8', _id.id, _id.status_id
-        session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
+        session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.delivery_note_approved_by.first_name)
         response.js = "jQuery(window.location.reload())"
     elif _id.status_id != 8:        
         _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
@@ -2817,14 +2817,14 @@ def sale_order_manager_delivery_note_approved_form():
         _id.update_record(status_id = 8, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,)    
         session.flash = 'Created Delivery Note No. ' + str(_skey)
         print '!=8', _id.id, _id.status_id, _skey
-        # response.js = "jQuery(window.open(URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))))"
+        response.js = "jQuery(window.open(URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))))"
         # redirect(URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0)), target='_blank')
 
 
 def sales_order_manager_approved():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     if _id.status_id != 4:
-        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.delivery_note_approved_by.first_name)
         response.js = "$('#tblso').get(0).reload()"
     else:
         _id.update_record(status_id = 9, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)

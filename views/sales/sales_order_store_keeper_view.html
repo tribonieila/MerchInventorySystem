@@ -159,8 +159,8 @@ $(document).ready(function(){
     });
     $('#btnCreate').click(function(){
         ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');
-        location.reload();  
-        window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
+        // location.reload();  
+        // window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
     });
     
 });  
