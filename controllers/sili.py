@@ -1,3 +1,7 @@
+def admin():
+    return dict()
+    
+
 def labuyo():
     form = SQLFORM(db.auth_user)
     if form.process().accepted:

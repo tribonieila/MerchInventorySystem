@@ -117,17 +117,14 @@
                                     <label class="col-sm-4 control-label"></label>
                                     <div class="col-sm-8">
                                         {{ if _id.status_id == 4: }}
-                                            <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_order_manager_approved', args = request.args(0))}}')">
-                                            <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_order_manager_rejected', args = request.args(0))}}')">                                                                            
+                                            <input class="btn btn-success" type="submit" value="approved">                                              
+                                            <input class="btn btn-warning" type="button" value="reject" id ="btnReject" onclick="Rejected()"> 
+                                            <!-- onclick="ajax('{{=URL('sales','sales_order_manager_view_rejected', args = request.args(0))}}')"> -->
                                         {{ else: }}
                                             <input class="btn btn-success" type="submit" value="approved" disabled>
                                             <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
 
                                         {{ pass }}
-                                        <!-- <input class="btn btn-primary" type="submit" value="approved" id="btnsubmit"> -->
-                                        <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
-                                        <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#">reject</a> -->
-                                        <!-- <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a> -->
                                         {{=form.custom.end}}
                                     </div>        
                                 </div>                        
@@ -140,4 +137,28 @@
     </div>                
 </div>
 
-
+<script>   
+    function Rejected(){
+        bootbox.confirm({
+        size: "small",
+        message: "Are you sure you want to reject this sales order?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                ajax("{{=URL('sales','sales_order_manager_view_rejected', args = request.args(0))}}");                
+                location.reload();   
+            }
+        }
+    })
+    }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

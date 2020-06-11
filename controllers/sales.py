@@ -1446,7 +1446,7 @@ def sales_order_transaction_table():
         _id = db(db.Sales_Order.id == request.args(0)).select().first()
 
     # _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price/Sel.Tax'),TH('Discount %'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand Line'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price/Sel.Tax'),TH('Discount %'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     for n in _query:
     # for n in db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
         ctr += 1
@@ -1492,58 +1492,23 @@ def sales_order_transaction_table():
         else:
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
         row.append(TR(
-            TD(ctr,INPUT(_name='ctr',_type='number',_hidden='true',_value=n.Sales_Order_Transaction.id)),
-            TD(n.Sales_Order_Transaction.item_code_id.item_code,INPUT(_name='item_code_id',_type='number',_hidden='true',_value=n.Sales_Order_Transaction.item_code_id)),
+            TD(ctr),
+            TD(n.Sales_Order_Transaction.item_code_id.item_code),
+            TD(n.Item_Master.brand_line_code_id.brand_line_name),
             TD(n.Item_Master.item_description),
             TD(n.Sales_Order_Transaction.category_id.mnemonic, _style = 'width:120px'),
-            TD(n.Sales_Order_Transaction.uom,INPUT(_name='uom',_type='number',_hidden='true',_value=n.Sales_Order_Transaction.uom), _style = 'width:120px'),
-            TD(INPUT(_class='form-control quantity',_name='quantity',_type='number',_value=_qty,_readonly=True), _style = 'width:80px'),
-            TD(INPUT(_class='form-control pieces',_name='pieces',_type='number',_value=_pcs,_readonly=True), _style = 'width:80px'),
-            TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=n.Sales_Order_Transaction.price_cost or 0), _align = 'right', _style = 'width:100px'),
-            TD(INPUT(_class='form-control discount_per',_name='discount_per',_type='number',_readonly=True,_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
-            TD(INPUT(_class='form-control net_price',_name='net_price',_type='text',_value=n.Sales_Order_Transaction.net_price or 0), _align = 'right', _style = 'width:100px'),
-            TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Sales_Order_Transaction.total_amount or 0), _align = 'right', _style = 'width:100px'),
+            TD(n.Sales_Order_Transaction.uom, _style = 'width:120px'),
+            TD(_qty, _style = 'width:80px'),
+            TD(_pcs, _style = 'width:80px'),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.price_cost or 0, grouping = True), _align = 'right', _style = 'width:100px'),
+            TD(locale.format('%d',n.Sales_Order_Transaction.discount_percentage), _align = 'right', _style = 'width:80px'),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.net_price or 0, grouping = True), _align = 'right', _style = 'width:100px'),
+            TD(locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0,grouping = True), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
     body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=locale.format('%.2F',_grand_total or 0, grouping = True))), _align = 'right', _style="width:120px;"),TD()))
-    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control discount_percentage_head',_name='discount_percentage_head',_type='number',_value=locale.format('%d',0 or 0, grouping = True)), _align = 'right')),TD()))
-    table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblSot'))
-    if table.accepts(request,session):
-        if request.vars.btnUpdate:
-            print 'updated'
-            if isinstance(request.vars.ctr, list):
-                print 'list'
-                row = 0
-                for x in request.vars.ctr:
-                    _row = db(db.Sales_Order_Transaction.id == x).select().first()
-                    _qty = int(request.vars.quantity[row]) * int(request.vars.uom[row]) + int(request.vars.pieces[row])
-                    if _row.quantity != _qty or _row.discount_percentage != request.vars.discount_per:
-                        _stk_src_inc = int(-_qty) - int(-_row.quantity)
-                        print 'item code: ', int(request.vars.item_code_id[row]), int(session.stock_source_id)
-                        _stk_src = db((db.Stock_File.item_code_id == int(request.vars.item_code_id[row])) & (db.Stock_File.location_code_id == int(session.stock_source_id))).select().first()
-                        
-                        _stk_src.stock_in_transit += _stk_src_inc
-                        _stk_src.probational_balance = _stk_src.closing_stock + _stk_src.stock_in_transit
-                        _stk_src.update_record()
-                        _row.update_record(quantity = _qty, discount_percentage=request.vars.discount_per[row],total_amount=request.vars.total_amount[row],net_price = request.vars.net_price[row],updated_by = auth.user_id, updated_on = request.now)
-                    row+=1
-            else:
-                print 'not list'
-                _row = db(db.Sales_Order_Transaction.id == request.vars.ctr).select().first()
-                _qty = int(request.vars.quantity) * request.vars.uom + request.vars.pieces
-                if _row.quantity != _qty:
-                    _stk_src_inc = int(-_qty) - int(-_row.quantity)
-                    _stk_src = db((db.Stock_File.item_code_id == int(request.vars.item_code_id)) & (db.Stock_File.location_code_id == int(session.stock_source_id))).select().first()
-                    _stk_src.stock_in_transit += _stk_src_inc
-                    _stk_src.probational_balance = _stk_src.closing_stock + _stk_src.stock_in_transit
-                    _stk_src.update_record()
-                    _row.update_record(quantity = _qty, discount_percentage = request.vars.discount_per, total_amount = request.vars.total_amount, net_price = request.vars.net_price, updated_by = auth.user_id, updated_on = request.now)
-            response.js = "$('#tblSot').get(0).reload();"
-            session.grand_total = request.vars.grand_total.replace(",","")
-            _id.update_record(total_amount = session.grand_total)
-            print session.grand_total
-        else:
-            print 'not updated'
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('TOTAL AMOUNT', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_grand_total or 0, grouping = True), _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('DISCOUNT %', _align = 'right',_colspan='2'),TD(locale.format('%d',0 or 0, grouping = True), _align = 'right'),TD()))
+    table = TABLE(*[head, body, foot], _class='table')
     return dict(table = table)        
 
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
@@ -2575,13 +2540,13 @@ def sales_order_manager_grid():
             if n.status_id == 4:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_approved', args = n.id, extension = False))            
-                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled') #, callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))
         
         if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             if n.status_id == 9: 
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_store_keeper_view', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sale_order_manager_delivery_note_approved', args = n.id, extension = False))                            
-                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))                
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')#, callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))                
                 prin_lnk = A(I(_class='fas fa-print'), _title="Print Sales Order", _type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_report_store_keeper', args = n.id, extension = False))  
                 # clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')       
             elif n.status_id == 8:
@@ -2594,7 +2559,7 @@ def sales_order_manager_grid():
             if n.status_id == 8:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Generate Sales Invoice', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))                            
-                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle')#, callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))        
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')#, callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))        
             elif n.status_id == 7:            
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle',  _href = URL('sales','sales_order_report_account_user', args = n.id, extension = False))   
@@ -2718,9 +2683,16 @@ def sales_order_view_account_user():
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, _id = _id)
 
-def validate_mngr_approved(form):
-    form.vars.sales_order_date_approved = request.now
-    form.vars.sales_order_approved_by = auth.user_id
+def validate_store_keeper(form):
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()    
+    _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
+    _skey = _trns_pfx.current_year_serial_key
+    _skey += 1
+    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
+    form.vars.delivery_note_no_prefix_id = _trns_pfx.id
+    form.vars.delivery_note_no = _skey
+    form.vars.delivery_note_date_approved = request.now
+    form.vars.delivery_note_approved_by = auth.user_id          
 
 def sales_order_store_keeper_view():
     db.Sales_Order.sales_order_date.writable = False
@@ -2733,15 +2705,20 @@ def sales_order_store_keeper_view():
     db.Sales_Order.total_selective_tax.writable = False
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
+    db.Sales_Order.section_id.writable = False
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4)| (db.Stock_Status.id == 9)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 9
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Order, request.args(0))
-    if form.process(onvalidation = validate_mngr_approved).accepted:
-        session.flash = 'RECORD UPDATED'
+    form.process(onvalidation = validate_store_keeper, detect_record_change=True)
+    if form.record_changed:        
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.delivery_note_approved_by.first_name)
+        redirect(URL('inventory', 'str_kpr_grid'))
+    elif form.accepted:    
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' process '
         redirect(URL('inventory', 'str_kpr_grid'))
     elif form.errors:
-        response.flash = 'FORM HAS ERROR'    
+        response.flash = 'FORM HAS ERROR'            
     ctr = 0
     row = []                
     grand_total = 0    
@@ -2770,6 +2747,11 @@ def sales_order_store_keeper_view():
     table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')
     return dict(form = form, table = table, _id = _id)
 
+def validate_mngr_approved(form):
+    form.vars.sales_order_date_approved = request.now
+    form.vars.sales_order_approved_by = auth.user_id
+    form.vars.status_id = 9
+
 def sales_order_manager_view():
     db.Sales_Order.sales_order_date.writable = False
     db.Sales_Order.dept_code_id.writable = False
@@ -2784,12 +2766,16 @@ def sales_order_manager_view():
     db.Sales_Order.status_id.writable = False    
     db.Sales_Order.section_id.writable = False
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    form = SQLFORM(db.Sales_Order, request.args(0))
-    if form.process(onvalidation = validate_mngr_approved).accepted:
-        response.flash = 'RECORD UPDATED'
+    form = SQLFORM(db.Sales_Order, request.args(0)) # check who approved and date/time, onvalidation = validate_mngr_approved
+    form.process(onvalidation = validate_mngr_approved, detect_record_change=True)    
+    if form.record_changed: # flash record detection
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)        
+        redirect(URL('inventory', 'mngr_req_grid'))        
+    elif form.accepted:# flash record approved        
+        session.flash = 'Sales Order Processed'
         redirect(URL('inventory', 'mngr_req_grid'))
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'    
+    elif form.errors: # flash error        
+        response.flash = 'Form has error.'    
     ctr = 0
     row = []                
     grand_total = 0    
@@ -2819,25 +2805,51 @@ def sales_order_manager_view():
 
 def sale_order_manager_delivery_note_approved_form():    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
-    _skey = _trns_pfx.current_year_serial_key
-    _skey += 1
-    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
-    _id.update_record(status_id = 8, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,)    
-    session.flash = 'DELIVERY NOTE APPROVED'        
+    if _id.status_id == 8:
+        print '==8', _id.id, _id.status_id
+        session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
+        response.js = "jQuery(window.location.reload())"
+    elif _id.status_id != 8:        
+        _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
+        _skey = _trns_pfx.current_year_serial_key
+        _skey += 1        
+        _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
+        _id.update_record(status_id = 8, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,)    
+        session.flash = 'Created Delivery Note No. ' + str(_skey)
+        print '!=8', _id.id, _id.status_id, _skey
+        # response.js = "jQuery(window.open(URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))))"
+        # redirect(URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0)), target='_blank')
+
 
 def sales_order_manager_approved():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _id.update_record(status_id = 9, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
-    session.flash = 'SALES ORDER APPROVED'
-    response.js = "$('#tblso').get(0).reload()"
+    if _id.status_id != 4:
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
+        response.js = "$('#tblso').get(0).reload()"
+    else:
+        _id.update_record(status_id = 9, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' approved.'
+        response.js = "$('#tblso').get(0).reload()"
 
 def sales_order_manager_rejected():    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _id.update_record(status_id = 3, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)
-    session.flash = 'SALES ORDER REJECTED'
-    response.js = "$('#tblso').get(0).reload()"
+    if _id.status_id == 3:
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)        
+        response.js = "$('#tblso').get(0).reload()"        
+    elif _id.status_id != 3:        
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' rejected.'
+        _id.update_record(status_id = 3, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)        
+        response.js = "$('#tblso').get(0).reload()"
 
+def sales_order_manager_view_rejected():    
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()           
+    if _id.status_id == 4:        
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' rejected.'
+        _id.update_record(status_id = 3, sales_order_date_approved = request.now, sales_order_approved_by = auth.user_id)        
+    else:        
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
+    redirect(URL('inventory','mngr_req_grid'))
+    
 def sale_order_manager_delivery_note_approved():    
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    

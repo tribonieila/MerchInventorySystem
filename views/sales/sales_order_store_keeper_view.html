@@ -122,12 +122,13 @@
                                     <label class="col-sm-4 control-label"></label>
                                     <div class="col-sm-8">    
                                         {{ if _id.status_id == 9:}}
-                                            <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">                                            
-                                            <a class="btn btn-info" id="btncdn" role="button" href="{{=URL('inventory','str_kpr_grid')}}">create delivery note & print</a>                                                                  
+                                            <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">
+                                            <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
+                                            <!-- <a class="btn btn-info" id="btncdn" role="submit">create delivery note & print</a>                                                                   -->
                                         {{ else: }}                                        
                                             <input class="btn btn-primary" type="submit" value="submit" disabled>
                                             <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                            <input class="btn btn-info" id="btncdn" type="button" value="create delivery note & print" disabled>                                                                            
+                                            <input class="btn btn-info" id="btnCreate" type="button" value="create delivery note & print" disabled>                                                                            
 
                                         {{ pass }}
                                         {{=form.custom.end}}
@@ -148,16 +149,17 @@ $(document).ready(function(){
     $("#Sales_Order_status_id").change(function(){
         var _var = $(this).find(":selected").val()
         if (_var == 9) {
-            $('#btncdn').removeAttr('disabled');
+            $('#btnCreate').removeAttr('disabled');
             $('#btnSubmit').attr('disabled','disabled');
         } else {
-            $('#btncdn').attr('disabled','disabled');
+            $('#btnCreate').attr('disabled','disabled');
             $('#btnSubmit').removeAttr('disabled');
         }
         
     });
-    $('#btncdn').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');        
+    $('#btnCreate').click(function(){
+        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');
+        location.reload();  
         window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
     });
     
