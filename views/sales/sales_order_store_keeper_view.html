@@ -121,7 +121,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label"></label>
                                     <div class="col-sm-8">    
-                                        {{ if _id.status_id == 9:}}
+                                        {{ if _id.status_id == 9 or _id.status_id == 1:}}
                                             <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">
                                             <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
                                             <!-- <a class="btn btn-info" id="btncdn" role="submit">create delivery note & print</a>                                                                   -->
@@ -145,23 +145,42 @@
 
 <script>
 $(document).ready(function(){
-    $("#btnSubmit").attr('disabled','disabled');    
+    
+    $("#btnSubmit").attr('disabled','disabled');       
+
+    if ($("#Sales_Order_status_id").val() == 9) {
+        $('#btnCreate').removeAttr('disabled');
+        $('#btnSubmit').attr('disabled','disabled');
+    } else {
+        $('#btnCreate').attr('disabled','disabled');
+        $('#btnSubmit').removeAttr('disabled');
+    }
     $("#Sales_Order_status_id").change(function(){
         var _var = $(this).find(":selected").val()
-        if (_var == 9) {
-            $('#btnCreate').removeAttr('disabled');
-            $('#btnSubmit').attr('disabled','disabled');
-        } else {
+        if (_var == 9){
             $('#btnCreate').attr('disabled','disabled');
             $('#btnSubmit').removeAttr('disabled');
-        }
-        
+        } else {
+            $('#btnCreate').removeAttr('disabled');
+            $('#btnSubmit').attr('disabled','disabled');
+
+        }        
     });
     $('#btnCreate').click(function(){
         ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');
-        // location.reload();  
-        // window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
     });
     
 });  
+    function reload(){
+        console.log('reload');
+    }
+
+    function report(){        
+        location.reload();  
+        window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
+    }
+
+    function redirect(){
+        window.location.replace("{{=URL('inventory','str_kpr_grid')}}")
+    }
 </script>

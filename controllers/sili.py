@@ -1,3 +1,4 @@
+@auth.requires_login()
 def admin():
     return dict()
     

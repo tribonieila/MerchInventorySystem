@@ -173,11 +173,12 @@
                                 {{ if _id.status_id == 7: }}
                                     <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" disabled>
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" onclick = "window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');">
+                                    <input class="btn btn-primary" type="button" value="create sales invoice & print" id="btninvoice">
+                                    <!-- onclick = "window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');"> -->
                                 {{ pass }}
                                 {{=form.custom.end}}
                             </div>        
-                        </div>                        
+                        </div>                         
                     </div>
                 </div>
                 {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
@@ -201,9 +202,19 @@ $(document).ready(function(){
     // });
     
     $('#btninvoice').click(function(){
-        ajax('{{=URL('sales','sales_order_manager_invoice_no_approved', args = request.args(0))}}')
-        location.reload();
-    });
-        
+        ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}')
+        // location.reload();
+    });        
 });
+    function reload(){
+        location.reload();          
+    }
+    function report(){
+        location.reload();       
+        window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
+        
+    }
+    function redirect(){        
+        window.location.replace("{{=URL('inventory','account_grid')}}")
+    }
 </script>

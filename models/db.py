@@ -172,6 +172,7 @@ db.define_table(
     Field('username', unique = True, readable = False),
     Field('email', length=128), # required
     Field('password', 'password', length=512,readable=False, label='Password'), # required
+    Field('online','boolean',default=False),
     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
     Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
