@@ -158,11 +158,11 @@ $(document).ready(function(){
     $("#Sales_Order_status_id").change(function(){
         var _var = $(this).find(":selected").val()
         if (_var == 9){
-            $('#btnCreate').attr('disabled','disabled');
-            $('#btnSubmit').removeAttr('disabled');
-        } else {
             $('#btnCreate').removeAttr('disabled');
             $('#btnSubmit').attr('disabled','disabled');
+        } else {
+            $('#btnCreate').attr('disabled','disabled');
+            $('#btnSubmit').removeAttr('disabled');
 
         }        
     });

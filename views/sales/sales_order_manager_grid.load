@@ -3,4 +3,8 @@
 $(document).ready(function(){
     $(".table").DataTable();
 });
+function PrintInvoice(x){    
+    console.log(x);
+    window.open('{{=URL('default','sales_order_report_account_user', extension=False)}}' + '/' + x);
+}
 </script>

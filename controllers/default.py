@@ -19,6 +19,7 @@ def login_status():
     else:
         resposne.flash = 'LOGIN'
     return dict()
+    
 # ---- administrative task        ----
 def resetstock():
     for x in db().select(db.Stock_File.ALL):
