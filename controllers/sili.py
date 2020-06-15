@@ -2,6 +2,28 @@
 def admin():
     return dict()
     
+def sales_order():
+    return dict()
+
+def get_sync_note():
+    print 'get_sync_note'
+    for n in db(db.Sales_Order.status_id == 8).select():        
+        _dn = db(db.Delivery_Note.sales_order_no == n.sales_order_no).select().first()
+        if not _dn:
+            print 'insert here'
+
+            for x in db(db.Sales_Order_Transaction.sales_order_no_id == n.id).select():
+                print '        ', x.id, x.sales_order_no_id
+
+def get_sync_invoice():
+    print 'get_sync_invoice'
+    for n in db(db.Sales_Order.status_id == 7).select():        
+        _dn = db(db.Sales_Invoices.sales_order_no == n.sales_order_no).select().first()
+        if not _dn:
+            print 'insert here'
+
+            for x in db(db.Sales_Invoices_Transaction.sales_order_no_id == n.id).select():
+                print '        ', x.id, x.sales_order_no_id    
 
 def labuyo():
     form = SQLFORM(db.auth_user)

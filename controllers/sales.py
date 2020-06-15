@@ -2512,8 +2512,10 @@ def sales_order_manager_grid():
         #     _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id != 3)).select(orderby = ~db.Sales_Order.id)
         # else:
         #     print 'in usr'
-        
-        _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3)).select(orderby = ~db.Sales_Order.id)                           
+        if db(db.Sales_Order.status_id == 8).select().first():
+            _query = db(db.Delivery_Note.status_id == 8).select(orderby = ~db.Delivery_Note.id)                           
+        else:
+            _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3)).select(orderby = ~db.Sales_Order.id)                           
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Delivery Note'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))        
     elif auth.has_membership(role = 'ACCOUNT MANAGER'):
         _query = db((db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
@@ -3265,8 +3267,8 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-logo_path = request.folder + 'static/images/Merch.jpg'
-text_path = request.folder + 'static/fonts/reports/'
+logo_path = request.folder + '/static/images/Merch.jpg'
+text_path = request.folder + '/static/fonts/reports/'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
 img.drawWidth = 3.25 * inch
@@ -3538,13 +3540,14 @@ def sales_order_report_store_keeper():
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_delivery_note_report_store_keeper():
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    for n in db(db.Sales_Order.id == request.args(0)).select():
+    _id = db(db.Delivery_Note.id == request.args(0)).select().first()
+    for n in db(db.Delivery_Note.id == request.args(0)).select():
         _so = [['DELIVERY NOTE'],['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')]]
 
     _others = [        
         ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],        
-        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
+        ['Remarks',':',_id.remarks, '','Customer Sales Order Ref.',':',n.customer_order_reference]]
+        # ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
     _others_table = Table(_others, colWidths=['*',25,'*',25,'*',25,'*'])
     _others_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
@@ -4202,26 +4205,26 @@ def sales_order_transaction_table_reports():
     return row.append(_st_tbl)
 
 def delivery_note_transaction_table_reports():
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    _id = db(db.Delivery_Note.id == request.args(0)).select().first()
     ctr = _total_qty = 0
     _st = [['#','Item Code','Item Description','UOM','Cat','Qty']]        
 
     _total_amount = 0        
     _total_excise_tax = 0    
-    for t in db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id)):
+    for t in db((db.Delivery_Note_Transaction.delivery_note_id == request.args(0)) & (db.Delivery_Note_Transaction.delete == False)).select(orderby = db.Delivery_Note_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Delivery_Note_Transaction.item_code_id)):
         ctr += 1        
-        _total_qty += t.Sales_Order_Transaction.quantity
+        _total_qty += t.Delivery_Note_Transaction.quantity
 
         if t.Item_Master.uom_value == 1:
-            _qty = t.Sales_Order_Transaction.quantity
+            _qty = t.Delivery_Note_Transaction.quantity
         else:
-            _qty = card(t.Item_Master.id, t.Sales_Order_Transaction.quantity, t.Sales_Order_Transaction.uom)
-        if t.Sales_Order_Transaction.category_id != 4:
-            # _category = t.Sales_Order_Transaction.category_id.mnemonic
+            _qty = card(t.Item_Master.id, t.Delivery_Note_Transaction.quantity, t.Delivery_Note_Transaction.uom)
+        if t.Delivery_Note_Transaction.category_id != 4:
+            # _category = t.Delivery_Note_Transaction.category_id.mnemonic
             _category = 'FOC-Price'
         else:
             _category = ''        
-        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Sales_Order_Transaction.uom,_category, _qty])
+        _st.append([ctr,t.Item_Master.item_code, str(t.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(t.Item_Master.item_description), t.Delivery_Note_Transaction.uom,_category, _qty])
         if not _id.total_selective_tax:
             _selective_tax = _selective_tax_foc = ''
         else:

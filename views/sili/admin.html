@@ -14,7 +14,7 @@
                 <div class="tab-content"> 
                     <div role="tabpanel" class="tab-pane active" id="stock_file">{{=SQLFORM.grid(db.Stock_File)}}</div>
                     <div role="tabpanel" class="tab-pane" id="item_prices">{{=SQLFORM.grid(db.Item_Prices)}}</div>
-                    <div role="tabpanel" class="tab-pane" id="sales_order"></div>
+                    <div role="tabpanel" class="tab-pane" id="sales_order">{{=LOAD('sili','sales_order.load')}}</div>
                 </div>
             </div>
         </div>

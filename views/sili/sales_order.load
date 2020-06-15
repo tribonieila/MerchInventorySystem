@@ -1,0 +1,13 @@
+<input class="btn btn-default" type="button" value="Sync Delivery Note" onclick="sync_note()">
+<input class="btn btn-default" type="button" value="Sync Sales Invoice" onclick="sync_invoice()">
+
+<script>
+    function sync_note(){
+        console.log("sync note");
+        ajax("{{=URL('sili','get_sync_note')}}");
+    }
+    function sync_invoice(){
+        console.log("sync invoice");
+        ajax("{{=URL('sili','get_sync_invoice')}}");
+    }
+</script>
