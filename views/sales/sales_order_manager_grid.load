@@ -1,7 +1,36 @@
 {{=table}}
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<script> 
 $(document).ready(function(){
     $(".table").DataTable();
+    $('.btnInvoice').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({ 
+            size: "small",
+            message: "Are you sure you want to reject this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    console.log("Yes");
+                    ajax("{{=URL('sales','sale_order_manager_invoice_no_rejected')}}" + '/'+ _id);
+                        
+                } else {
+                    console.log("No");
+                }
+
+            }
+        })
+    });            
 });
 function PrintInvoice(x){    
     console.log(x);

@@ -1,0 +1,27 @@
+<input class="btn btn-default" type="button" value="Sync Delivery Note" onclick="sync_note()">
+<input class="btn btn-default" type="button" value="Sync Sales Invoice" onclick="sync_invoice()">
+<input class="btn btn-default" type="button" value="Sync All" onclick="sync_all()">
+<input class="btn btn-default" type="button" value="Consolidate" onclick="sync_consolidate()">
+<input class="btn btn-default" type="button" value="Truncate Consolidation" onclick="truncate_table()">
+
+<script>
+    function sync_note(){
+        console.log("sync note");
+        ajax("{{=URL('sili','get_sync_note')}}");
+    }
+    function sync_invoice(){
+        console.log("sync invoice");
+        ajax("{{=URL('sili','get_sync_invoice')}}");
+    }
+    function sync_all(){
+        console.log("sync all");
+        ajax("{{=URL('sili','get_sync_all')}}");
+    }
+    function sync_consolidate(){
+        console.log("consolidate");
+        ajax("{{=URL('sili','put_sales_invoice_consolidation')}}")
+    }
+    function truncate_table(){
+        ajax("{{=URL('sili','get_truncate_table')}}")
+    }
+</script>

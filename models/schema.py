@@ -745,13 +745,15 @@ db.define_table('Merch_Stock_Header',
     Field('transaction_type','integer'),  # 1,2,3,4,5,6,7,8
     Field('transaction_date', 'date'), # from date of transaction
     Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
+    Field('dept_code','integer'), # from item master
     Field('total_amount','decimal(20,6)', default = 0),
     Field('discount_percentage','decimal(20,6)', default = 0),
     Field('discount_added','decimal(20,6)', default = 0),
     Field('total_selective_tax','decimal(20,6)', default = 0),
     Field('total_selective_tax_foc','decimal(20,6)', default = 0),
     Field('stock_destination','integer'),
-    Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION',requires = IS_IN_DB(db,db.Dbf_Batch_Table.id,'%()s',zero = 'Choose Batch Code')),
+    Field('sales_man_code','string',length=15),
+    Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION'),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
@@ -776,7 +778,14 @@ db.define_table('Merch_Stock_Transaction',
     Field('vansale_price', 'decimal(20,2)', default = 0), # from item prices
     Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
     Field('selected_tax','decimal(20,2)'), # in sales
-    Field('sales_lady_code', 'string',length = 10), # sales, pos
+    Field('sales_man_code','string',length=15),
+
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
+    Field('average_cost_pcs','decimal(20,4)', default = 0), # per pcs.   
+    Field('wholesale_price_pcs', 'decimal(20,2)', default = 0), # per pcs.
+    Field('retail_price_pcs', 'decimal(20,2)',default = 0), # per pcs.
+
+    # Field('sales_lady_code', 'string',length = 10), # sales, pos
     Field('supplier_code','string', length = 10), # from item code
     Field('dept_code','integer'), # from item master
     Field('stock_destination','integer'), # destination of stock transfer
@@ -854,7 +863,7 @@ db.define_table('Item_Prices',
     Field('selective_tax_percentage','decimal(16,2)',default=0),
     Field('selective_tax_price','decimal(16,2)',default=0),
     Field('vat_percentage','decimal(16,2)',default=0),
-    Field('vat_price','decimal(16,2)',default=0),
+    Field('vat_price','decimal(16,2)',default=0), # tax amount?
     Field('reorder_qty', 'integer', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -1125,7 +1134,8 @@ db.define_table('Sales_Order',
     Field('total_amount_after_discount','decimal(20,4)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
-    Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    Field('discount_added','decimal(10,2)', default = 0),
     Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_order_date_approved','datetime', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
@@ -1140,6 +1150,10 @@ db.define_table('Sales_Order',
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('sales_invoice_date_approved','date', writable = False),
+    
+    Field('cancelled','boolean',default = False),
+    Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
+    Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),
     
     Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
@@ -1351,7 +1365,8 @@ db.define_table('Delivery_Note',
     Field('total_amount_after_discount','decimal(20,4)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
-    Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    Field('discount_added','decimal(10,2)', default = 0),
     Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_order_date_approved','datetime', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
@@ -1364,6 +1379,10 @@ db.define_table('Delivery_Note',
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('sales_invoice_date_approved','date', writable = False),
+    Field('cancelled','boolean',default = False),
+    Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
+    Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),
+
     Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
@@ -1386,6 +1405,12 @@ db.define_table('Delivery_Note_Transaction',
     Field('sale_cost', 'decimal(20,2)', default = 0), # packet
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
+
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
+    Field('average_cost_pcs','decimal(20,4)', default = 0), # per pcs.   
+    Field('wholesale_price_pcs', 'decimal(20,2)', default = 0), # per pcs.
+    Field('retail_price_pcs', 'decimal(20,2)',default = 0), # per pcs.
+        
     Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(20,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
@@ -1413,7 +1438,8 @@ db.define_table('Sales_Invoice',
     Field('total_amount_after_discount','decimal(20,4)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
-    Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
+    Field('discount_added','decimal(10,2)', default = 0),
     Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_order_date_approved','datetime', writable = False),
     Field('sales_order_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
@@ -1428,6 +1454,10 @@ db.define_table('Sales_Invoice',
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('sales_invoice_date_approved','date', writable = False),
+
+    Field('cancelled','boolean',default = False),
+    Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
+    Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),
     
     Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
@@ -1452,6 +1482,12 @@ db.define_table('Sales_Invoice_Transaction',
     Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(20,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
+
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
+    Field('average_cost_pcs','decimal(20,4)', default = 0), # per pcs.   
+    Field('wholesale_price_pcs', 'decimal(20,2)', default = 0), # per pcs.
+    Field('retail_price_pcs', 'decimal(20,2)',default = 0), # per pcs.
+
     Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
     Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
     Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
@@ -2116,7 +2152,7 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
     )
     return words
 
-# genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
+
 # i.number_to_words(49)
 
 # from num2words import num2words

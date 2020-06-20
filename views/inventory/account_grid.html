@@ -11,7 +11,7 @@
         <div class="card-body tab-content">                 
             <div>
                 <ul class="nav nav-pills" role="tablist">
-                    <li role="presentation"><a href="#delivery_note" aria-controls="delivery_note" role="tab" data-toggle="tab">Delivery Note <span class="badge">{{=db(db.Sales_Order.status_id == 8).count()}}</span></a></li>
+                    <li role="presentation"><a href="#delivery_note" aria-controls="delivery_note" role="tab" data-toggle="tab">Delivery Note <span class="badge">{{=db((db.Sales_Order.status_id == 8) & (db.Sales_Order.cancelled == False)).count()}}</span></a></li>
                     <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return Request <span class="badge">{{=db(db.Sales_Return.status_id == 12).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 25) & (db.Purchase_Receipt.status_id == 18)).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt </a></li>
