@@ -82,7 +82,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9): }}
+                                {{ if (_id.status_id == 1) or (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9): }}
                                     <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>                                    
                                 {{ else: }}
                                     {{=form.custom.widget.status_id}}
@@ -111,7 +111,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                {{ if (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9) or (_id.status_id == 10): }}
+                                {{ if (_id.status_id == 1) or (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9) or (_id.status_id == 10): }}
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>                                
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
                                 {{ else: }}

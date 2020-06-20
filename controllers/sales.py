@@ -1211,6 +1211,7 @@ def delivery_note_browse():
 @auth.requires_login()
 def sales_order_view():    
     session.sales_order_no_id = 0
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
     db.Sales_Order.sales_order_date.writable = False
     db.Sales_Order.dept_code_id.writable = False
     db.Sales_Order.stock_source_id.writable = False
@@ -1222,10 +1223,13 @@ def sales_order_view():
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
     db.Sales_Order.section_id.writable = False    
-    db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4)| (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    if _id.status_id == 3:
+        db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 4)| (db.Stock_Status.id == 3)| (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    else:
+        db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 4)| (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 4    
     session.sales_order_no_id = request.args(0)    
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    
     session.stock_source_id = _id.stock_source_id
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process().accepted:
@@ -2512,9 +2516,9 @@ def sales_order_manager_grid():
         if not _usr:
             _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)                
         elif _usr.section_id == 'N':            
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'N') & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)
+            _query = db((db.Sales_Order.status_id != 7) & (db.Sales_Order.section_id == 'N') & (db.Sales_Order.archives == False) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)
         else:            
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'F') & (db.Sales_Order.archives == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
+            _query = db((db.Sales_Order.status_id != 7) & (db.Sales_Order.section_id == 'F') & (db.Sales_Order.archives == False) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
         # if not _usr:            
@@ -2553,7 +2557,11 @@ def sales_order_manager_grid():
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_approved', args = n.id, extension = False))            
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled') #, callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))
-        
+            else:
+                edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_manager_view', args = n.id, extension = False))        
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('sales','sales_order_manager_approved', args = n.id, extension = False))            
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled') #, callback = URL('sales','sales_order_manager_rejected', args = n.id, extension = False))
+
         if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             if (n.status_id == 9) or (n.status_id == 1): 
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_store_keeper_view', args = n.id, extension = False))        
@@ -2571,7 +2579,7 @@ def sales_order_manager_grid():
             if n.status_id == 8:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Generate Sales Invoice', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))                            
-                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle btnInvoice', callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False))        
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle btnInvoice', callback = URL('sales','sale_order_manager_invoice_no_rejected', args = n.id, extension = False), **{'_data-id':(n.id)})        
             elif n.status_id == 7:            
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle',  _href = URL('sales','sales_order_report_account_user', args = n.id, extension = False))   
@@ -3003,9 +3011,9 @@ def sales_order_manager_invoice_no_approved():
 
 def get_sales_invoice_validation(x):        
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _dn = db(db.Delivery_Note.delivery_note_no == _id.delivery_note_no).select().first()    
+    _dn = db(db.Sales_Order.id == _id.id).select().first()    
     # for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
-    for n in db((db.Delivery_Note_Transaction.delivery_note_id == _id.id) & (db.Delivery_Note_Transaction.delete == False)).select(orderby = db.Delivery_Note_Transaction.id):        
+    for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):        
         _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
         if n.wholesale_price != _i.wholesale_price or n.retail_price != _i.retail_price or n.average_cost != _i.average_cost:
             response.flash = 'Detected item prices discrepancy transaction.'
@@ -3103,9 +3111,9 @@ def sync_to_sales_invoice_db():
         )
 
 def sale_order_manager_invoice_no_rejected():    
-    _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    print '_id rejected: ', _id.id
-    # _id.update_record(status_id = 3, delivery_note_date_approved = request.now, delivery_note_approved_by = auth.user_id)
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()    
+    # print 'sale_order_manager_invoice_no_rejected:: ', _id.id
+    _id.update_record(status_id = 3, remarks = 'Item price transaction discrepancy.',delivery_note_date_approved = request.now, delivery_note_approved_by = auth.user_id)
     session.flash = 'Delivery Note Rejected'
     response.js = "$('#tblso').get(0).reload()"
 
