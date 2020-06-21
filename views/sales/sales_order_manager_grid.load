@@ -30,7 +30,34 @@ $(document).ready(function(){
 
             }
         })
-    });            
+    });         
+    $('.btnDelivery, .btnSalesMngr').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({ 
+            size: "small",
+            message: "Are you sure you want to reject this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    console.log("Yes");
+                    ajax("{{=URL('sales','sales_order_manager_rejected')}}" + '/'+ _id);
+                        
+                } else {
+                    console.log("No");
+                }
+
+            }
+        })
+    });                
 });
 function PrintInvoice(x){    
     console.log(x);

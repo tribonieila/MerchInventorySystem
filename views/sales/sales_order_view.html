@@ -112,10 +112,12 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
                                 {{ if (_id.status_id == 1) or (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9) or (_id.status_id == 10): }}
-                                    <input class="btn btn-primary" type="submit" value="submit" disabled>                                
+                                    <input class="btn btn-primary" type="submit" value="submit" disabled>                              
+                                    <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>  
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
+                                    <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel sales order</a>                         -->
                                                                                                
                                 {{ pass }}
@@ -133,3 +135,42 @@
     </div>
 </div>
 
+<script>
+$(document).ready(function(){
+    $("#btnCancel").change(function(){
+        if($("#btnCancel").is(":checked")) {            
+            Cancel();
+            $("#btnCancel").prop("checked", true);
+        } else {
+            $("#btnCancel").prop("checked", false);            
+        }
+    });     
+});
+function Cancel(){
+        // console.log("Cancelled transaction...");
+        // var _id = $(this).attr('data-id');
+        bootbox.confirm({ 
+            size: "small",
+            message: "Are you sure you want to cancel this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                    
+                    ajax("{{=URL('sales','sales_order_cancel_id', args = request.args(0))}}");
+                    window.location.assign("{{=URL('inventory','get_back_off_workflow_grid')}}");                        
+                } else {
+                    $("#btnCancel").prop("checked", false);
+                }
+
+            }
+        })}         
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

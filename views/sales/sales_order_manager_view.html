@@ -111,7 +111,7 @@
                                     <label class="col-sm-4 control-label">Remarks</label>
                                     <div class="col-sm-8">{{=form.custom.widget.remarks}}</div> 
                                 </div>                                               
-                            </div>
+                            </div> 
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label"></label>
@@ -119,11 +119,12 @@
                                         {{ if _id.status_id == 4: }}
                                             <input class="btn btn-success" type="submit" value="approved">                                              
                                             <input class="btn btn-warning" type="button" value="reject" id ="btnReject" onclick="Rejected()"> 
+                                            <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>
                                             <!-- onclick="ajax('{{=URL('sales','sales_order_manager_view_rejected', args = request.args(0))}}')"> -->
                                         {{ else: }}
                                             <input class="btn btn-success" type="submit" value="approved" disabled>
                                             <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
-
+                                            <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>
                                         {{ pass }}
                                         {{=form.custom.end}}
                                     </div>        
@@ -138,6 +139,16 @@
 </div>
 
 <script>   
+$(document).ready(function(){
+    $("#btnCancel").change(function(){
+        if($("#btnCancel").is(":checked")) {            
+            Cancel();
+            $("#btnCancel").prop("checked", true);
+        } else {
+            $("#btnCancel").prop("checked", false);            
+        }
+    });     
+});
     function Rejected(){
         bootbox.confirm({
         size: "small",
@@ -158,7 +169,33 @@
                 location.reload();   
             }
         }
-    })
+        })
     }
+    function Cancel(){
+        // console.log("Cancelled transaction...");
+        // var _id = $(this).attr('data-id');
+        bootbox.confirm({ 
+            size: "small",
+            message: "Are you sure you want to cancel this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                    
+                    ajax("{{=URL('sales','sales_order_cancel_id', args = request.args(0))}}");
+                    window.location.assign("{{=URL('inventory','mngr_req_grid')}}");                        
+                } else {
+                    $("#btnCancel").prop("checked", false);
+                }
+
+            }
+        })}     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

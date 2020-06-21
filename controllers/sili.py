@@ -2,13 +2,14 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
+
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)
     return dict(form = form)
 
-def get_truncate_table():    
-    _row = db.executesql('TRUNCATE TABLE m3rch_inv_db.Merch_Stock_Transaction;  ')
-    _row = db.executesql('DBCC CHECKIDENT ('Merch_Stock_Transaction', RESEED, 1)')
+# def get_truncate_table():    
+#     _row = db.executesql('TRUNCATE TABLE m3rch_inv_db.Merch_Stock_Transaction;  ')
+#     _row = db.executesql('DBCC CHECKIDENT ('Merch_Stock_Transaction', RESEED, 1)')
     # _row = db.executesql('SELECT * FROM public."Sales_Order_Transaction" ORDER BY id ASC')
     # for row in _row:
     #     print row[0],row[1],row[2],row[3]
@@ -57,11 +58,14 @@ def put_sales_invoice_consolidation():
                     vansale_price = x.vansale_price or 0,
                     tax_amount = x.vat_percentage or 0,
                     selected_tax = x.selective_tax,
+                    supplier_code = _i.supplier_code_id.supp_code,
+                    sales_man_code = n.sales_man_id.mv_code,                
+                    dept_code = n.dept_code_id,                    
                     price_cost_pcs = x.price_cost_pcs,
-                    average_cost_pcs = x.average_cost_pc x.wholesale_price_pc x.retail_price_pcs,
-                    supplier_code.supp_cod n.sales_man_id.mv_co
-                
-        
+                    average_cost_pcs = x.average_cost_pc,
+                    wholesale_price_pc = x.wholesale_price_pc,
+                    retail_price_pcs = x.retail_price_pcs)                        
+        else:                 
             _chk.update_record(
                 voucher_no = n.sales_invoice_no,
                 location = n.stock_source_id,
@@ -104,12 +108,18 @@ def put_sales_invoice_consolidation():
                     selected_tax = x.selective_tax,
                     supplier_code = _i.supplier_code_id.supp_code,
                     sales_man_code = n.sales_man_id.mv_code,                
-                    dept_code = n.dept_code_id) 
+                    dept_code = n.dept_code_id)
 def queue_task():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
 
 @auth.requires_login()
 def admin():
+    for y in db(db.Sales_Order).select():        
+        y.update_record(total_amount_after_discount = y.total_amount)
+    for n in db(db.Delivery_Note).select():
+        n.update_record(total_amount_after_discount = n.total_amount)
+    for x in db(db.Sales_Invoice).select():
+        x.update_record(total_amount_after_discount = x.total_amount)
     return dict()
       
 def sales_invoice():

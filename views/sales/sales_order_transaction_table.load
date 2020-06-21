@@ -25,13 +25,13 @@ $('.delete').click(function(){
         callback: function (result) {
             if (result) {
                 ajax("{{=URL('sales','sales_order_delete_view')}}" + '/' + _id);
-                parent.fadeOut('slow');
-                location.reload();   
+                parent.fadeOut('slow');                
             }
         }
     })
 });    
-    
+
+
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
