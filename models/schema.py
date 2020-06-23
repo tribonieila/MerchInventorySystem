@@ -975,9 +975,9 @@ db.define_table('Area_Name',
 
 db.define_table('Customer',
     Field('customer_account_no','string',length = 15),
-    Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Group_Code.id,'%(description)s', zero = 'Choose Group Code')), 
+    Field('customer_group_code_id', 'reference Customer_Group_Code', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Customer_Group_Code.id,'%(description)s', zero = 'Choose Group Code'))), 
     Field('customer_name','string', length = 50),
-    Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Category.id,'%(description)s', zero = 'Choose Category')), 
+    Field('customer_category_id', 'reference Customer_Category', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Customer_Category.id,'%(description)s', zero = 'Choose Category'))), 
     Field('customer_account_type', 'reference Customer_Account_Type', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Customer_Account_Type.id,'%(description)s', zero = 'Choose Account Type')), 
     Field('parent_outlet','string',length=50),
     Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
@@ -987,7 +987,7 @@ db.define_table('Customer',
     Field('building_no', 'integer'),
     Field('street_no', 'integer'),
     Field('zone', 'integer'),
-    Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name')), 
+    Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name'))), 
     Field('area_name','string', length = 150),
     Field('state','string', length = 50),
     Field('country','string', length = 50),
@@ -1003,14 +1003,14 @@ db.define_table('Customer',
     Field('outlet_type','string',length=50),
     Field('outlet_classification','string',length=50),
 
-    Field('sponsor_name','string', length = 50),
-    Field('sponsor_id','string', length = 50),
+    Field('sponsor_name','string', length = 50),    
     Field('sponsor_contact_no','string', length = 50),
     ## upload files to fill in here (5 fields)
-    Field('cr_license','upload',requires=IS_UPLOAD_FILENAME(extension='pdf')),
-    Field('guarantee','upload',requires=IS_UPLOAD_FILENAME(extension='pdf')),    
-    Field('customer_form','upload',requires=IS_UPLOAD_FILENAME(extension='pdf')),    
-    Field('sponsor_id','upload',requires=IS_UPLOAD_FILENAME(extension='pdf')),
+    
+    Field('cr_license','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),
+    Field('guarantee','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),    
+    Field('customer_form','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),    
+    Field('sponsor_id','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),
     
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -2116,6 +2116,28 @@ db.define_table('Fax',
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 #---------------------------------------------------------
+# db.define_table('General_Ledger',
+
+# )
+# Department
+# Type
+# Ref_Date
+# Account_code
+# Description
+# Credit
+# Debit
+# Due_Date
+# Amount Paid
+# Status
+# FlgPost
+# Person 
+# Entry_Date
+# AccsRef
+# BankCode
+# CCENT
+# LOCCENT
+# ACCT_COD2
+# TRNTYPE
 db.define_table('Monthly_Stocks',
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
     Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),

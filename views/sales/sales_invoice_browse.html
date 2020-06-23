@@ -12,7 +12,7 @@
                 {{pass}}
                 </ul>
                 
-                <span class="card-title">Sales Order Master Grid</span>
+                <span class="card-title">Sales Invoice Master Grid</span>
             </div>
             <div class="card-body tab-content">            
                 {{=table}}
@@ -50,9 +50,9 @@
         })
     });    
 </script>
-<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+
 <script>
 $(document).ready( function () {
-    $('.table').bootstrapTable();
+    $('.table').DataTable();
 });
 </script>

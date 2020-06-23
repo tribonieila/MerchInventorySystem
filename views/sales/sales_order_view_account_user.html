@@ -172,10 +172,10 @@
                             <div class="col-sm-8">
                                 {{ if _id.status_id == 7 or _id.cancelled == True: }}
                                     <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" disabled>
-                                    <label><input type="checkbox" id="btnCancel" disabled> Cancel Delivery Note?</label>
+                                    <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Delivery Note?</label> -->
                                 {{ else: }}
                                     <input class="btn btn-primary" type="button" value="create sales invoice & print" id="btninvoice">
-                                    <label><input type="checkbox" id="btnCancel"> Cancel Delivery Note?</label>
+                                    <!-- <label><input type="checkbox" id="btnCancel"> Cancel Delivery Note?</label> -->
                                 {{ pass }}
                                 
                                     

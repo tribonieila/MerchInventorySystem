@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">            
-            <span class="card-title">Sales Invoice Workflow Report</span>
+            <span class="card-title">{{=title}}</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -152,12 +152,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" disabled>
+                                <!-- <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" disabled> -->
                             </div>        
                         </div>                         
                     </div>
                 </div>
-                {{=LOAD('sales','get_workflow_reports_transaction_id.load', ajax = True, args = request.args(0))}}
+                {{=LOAD('sales','get_workflow_reports_transaction_id.load', ajax = True, args = [request.args(0), request.args(1)])}}
             </div>          
         </div>
     </div>

@@ -119,12 +119,12 @@
                                         {{ if _id.status_id == 4: }}
                                             <input class="btn btn-success" type="submit" value="approved">                                              
                                             <input class="btn btn-warning" type="button" value="reject" id ="btnReject" onclick="Rejected()"> 
-                                            <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>
+                                            <!-- <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label> -->
                                             <!-- onclick="ajax('{{=URL('sales','sales_order_manager_view_rejected', args = request.args(0))}}')"> -->
                                         {{ else: }}
                                             <input class="btn btn-success" type="submit" value="approved" disabled>
                                             <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
-                                            <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>
+                                            <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label> -->
                                         {{ pass }}
                                         {{=form.custom.end}}
                                     </div>        

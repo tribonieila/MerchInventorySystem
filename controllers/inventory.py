@@ -3897,7 +3897,7 @@ def get_stock_request_workflow_grid():
     table = TABLE(*[thead, body], _class='table', _id='tblSR')
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS') |auth.has_membership(role = 'ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT') |auth.has_membership(role = 'ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def get_stock_request_grid():
     row = []
     thead = THEAD(TR(TH('Date'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary')
@@ -3996,7 +3996,7 @@ def stk_req__trans_edit_form():
     return dict(form = form, _id = _id, _it = _it, _tot_amt = _tot_amt, btn_back = btn_back)
 
 # --------- ACCOUNTS  ---------
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT') | auth.has_membership('MANAGEMENT'))
 def account_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'), _class='bg-danger' ))
@@ -4054,7 +4054,7 @@ def corrections_grid():
     table = TABLE(*[head, body],  _class='table', _id = 'tmptbl')                
     return dict(table = table) 
 # STORE KEEPER
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT')| auth.has_membership('ROOT'))
 def str_kpr_grid():
     row = []
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()
@@ -4195,7 +4195,7 @@ def approved_by(x = request.args(0)):
     table = str(XML(t, sanitize = False))
     return table
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT')| auth.has_membership('ROOT'))
 def stock_request_grid():    
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
         _query = db((db.Stock_Request.srn_status_id == 4) | (db.Stock_Request.archive == False)).select(orderby = ~db.Stock_Request.id)
@@ -4584,7 +4584,7 @@ def stock_adjustment_session():
     session.location_code_id = request.vars.location_code_id
 
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT')| auth.has_membership('ROOT'))
 def stock_adjustment_form_validation(form):    
     _trns_pfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'ADJ')).select().first()
     _loc_code = db(db.Location.id == request.vars.location_code_id).select().first()
@@ -4595,7 +4595,7 @@ def stock_adjustment_form_validation(form):
     form.vars.stock_adjustment_no = int(_skey)
     form.vars.stock_adjustment_code = _loc_code.stock_adjustment_code
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS')| auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_add_new():        
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
@@ -4629,7 +4629,7 @@ def stock_adjustment_add_new():
     return dict(form = form, ticket_no_id = ticket_no_id)
 
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def validate_adjustment_item_code(form):
     
     _id = db((db.Item_Master.item_code == request.vars.item_code.upper()) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()
@@ -4678,7 +4678,7 @@ def validate_adjustment_item_code(form):
         form.vars.uom = _id.uom_value
         form.vars.average_cost = _average_cost #float(request.vars.average_cost.replace(',',''))
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjutment_transaction_temporary_table():        
     ctr = 0
     row = []
@@ -4726,16 +4726,16 @@ def stock_adjutment_transaction_temporary_table():
     table = TABLE(*[head, body, foot],  _class='table', _id = 'tmptbl')                
     return dict(form = form, table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_delete():    
     db(db.Stock_Adjustment_Transaction_Temp.id == request.args(0)).delete()    
     response.js =  "$('#tmptbl').get(0).reload()"
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def stock_adjustment_browse():
     row = []
     ctr = 0
-    if auth.has_membership(role = 'ACCOUNTS'): # MANOJ        
+    if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): # MANOJ        
         _query = db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
         _query = db(db.Stock_Adjustment.srn_status_id == 15).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
@@ -4756,7 +4756,7 @@ def stock_adjustment_browse():
 def get_stock_adjustment_workflow_grid():
     row = []
     ctr = 0
-    if auth.has_membership(role = 'ACCOUNTS'): # MANOJ        
+    if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): # MANOJ        
         _query = db((db.Stock_Adjustment.created_by == auth.user_id) & (db.Stock_Adjustment.srn_status_id == 4)).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
         _query = db(db.Stock_Adjustment.srn_status_id == 4).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
@@ -4764,7 +4764,7 @@ def get_stock_adjustment_workflow_grid():
         _query = db().select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
     head = THEAD(TR(TH('Date'),TH('Adjustment No'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action')),_class='bg-primary')
     for n in _query:
-        if auth.has_membership(role = 'ACCOUNTS'): 
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): 
             if n.srn_status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stock_adjustment_browse_details', args = n.id, extension = False))
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
@@ -4798,7 +4798,7 @@ def get_stock_adjustment_workflow_grid():
     table = TABLE(*[head, body], _class='table', _id='tblSAd',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_form():
     ctr_val = "ADJ18100000"  # temporary autogenerated
     db.Stock_Adjustment.srn_status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')       
@@ -4827,7 +4827,7 @@ def stock_adjustment_form():
         response.flash = 'error'
     return dict(form = form, ctr_val = ctr_val)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_table_validation(form):          
     _stk_fil = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()    
     _uom = db(db.Item_Master.id == request.vars.item_code_id).select().first()        
@@ -4853,7 +4853,7 @@ def stock_adjustment_table_validation(form):
     
     #     form.vars.average_cost = itm_price.average_cost
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS')| auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_no():        
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix == 'ADJ')).select().first()
     if not _trans_prfx:
@@ -4871,7 +4871,7 @@ def stock_adjustment_code():
     else:
         return XML(INPUT(_class="integer form-control", _name='location_code', _value=_loc_code.stock_adjustment_code, _disabled = True))
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_average_cost():          
     _id = db(db.Item_Master.item_code == request.vars.item_code).select().first()
     if not _id:
@@ -4881,7 +4881,7 @@ def stock_adjustment_average_cost():
         if _item_price:
             return XML(INPUT(_class="form-control", _name='average_cost', _id='average_cost', _value=locale.format('%.4F',_item_price.average_cost or 0, grouping = True)))                    
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_description():        
     response.js = "$('#add').removeAttr('disabled')"
     response.js = "$('#no_table_pieces').removeAttr('disabled')"
@@ -4924,7 +4924,7 @@ def stock_adjustment_description():
         else:
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))                    
           
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_table():    
     # db.Stock_Adjustment_Transaction_Temp.category_id.requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')
     # db.Stock_Adjustment_Transaction_Temp.category_id.default = 4
@@ -4982,7 +4982,7 @@ def stock_adjustment_table():
         table = TABLE(*[TR(k, v) for k, v in form.errors.items()], _class="bg-warning")
     # return dict(form = form, table = table)
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT') )
 def stock_adjustment_table_form():    
     db.Stock_Adjustment_Transaction_Temp.category_id.requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Category')
     db.Stock_Adjustment_Transaction_Temp.category_id.default = 4
@@ -5376,7 +5376,7 @@ def obsolescence_of_stocks():
     row = []
     head = THEAD(TR(TH('Date'),TH('Obsol. Stocks No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in db((db.Obsolescence_Stocks.archives != True) & (db.Obsolescence_Stocks.status_id == 24)).select(orderby = ~db.Obsolescence_Stocks.id):
-        if auth.has_membership(role = 'ACCOUNTS') :
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 15:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','obsol_of_stocks_view', args = n.id))
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
@@ -5424,7 +5424,7 @@ def get_obsolescence_of_stocks_workflow_grid():
     row = []
     if auth.has_membership('INVENTORY STORE KEEPER'):
         _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.created_by == auth.user_id) & ((db.Obsolescence_Stocks.status_id == 4) | (db.Obsolescence_Stocks.status_id == 23))
-    elif auth.has_membership('ACCOUNTS'):
+    elif auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT'):
         _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.created_by == auth.user_id) & (db.Obsolescence_Stocks.status_id == 4)
     elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):
         _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.status_id == 4)
@@ -5445,7 +5445,7 @@ def get_obsolescence_of_stocks_workflow_grid():
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')    
                 btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
-        if auth.has_membership('ACCOUNTS'):
+        if auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','obsol_of_stocks_view', args = n.id, extension=False))
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle')
@@ -6150,9 +6150,9 @@ def stock_corrections_item_description():
         else:
             return CENTER(DIV("Item code ", B(str(request.vars.item_code)) ," is zero on stock source.",_class='alert alert-warning',_role='alert'))        
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def get_stock_corrections_workflow_reports():
-    if auth.has_membership(role = 'ACCOUNTS'): # MANOJ                
+    if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): # MANOJ                
         _query = db((db.Stock_Corrections.status_id == 16) & (db.Stock_Corrections.archive != True) & (db.Stock_Corrections.created_by == auth.user_id)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
         # _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
@@ -6161,7 +6161,7 @@ def get_stock_corrections_workflow_reports():
         _query = db().select(orderby = ~db.Stock_Corrections.id)        
     head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
-        if auth.has_membership(role = 'ACCOUNTS'):
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','get_stock_corrections_id', args = n.id))
@@ -6240,7 +6240,7 @@ def get_stock_corrections_workflow_reports():
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def stock_corrections():
-    if auth.has_membership(role = 'ACCOUNTS'): # MANOJ                
+    if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): # MANOJ                
         _query = db((db.Stock_Corrections.status_id == 4) & (db.Stock_Corrections.archive != True) & (db.Stock_Corrections.created_by == auth.user_id)).select(orderby = ~db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
         # _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
@@ -6249,7 +6249,7 @@ def stock_corrections():
         _query = db().select(orderby = ~db.Stock_Corrections.id)        
     head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
-        if auth.has_membership(role = 'ACCOUNTS'):
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','get_stock_corrections_id', args = n.id))
@@ -6362,7 +6362,7 @@ def get_stock_corrections_grid(): # warehouse workflow
     table = TABLE(*[head, body],  _class='table', _id = 'tblcor', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})                
     return dict(table = table)  
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def get_stock_corrections_id():
     _id = db(db.Stock_Corrections.id == request.args(0)).select().first()        
     db.Stock_Corrections.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
@@ -6610,7 +6610,7 @@ def stock_corrections_transaction_table():
     _query = db((db.Stock_Corrections_Transaction.stock_corrections_no_id == request.args(0)) & (db.Stock_Corrections_Transaction.delete != True)).select(db.Stock_Corrections_Transaction.ALL, db.Item_Master.ALL, orderby = ~db.Stock_Corrections_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Corrections_Transaction.item_code_id))
     for i in _query:         
         ctr += 1             
-        if auth.has_membership('ACCOUNTS'): # MANOJ
+        if auth.has_membership('ACCOUNTS') or auth.has_membership('MANAGEMENT'): # MANOJ
             if _id.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle view')        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', _href = URL('inventory','stock_corrections_transaction_table_edit', args = i.Stock_Corrections_Transaction.id, extension = False))
@@ -6749,7 +6749,7 @@ def get_workflow_reports():
         _title = 'Adjustments (+/-)'
         row = []
         ctr = 0
-        if auth.has_membership(role = 'ACCOUNTS'): # MANOJ        
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'): # MANOJ        
             _query = db(db.Stock_Adjustment.created_by == auth.user_id).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
         elif auth.has_membership(role = 'ACCOUNT MANAGER'): # JYOTHI
             _query = db(db.Stock_Adjustment.srn_status_id == 15).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
@@ -6768,7 +6768,7 @@ def get_workflow_reports():
     elif int(request.args(0)) == int(3):
         _title = 'Stock Corrections'
         row = []
-        if auth.has_membership('INVENTORY STORE KEEPER') or auth.has_membership('ACCOUNTS'):
+        if auth.has_membership('INVENTORY STORE KEEPER') or auth.has_membership('ACCOUNTS') or auth.has_membership('MANAGEMENT'):
             _query = db((db.Stock_Corrections.created_by == auth.user_id) & (db.Stock_Corrections.status_id == 16)).select(orderby = ~db.Stock_Corrections.id) 
         elif auth.has_membership('ACCOUNT MANAGER'):
             _query = db(db.Stock_Corrections.status_id == 16).select(orderby = ~db.Stock_Corrections.id) 
@@ -6796,7 +6796,7 @@ def get_workflow_reports():
             _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.created_by == auth.user_id)  & (db.Obsolescence_Stocks.status_id == 24)
         elif auth.has_membership('INVENTORY SALES MANAGER'):
             _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.created_by == auth.user_id)  & (db.Obsolescence_Stocks.status_id == 24)
-        elif auth.has_membership('ACCOUNTS'):
+        elif auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT'):
             _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.created_by == auth.user_id)  & (db.Obsolescence_Stocks.status_id == 24)
         elif auth.has_membership('ACCOUNT MANAGER'):
             _query = (db.Obsolescence_Stocks.archives == False) & (db.Obsolescence_Stocks.status_id == 24)

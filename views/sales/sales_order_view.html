@@ -113,11 +113,11 @@
                             <div class="col-sm-8">                                
                                 {{ if (_id.status_id == 1) or (_id.status_id == 7) or (_id.status_id == 8) or (_id.status_id == 9) or (_id.status_id == 10): }}
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>                              
-                                    <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>  
+                                    <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>   -->
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
-                                    <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>
+                                    <!-- <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label> -->
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel sales order</a>                         -->
                                                                                                
                                 {{ pass }}

@@ -24,7 +24,7 @@
                     <div role="tabpanel" class="tab-pane fade in active" id="customer"><br>{{=LOAD('sales','view_customer_info', args = request.args(0))}}</div>
                     <div role="tabpanel" class="tab-pane fade in" id="contact"><br>{{=LOAD('sales','view_contact', args = request.args(0))}}</div>
                     <div role="tabpanel" class="tab-pane fade in" id="bank"><br>{{=LOAD('sales','view_bank', args = request.args(0))}}</div>                    
-                    <div role="tabpanel" class="tab-pane fade in" id="documents"><br>{{=LOAD('sales','view_documents')}}</div>                    
+                    <div role="tabpanel" class="tab-pane fade in" id="documents"><br>{{=LOAD('sales','view_documents', args = request.args(0))}}</div>                    
                 </div>
             </div>            
         </div>

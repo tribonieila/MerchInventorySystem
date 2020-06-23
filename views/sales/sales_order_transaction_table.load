@@ -25,7 +25,7 @@ $('.delete').click(function(){
         callback: function (result) {
             if (result) {
                 ajax("{{=URL('sales','sales_order_delete_view')}}" + '/' + _id);
-                parent.fadeOut('slow');                
+                parent.fadeOut('slow');
             }
         }
     })

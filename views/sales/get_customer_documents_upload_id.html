@@ -1,0 +1,62 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">UPLOAD</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('customer_grid')}}";>BROWSE</a></li>
+            </ul>        
+            <span class="card-title">CUSTOMER DOCUMENT'S</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form.custom.begin}}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">CR License</label>
+                        <div class="col-sm-8">                                                  
+                            {{=form.custom.widget.cr_license}}
+                        </div>                           
+                    </div>                        
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Guarantee</label>
+                        <div class="col-sm-8">                                                  
+                            {{=form.custom.widget.guarantee}}
+                        </div>                           
+                    </div>                        
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Customer Form</label>
+                        <div class="col-sm-8">                                                  
+                            {{=form.custom.widget.customer_form}}
+                        </div>                           
+                    </div>                        
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Sponsor's</label>
+                        <div class="col-sm-8">                                                  
+                            {{=form.custom.widget.sponsor_id}}
+                        </div>                           
+                    </div>                        
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"></label>
+                        <div class="col-sm-8"> 
+                            {{=form.custom.submit}}
+                        </div>
+                    </div>                    
+                </div>                       
+            </div>
+            {{=form.custom.end}}
+
+        </div>
+    </div>
+</div>
