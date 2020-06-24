@@ -1725,7 +1725,12 @@ def sales_order_transaction_table():
 
 def update_sales_transaction():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    print 'update_sales_transaction: ', request.args(0), request.vars.added_discount
+    if float(_id.discount_added or 0) != float(session.added_discount or 0):
+        print 'not equal do update'
+        _id.update_record(remarks = request.vars.remarks, discount_added = session.added_discount, total_amount =session.total_amount,total_amount_after_discount=session.net_amount)
+    else:
+        print 'nothing to do'
+    print 'update_sales_transaction: ', request.args(0),request.vars.added_discount
     # _id.update_record(remarks = request.vars.remarks, added_discount = session.added_discount, total_amount =session.total_amount,total_amount_after_discount=session.net_amount)
     # session.flash = 'RECORD UPDATED'
     # print session.added_discount, session.total_amount, session.net_amount
