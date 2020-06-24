@@ -116,7 +116,7 @@
                                     <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Sales Order?</label>   -->
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel sales order</a> -->
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
+                                    <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">        
                                     <!-- <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label> -->
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_order_browse')}}" >cancel sales order</a>                         -->
                                                                                                
@@ -130,7 +130,7 @@
                 </div>
             </div>
             <hr>
-            {{=LOAD('sales','sales_order_transaction_table.load', ajax = True,args = request.args(0), target ='tblSot')}}
+            {{=LOAD('sales','sales_order_transaction_table.load', ajax = True,args = request.args(0), target ='tbltrnx', extension=False)}}
         </div>
     </div>
 </div>
@@ -145,6 +145,10 @@ $(document).ready(function(){
             $("#btnCancel").prop("checked", false);            
         }
     });     
+    $("#btnsubmit").click(function(){
+        ajax("{{=URL('sales','update_sales_transaction',args = request.args(0))}}",['remarks'])
+
+    });
 });
 function Cancel(){
         // console.log("Cancelled transaction...");

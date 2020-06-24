@@ -606,9 +606,9 @@ def sales_order_form():
         # _discount = float(_grand_total) * float(_discount) / 100
         _after_discount = float(_grand_total) - float(session.discount or 0)
         _trnx = db(db.Sales_Order_Transaction.sales_order_no_id == _id.id).select().first()
-        _added_discount = float(_trnx.total_amount) - float(session.discount or 0)        
-        _trnx.update_record(total_amount = _added_discount)        
-        _id.update_record(total_amount = _grand_total, total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_selective_tax_foc) # discount_added = _discount,        
+        _sale_cost = float(_trnx.sale_cost) - float(session.discount or 0)
+        _trnx.update_record(sale_cost = _sale_cost, discounted = True)
+        _id.update_record(total_amount = _grand_total, total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_selective_tax_foc) # discount_added = _discount,
         db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
         response.flash = 'SAVING SALES ORDER NO ' + str(_skey) + '.'    
     elif form.errors:
@@ -1388,7 +1388,8 @@ def sales_order_view():
     db.Sales_Order.total_selective_tax.writable = False
     db.Sales_Order.total_vat_amount.writable = False    
     db.Sales_Order.sales_man_id.writable = False    
-    db.Sales_Order.section_id.writable = False    
+    db.Sales_Order.section_id.writable = False     
+    db.Sales_Order.total_amount_after_discount.writable = False 
     if _id.status_id == 3:
         db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 4)| (db.Stock_Status.id == 3)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     else:
@@ -1564,13 +1565,28 @@ def sales_order_cancelled_view():
     redirect(URL('sales_order_browse'))
 
 @auth.requires_login()
-def sales_order_delete_view_():    
-    _id = db(db.Sales_Order_Transaction.id == request.args(0)).select().first()
-    _so = db(db.Sales_Order.id == _id.sales_order_no_id).select().first()
-    print 'sales_order_delete_view: ', request.args(0), _id.id, _so.id
+def sales_order_delete_view():    
+    response.js = "$('#tbltrnx').get(0).reload()"
+    _st = db(db.Sales_Order_Transaction.id == request.args(0)).select().first()    
+    _so = db(db.Sales_Order.id == _st.sales_order_no_id).select().first()
+    if _st.discounted == True:        
+        # update tranx delete
+        _st.update_record(delete = True)
+        # resort the order
+        _id = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select().first()
+        # update the first item
+        _sale_cost = _id.sale_cost or 0 - _so.discount_added or 0
+        _id.update_record(sale_cost = _sale_cost, discounted = True)
+        # update sales order header
+        _total_amount = _so.total_amount - _st.total_amount
+        _total_amount_after_discount = (_so.total_amount_after_discount - _total_amount) - _so.discount_added
+        _so.update_record(total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)
+        print 'discounted: ', request.args(0), _st.id
+    else:
+        print 'not discounted: ', request.args(0), _st.id
 
 @auth.requires_login()
-def sales_order_delete_view():
+def sales_order_delete_view_():
     # initialization of variable
     _st = db(db.Sales_Order_Transaction.id == request.args(0)).select().first()    
     _so = db(db.Sales_Order.id == _st.sales_order_no_id).select().first()
@@ -1584,15 +1600,17 @@ def sales_order_delete_view():
     # update the sales order transaction table
     _st.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)    
     _trnx_ctr = db((db.Sales_Order_Transaction.sales_order_no_id == int(_so.id)) & (db.Sales_Order_Transaction.delete == False)).count()
+    
     if int(_trnx_ctr) < 1:
         # _so.update_record(cancelled=True,cancelled_by=auth.user_id,cancelled_on = request.now)        
         session.flash = 'This sales order transaction will be consider cancelled.'
         redirect(URL('inventory','get_back_off_workflow_grid'))
+    
     elif int(_trnx_ctr) == 1:
         # generate re-computation in sales order transaction table        
         _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == int(_so.id)) & (db.Sales_Order_Transaction.delete == False)).select().first()
         # _unit_price = ((float(_trnx.wholesale_price) / int(_trnx.uom)) * int(_trnx.quantity)) + (float(_trnx.selective_tax or 0) / int(_trnx.quantity)) * int(_trnx.quantity) #- float(_so.discount_added or 0))
-        _trnx_total = float(_trnx.total_amount) - float(_so.discount_added or 0)
+        _trnx_total = float(_trnx.sale_cost) - float(_so.discount_added or 0)
         _trnx.update_record(total_amount = _trnx_total)
         _so.update_record(total_amount = _trnx.total_amount, total_amount_after_discount = _trnx_total)
     else:
@@ -1697,13 +1715,29 @@ def sales_order_transaction_table():
             TD(locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0,grouping = True), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
         _total_amount += n.Sales_Order_Transaction.total_amount
-
+        _total_amount_after_discount = float(_total_amount) - float(_id.discount_added)
     body = TBODY(*row)
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD()))
-    foot += TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _id.total_amount or 0, grouping = True), _align = 'right'),TD()))    
-    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.discount_added or 0, grouping = True), _align = 'right'),TD()))
-    table = TABLE(*[head, body, foot], _class='table')
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_total_amount_after_discount or 0, grouping = True),_id='net_amount', _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _total_amount or 0, grouping = True),_id='total_amount', _align = 'right'),TD()))    
+    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_onchange='adding_discount()',_value =locale.format('%.2F',_id.discount_added or 0, grouping = True))),TD()))
+    table = TABLE(*[head, body, foot], _class='table', _id='tbltrnx')
     return dict(table = table)        
+
+def update_sales_transaction():
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    print 'update_sales_transaction: ', request.args(0), request.vars.added_discount
+    # _id.update_record(remarks = request.vars.remarks, added_discount = session.added_discount, total_amount =session.total_amount,total_amount_after_discount=session.net_amount)
+    # session.flash = 'RECORD UPDATED'
+    # print session.added_discount, session.total_amount, session.net_amount
+    # redirect(URL('inventory','get_back_off_workflow_grid'))
+
+def update_discount():
+    print 'update discount: ', request.vars.added_discount
+    session.added_discount = request.vars.added_discount
+def recompute():
+    print 'recompute', request.args(0), '-', request.args(1) , '-',request.args(2)
+    session.total_amount = request.args(1)
+    session.net_amount = request.args(2)
 
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def sales_order_utility_tool():    
@@ -2581,7 +2615,7 @@ def get_workflow_reports():
         for n in _query:
             if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_workflow_reports_id', args = [2, n.id]))
-            elif auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):                
+            elif auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):                
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_workflow_reports_id', args = [1, n.id]))
             # view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('sales','get_workflow_reports_id', args = n.id))                
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
@@ -2737,33 +2771,16 @@ def get_workflow_reports_transaction_id():
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc =  DIV('')
 
-    if int(request.args(0)) == 1:        
+    if int(request.args(0)) == 1: # sales invoice workflow report
         _id = db(db.Sales_Invoice.id == request.args(1)).select().first()
-        # print 'sales invoice transaction', _id.id
         _query = db(db.Sales_Invoice_Transaction.sales_invoice_no_id == request.args(1)).select()
-        for n in _query:
-            _i = db(db.Item_Master.id == n.item_code_id).select().first()
-            # print n.id, _i.item_code
-
-    elif int(request.args(0)) == 2:                
+    elif int(request.args(0)) == 2: # delivery note workflow report
         _id = db(db.Delivery_Note.id == request.args(1)).select().first()
-        # print 'delivery note transaction', _id.id
         _query = db(db.Delivery_Note_Transaction.delivery_note_id == request.args(1)).select()
-        for n in _query:
-            _i = db(db.Item_Master.id == n.item_code_id).select().first()
-            # print n.id, _i.item_code
-
-    # _id = db(db.Sales_Invoice.id == request.args(0)).select().first()
-    # _query = db((db.Sales_Invoice_Transaction.sales_invoice_no_id == request.args(0)) & (db.Sales_Invoice_Transaction.delete == False)).select(db.Sales_Invoice_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Invoice_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Invoice_Transaction.item_code_id))
-
-
-    # _id = db(db.Sales_Invoice.id == session.sales_order_no_id).select().first()
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand Line'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price/Sel.Tax'),TH('Discount %'),TH('Net Price'),TH('Total Amount'),_class='bg-primary'))
     for n in _query:
-    # for n in db((db.Sales_Invoice_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Invoice_Transaction.delete == False)).select(db.Sales_Invoice_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Invoice_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Invoice_Transaction.item_code_id)):
+        _i = db(db.Item_Master.id == n.item_code_id).select().first()
         ctr += 1
-
-        # discount & grand total computation
         _grand_total += float(n.total_amount or 0)
         # _discount = float(_grand_total) * int(_id.discount_added or 0) / 100
         _net_amount = float(_grand_total) - float(_id.discount_added or 0)
@@ -3101,12 +3118,12 @@ def validate_mngr_approved(form):
         form.vars.sales_order_approved_by = auth.user_id
         form.vars.status_id = 9
 
-def get_validate_sales_order_trnx_id(x):
+def get_validate_sales_order_trnx_id():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
         _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
         if n.wholesale_price != _i.wholesale_price or n.retail_price != _i.retail_price or n.average_cost != _i.average_cost:                        
-            return 2
+            return False
 
 def get_sales_order_trnx_redo_id():
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -3174,8 +3191,7 @@ def sales_order_manager_approved():
         session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' + str(_id.sales_order_approved_by.first_name)
         response.js = "$('#tblso').get(0).reload()"
     else:
-        _val = get_validate_sales_order_trnx_id(1)
-        if _val != 1:
+        if get_validate_sales_order_trnx_id() == False:
             _id.update_record(cancelled = True, cancelled_by = auth.user_id, cancelled_on = request.now, remarks = 'Detected item prices discrepancy transaction.')
             get_sales_order_trnx_redo_id()
             session.flash ='Detected item prices discrepancy transaction.'                
@@ -3248,9 +3264,8 @@ def sale_order_manager_delivery_note_approved():
         # print '<8'
         session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' is on hold by ' + str(_id.delivery_note_approved_by.first_name) 
         response.js = "$('#tblso').get(0).reload()" 
-    else:        
-        _val = get_delivery_note_validation(1)
-        if _val != 1:
+    else:                
+        if get_validate_sales_order_trnx_id() == False:
             get_sales_order_trnx_redo(_id.id)
             _id.update_record(cancelled = True, cancelled_by = auth.user_id, cancelled_on = request.now, remarks = 'Detected item prices discrepancy transaction.')            
             response.js = "$('#tblso').get(0).reload()"

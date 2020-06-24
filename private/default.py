@@ -86,6 +86,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 pdfmetrics.registerFont(TTFont('Arabic', '../fonts/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
+# pdfmetrics.registerFont(TTFont('Arabic', '/Users/user/Desktop/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
@@ -212,8 +213,8 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-logo_path = request.folder + 'static/images/Merch.jpg'
-text_path = request.folder + 'static/fonts/reports/'
+logo_path = request.folder + '/static/images/Merch.jpg'
+text_path = request.folder + '/static/fonts/reports/'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
 img.drawWidth = 3.25 * inch
@@ -226,11 +227,9 @@ _limage.hAlign = 'CENTER'
 
 merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
 
-
 def sales_invoice_footer(canvas, doc):     
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
-    _dn = db(db.Delivery_Note.id == request.args(0)).select().first()
     _id = db(db.Sales_Order.id == request.args(0)).select().first()    
         
     # Header 'Stock Request Report'
@@ -244,7 +243,7 @@ def sales_invoice_footer(canvas, doc):
             ['Customer Code',':',n.customer_code_id.account_code,':',_ar_customer_code,'','Transaction Type',':','Credit',':',_ar_transaction_type],             
             [_customer,'', '','','','','Department',':',n.dept_code_id.dept_name,':',_ar_department],
             ['','','','', '','','Location', ':',n.stock_source_id.location_name,':',_ar_location],       
-            ['','','','', '','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper()),':',_ar_sales_man],                        
+            ['','','','', '','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper()),':',_ar_sales_man],                        
             ['','','','','','','']]
     header = Table(_so, colWidths=[100,10,'*',10,'*',20,'*',10,'*',10,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
@@ -621,7 +620,7 @@ def sales_order_delivery_note_report_store_keeper():
     response.headers['Content-Type']='application/pdf'
     return pdf_data    
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') |  auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def sales_return_report_account_user():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
     for n in db(db.Sales_Return.id == request.args(0)).select():
@@ -834,12 +833,10 @@ def sales_return_report_account_user():
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') |  auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
 def sales_order_report_account_user(): # print direct to printer
     row = []
-    _dn = db(db.Delivery_Note.id == request.args(0)).select().first()
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    # print 'Invoice: ', _dn.sales_invoice_no, _id.sales_invoice_no
     for n in db(db.Sales_Order.id == request.args(0)).select():
         _customer = n.customer_code_id.account_name#.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [

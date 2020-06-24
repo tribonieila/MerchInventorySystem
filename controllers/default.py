@@ -90,6 +90,7 @@ pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applicati
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
+
 style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=15)
 style.alignment=TA_CENTER
 
@@ -178,10 +179,22 @@ _ar_sales_invoice = Paragraph(get_display(_ar_sales_invoice),heading_style)
 arabic_text = u'إذا أخذنا بعين'
 arabic_text = arabic_reshaper.reshape(arabic_text) # join characters
 arabic_text = get_display(arabic_text) # change orientation by using bidi   
+def print_arabic_canvas(canvas, doc):  
+    canvas.saveState()  
+    _page = [['Hello']]
+    footer = Table(_page, colWidths='*')
+    footer.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    footer.wrap(doc.width, doc.bottomMargin)
+    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)    
+    canvas.restoreState()
 
 def print_arabic():
     print 'arabic_text: ', arabic_text
-    doc.build([Paragraph(arabic_text, style)])    
+    doc.build([Paragraph(arabic_text, heading_style)], onFirstPage=print_arabic_canvas, onLaterPages = print_arabic_canvas, canvasmaker=PageNumCanvas)    
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
@@ -213,8 +226,8 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-logo_path = request.folder + '/static/images/Merch.jpg'
-text_path = request.folder + '/static/fonts/reports/'
+logo_path = request.folder + 'static/images/Merch.jpg'
+text_path = request.folder + 'static/fonts/reports'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
 img.drawWidth = 3.25 * inch
@@ -244,7 +257,7 @@ def sales_invoice_footer(canvas, doc):
             ['Customer Code',':',n.customer_code_id.account_code,':',_ar_customer_code,'','Transaction Type',':','Credit',':',_ar_transaction_type],             
             [_customer,'', '','','','','Department',':',n.dept_code_id.dept_name,':',_ar_department],
             ['','','','', '','','Location', ':',n.stock_source_id.location_name,':',_ar_location],       
-            ['','','','', '','','Sales Man',':',str(n.created_by.first_name.upper()) + ' ' + str(n.created_by.last_name.upper()),':',_ar_sales_man],                        
+            ['','','','', '','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper()),':',_ar_sales_man],
             ['','','','','','','']]
     header = Table(_so, colWidths=[100,10,'*',10,'*',20,'*',10,'*',10,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
@@ -489,8 +502,6 @@ def sales_order_report_store_keeper():
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'
     return pdf_data
-
-
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def sales_order_delivery_note_report_store_keeper():
@@ -1059,8 +1070,8 @@ def sales_order_report_account_user(): # print direct to printer
     row.append(_p_tbl)
     row.append(PageBreak())
 
-    # doc.build(row)
-    doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer, canvasmaker=PageNumCanvas)
+    doc.build(row)
+    # doc.build(row, onFirstPage = sales_invoice_footer, onLaterPages = sales_invoice_footer, canvasmaker=PageNumCanvas)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'

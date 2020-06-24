@@ -1186,6 +1186,7 @@ db.define_table('Sales_Order_Transaction',
     Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
     Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
     Field('delete', 'boolean', default = False),    
+    Field('discounted','boolean',default=False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),

@@ -2,6 +2,15 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
+def callFunc():
+    if func() == False:
+        print 'function False: ' # notify descripancy issues.
+    else:
+        print 'function True:'
+
+def func():
+    if 1.20 != 1.20 or 3.30 != 3.30 or 5.30 != 5.30:
+        return False # price items checker
 
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)
@@ -85,8 +94,7 @@ def put_sales_invoice_consolidation():
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
                     retail_price_pcs = x.retail_price_pcs or 0)               
             print 'insert here...'
-
-        
+       
 def testing():
         if not _chk:
             db.Merch_Stock_Header.insert(
