@@ -63,4 +63,7 @@ function PrintInvoice(x){
     console.log(x);
     window.open('{{=URL('default','sales_order_report_account_user', extension=False)}}' + '/' + x);
 }
+function PrintDeliveryNote(x) {    
+    window.open('{{=URL('default','sales_order_delivery_note_report_store_keeper', extension=False)}}' + '/' + x);
+}
 </script>

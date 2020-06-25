@@ -2,20 +2,19 @@
 <script>
 $(document).ready(function(){
     $(".table").DataTable();
+    $("#added_discount").change(function(){
+        var _discount = $("#added_discount").val();
+        var _net_amount = document.getElementById("net_amount").textContent
+        var _total_amount = document.getElementById("total_amount").textContent
+        _net_amount = parseFloat(_total_amount) - parseFloat(_discount) 
+        document.getElementById("net_amount").textContent = parseFloat(_net_amount).toFixed(2)        
+        // console.log(_total_amount, _discount,_net_amount);
+    });
 });
 </script>
 
 <script>
-function adding_discount(){
-    var _discount = $("#added_discount").val();    
-    var _net_amount = document.getElementById("net_amount").textContent
-    var _total_amount = document.getElementById("total_amount").textContent
-    compute = parseFloat(_total_amount) - parseFloat(_discount) 
-    document.getElementById("net_amount").textContent = parseFloat(compute).toFixed(2)
-    console.log("changing", _discount, _net_amount, 'net amount: ', compute); 
-    ajax("{{=URL('sales','update_discount',args = request.args(0))}}",['added_discount'])
-    ajax("{{=URL('sales','recompute',args = request.args(0))}}" + '/' + _total_amount + '/' + compute)
-}
+
 $('.delete').click(function(){
     var _id = $(this).attr('data-id');
     var parent = $(this).parent("div").parent("td").parent("tr");

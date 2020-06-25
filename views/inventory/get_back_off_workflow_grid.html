@@ -25,7 +25,7 @@
                       <li role="presentation"><a href="#purchase_order" aria-controls="purchase_order" role="tab" data-toggle="tab">Purchase Order <span class="badge">{{=db(((db.Purchase_Order.status_id==22) | (db.Purchase_Order.status_id==17) | (db.Purchase_Order.status_id==18) | (db.Purchase_Order.status_id==25)| (db.Purchase_Order.status_id==21)) & (db.Purchase_Order.created_by==auth.user_id)).count()}}</span></a></li>                                            
                       
                       {{ pass }}
-                    </ul>           
+                    </ul>            
 
                     <!-- Tab panes -->
                     <div class="tab-content">

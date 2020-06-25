@@ -145,8 +145,21 @@ $(document).ready(function(){
             $("#btnCancel").prop("checked", false);            
         }
     });     
-    $("#btnsubmit").click(function(){
-        ajax("{{=URL('sales','update_sales_transaction',args = request.args(0))}}",['remarks'])
+    $("#btnsubmit").click(function(){ 
+        var _TotalAmount = document.getElementById("total_amount").textContent
+        var Discount = document.getElementById("added_discount").value 
+        var NetAmount = document.getElementById("net_amount").textContent
+        // var _TotalAmount = document.createElement("INPUT");
+        // document.appendChild("_TotalAmount");        
+        // TotalAmount.setAttribute("value",_TotalAmount)
+        var x = document.createElement("INPUT");
+        x.setAttribute("type", "text");
+        x.setAttribute("value", _TotalAmount);
+        var y = document.body.appendChild(x);
+        ajax("{{=URL('sales','update_sales_transaction',args=request.args(0))}}",['y'])
+        console.log("NetAmount: ",x, y, Discount, NetAmount);
+        
+
 
     });
 });
