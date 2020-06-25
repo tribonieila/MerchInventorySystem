@@ -2,6 +2,11 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
+def zero():
+    if 0 < float(1):
+        print 'less'
+    else:
+        print 'not less'
 def callFunc():
     if func() == False:
         print 'function False: ' # notify descripancy issues.

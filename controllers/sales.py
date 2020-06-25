@@ -1749,25 +1749,30 @@ def sales_order_transaction_table():
     table = TABLE(*[head, body, foot], _class='table', _id='tbltrnx')
     return dict(table = table)        
 
-def update_sales_transaction():
-    print 'update_sales_transaction: ', request.args(0), request.vars.x
-def update_sales_transaction_():    
+def update_sales_transaction_s():
+    print 'float', isinstance(request.vars.vdiscount, int), request.vars.vdiscount
+
+def update_sales_transaction():        
+    # print ': ', request.vars.vtotal_amount, type(float(request.vars.vdiscount)), request.vars.vnet_amount
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
-    _trnx = db(db.Sales_Order_Transaction.sales_order_no_id == _id.id).select().first()
-    if float(_id.discount_added or 0) != float(session.added_discount or 0):
-        print 'not equal do update'
-        _id.update_record(remarks = request.vars.remarks, discount_added = session.added_discount, total_amount =session.total_amount,total_amount_after_discount=session.net_amount)
-        # updated sale cost transactions on first record
-        if _trnx.discounted == False:
-            _sale_cost = float(_trnx.sale_cost) - float(session.added_discount or 0)
-            _trnx.update_record(sale_cost = _sale_cost, discounted = True)
-        # else:
-        #     _sale_cost = float(_trnx.wholesale_price) / int(_trnx.uom)
-        #     _trnx.update_record(sale_cost = _sale_cost, discounted = False)
+    
+    if float(request.vars.vdiscount or 0) > float(_id.discount_added or 0):
+        
+        # _id.update_record(remarks = request.vars.remarks, discount_added = request.vars.vdiscount, total_amount =request.vars.vtotal_amount,total_amount_after_discount=request.vars.vnet_amount)
+        _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select().first()
+        if _trnx.discounted == True:
+            print 'dont update'
+            # _sale_cost = (float(_trnx.wholesale_price) / int(_trnx.uom) - float(request.vars.vdiscount or 0))
+            # _trnx.update_record(sale_cost = _sale_cost)
+        else:
+            _sale_cost = float(_trnx.sale_cost) - float(request.vars.vdiscount or 0)
+            print 'update sale cost and discounted true', _sale_cost
+            # _trnx.update_record(sale_cost = _sale_cost, discounted = True)
+
     else:
         print 'nothing to do'
-        _id.update_record(remarks = request.vars.remarks)
-    print 'update_sales_transaction: ', request.args(0),request.vars.added_discount
+        # _id.update_record(remarks = request.vars.remarks)
+
 
 def update_discount():
     # print 'update discount: ', request.vars.added_discount
