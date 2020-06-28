@@ -40,7 +40,30 @@ $('.delete').click(function(){
     })
 });    
 
-
+function trnx_cancel(){
+    //console.log("Removing last item will automatically cancel the transactions... Yes/No?");
+    bootbox.confirm({
+        size: "small",
+        message: "Removing last item will automatically cancel the transactions...",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (tranx) {
+            if (tranx) {                
+                console.log("cancelled");
+                ajax("{{=URL('sales','cancel_tranx', args=request.args(0))}}");                
+                window.location.href = '{{=URL('inventory','get_back_off_workflow_grid',extension=False)}}';
+            }
+        }
+    })    
+}
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

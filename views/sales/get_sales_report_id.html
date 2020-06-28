@@ -2,26 +2,21 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','account_grid')}}";>BROWSE</a></li>
-            </ul>
-            <span class="card-title">SALES INVOICE FORM</span>
+            <span class="card-title">{{=_title}}</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
-                {{=form.custom.begin}}	                                    
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Invoice No</label>
                             <div class="col-sm-8">
-                                {{ if not _id.sales_invoice_no_prefix_id: }}
-                                    <input type="text" class="form-control" value="None" readonly>                                    
-                                {{ else: }}
+                                {{if _id.sales_invoice_no_prefix_id == None: }}
+                                    <input type="text" class="form-control" value="None" readonly>    
+                                {{ else:}}
                                     <input type="text" class="form-control" value="{{=_id.sales_invoice_no_prefix_id.prefix}}{{=_id.sales_invoice_no}}" readonly>    
                                 {{ pass }}
-
                             </div>                           
                         </div>                        
                     </div>
@@ -29,12 +24,11 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Invoice Date</label>
                             <div class="col-sm-8">
-                                {{ if not _id.sales_invoice_no_prefix_id: }}
-                                    <input type="text" class="form-control" value="None" readonly >
-                                {{ else: }}                                    
-                                    <input type="text" class="form-control" value="{{=_id.sales_invoice_date_approved}}" readonly >
-                                {{ pass }}
-                                
+                            {{if _id.sales_invoice_no_prefix_id == None: }}
+                                <input type="text" class="form-control" value="None" readonly >
+                            {{else:}}
+                                <input type="text" class="form-control" value="{{=_id.sales_invoice_date_approved}}" readonly >
+                            {{pass}}
                             </div>
                         </div>                    
                     </div>
@@ -46,7 +40,11 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Delivery Note No</label>
                             <div class="col-sm-8">                                
+                            {{if _id.delivery_note_no_prefix_id == None: }}
+                                <input type="text" class="form-control" value="None" readonly>
+                            {{else:}}
                                 <input type="text" class="form-control" value="{{=_id.delivery_note_no_prefix_id.prefix}}{{=_id.delivery_note_no}}" readonly>
+                            {{pass}}
                             </div>                           
                         </div>                        
                     </div>
@@ -54,8 +52,12 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Delivery Date</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.delivery_note_date_approved}}" readonly >
+                                {{if _id.delivery_note_no_prefix_id == None: }}
+                                    <input type="text" class="form-control" value="None" readonly >
+                                {{else:}}
+                                    <input type="text" class="form-control" value="{{=_id.delivery_note_date_approved}}" readonly >
                                 <p class="help-block">readonly</p>                            
+                                {{pass}}
                             </div>
                         </div>                    
                     </div>
@@ -136,11 +138,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id == 7: }}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
-                                {{ else: }}
-                                    {{=form.custom.widget.status_id}}
-                                {{ pass }}
+                                <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
                             </div>
                         </div>
                     </div>
@@ -163,99 +161,18 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                            <div class="col-sm-8"><input type="text" class="form-control" value="{{=_id.remarks}}" readonly></div>
                         </div>                                               
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">
-                                {{ if _id.status_id == 7 or _id.cancelled == True: }}
-                                    <input class="btn btn-primary" type="submit" value="create sales invoice & print" id="btninvoice" disabled>
-                                    <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Delivery Note?</label> -->
-                                {{ else: }}
-                                    <input class="btn btn-primary" type="button" value="create sales invoice & print" id="btninvoice">
-                                    <!-- <label><input type="checkbox" id="btnCancel"> Cancel Delivery Note?</label> -->
-                                {{ pass }}
-                                
-                                    
-                                
-
-                                <!-- <input class="btn btn-primary" type="checkbox" value="Cancel" id="btninvoice"> -->
-                                {{=form.custom.end}}
-                            </div>        
+                            <div class="col-sm-8"></div>        
                         </div>                         
                     </div>
                 </div>
-                {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
+                {{=LOAD('sales','get_sales_report_transaction_id.load', ajax = True, args = [request.args(0), request.args(1)])}}
             </div>          
         </div>
     </div>
 </div>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-<script>
-$(document).ready(function(){    
-    // $('#btninvoice').attr('disabled','disabled');    
-    // $('#Sales_Order_status_id').change(function(){
-    //     var _var = $(this).find(":selected").val()
-    //     if (_var == 7) {
-    //         $('#btninvoice').removeAttr('disabled');
-    //     } else {
-    //         $('#btninvoice').attr('disabled','disabled');
-    //     }
-    // });
-    
-    $('#btninvoice').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}')
-        // location.reload();
-    });     
-    $("#btnCancel").change(function(){
-        if($("#btnCancel").is(":checked")) {            
-            Cancel();
-            $("#btnCancel").prop("checked", true);
-        } else {
-            $("#btnCancel").prop("checked", false);            
-        }
-    }); 
-});
-    function reload(){
-        location.reload();          
-    }
-    function report(){
-        location.reload();       
-        window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
-        
-    }
-    function redirect(){        
-        window.location.replace("{{=URL('inventory','account_grid')}}")
-    }
-    function Cancel(){
-        // console.log("Cancelled transaction...");
-        // var _id = $(this).attr('data-id');
-        bootbox.confirm({ 
-            size: "small",
-            message: "Are you sure you want to cancel this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {                    
-                    ajax("{{=URL('sales','sales_order_cancel_id', args = request.args(0))}}");
-                    window.location.assign("{{=URL('inventory','account_grid')}}");                        
-                } else {
-                    $("#btnCancel").prop("checked", false);
-                }
-
-            }
-        })        
-    }
-</script>

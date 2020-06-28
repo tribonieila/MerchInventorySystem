@@ -7,6 +7,7 @@ def zero():
         print 'less'
     else:
         print 'not less'
+        
 def callFunc():
     if func() == False:
         print 'function False: ' # notify descripancy issues.

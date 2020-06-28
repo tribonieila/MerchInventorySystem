@@ -2013,6 +2013,14 @@ db.define_table('Sales_Order_Transaction_Report_Counter',
     Field('updated_on', 'datetime', writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
 
+db.define_table('Delivery_Note_Transaction_Report_Counter',
+    Field('delivery_note_transaction_no_id', 'reference Delivery_Note'),
+    Field('printer_counter', 'integer', default = 0),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+
 db.define_table('Sales_Invoice_Transaction_Report_Counter',
     Field('sales_invoice_transaction_no_id', 'reference Sales_Order'),
     Field('printer_counter', 'integer', default = 0),

@@ -6235,7 +6235,7 @@ def get_stock_corrections_workflow_reports():
             TD(n.status_id.required_action),            
             TD(btn_lnk)))
     body = TBODY(*row)    
-    table = TABLE(*[head, body],  _class='table', _id = 'tblcor', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})                
+    table = TABLE(*[head, body],  _class='table', _id = 'tblcor')                
     return dict(table = table)    
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
@@ -6323,7 +6323,7 @@ def stock_corrections():
             TD(n.status_id.required_action),            
             TD(btn_lnk)))
     body = TBODY(*row)    
-    table = TABLE(*[head, body],  _class='table', _id = 'tblcor', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})                
+    table = TABLE(*[head, body],  _class='table', _id = 'tblcor')                
     return dict(table = table)    
 
 def get_stock_corrections_grid(): # warehouse workflow 
@@ -6359,7 +6359,7 @@ def get_stock_corrections_grid(): # warehouse workflow
             TD(n.status_id.required_action),            
             TD(btn_lnk)))
     body = TBODY(*row)    
-    table = TABLE(*[head, body],  _class='table', _id = 'tblcor', **{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})                
+    table = TABLE(*[head, body],  _class='table', _id = 'tblcor')                
     return dict(table = table)  
 
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))

@@ -15,6 +15,16 @@
 
 <script>
     $(document).ready( function () {
-        $('.table').DataTable();
+        {{ if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
+            $('.table').DataTable({
+                "order":[[1,"desc"]]
+            });
+        {{ elif (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')) |(auth.has_membership(role = 'ACCOUNT MANAGER'))  | (auth.has_membership(role = 'MANAGEMENT')):}}
+            $('.table').DataTable({
+                "order":[[1,"desc"]]
+            });
+        {{ else: }}
+            $('.table').DataTable();
+        {{ pass }}
     });
 </script>
