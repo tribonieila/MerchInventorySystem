@@ -132,7 +132,7 @@
             <hr>
             <input type="text" class="form-control" id="vtotal_amount" name="vtotal_amount" value="0" hidden>
             <input type="text" class="form-control" id="vdiscount" name="vdiscount" value="0" hidden>
-            <input type="text" class="form-control" id="vnet_amount" name="vnet_amount" value="0"hidden>
+            <input type="text" class="form-control" id="vnet_amount" name="vnet_amount" value="0" hidden>
             {{=LOAD('sales','sales_order_transaction_table.load', ajax = True,args = request.args(0), target ='tbltrnx')}}
         </div>
     </div>
@@ -149,12 +149,13 @@ $(document).ready(function(){
         }
     });     
     $("#btnsubmit").click(function(){                 
-        var inTotalAmount = document.getElementById("total_amount").innerHTML
-        var inDiscount = document.getElementById("added_discount").value
-        var inNetAmount = document.getElementById("net_amount").innerHTML
+        var inTotalAmount = document.getElementById("var_total_amount").value
+        var inDiscount = document.getElementById("var_discount_added").value
+        var inNetAmount = document.getElementById("var_net_amount").value
         $("#vtotal_amount").val(inTotalAmount);    
-        $("#vdiscount").val(parseFloat(inDiscount).toFixed(2));    
+        $("#vdiscount").val(inDiscount);    
         $("#vnet_amount").val(inNetAmount);    
+        console.log(inTotalAmount,inDiscount,inNetAmount);
         ajax("{{=URL('sales','update_sales_transaction',args=request.args(0))}}",['vtotal_amount','vdiscount','vnet_amount','remarks'])
         window.location.href = '{{=URL('inventory','get_back_off_workflow_grid')}}';
     });

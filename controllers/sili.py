@@ -18,6 +18,12 @@ def func():
     if 1.20 != 1.20 or 3.30 != 3.30 or 5.30 != 5.30:
         return False # price items checker
 
+def generate():
+    for n in db(db.Merch_Stock_Transaction.wholesale_price_pcs==None).select(db.Merch_Stock_Transaction.ALL):
+        print 'pcs: ', n.id
+        n.update_record(wholesale_price_pcs = (n.wholesale_price/n.uom))
+
+    return dict()
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)
     return dict(form = form)
@@ -28,8 +34,16 @@ def merch():
     # _row = db.executesql('SELECT * FROM public."Sales_Order_Transaction" ORDER BY id ASC')
     # for row in _row:
     #     print row[0],row[1],row[2],row[3]
-    
+
 def put_sales_invoice_consolidation():
+    for n in db().select(orderby = db.Sales_Invoice.id):                
+        _chk = db(db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)).select().first()
+        if not _chk:
+            print 'insert here: ', n.sales_invoice_no
+        
+            
+
+def put_sales_invoice_consolidation_():
     print '--', request.now
     _ctr = db(db.Dbf_Batch_Table).count() + 1
     _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
@@ -38,23 +52,24 @@ def put_sales_invoice_consolidation():
     for n in db().select(orderby = db.Sales_Invoice.id):        
         _chk = db(db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)).select().first()
         if _chk: # update consolidated records here
-            _chk.update_record(
-                voucher_no = n.sales_invoice_no,
-                location = n.stock_source_id,
-                transaction_type = 2, # credit
-                transaction_date = n.sales_invoice_date_approved,
-                account = n.customer_code_id.account_code,
-                dept_code = n.dept_code_id,
-                total_amount = n.total_amount,                
-                discount_added = n.discount_added or 0,
-                total_selective_tax = n.total_selective_tax or 0,
-                total_selective_tax_foc = n.total_selective_tax_foc or 0,                
-                sales_man_code = n.sales_man_id.mv_code,
-                batch_code_id = _batch_id.id)
-            for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):
-                _trnx = db(db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id).select().first()
-                for y in db((db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id) & (db.Merch_Stock_Transaction.item_code == x.item_code_id.item_code)).select():
-                    y.update_record(wholesale_price_pcs = x.wholesale_price_pcs)    # insert here the transaction                
+            x = 0
+            # _chk.update_record(
+            #     voucher_no = n.sales_invoice_no,
+            #     location = n.stock_source_id,
+            #     transaction_type = 2, # credit
+            #     transaction_date = n.sales_invoice_date_approved,
+            #     account = n.customer_code_id.account_code,
+            #     dept_code = n.dept_code_id,
+            #     total_amount = n.total_amount,                
+            #     discount_added = n.discount_added or 0,
+            #     total_selective_tax = n.total_selective_tax or 0,
+            #     total_selective_tax_foc = n.total_selective_tax_foc or 0,                
+            #     sales_man_code = n.sales_man_id.mv_code,
+            #     batch_code_id = _batch_id.id)
+            # for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):
+            #     _trnx = db(db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id).select().first()
+            #     for y in db((db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id) & (db.Merch_Stock_Transaction.item_code == x.item_code_id.item_code)).select():
+            #         y.update_record(wholesale_price_pcs = x.wholesale_price_pcs)    # insert here the transaction                
             # print 'updated here...'
         else: # insert consolidated records here
             db.Merch_Stock_Header.insert(

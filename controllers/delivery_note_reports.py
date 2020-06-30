@@ -332,7 +332,7 @@ def sales_order_report_store_keeper():
 
 
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
 def get_workflow_delivery_reports_id():
     _id = db(db.Delivery_Note.id == request.args(0)).select().first()
     for n in db(db.Delivery_Note.id == request.args(0)).select():

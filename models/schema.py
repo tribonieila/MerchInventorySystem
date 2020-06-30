@@ -747,6 +747,8 @@ db.define_table('Merch_Stock_Header',
     Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
     Field('dept_code','integer'), # from item master
     Field('total_amount','decimal(20,6)', default = 0),
+    # Field('total_amount','decimal(20,2)', default = 0),    
+    # Field('total_amount_after_discount','decimal(20,2)', default = 0),        
     Field('discount_percentage','decimal(20,6)', default = 0),
     Field('discount_added','decimal(20,6)', default = 0),
     Field('total_selective_tax','decimal(20,6)', default = 0),
@@ -773,17 +775,17 @@ db.define_table('Merch_Stock_Transaction',
     Field('price_cost', 'decimal(20,6)', default = 0), # pieces
     Field('sale_cost','decimal(20,6)', default = 0), # after discount
     Field('discount', 'integer', default = 0), # normal discount from pos
-    Field('wholesale_price', 'decimal(20,2)', default = 0), # from item prices
-    Field('retail_price', 'decimal(20,2)', default = 0), # from item prices
-    Field('vansale_price', 'decimal(20,2)', default = 0), # from item prices
+    Field('wholesale_price', 'decimal(20,6)', default = 0), # from item prices
+    Field('retail_price', 'decimal(20,6)', default = 0), # from item prices
+    Field('vansale_price', 'decimal(20,6)', default = 0), # from item prices
     Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
     Field('selected_tax','decimal(20,2)'), # in sales
     Field('sales_man_code','string',length=15),
 
     Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
-    Field('average_cost_pcs','decimal(20,4)', default = 0), # per pcs.   
-    Field('wholesale_price_pcs', 'decimal(20,2)', default = 0), # per pcs.
-    Field('retail_price_pcs', 'decimal(20,2)',default = 0), # per pcs.
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.
 
     # Field('sales_lady_code', 'string',length = 10), # sales, pos
     Field('supplier_code','string', length = 10), # from item code
@@ -1130,8 +1132,8 @@ db.define_table('Sales_Order',
     Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    # create normal
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(20,4)', default = 0),    
-    Field('total_amount_after_discount','decimal(20,4)', default = 0),    
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
     # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
@@ -1149,7 +1151,7 @@ db.define_table('Sales_Order',
     Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
-    Field('sales_invoice_date_approved','date', writable = False),
+    Field('sales_invoice_date_approved','datetime', writable = False),
     
     Field('cancelled','boolean',default = False),
     Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
@@ -1221,16 +1223,15 @@ db.define_table('Sales_Return',
     Field('sales_return_date', 'date', default = request.now),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
-    Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    
-    # Field('customer_code_id','reference Customer', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Customer.id, '%(customer_account_no)s - %(customer_name)s', zero = 'Choose Customer')),    
+    Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),        
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(10,6)', default = 0),    
-    Field('total_amount_after_discount','decimal(10,6)', default = 0),    
-    Field('total_selective_tax', 'decimal(10,2)', default = 0),
-    Field('total_selective_tax_foc', 'decimal(10,2)', default = 0),
-    Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure
-    Field('total_vat_amount', 'decimal(10,2)', default = 0),
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),    
+    Field('total_selective_tax', 'decimal(20,2)', default = 0),
+    Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
+    Field('discount_added', 'decimal(10,2)',default =0), # on hold structure
+    Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_return_date_approved','date', writable = False),
     Field('sales_return_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),    
@@ -1250,16 +1251,16 @@ db.define_table('Sales_Return_Transaction',
     Field('uom','integer', default = 0),    
     Field('price_cost', 'decimal(20,6)', default = 0),
     Field('total_amount','decimal(20,6)', default = 0),
-    Field('average_cost','decimal(10,4)', default = 0),
-    Field('sale_cost', 'decimal(10,2)', default = 0),
-    Field('wholesale_price', 'decimal(10,2)', default = 0),
-    Field('retail_price', 'decimal(10,2)',default = 0),
-    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,2)', default = 0),
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
-    Field('net_price', 'decimal(10,2)',default =0),
-    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),
-    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
-    Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'),            
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'),
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'),
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
@@ -1362,8 +1363,8 @@ db.define_table('Delivery_Note',
     Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    # create normal
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(20,4)', default = 0),    
-    Field('total_amount_after_discount','decimal(20,4)', default = 0),    
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
     # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
@@ -1379,7 +1380,7 @@ db.define_table('Delivery_Note',
     Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
-    Field('sales_invoice_date_approved','date', writable = False),
+    Field('sales_invoice_date_approved','datetime', writable = False),
     Field('cancelled','boolean',default = False),
     Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
     Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -1435,8 +1436,8 @@ db.define_table('Sales_Invoice',
     Field('customer_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Customer')),    # create normal
     Field('customer_order_reference','string', length = 25),
     Field('delivery_due_date', 'date', default = request.now),
-    Field('total_amount','decimal(20,4)', default = 0),    
-    Field('total_amount_after_discount','decimal(20,4)', default = 0),    
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
     # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
@@ -1454,7 +1455,7 @@ db.define_table('Sales_Invoice',
     Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
-    Field('sales_invoice_date_approved','date', writable = False),
+    Field('sales_invoice_date_approved','datetime', writable = False),
 
     Field('cancelled','boolean',default = False),
     Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
@@ -2022,7 +2023,7 @@ db.define_table('Delivery_Note_Transaction_Report_Counter',
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
 
 db.define_table('Sales_Invoice_Transaction_Report_Counter',
-    Field('sales_invoice_transaction_no_id', 'reference Sales_Order'),
+    Field('sales_invoice_transaction_no_id', 'reference Sales_Invoice'),
     Field('printer_counter', 'integer', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),

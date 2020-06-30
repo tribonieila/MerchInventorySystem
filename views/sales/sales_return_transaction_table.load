@@ -1,7 +1,7 @@
-{{=table}}
+{{=table}} 
 <script>
 $(document).ready(function(){
-    $(".price_cost, .net_price, .total_amount, .grand_total").prop("readonly", true);
+    $(".price_cost, .net_price, .total_amount, .grand_total,.quantity, .pieces, .discount_percentage").prop("readonly", true);
     var $tblrows = $("#tblSR tbody tr");
     $tblrows.each(function(index){
         var $tblrow = $(this);

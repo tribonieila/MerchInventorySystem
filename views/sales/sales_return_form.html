@@ -109,17 +109,21 @@
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','get_back_off_workflow_grid')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('sales','sales_return_help')}}">help?</a>
+                                <input type="text" id="discount_var" name="discount_var" class="form-control" value=0>
+                                <input type="text" id="net_amount_var" name="net_amount_var" class="form-control" value=0>
+                                <input type="text" id="total_amount_var" name="total_amount_var" class="form-control" value=0>
                                 {{=form.custom.end}}
                             </div>        
                         </div>                         
                     </div>
                 </div>
                 <div id = "order_panel">
+                    
                     {{=LOAD('sales','sales_return_transaction_temporary.load', ajax = True, target = 'tblSR')}}
                 </div>
             </div>           
         </div>
-    </div>
+    </div> 
 </div>
 
 
