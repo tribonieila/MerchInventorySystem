@@ -122,7 +122,7 @@ $(document).ready(function(){
         } else {
             text = "Discount Added";
             gt = _g - _d                 
-            $('#net_amount').val(Number(gt.toFixed(2)).toLocaleString());
+            $('#net_amount').val(Number(gt));
             $("#discount_var").val(_d);
 
         }

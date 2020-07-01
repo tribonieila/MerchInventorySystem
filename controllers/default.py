@@ -105,9 +105,9 @@ heading_style.alignment=TA_CENTER
 
 # sales_invoice = get_display(sales_invoice) # change orientation by using bidi    
 
-_ar_sales_invoice = u'فاتورة المبيعات'
+_ar_sales_invoice = u'فاتورة' 
 _ar_item_code = u'رمز الصنف'
-_ar_item_description = u'وصف السلعة'
+_ar_item_description = u'وصف الصنف'
 _ar_uom = u'ام'
 _ar_category = u'الفئة'
 _ar_qty = u'الكمية'
@@ -1015,15 +1015,12 @@ def get_workflow_sales_invoice_reports_id():
         _discount_arabic = _ar_discount
         _discount_word = 'Discount:'
     else:        
-        _discount_word = _discount_arabic= _discount = ''
+        _discount_word = _discount_arabic= _discount_value = ''
     (_whole, _frac) = (int(_id.total_amount_after_discount), locale.format('%.2f',_id.total_amount_after_discount or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax_foc,'',_show_ar_total_selective_task,'','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_id.total_amount or 0, grouping = True)])
-    # if _selective_tax_sum > 0:
-    #     _st.append(['_selective_tax'])
+    _st.append([_selective_tax_foc,'',_show_ar_total_selective_task_foc,'','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_id.total_amount or 0, grouping = True)])
     _st.append([_selective_tax,'',_show_ar_total_selective_task,'','','','' ,_discount_word,_discount_arabic,_discount_value])
-    # _st.append(['_selective_tax_foc','','_show_ar_total_selective_task_foc','' ,'','','_discount'])
     _st.append([_amount_in_words,'','','','','','','Net Amount :',_ar_net_amount,locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True)])
 
     
@@ -1252,15 +1249,12 @@ def sales_order_report_account_user(): # print direct to printer
         _discount_arabic = _ar_discount
         _discount_word = 'Discount:'
     else:        
-        _discount_word = _discount_arabic= _discount = ''
+        _discount_word = _discount_arabic= _discount_value = ''
     (_whole, _frac) = (int(_id.total_amount_after_discount), locale.format('%.2f',_id.total_amount_after_discount or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
     # _st.append(['-------------     NOTHING TO FOLLOWS     -------------','','','','','','','','',''])
-    _st.append([_selective_tax,'',_show_ar_total_selective_task,'','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_id.total_amount or 0, grouping = True)])
-    # if _selective_tax_sum > 0:
-    #     _st.append(['_selective_tax'])
-    _st.append(['','','','','','','' ,_discount_word,_discount_arabic,_discount_value])
-    # _st.append(['_selective_tax_foc','','_show_ar_total_selective_task_foc','' ,'','','_discount'])
+    _st.append([_selective_tax_foc,'',_show_ar_total_selective_task_foc,'','','','','Total Amount :',_ar_total_amount,locale.format('%.2F',_id.total_amount or 0, grouping = True)])
+    _st.append([_selective_tax,'',_show_ar_total_selective_task,'','','','' ,_discount_word,_discount_arabic,_discount_value])
     _st.append([_amount_in_words,'','','','','','','Net Amount :',_ar_net_amount,locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True)])
 
     

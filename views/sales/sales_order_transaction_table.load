@@ -8,7 +8,7 @@ $(document).ready(function(){
     $(".table").DataTable();
     $("#added_discount").change(function(){
         var _discount = $("#added_discount").val();
-        var _total_amount = 0;
+        var _total_amount = 0; 
         var _net_amount = 0;
         if (isNaN(_discount) || _discount < 0 || _discount > 1) {
             text = "Discount not valid"

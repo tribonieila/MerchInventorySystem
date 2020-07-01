@@ -1172,11 +1172,11 @@ db.define_table('Sales_Order_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(20,6)', default = 0), # per outer
-    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet
-    Field('total_amount','decimal(20,6)', default = 0),
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
-    Field('sale_cost', 'decimal(20,2)', default = 0), # packet
+    Field('sale_cost', 'decimal(20,6)', default = 0), # pcs
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
     Field('vansale_price', 'decimal(20,2)',default =0),
@@ -1202,7 +1202,7 @@ db.define_table('Sales_Order_Transaction_Temporary',
     Field('total_pieces','integer', default = 0),
     Field('price_cost','decimal(20,6)', default = 0),
     Field('wholesale_price', 'decimal(20,2)', default = 0),
-    Field('total_amount','decimal(20,6)', default = 0),
+    Field('total_amount','decimal(20,2)', default = 0),
     Field('discount_percentage', 'decimal(20,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
     Field('taxable_value','decimal(20,2)', default = 0),
@@ -1232,8 +1232,19 @@ db.define_table('Sales_Return',
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
     Field('discount_added', 'decimal(10,2)',default =0), # on hold structure
     Field('total_vat_amount', 'decimal(20,2)', default = 0),
+    
     Field('sales_return_date_approved','date', writable = False),
     Field('sales_return_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
+
+    Field('sales_manager_id', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False), #approve/reject
+    Field('sales_manager_date','datetime',update=request.now, writable = False, readable = True),
+
+    Field('warehouse_id', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),#approve/reject
+    Field('warehouse_date','datetime',update=request.now, writable = False, readable = True),
+
+    Field('accounts_id', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),#approve/reject
+    Field('accounts_date','datetime',update=request.now, writable = False, readable = True),
+
     Field('remarks', 'string'),    
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
@@ -1252,7 +1263,7 @@ db.define_table('Sales_Return_Transaction',
     Field('price_cost', 'decimal(20,6)', default = 0),
     Field('total_amount','decimal(20,6)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
-    Field('sale_cost', 'decimal(20,2)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
     Field('vansale_price', 'decimal(20,2)',default =0),
@@ -1402,9 +1413,9 @@ db.define_table('Delivery_Note_Transaction',
     Field('uom','integer', default = 0),    
     Field('price_cost', 'decimal(20,6)', default = 0), # per outer
     Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet
-    Field('total_amount','decimal(20,6)', default = 0),
+    Field('total_amount','decimal(20,2)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
-    Field('sale_cost', 'decimal(20,2)', default = 0), # packet
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
 
@@ -1474,24 +1485,25 @@ db.define_table('Sales_Invoice_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(20,6)', default = 0), # per outer
-    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet
-    Field('total_amount','decimal(20,6)', default = 0),
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
-    Field('sale_cost', 'decimal(20,2)', default = 0), # packet
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
     Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(20,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
 
-    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
-    Field('average_cost_pcs','decimal(20,4)', default = 0), # per pcs.   
-    Field('wholesale_price_pcs', 'decimal(20,2)', default = 0), # per pcs.
-    Field('retail_price_pcs', 'decimal(20,2)',default = 0), # per pcs.
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
 
     Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
     Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+
     Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
     Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
     Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            

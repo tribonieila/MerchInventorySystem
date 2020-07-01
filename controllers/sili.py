@@ -19,9 +19,8 @@ def func():
         return False # price items checker
 
 def generate():
-    for n in db(db.Merch_Stock_Transaction.wholesale_price_pcs==None).select(db.Merch_Stock_Transaction.ALL):
-        print 'pcs: ', n.id
-        n.update_record(wholesale_price_pcs = (n.wholesale_price/n.uom))
+    for n in db(db.Merch_Stock_Transaction.category_id == "P").select(db.Merch_Stock_Transaction.ALL):    
+        n.update_record(price_cost_pcs = n.average_cost / n.uom)
 
     return dict()
 def merch():
@@ -35,7 +34,7 @@ def merch():
     # for row in _row:
     #     print row[0],row[1],row[2],row[3]
 
-def put_sales_invoice_consolidation():
+def put_sales_invoice_consolidation_():
     for n in db().select(orderby = db.Sales_Invoice.id):                
         _chk = db(db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)).select().first()
         if not _chk:
@@ -43,7 +42,7 @@ def put_sales_invoice_consolidation():
         
             
 
-def put_sales_invoice_consolidation_():
+def put_sales_invoice_consolidation():
     print '--', request.now
     _ctr = db(db.Dbf_Batch_Table).count() + 1
     _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
@@ -95,7 +94,7 @@ def put_sales_invoice_consolidation_():
                     transaction_type = _id.transaction_type,
                     transaction_date = n.sales_invoice_date_approved,
                     item_code = x.item_code_id.item_code,
-                    category_id = x.category_id,
+                    category_id = x.category_id.mnemonic, # convert to normal
                     uom = x.uom,
                     quantity = x.quantity,
                     average_cost = x.average_cost or 0,

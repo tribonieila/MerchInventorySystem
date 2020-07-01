@@ -2,15 +2,10 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#"> VIEW EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
-            </ul> -->
             <span class="card-title">SALES RETURN</span>
         </div>
         <div class="card-body tab-content">                                            
-            <div class="form-horizontal">   
-                {{=form.custom.begin}}	                    
+            <div class="form-horizontal">                              
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -60,7 +55,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Man</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}} " readonly>
+                                <input type="text" class="form-control" value="{{=_id.created_by.first_name.upper()}} {{=_id.created_by.last_name.upper()}} " readonly>
                             </div>
                         </div>
                     </div>    
@@ -70,7 +65,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Customer</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.customer_code_id.account_name}}, {{=_id.customer_code_id.account_code}}" readonly>
+                                <input type="text" class="form-control" value="{{=_id.customer_code_id.account_name}}, {{=_id.customer_code_id.account_code}} " readonly>
                             </div>
                         </div>                    
                     </div>
@@ -86,7 +81,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>                                    
+                                <input type="text" class="form-control" value="{{=_id.status_id.description}} " readonly>
                             </div>
                         </div>
                     </div>
@@ -109,22 +104,14 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                            <div class="col-sm-8"><input type="text" class="form-control" value="{{=_id.remarks}} " readonly></div>
                         </div>                                               
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
-                                {{ if _id.status_id == 14: }}
-                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_return_warehouse_form_approved', args = request.args(0))}}')">
-                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_return_warehouse_form_reject', args = request.args(0))}}')">                                                                            
-                                {{ else: }}
-                                    <input class="btn btn-success" type="submit" value="approved" disabled>
-                                    <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
-                                {{ pass }}            
-                                {{=form.custom.end}}
-                            </div> 
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -134,3 +121,21 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function(){
+    $('#btnreturn').attr('disabled','disabled');
+    $('#Sales_Return_status_id').change(function(){
+        var _var = $(this).find(":selected").val()
+        if (_var == 13) {
+            $('#btnreturn').removeAttr('disabled');
+        } else {
+            $('#btnreturn').attr('disabled','disabled');
+        }
+    });
+    $('#btnreturn').click(function(){
+        window.location.reload();
+        window.open("{{=URL('sales','sales_return_report_account_user', args = request.args(0))}}");
+    })
+});
+</script>

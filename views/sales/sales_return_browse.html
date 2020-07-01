@@ -2,10 +2,10 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                     <li class=""><a href="#" onclick=window.location="{{=URL('sales_return_form')}}";>+ ADD NEW</a></li>
                     <li class="active"><a href="#">BROWSE</a></li>
-                </ul>
+                </ul> -->
                 <span class="card-title">Sales Return Master Report Grid</span>
             </div>
             <div class="card-body tab-content">            
@@ -17,6 +17,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
+    $(document).ready(function(){
+        $(".table").DataTable();
+    });
     $('.clear').click(function(){
         var _id = $(this).attr('data-id');
         var parent = $(this).parent("div").parent("td").parent("tr");
