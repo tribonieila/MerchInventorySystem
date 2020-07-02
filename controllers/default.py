@@ -726,23 +726,7 @@ def sales_return_report_account_user():
             ['','','','','','',''],             
             
             ]
-    # _so_tbl = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
-    # _so_tbl.setStyle(TableStyle([
-    #     # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
-    #     ('SPAN',(0,3),(2,-1)),
-    #     ('SPAN',(0,0),(6,0)),
-    #     ('ALIGN',(0,0),(0,0),'CENTER'),        
-    #     ('FONTNAME', (0, 0), (6, -1), 'Courier'),        
-    #     ('FONTSIZE',(0,0),(0,0),9),
-    #     ('FONTSIZE',(0,1),(6,1),8),                
-    #     ('FONTSIZE',(0,2),(6,-1),8),                
-    #     ('VALIGN',(0,0),(-1,-1),'TOP'),
-    #     ('TOPPADDING',(0,0),(0,0),5),
-    #     ('BOTTOMPADDING',(0,0),(0,0),12),
-    #     ('TOPPADDING',(0,1),(6,-1),0),
-    #     ('BOTTOMPADDING',(0,1),(6,-1),0),
-        
-    #     ]))
+
     
     ctr = 0
     _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount']]        
@@ -751,10 +735,6 @@ def sales_return_report_account_user():
     _total_excise_tax = 0      
     for t in db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id)):
         ctr += 1        
-        _grand_total += float(t.Sales_Return_Transaction.total_amount or 0)        
-        _discount = float(_grand_total) * int(_id.discount_percentage or 0) / 100        
-        _grand_total = float(_grand_total) - int(_discount)
-
         if t.Item_Master.uom_value == 1:
             _qty = t.Sales_Return_Transaction.quantity
         else:
@@ -784,15 +764,15 @@ def sales_return_report_account_user():
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
 
-    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_percentage or 0, grouping = True)])
-    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True)])
+    _st.append([_selective_tax_foc,'','','','','','Added Discount','',':',locale.format('%.2F',_id.discount_added or 0, grouping = True)])
+    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_id.total_amount or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50])
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
-        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),       
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),      
         ('LINEABOVE', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
         ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.Color(0, 0, 0, 1)),        
         ('LINEBELOW', (0,1), (-1,-5), 0.5, colors.Color(0, 0, 0, 0.2)),
@@ -1947,7 +1927,6 @@ class PageNumCanvas2(canvas.Canvas):
         self.drawRightString(148*mm, 45*mm, _location)
         self.drawRightString(115*mm, 35*mm, page)
  
-
 # ---- API (example) -----
 @auth.requires_login()
 def api_get_user_email():

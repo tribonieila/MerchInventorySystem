@@ -34,13 +34,29 @@ item_style.alignment=TA_RIGHT
 heading_style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=20)
 heading_style.alignment=TA_CENTER
 
-_ar_sales_invoice = u'فاتورة المبيعات'
-_ar_item_code = arabic_reshaper.reshape(_ar_sales_invoice)
-arabic_text = Paragraph(get_display(_ar_item_code), item_style)
+arabic_text = u'إذا أخذنا بعين'
+arabic_text = arabic_reshaper.reshape(arabic_text) # join characters
+arabic_text = get_display(arabic_text) # change orientation by using bidi   
+# canvas.setFont('Arabic', 32)
+# canvas.drawString(x - 100, y, ar)
+
+
+def print_arabic_2():
+    arabic_text = u'إذا أخذنا بعين الإعتبار طبيعة تقلب المناخ و المتغيرات البينية السنوية و تلك على المدى الطويل إضافة إلى عدم دقة القياسات والحسابات المتبعة'
+    arabic_text = arabic_reshaper.reshape(arabic_text) # join characters
+    # arabic_text = get_display(arabic_text) # change orientation by using bidi
+    print arabic_text
+    pdf_file=open('disclaimer.pdf','w')
+    pdf_doc = SimpleDocTemplate(pdf_file, pagesize=A4)
+    pdfmetrics.registerFont(TTFont('Arabic-normal', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
+    style = ParagraphStyle(name='Normal', fontName='Arabic-normal', fontSize=12, leading=12. * 1.2)
+    style.alignment=TA_RIGHT
+    pdf_doc.build([Paragraph(arabic_text, style)])
+    pdf_file.close()    
 
 def print_arabic():
-    # print 'arabic_text: ', arabic_text
-    doc.build([['arabic_text']])
+    print 'arabic_text: ', arabic_text    
+    doc.build([Paragraph(arabic_text, heading_style)])    
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
     response.headers['Content-Type']='application/pdf'

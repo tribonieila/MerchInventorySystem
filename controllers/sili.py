@@ -39,38 +39,18 @@ def put_sales_invoice_consolidation_():
         _chk = db(db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)).select().first()
         if not _chk:
             print 'insert here: ', n.sales_invoice_no
-        
-            
+        else:
+            print 'update here: ', n.sales_invoice_no                  
 
-def put_sales_invoice_consolidation():
-    print '--', request.now
+def put_sales_invoice_consolidation():    
     _ctr = db(db.Dbf_Batch_Table).count() + 1
     _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
     db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
     _batch_id = db().select(db.Dbf_Batch_Table.ALL).last()    
     for n in db().select(orderby = db.Sales_Invoice.id):        
         _chk = db(db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)).select().first()
-        if _chk: # update consolidated records here
-            x = 0
-            # _chk.update_record(
-            #     voucher_no = n.sales_invoice_no,
-            #     location = n.stock_source_id,
-            #     transaction_type = 2, # credit
-            #     transaction_date = n.sales_invoice_date_approved,
-            #     account = n.customer_code_id.account_code,
-            #     dept_code = n.dept_code_id,
-            #     total_amount = n.total_amount,                
-            #     discount_added = n.discount_added or 0,
-            #     total_selective_tax = n.total_selective_tax or 0,
-            #     total_selective_tax_foc = n.total_selective_tax_foc or 0,                
-            #     sales_man_code = n.sales_man_id.mv_code,
-            #     batch_code_id = _batch_id.id)
-            # for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):
-            #     _trnx = db(db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id).select().first()
-            #     for y in db((db.Merch_Stock_Transaction.merch_stock_header_id == _chk.id) & (db.Merch_Stock_Transaction.item_code == x.item_code_id.item_code)).select():
-            #         y.update_record(wholesale_price_pcs = x.wholesale_price_pcs)    # insert here the transaction                
-            # print 'updated here...'
-        else: # insert consolidated records here
+        if not _chk: # update consolidated records here
+            # print 'insert here: ', n.sales_invoice_no
             db.Merch_Stock_Header.insert(
                 voucher_no = n.sales_invoice_no,
                 location = n.stock_source_id,
@@ -78,7 +58,8 @@ def put_sales_invoice_consolidation():
                 transaction_date = n.sales_invoice_date_approved,
                 account = n.customer_code_id.account_code,
                 dept_code = n.dept_code_id,
-                total_amount = n.total_amount,                
+                total_amount = n.total_amount,           
+                total_amount_after_discount = n.total_amount_after_discount,
                 discount_added = n.discount_added or 0,
                 total_selective_tax = n.total_selective_tax or 0,
                 total_selective_tax_foc = n.total_selective_tax_foc or 0,                
@@ -113,7 +94,6 @@ def put_sales_invoice_consolidation():
                     average_cost_pcs = x.average_cost_pcs or 0,
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
                     retail_price_pcs = x.retail_price_pcs or 0)               
-            print 'insert here...'
        
 def testing():
         if not _chk:
@@ -209,12 +189,14 @@ def queue_task():
 
 @auth.requires_login()
 def admin():
-    for y in db(db.Sales_Order).select():        
-        y.update_record(total_amount_after_discount = y.total_amount)
-    for n in db(db.Delivery_Note).select():
-        n.update_record(total_amount_after_discount = n.total_amount)
-    for x in db(db.Sales_Invoice).select():
-        x.update_record(total_amount_after_discount = x.total_amount)
+    # for n in db(db.Merch_Stock_Header).select():
+    #     n.update_record(total_amount_after_discount = (float(n.total_amount) - float(n.discount_added or 0)))
+    # for y in db(db.Sales_Order).select():        
+    #     y.update_record(total_amount_after_discount = (float(y.total_amount) - float(y.discount_added or 0)))
+    # for n in db(db.Delivery_Note).select():
+    #     n.update_record(total_amount_after_discount = (float(n.total_amount) - float(n.discount_added or 0)))
+    # for x in db(db.Sales_Invoice).select():
+    #     x.update_record(total_amount_after_discount = (float(x.total_amount) - float(x.discount_added or 0)))
     return dict()
       
 def sales_invoice():

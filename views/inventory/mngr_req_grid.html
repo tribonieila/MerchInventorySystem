@@ -41,7 +41,7 @@
                   {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
                 </div>                   
                 <div role="tabpanel" class="tab-pane" id="sales_return">                        
-                  {{=LOAD('sales','sales_return_grid.load', ajax = True)}}
+                  {{=LOAD('sales','sales_return_grid.load', ajax = True, target = 'tblsrt')}}
                 </div>                   
                 <div role="tabpanel" class="tab-pane" id="purchase_request">                        
                   {{=LOAD('procurement','purchase_request_grid.load', ajax = True, target = 'PRtbl')}}
@@ -60,6 +60,6 @@
 <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
 <script>
 $(document).ready( function () {
-    $('.table').bootstrapTable();
+    $('.table').DataTable();
 });
 </script>

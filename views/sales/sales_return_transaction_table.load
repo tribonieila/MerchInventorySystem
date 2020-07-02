@@ -32,7 +32,7 @@ $(document).ready(function(){
         $("#discount_var").val(_discount);
         $("#net_amount").val(_discounted);
         $("#net_amount_var").val(_discounted);
-        console.log('discount: ', _total_amount, _discount, _discounted);
+    
     })    
 });
 </script>

@@ -746,11 +746,10 @@ db.define_table('Merch_Stock_Header',
     Field('transaction_date', 'date'), # from date of transaction
     Field('account', 'string', length = 10), #adjustment code, customer code, supplier code. etc...
     Field('dept_code','integer'), # from item master
-    Field('total_amount','decimal(20,6)', default = 0),
-    # Field('total_amount','decimal(20,2)', default = 0),    
-    # Field('total_amount_after_discount','decimal(20,2)', default = 0),        
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),        
     Field('discount_percentage','decimal(20,6)', default = 0),
-    Field('discount_added','decimal(20,6)', default = 0),
+    Field('discount_added','decimal(20,2)', default = 0),
     Field('total_selective_tax','decimal(20,6)', default = 0),
     Field('total_selective_tax_foc','decimal(20,6)', default = 0),
     Field('stock_destination','integer'),

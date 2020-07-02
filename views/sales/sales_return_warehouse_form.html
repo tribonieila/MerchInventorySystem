@@ -117,8 +117,8 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
                                 {{ if _id.status_id == 14: }}
-                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('sales','sales_return_warehouse_form_approved', args = request.args(0))}}')">
-                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('sales','sales_return_warehouse_form_reject', args = request.args(0))}}')">                                                                            
+                                    <input class="btn btn-success" type="submit" value="approved" id="btnApproved">
+                                    <input class="btn btn-warning" type="button" value="reject" id="btnReject" onclick="ajax('{{=URL('sales','sales_return_warehouse_form_reject', args = request.args(0))}}',['remarks'])">
                                 {{ else: }}
                                     <input class="btn btn-success" type="submit" value="approved" disabled>
                                     <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                            
@@ -134,3 +134,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+        $("#btnReject").click(function(){
+            window.location.replace("{{=URL('inventory','str_kpr_grid')}}")
+        })
+    })
+</script>
