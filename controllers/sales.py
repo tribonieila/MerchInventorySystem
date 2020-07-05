@@ -1307,7 +1307,7 @@ def sales_return_browse():
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_sales_return_id', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-        prin_lnk = A(I(_class='fas fa-print'), _type='button ', _target='_blank',_role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_return_report_account_user', args = n.id))
+        prin_lnk = A(I(_class='fas fa-print'), _type='button ', _target='_blank',_role='button', _class='btn btn-icon-toggle', _href=URL('default','sales_return_report_account_user', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
         row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_name,', ',n.customer_code_id.account_code),
             TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount   or 0, grouping = True), _align = 'right'),TD(n.status_id.description),TD(n.sales_man_id.employee_id.first_name,' ', n.sales_man_id.employee_id.last_name),
@@ -4771,7 +4771,7 @@ def sales_order_report_account_user(): # print direct to printer
     _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
     _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_added or 0, grouping = True)])
     _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
-    _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=1)
+    _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50], repeatRows=0)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         # ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),

@@ -150,7 +150,7 @@ $(document).ready(function(){
     });
     $('#btnreturn').click(function(){
         window.location.reload();
-        window.open("{{=URL('sales','sales_return_report_account_user', args = request.args(0))}}");
+        window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0))}}");
     })
 });
 </script>
