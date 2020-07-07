@@ -1,5 +1,13 @@
 {{=table}}
 <script>   
+$(document).ready(function(){
+    $(".table").DataTable();
+});
+    function PrintSalesReturn(x){
+        console.log("PrintSalesReturn");
+        var _x = x
+        window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0), extension = False)}}" + "/" + _x );
+    };
         $('.delete').click(function(){
             var _id = $(this).attr('data-id');
             var parent = $(this).parent("div").parent("td").parent("tr");

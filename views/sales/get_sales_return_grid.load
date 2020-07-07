@@ -1,1 +1,4 @@
 {{=table}}    
+<script>
+    $(".table").DataTable();
+</script>

@@ -5147,9 +5147,9 @@ def document_register_grid():
 @auth.requires_login()
 def document_register_grid_process():
     row = []
-    _po = db(db.Purchase_Request.id == request.args(0)).select().first()
+    _po = db(db.Purchase_Order.id == request.args(0)).select().first()
     head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Location'),TH('Supplier')))
-    for n in db(db.Purchase_Request.id == request.args(0)).select():        
+    for n in db(db.Purchase_Order.id == request.args(0)).select():        
         row.append(TR(TD(n.purchase_order_date),TD(n.purchase_order_no_prefix_id.prefix,n.purchase_order_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.supplier_code_id.supp_name)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')

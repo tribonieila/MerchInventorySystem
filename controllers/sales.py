@@ -2056,15 +2056,31 @@ def sales_return_sales_manager():
     return dict(form = form, _id = _id) 
 
 @auth.requires_login()
-def sales_return_sales_manager_approved():
-    _id = db(db.Sales_Return.id == request.args(0)).select().first()    
-    if _id.status_id == 4:        
-        _flash = 'Sales return approved.'
-        _id.update_record(status_id = 14, sales_manager_date = request.now, sales_manager_id = auth.user_id)
-    else:
-        _flash = 'Sales return no. ' + str(_id.sales_return_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' +str(_id.sales_manager_id.first_name)
+def sales_return_sales_manager_approved():    
+    if sales_return_price_validation():
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        _flash = 'Price Discrepancies.'
+        _id.update_record(status_id = 10, remarks = 'Price Discrepancies.', sales_manager_date = request.now, sales_manager_id = auth.user_id)
+    else:                
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        if _id.status_id == 4:        
+            _flash = 'Sales return approved.'
+            _id.update_record(status_id = 14, sales_manager_date = request.now, sales_manager_id = auth.user_id)
+        else:
+            _flash = 'Sales return no. ' + str(_id.sales_return_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' +str(_id.sales_manager_id.first_name)
     response.js = "$('#tblsrt').get(0).reload()"
     session.flash = _flash
+
+def sales_return_price_validation():
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    for n in db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select(orderby = db.Sales_Return_Transaction.id):
+        _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
+        if (n.wholesale_price != _i.wholesale_price) or (n.retail_price != _i.retail_price) or (n.average_cost != _i.average_cost):
+            return True
+        else:
+            return False
+
+
 
 @auth.requires_login()    
 def sales_return_sales_manager_rejected():
@@ -2104,12 +2120,17 @@ def sales_return_warehouse_form():
 
 @auth.requires_login()
 def sales_return_warehouse_form_approved():
-    _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    if _id.status_id == 14:
-        _flash = 'Sales return approved.'
-        _id.update_record(status_id = 12, warehouse_date = request.now, warehouse_id = auth.user_id)
-    else:
-        _flash = 'Sales return no. ' + str(_id.sales_return_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' +str(_id.warehouse_id.first_name)
+    if sales_return_price_validation():
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        _flash = 'Price Discrepancies.'
+        _id.update_record(status_id = 10, remarks = 'Price Discrepancies.', warehouse_date = request.now, warehouse_id = auth.user_id)
+    else:    
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        if _id.status_id == 14:
+            _flash = 'Sales return approved.'
+            _id.update_record(status_id = 12, warehouse_date = request.now, warehouse_id = auth.user_id)
+        else:
+            _flash = 'Sales return no. ' + str(_id.sales_return_no) + ' already been ' + str(_id.status_id.description.lower()) + ' by ' +str(_id.warehouse_id.first_name)
     response.js = "$('#tblsrt').get(0).reload()"
     session.flash = _flash
 
@@ -2147,25 +2168,32 @@ def sales_return_accounts_form():
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _id = _id)     
-    
+
 @auth.requires_login()
 def sales_return_accounts_form_approved():
-    _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    _damaged_qty = 0
-    for n in db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select():
-        _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first() 
-        _stk_in_trn = int(_stk_des.stock_in_transit) - int(n.quantity)
-        _stk_in_clo = int(_stk_des.closing_stock) + int(n.quantity)
-        _stk_in_pro = int(_stk_des.closing_stock) + int(_stk_in_trn)
-        _stk_in_dam = int(_stk_des.damaged_stock_qty) + int(n.quantity)        
-        _stk_in_nor = int(_stk_in_clo) + int(_stk_in_trn)
-        if int(n.category_id) == 1: # damaged return
-            _stk_des.update_record(probational_balance = _stk_in_pro, damaged_stock_qty = _stk_in_dam, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
-        if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
-            _stk_des.update_record(closing_stock = _stk_in_clo, probational_balance = _stk_in_nor, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
-    _id.update_record(status_id = 13, sales_return_date_approved = request.now, sales_return_approved_by = auth.user_id)    
-    response.js = "$('#tblsrt').get(0).reload()"
-    session.flash = 'SALES RETURNED APPROVED'
+    if sales_return_price_validation():        
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        _flash = 'Price Discrepancies.'
+        _id.update_record(status_id = 10, remarks = 'Price Discrepancies.', accounts_date = request.now, accounts_id = auth.user_id)
+        response.js = "$('#tblsrt').get(0).reload()"
+    else:
+        _id = db(db.Sales_Return.id == request.args(0)).select().first()
+        _damaged_qty = 0
+        for n in db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select():
+            _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first() 
+            _stk_in_trn = int(_stk_des.stock_in_transit) - int(n.quantity)
+            _stk_in_clo = int(_stk_des.closing_stock) + int(n.quantity)
+            _stk_in_pro = int(_stk_des.closing_stock) + int(_stk_in_trn)
+            _stk_in_dam = int(_stk_des.damaged_stock_qty) + int(n.quantity)        
+            _stk_in_nor = int(_stk_in_clo) + int(_stk_in_trn)
+            if int(n.category_id) == 1: # damaged return
+                _stk_des.update_record(probational_balance = _stk_in_pro, damaged_stock_qty = _stk_in_dam, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
+            if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
+                _stk_des.update_record(closing_stock = _stk_in_clo, probational_balance = _stk_in_nor, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
+        _id.update_record(status_id = 13, accounts_date = request.now, accounts_id = auth.user_id)    
+        _flash = 'Sales return approved.'        
+        response.js = "jQuery(PrintSalesReturn(%s)), $('#tblsrt').get(0).reload()" % (_id.id)    
+    session.flash = _flash
 
 @auth.requires_login()
 def sales_return_accounts_form_rejected():
@@ -2193,10 +2221,15 @@ def sales_return_view():
     db.Sales_Return.total_selective_tax_foc.writable = False
     db.Sales_Return.total_vat_amount.writable = False    
     db.Sales_Return.sales_man_id.writable = False    
-    db.Sales_Return.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
-    db.Sales_Return.status_id.default = 4
+    
     session.sales_return_no_id = request.args(0)
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    if _id.status_id == 10:
+        db.Sales_Return.status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 10), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+        db.Sales_Return.status_id.default = 10    
+    else:
+        db.Sales_Return.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+        db.Sales_Return.status_id.default = 4
     form = SQLFORM(db.Sales_Return, request.args(0))
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
@@ -2275,17 +2308,21 @@ def sales_return_browse_load_view():
 def get_sales_return_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
-    for n in db(((db.Sales_Return.status_id == 3) | (db.Sales_Return.status_id == 4)) & (db.Sales_Return.created_by == auth.user_id)).select(orderby = ~db.Sales_Return.id):  
+    for n in db(((db.Sales_Return.status_id == 3) | (db.Sales_Return.status_id == 4) | (db.Sales_Return.status_id == 10)) & (db.Sales_Return.created_by == auth.user_id)).select(orderby = ~db.Sales_Return.id):  
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_return_view', args = n.id, extension = False))
         prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
+        if n.status_id == 10:
+            _action = SPAN(n.remarks,_class='label label-danger')
+        else:
+            _action = n.status_id.required_action
         row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),
             TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
-            TD(n.status_id.required_action),TD(btn_lnk)))
+            TD(_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    table = TABLE(*[head, body], _class='table',_id='tblsrt')
     return dict(table = table)  
 
 
@@ -2661,7 +2698,7 @@ def sales_return_grid():
         if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 12:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
-                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_approved', args = n.id, extension = False))
+                appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btnAccounts', callback = URL('sales','sales_return_accounts_form_approved', args = n.id, extension = False))
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('sales','sales_return_accounts_form_rejected', args = n.id, extension = False))                
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             # elif n.status_id == 13:
@@ -2989,13 +3026,21 @@ def get_workflow_reports():
     elif int(request.args(0)) == int(2): # sales return
         title = 'SALES RETURN GRID'
         row = []
-        _usr = db(db.User_Department.user_id == auth.user_id).select().first()
-        if not _usr:
+        _dept = db(db.User_Department.user_id == auth.user_id).select().first()
+        if not _dept:
             _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
         else:
             _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = ~db.Sales_Return.id)   
-        if auth.has_membership(role = 'ACCOUNTS') or auth.has_membership(role = 'ACCOUNT MANAGER')  | auth.has_membership(role = 'MANAGEMENT'):
-            _query = db(db.Sales_Return.archives == False).select(orderby = ~db.Sales_Return.id)   
+        if auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
+            _query = db(db.Sales_Return.status_id == 13).select(orderby = ~db.Sales_Return.id)   
+        elif auth.has_membership(role = 'ACCOUNTS'):             
+            _query = db(db.Sales_Return.accounts_id == auth.user_id).select(orderby = ~db.Sales_Return.id)   
+        elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
+            _query = db(db.Sales_Return.warehouse_id == auth.user_id).select(orderby = ~db.Sales_Return.id)
+        elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):
+            _query = db(db.Sales_Return.sales_manager_id == auth.user_id).select(orderby = ~db.Sales_Return.id)
+        elif auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+            _query = db(db.Sales_Return.sales_man_id == _usr.id).select(orderby = ~db.Sales_Return.id)
         head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
         for n in _query:  
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_sales_return_workflow_report_view', args = n.id, extension = False))
@@ -3003,10 +3048,7 @@ def get_workflow_reports():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
-
-            row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
-                TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
-                TD(n.status_id.required_action),TD(btn_lnk)))
+            row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
         body = TBODY(*row)
         table = TABLE(*[head, body], _class='table', _id='tblSR')
     elif int(request.args(0)) == int(3): # show delivery note all approved complete/incomplete by users

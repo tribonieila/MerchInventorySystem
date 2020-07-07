@@ -252,6 +252,7 @@
 								<li><a href="{{=URL('sales', 'customer_grid')}}" ><span class="title">Customer Master</span></a></li>
 								<li><a href="{{=URL('sales', 'get_area_name_grid')}}" ><span class="title">Area Name</span></a></li>
 								<li><a href="{{=URL('sales', 'get_sales_man_grid')}}" ><span class="title">Sales Man</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">Sales Man Location</span></a></li>
 								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>
 								<!-- <li><a href="#" ><span class="title"></span></a></li> -->
 							</ul>
@@ -303,7 +304,7 @@
 
 			</ul>
 			{{pass}}
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')) | (auth.has_membership(role = 'MANAGEMENT')):}}			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')):}}			
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li ><a href="{{=URL('inventory','account_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a>
@@ -448,11 +449,11 @@
 				</li>		
 			</ul>
 			{{pass}}			
-
-			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY')):}}
+			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'MANAGEMENT')):}}  
 			<ul id="main-menu" class="gui-controls">
 				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
-				<li><a href="{{=URL('inventory', 'inventory_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="{{=URL('inventory', 'inventory_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW mngt</span></a></li>
 				<li><a><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a></li>
 			</ul>
 			{{pass}}

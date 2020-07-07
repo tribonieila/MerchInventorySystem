@@ -89,7 +89,7 @@ pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applicati
 # pdfmetrics.registerFont(TTFont('Arabic', '/Users/user/Desktop/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch, showBoundary=1)
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
 doc_invoice = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=3 * inch,bottomMargin=2 * inch)#, showBoundary=1)
 
 style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=15)
@@ -728,17 +728,20 @@ def sales_order_delivery_note_report_store_keeper():
     response.headers['Content-Type']='application/pdf'
     return pdf_data    
 
+def sales_return_report_account_user_():
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()
+    print 'sales_return_report_account_user: ', _id.id
+
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') |  auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
 def sales_return_report_account_user():
-    _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    
+    _id = db(db.Sales_Return.id == request.args(0)).select().first()    
     ctr = 0
     _st = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Discount','Net Price','Amount'],
     ['',_ar_item_code,_ar_item_description,_ar_uom,_ar_category,_ar_qty,_ar_unit_price,_ar_discount,_ar_net_price,_ar_amount]]        
     _grand_total = 0
     _total_amount = 0        
-    _total_excise_tax = _discount_value = 0      
-    _selective_tax = _selective_tax_foc = _show_ar_total_selective_task = _show_ar_total_selective_task_foc = _discount_word =''
+    _total_excise_tax = 0      
+    _selective_tax = _selective_tax_foc = _discount_value = _show_ar_total_selective_task = _show_ar_total_selective_task_foc = _discount_word = _discount_arabic = ''
     for t in db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id)):
         ctr += 1        
         if t.Item_Master.uom_value == 1:

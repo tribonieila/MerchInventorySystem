@@ -41,7 +41,7 @@
                             
                         </div>          
                         <div role="tabpanel" class="tab-pane" id="stock_receipt">
-                            {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True)}}
+                            {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True,target='tblfdi')}}
                         </div>
                         <div role="tabpanel" class="tab-pane" id="stock_corrections">
                             {{=LOAD('inventory','get_stock_corrections_grid.load', ajax = True, target = 'tblcor')}}
