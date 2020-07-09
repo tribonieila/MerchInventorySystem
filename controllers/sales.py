@@ -664,7 +664,7 @@ def item_code_description():
                 _on_balanced = card(_icode.id, _provational_balanced, _icode.uom_value)
                 _on_transit = card(_icode.id, _sfile.stock_in_transit, _icode.uom_value)
                 _on_hand = card(_icode.id, _sfile.closing_stock, _icode.uom_value)
-            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
+            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax Amt.'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
             TBODY(TR(
                 TD(_icode.item_code),
                 TD(_icode.item_description.upper()),
@@ -2308,7 +2308,7 @@ def sales_return_browse_load_view():
 def get_sales_return_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
-    for n in db(((db.Sales_Return.status_id == 3) | (db.Sales_Return.status_id == 4) | (db.Sales_Return.status_id == 10)) & (db.Sales_Return.created_by == auth.user_id)).select(orderby = ~db.Sales_Return.id):  
+    for n in db((db.Sales_Return.status_id != 13) & (db.Sales_Return.created_by == auth.user_id)).select(orderby = db.Sales_Return.id):  
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','sales_return_view', args = n.id, extension = False))
         prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
@@ -2318,7 +2318,7 @@ def get_sales_return_grid():
             _action = SPAN(n.remarks,_class='label label-danger')
         else:
             _action = n.status_id.required_action
-        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),
+        row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_name, ', ',n.customer_code_id.account_code),
             TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
             TD(_action),TD(btn_lnk)))
     body = TBODY(*row)
@@ -2420,9 +2420,8 @@ def sales_return_form():
 def sales_return_item_code_description():
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
     _icode = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
-    
-    if not _icode:
-        response.js = "$('#btnadd').attr('disabled','disabled')"
+    _price = db((db.Item_Prices.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id)).select().first()    
+    if not _icode:        
         return CENTER(DIV(B('WARNING! '), "Item code no " + str(request.vars.item_code) +" doesn't exist on selected department. ", _class='alert alert-warning',_role='alert'))       
     else:   
         response.js = "$('#btnadd').removeAttr('disabled')"     
@@ -2440,14 +2439,14 @@ def sales_return_item_code_description():
                 _on_balanced = card(_icode.id, _provational_balanced, _icode.uom_value)
                 _on_transit = card(_icode.id, _sfile.stock_in_transit, _icode.uom_value)
                 _on_hand = card(_icode.id, _sfile.closing_stock, _icode.uom_value)            
-            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
+            return CENTER(TABLE(THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Sel.Tax Amt'),TH('Retail Price'),TH('Unit Price'),TH('On-Hand'),TH('On-Transit'),TH('On-Balance'))),
             TBODY(TR(
                 TD(_icode.item_code),
                 TD(_icode.item_description.upper()),
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),
-                TD(_icode.selectivetax),
+                TD(_iprice.selective_tax_price),
                 TD(_iprice.retail_price),
                 TD(locale.format('%.2F',_iprice.wholesale_price or 0, grouping = True)),
                 TD(_on_hand),
@@ -2474,42 +2473,44 @@ def validate_sales_return_transaction(form):
     else:
         _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
-        _exist = db((db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Return_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Return_Transaction_Temporary.item_code).first()                                   
-        
-        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)
-        
+        _exist = db((db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Return_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Return_Transaction_Temporary.item_code).first()
+        _categ = db((db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Return_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Return_Transaction_Temporary.category_id).first()
+        _not_allowed = db(
+            (db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & 
+            (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & 
+            ((int(request.vars.category_id) == 1) | (int(request.vars.category_id) == 4))).select().first()
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)      
+
+        if _not_allowed:
+            # form.errors.item_code = CENTER(DIV(B('Info! '),'Not Allowed to returned both Normal/Damaged.',_class='alert alert-danger',_role='alert'))            
+            form.errors.item_code = "Not Allowed to returned both Normal/Damaged."
+
         if not _price:
             form.errors.item_code = "Item code does'nt have price."
-        
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
             form.error.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
-                
-        # if _exist == request.vars.item_code and (request.vars.category_id != 3):
+
         _excise_tax_amount = 0
         _unit_price = 0
         _total_excise_tax = _net_price= _total_amount = 0
         _selective_tax = _selective_tax_foc = _total_excist_tax_foc = 0
         if _exist:
             form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'            
-            # computation for excise tax foc
-            # _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-            # _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
-            # _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-            # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
-            # print 'exist'
-
         else:
+
             if int(request.vars.category_id) == 3:
                 _unit_price = 0
                 # computation for excise tax foc
-                _excise_tax_amount_foc = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
+                _excise_tax_amount_foc = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
                 _excise_tax_price_per_piece_foc = _excise_tax_amount_foc / _id.uom_value
                 _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount                
+                _unit_price = float(_price.wholesale_price) + _excise_tax_amount_foc                
+            # elif int(request.vars.category_id) == 1 or int(request.vars.category_id) == 4:
+            #     form.errors.item_code = 'error not allowed'
             else:
                 # computation for excise tax
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+                _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
+                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value
                 _selective_tax += _excise_tax_price_per_piece * _total_pcs
                 _unit_price = float(_price.wholesale_price) + _excise_tax_amount
                 
@@ -2662,7 +2663,7 @@ def sales_return_transaction_temporary_delete():
 def sales_return_grid():
     row = []
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()
-    _query = db(db.Sales_Return).select(orderby = ~db.Sales_Return.id)
+    _query = db(db.Sales_Return).select(orderby = db.Sales_Return.id)
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):        
         if not _usr:
             _query = db((db.Sales_Return.status_id == 4) & (db.Sales_Return.archives == False)).select(orderby = db.Sales_Return.id)
@@ -2673,9 +2674,9 @@ def sales_return_grid():
         # if not _usr:
         #     _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
         # else:
-        _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = ~db.Sales_Return.id)                    
+        _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = db.Sales_Return.id)                    
     elif auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
-        _query = db((db.Sales_Return.status_id == 12) & (db.Sales_Return.archives == False)).select(orderby = ~db.Sales_Return.id)
+        _query = db((db.Sales_Return.status_id == 12) & (db.Sales_Return.archives == False)).select(orderby = db.Sales_Return.id)
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in _query:
         if auth.has_membership(role = 'ROOT'):
@@ -2693,8 +2694,8 @@ def sales_return_grid():
             if n.status_id == 14:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_warehouse_form', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_warehouse_form_approved', args = n.id, extension = False))
-                reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('sales','sales_return_warehouse_form_reject', args = n.id, extension = False))                
-                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+                reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('sales','sales_return_warehouse_form_reject', args = n.id, extension = False))                
+                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle',_target='_blank', _href=URL('sales_report','get_sales_return_reports_id',args = n.id, extension = False))
         if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 12:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))        
@@ -2729,10 +2730,10 @@ def sales_return_transaction_table():
     _div_tax = _div_tax_foc = DIV('')
     _id = db((db.Sales_Return.id == request.args(0)) | (db.Sales_Return.id == session.sales_return_no_id)).select().first()
     if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
-        _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
+        _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
         _id = db((db.Sales_Return.id == request.args(0)) | (db.Sales_Return.id == session.sales_return_no_id)).select().first()
     else:
-        _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = ~db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
+        _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
         _id = db((db.Sales_Return.id == request.args(0)) | (db.Sales_Return.id == session.sales_return_no_id)).select().first()
 
     # _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
@@ -3043,10 +3044,12 @@ def get_workflow_reports():
             _query = db(db.Sales_Return.sales_man_id == _usr.id).select(orderby = ~db.Sales_Return.id)
         head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
         for n in _query:  
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_sales_return_workflow_report_view', args = n.id, extension = False))
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_sales_return_workflow_report_view', args = n.id, extension = False))            
             prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
+                prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button  ', _role='button', _target='blank', _class='btn btn-icon-toggle', _href=URL('sales_report','get_sales_return_reports_id', args = n.id))                
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk) 
             row.append(TR(TD(n.sales_return_date),TD(n.transaction_prefix_id.prefix,n.sales_return_no),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.location_code_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
         body = TBODY(*row)

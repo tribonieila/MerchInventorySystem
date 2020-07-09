@@ -13,7 +13,7 @@
             {{ else: }}            
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#"> DETAILS</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('stock_receipt')}}";>BROWSE</a></li>
+                <li class=""><a href="#" onclick=window.location="{{=URL('account_grid')}}";>BROWSE</a></li>
             </ul>
             {{ pass }}
             <span class="card-title">{{=title}}</span>
@@ -176,18 +176,21 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
-                                    {{ if _id.srn_status_id == 6: }}                                                                                                                    
-                                        <input class="btn btn-info" type="button" value="create stock receipt" disabled>      
-                                        {{ if auth.has_membership(role = 'INVENTORY SALES MANAGER'): }}    
-                                        <input class="btn btn-warning" type="button" value="print stock receipt" disabled>
-                                        {{ else: }}            
-                                                  
-                                        <input class="btn btn-warning" type="button" value="print stock receipt"  onclick="window.open('{{=URL('inventory','stock_receipt_report', args = request.args(0))}}')";>
-                                        {{ pass }}
-                                    {{ else: }}
-                                        <input class="btn btn-success" type="submit" value="create stock receipt" id="btncreate">                                        
-                                        <input class="btn btn-warning" type="button" value="print stock receipt" disabled>         
-                                    {{ pass }}                                                                       
+                                    {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}
+                                        {{ if _id.srn_status_id == 5: }}                                                                                                                    
+                                            <input class="btn btn-info" type="button" value="dispatched" id="btndispatched" disabled>                                              
+                                        {{ else: }}
+                                            <input class="btn btn-success" type="button" value="dispatched" id="btndispatched">                                                                                
+                                        {{pass}}
+                                    {{pass}}
+                                    {{ if auth.has_membership(role = 'ACCOUNTS'): }}
+                                        {{ if _id.srn_status_id == 6: }}                                                                                                                    
+                                            <input class="btn btn-info" type="button" value="generate stock transfer" disabled>                                              
+                                        {{ else: }}
+                                            <input class="btn btn-success" type="button" value="generate stock transfer" id="btncreate">                                                                                
+                                        {{pass}}
+                                    {{pass}}
+
                                 </div>                            
                             </div>                    
                         </div>                              
@@ -204,6 +207,7 @@
 <script>
 $(document).ready(function(){
     $('#btncreate').attr('disabled','disabled');
+    $('#btndispatched').attr('disabled','disabled');
     $('#genstr').click(function(){
         // ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')
         window.open("{{=URL('inventory','stock_receipt_report', args = request.args(0))}}");        
@@ -214,23 +218,35 @@ $(document).ready(function(){
     });
 
     $('#btncreate').click(function(){        
-        ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')
-        // ajax('{{=URL('inventory','create_stock_receipt')}}', ['remarks']);
-        // $('#Stock_Request_srn_status_id').attr('disabled','disabled');
-        // $('#Stock_Request_remarks').attr('disabled','disabled');
+        ajax('{{=URL('inventory','get_stock_transfer_process', args = request.args(0))}}',['remarks'])
         location.reload();
     });
-
-    $('#Stock_Request_srn_status_id').change(function(){
-        var _var = $(this).find(":selected").val()
-        console.log(_var);
-        if (_var == 6) {
-            $('#btncreate').removeAttr('disabled');                   
-        }            
-        else {
-            $('#btncreate').attr('disabled','disabled');
-        }
-    });
+    $('#btndispatched').click(function(){        
+        ajax('{{=URL('inventory','get_stock_transfer_dispatched', args = request.args(0))}}',['remarks'])
+        location.reload();
+    });    
+    {{ if auth.has_membership(role = 'ACCOUNTS'): }}
+        $('#Stock_Request_srn_status_id').change(function(){
+            var _var = $(this).find(":selected").val()        
+            if (_var == 26) {
+                $('#btncreate').removeAttr('disabled');                   
+            }            
+            else {
+                $('#btncreate').attr('disabled','disabled');
+            }
+        });
+    {{ elif auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}
+        $('#Stock_Request_srn_status_id').change(function(){
+            var _var = $(this).find(":selected").val()        
+            if (_var == 5) {
+                $('#btndispatched').removeAttr('disabled');                   
+            }            
+            else {
+                $('#btndispatched').attr('disabled','disabled');
+            }
+        });
+    
+    {{pass}}
 
 });    
 </script>

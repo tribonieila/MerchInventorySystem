@@ -120,8 +120,8 @@
                                     <input class="btn btn-success" type="submit" value="approved" disabled>
                                     <input class="btn btn-warning" type="submit" value="reject" disabled>                                                                
                                 {{ else: }}
-                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','mngr_btn_aprvd', args = request.args(0))}}')">
-                                    <input class="btn btn-warning" type="submit" value="reject" onclick="ajax('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}')">                                                                
+                                    <input class="btn btn-success" type="submit" value="approved" onclick="ajax('{{=URL('inventory','stock_request_approved', args = request.args(0))}}')">
+                                    <input class="btn btn-warning" type="button" id="btnReject" value="reject" onclick="ajax('{{=URL('inventory','mngr_btn_reject', args = request.args(0))}}',['remarks'])">                                                                
 
                                 {{ pass }}
                             </div>                            
@@ -135,3 +135,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+        $("#btnReject").click(function(){            
+            window.location.replace("{{=URL('inventory','mngr_req_grid')}}")
+        })
+    });
+</script>

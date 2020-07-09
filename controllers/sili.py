@@ -2,37 +2,14 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
-def zero():
-    if 0 < float(1):
-        print 'less'
-    else:
-        print 'not less'
-        
-def callFunc():
-    if func() == False:
-        print 'function False: ' # notify descripancy issues.
-    else:
-        print 'function True:'
-
-def func():
-    if 1.20 != 1.20 or 3.30 != 3.30 or 5.30 != 5.30:
-        return False # price items checker
-
 def generate():
     for n in db(db.Merch_Stock_Transaction.category_id == "P").select(db.Merch_Stock_Transaction.ALL):    
         n.update_record(price_cost_pcs = n.average_cost / n.uom)
-
     return dict()
+
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)
     return dict(form = form)
-
-# def get_truncate_table():    
-#     _row = db.executesql('TRUNCATE TABLE m3rch_inv_db.Merch_Stock_Transaction;  ')
-#     _row = db.executesql('DBCC CHECKIDENT ('Merch_Stock_Transaction', RESEED, 1)')
-    # _row = db.executesql('SELECT * FROM public."Sales_Order_Transaction" ORDER BY id ASC')
-    # for row in _row:
-    #     print row[0],row[1],row[2],row[3]
 
 def put_sales_invoice_consolidation_():
     for n in db().select(orderby = db.Sales_Invoice.id):                
@@ -189,14 +166,6 @@ def queue_task():
 
 @auth.requires_login()
 def admin():
-    # for n in db(db.Merch_Stock_Header).select():
-    #     n.update_record(total_amount_after_discount = (float(n.total_amount) - float(n.discount_added or 0)))
-    # for y in db(db.Sales_Order).select():        
-    #     y.update_record(total_amount_after_discount = (float(y.total_amount) - float(y.discount_added or 0)))
-    # for n in db(db.Delivery_Note).select():
-    #     n.update_record(total_amount_after_discount = (float(n.total_amount) - float(n.discount_added or 0)))
-    # for x in db(db.Sales_Invoice).select():
-    #     x.update_record(total_amount_after_discount = (float(x.total_amount) - float(x.discount_added or 0)))
     return dict()
       
 def sales_invoice():
