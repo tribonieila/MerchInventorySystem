@@ -153,11 +153,21 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                {{ if _id.srn_status_id == 6: }}
+                                {{ if auth.has_membership(role = 'ACCOUNTS'): }}
+                                    {{ if _id.srn_status_id == 6: }}
+                                        <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
+                                        <p class="help-block">readonly</p>    
+                                    {{ else: }}
+                                        {{=form.custom.widget.remarks}}
+                                    {{ pass }}
+                                {{ elif auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}
+                                    {{ if _id.srn_status_id == 5: }}
                                     <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
                                     <p class="help-block">readonly</p>    
-                                {{ else: }}
-                                    {{=form.custom.widget.remarks}}
+                                    {{ else: }}
+                                        {{=form.custom.widget.remarks}}
+                                    {{ pass }}
+
                                 {{ pass }}
                             </div>
                         </div>                  
@@ -222,7 +232,7 @@ $(document).ready(function(){
         location.reload();
     });
     $('#btndispatched').click(function(){        
-        ajax('{{=URL('inventory','get_stock_transfer_dispatched', args = request.args(0))}}',['remarks'])
+        ajax('{{=URL('inventory','get_stock_request_dispatch_id', args = request.args(0))}}',['remarks'])
         location.reload();
     });    
     {{ if auth.has_membership(role = 'ACCOUNTS'): }}
