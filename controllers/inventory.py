@@ -3868,19 +3868,14 @@ def get_stock_request_workflow_grid():
         else:    
             _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
         if auth.has_membership(role = 'INVENTORY BACK OFFICE'):
-            # gene_lnk = A(I(_class='fas fa-user-plus'), _title='Generate Stock Transfer & Print', _type='button ', _role='button', _class='btn btn-icon-toggle')
+            gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             if n.srn_status_id == 4 and n.stock_destination_id == _usr.location_code_id:
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))                
-                gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             elif n.srn_status_id == 5 and n.stock_destination_id == _usr.location_code_id:                
-                gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')                
+                gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                                
             elif n.srn_status_id == 26 and n.stock_source_id == _usr.location_code_id:                
                 gene_lnk = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')                
-            else:
-                gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             if n.srn_status_id == 5 and n.stock_destination_id ==1:
                 gene_lnk = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                
@@ -4431,7 +4426,14 @@ def get_generate_stock_transfer():
     response.js = "$('#tblSTV').get(0).reload()"
 
 
-
+# ----------------------------------------------------------------------------
+# ------------    S T O C K  P R I C E  V A L I D A T I O N    ---------------
+# ----------------------------------------------------------------------------
+def stock_price_validation():
+    for n in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select():
+        _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+        if n.wholesale_price != _i.wholesale_price or n.retail_price != _i.retail_price or n.average_cost != _i.average_cost:
+            return True
 # ----------------------------------------------------------------------------
 # ------------    S T O C K  R E Q U E S T  A P P R O V A L    ---------------
 # ----------------------------------------------------------------------------
