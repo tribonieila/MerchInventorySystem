@@ -8,7 +8,7 @@
                 <div>
                     <ul class="nav nav-pills" role="tablist">
                         {{ _usr = db(db.User_Department.user_id == auth.user_id).select().first() }}
-                        <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db((db.Stock_Request.srn_status_id == 2) & (db.Stock_Request.dept_code_id == 3)).count()}}</span></a></li>                                                            
+                        <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request<span class="badge">{{=db((db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.dept_code_id == 3)).count()}}</span></a></li>                                                            
                         <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt<span class="badge">{{=db((db.Stock_Request.srn_status_id == 26) & (db.Stock_Request.dept_code_id == 3) & ((db.Stock_Request.stock_destination_id == 1) | (db.Stock_Request.stock_source_id == 1))).count()}}</span></a></li>
                         <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.cancelled == False)).count()}}</span></a></li>
                         <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id == 14) & (db.Sales_Return.dept_code_id == 3)).count()}}</span></a></li>                        
@@ -27,8 +27,8 @@
                             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidated.load', ajax = True)}}
                         </div>                         
                         <div role="tabpanel" class="tab-pane" id="stock_request">                        
-                            {{=table}}  
-                            
+                            {{=LOAD('inventory','get_stock_request_workflow_grid.load', ajax = True,target='tblSR')}} 
+                            <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">+ create stock request</a>
                         </div>          
                         <div role="tabpanel" class="tab-pane" id="stock_receipt">
                             {{=LOAD('inventory','get_warehouse_stock_receipt_grid.load', ajax = True,target='tblfdi')}}

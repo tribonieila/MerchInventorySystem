@@ -401,14 +401,14 @@ def view_documents():
 def get_sales_man_grid():
     row = []
     ctr = 0
-    head = THEAD(TR(TH('#'),TH('MV Code'),TH('Name'),TH('Van Sales'),TH('Section'),TH('Status'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Name'),TH('Van Sales'),TH('Section'),TH('Status'),TH('Action')))
     for n in db(db.Sales_Man.status_id == 1).select():
         ctr+=1
         view_lnk = A(I(_class='fa fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','put_sales_man_id', args = n.id))
         edit_lnk = A(I(_class='fa fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = (URL('sales','put_sales_man_id', args = n.id)))         
         dele_lnk = A(I(_class='fa fa-trash'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))        
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.mv_code),TD(n.employee_id.title,n.employee_id.first_name,' ',n.employee_id.middle_name,' ',n.employee_id.last_name),TD(n.van_sales),TD(n.section_id),TD(n.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(ctr),TD(n.employee_id.title,n.employee_id.first_name,' ',n.employee_id.middle_name,' ',n.employee_id.last_name,', ',n.mv_code),TD(n.van_sales),TD(n.section_id),TD(n.status_id.status),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head,body],_class='table')
     return dict(table=table)
