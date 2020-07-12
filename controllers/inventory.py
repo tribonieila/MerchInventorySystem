@@ -4433,7 +4433,7 @@ def stock_price_validation():
     for n in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select():
         _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
         if n.wholesale_price != _i.wholesale_price or n.retail_price != _i.retail_price or n.average_cost != _i.average_cost:
-            return True
+            return False
 # ----------------------------------------------------------------------------
 # ------------    S T O C K  R E Q U E S T  A P P R O V A L    ---------------
 # ----------------------------------------------------------------------------
