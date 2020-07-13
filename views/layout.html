@@ -241,7 +241,7 @@
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 						
 						<!-- <li><a href="{{=URL('procurement', 'insurance_proposal_grid')}}" ><span class="title">Insurance Proposal</span></a></li> -->
-						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
+						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><s	pan class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
@@ -311,6 +311,7 @@
 				</li>	
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
 						<li><a href="{{=URL('procurement','get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>
@@ -511,7 +512,8 @@
 				</li>				
 				<!-- # viewing only -->
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a> 					
-					<ul>											
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 4)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 4)}}" ><span class="title">Delivery Note</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>

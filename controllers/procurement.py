@@ -7,204 +7,6 @@ from datetime import date
 from time import gmtime, strftime
 locale.setlocale(locale.LC_ALL, '')
 
-@auth.requires_login()
-def stock_file_grid():
-    db.Stock_File.item_code_id.represent = lambda id, r: db.Item_Master(id).item_code
-    db.Stock_File.location_code_id.represent = lambda id, r: db.Location(id).location_name    
-    return dict(grid = SQLFORM.grid(db.Stock_File))
-
-@auth.requires_login()
-def item_prices_grid():
-    db.Item_Prices.item_code_id.represent = lambda id, r: db.Item_Master(id).item_code
-    db.Item_Prices.currency_id.represent = lambda id, r: db.Currency(id).mnemonic
-    return dict(grid = SQLFORM.grid(db.Item_Prices))
-
-@auth.requires_login()
-def get_purchase_receipt_grid_():
-    db.Purchase_Receipt.purchase_receipt_no_id_consolidated.represent = lambda id, r: db.Purchase_Receipt_Ordered_Warehouse_Consolidated(id).id
-    db.Purchase_Receipt.status_id.represent = lambda id, r: db.Stock_Status(id).description
-    db.Purchase_Receipt.posted.writable = True
-    return dict(grid = SQLFORM.grid(db.Purchase_Receipt))
-
-def get_purchase_receipt_transaction_grid():
-    db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated.represent = lambda id, r: db.Purchase_Receipt_Ordered_Warehouse_Consolidated(id).id
-    return dict(grid = SQLFORM.grid(db.Purchase_Receipt_Transaction))
-
-@auth.requires_login()
-def insurance_proposal_grid():
-    row = []
-    ctr = 0
-    head = THEAD(TR(TD('#'),TH('Insurance Name'),TH('Contact Person'),TH('Address'),TH('City'),TH('Country'),TH('Action')))
-    for n in db().select(db.Insurance_Master.ALL):
-        ctr += 1
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('insurance_proposal_edit', args = n.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(ctr),TD(n.insurance_name),TD(n.contact_person.upper()),TD(n.address),TD(n.city),TD(n.country_id.description),TD(btn_lnk)))
-    body = TBODY(*row)
-    table = TABLE(*[head, body], _class= 'table')    
-    return dict(table = table)
-
-@auth.requires_login()
-def insurance_proposal():
-    form = SQLFORM(db.Insurance_Master)
-    if form.process().accepted:
-        response.flash = 'FORM SAVE'
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'
-    return dict(form = form)
-
-@auth.requires_login()
-def insurance_proposal_edit():
-    form = SQLFORM(db.Insurance_Master, request.args(0))
-    if form.process().accepted:
-        response.flash = 'FORM UPDATED'
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'
-    return dict(form = form)
-
-def validate_ins_pro(form):
-    form.vars.purchase_request_no_id = request.args(0)
-
-@auth.requires_login()
-def insurance_proposal_details():
-    # _om = db.Outgoing_Mail(request.args(0)) or redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
-    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
-    if not _om:
-        redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
-    else:
-        redirect(URL('procurement','insurance_proposal_details_view', args = request.args(0)))
-    _id = db(db.Insurance_Details.id == request.args(0)).select().first()
-    form1 = SQLFORM(db.Outgoing_Mail, _om, showid = False)
-    if form1.process().accepted:
-        response.flash = 'FORM SAVE'
-        # redirect(URL('procurement','insurance_proposal_reports', args = request.args(0)))
-    elif form1.errors:
-        response.flash = 'FORM HAS ERROR'
-    
-    return dict(form1 = form1, _id = _id)
-
-@auth.requires_login()
-def insurance_proposal_details_view():
-    _om = db(db.Outgoing_Mail.purchase_request_no_id == request.args(0)).select().first()
-    form1 = SQLFORM(db.Outgoing_Mail, _om, showid = False)
-    if form1.process().accepted:
-        response.flash = 'FORM UPDATED'
-    elif form1.errors:
-        response.flash = 'FORM HAS ERROR'
-    return dict(form1 = form1)
-
-@auth.requires_login()
-def validate_outgoing_mail(form):
-    _ip = db(db.Insurance_Master.id == request.vars.insurance_master_id).select().first()
-    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
-    _skey = _pre.serial_key
-    _skey += 1  
-    _usr_f = str(auth.user.first_name.upper())
-    _usr_l = str(auth.user.last_name.upper())
-    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
-    form.vars.outgoing_mail_no = _ckey
-    form.vars.mail_prefix_no_id = _pre.id    
-    form.vars.mail_addressee = _ip.insurance_name
-
-@auth.requires_login()
-def insurance_proposal_details_new():        
-    _po = db(db.Purchase_Order.purchase_request_no_id == request.args(0)).select().first()
-    # _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
-    _pur = db(db.Purchase_Request.id == request.args(0)).select().first()
-    # _po = db(db.Purchase_Order.id == request.args(0)).select().first()    
-    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
-    _skey = _pre.serial_key
-    _skey += 1    
-    _usr_f = str(auth.user.first_name.upper())
-    _usr_l = str(auth.user.last_name.upper())
-    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
-    _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
-    form = SQLFORM.factory(
-        Field('insurance_master_id','reference Insurance_Master',ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
-        Field('mail_subject','string', length = 50, default = _subject),
-        Field('description', 'string', length = 50),
-        Field('payment_terms', 'string', length = 50),
-        Field('partial_shipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Partial Shipment')),
-        Field('transhipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Transhipment')))
-    if form.process(onvalidation = validate_outgoing_mail).accepted:        
-        response.flash = 'FORM SAVE'
-        _pre.update_record(serial_key = _skey) 
-        _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
-        _pur.update_record(status_id = 22)
-        db.Outgoing_Mail.insert(
-            # purchase_order_no_id = _po.id,
-            insurance_master_id = form.vars.insurance_master_id,
-            mail_prefix_no_id = form.vars.mail_prefix_no_id,
-            outgoing_mail_no = form.vars.outgoing_mail_no,            
-            mail_subject = form.vars.mail_subject,
-            mail_sender = 'The Management',
-            mail_addressee = form.vars.mail_addressee,
-            print_process = True)
-        session.outgoing_mail_no = form.vars.outgoing_mail_no
-        session.mail_subject = form.vars.mail_subject
-        db.Insurance_Details.insert(
-            purchase_order_no_id = _po.id,
-            insurance_master_id = form.vars.insurance_master_id,
-            subject = form.vars.mail_subject,
-            description = form.vars.description,
-            payment_terms = form.vars.payment_terms,
-            partial_shipment = form.vars.partial_shipment,
-            transhipment = form.vars.transhipment) 
-        # _id = db(db.Outgoing_Mail.outgoing_mail_no == form.vars.outgoing_mail_no).select().first()       
-        redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'    
-    return dict(form = form, _ckey = _ckey)
-
-@auth.requires_login()
-def insurance_proposal_details_on_hold():
-    _po = db(db.Purchase_Order.id == request.args(0)).select().first()
-    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
-    _pur = db(db.Purchase_Request.id == request.args(0)).select().first()    
-    
-    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
-    _skey = _pre.serial_key
-    _skey += 1    
-    _usr_f = str(auth.user.first_name.upper())
-    _usr_l = str(auth.user.last_name.upper())
-    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
-    _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
-    form = SQLFORM.factory(
-        Field('insurance_master_id','reference Insurance_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
-        Field('mail_subject','string', length = 50, default = _subject),
-        Field('description', 'string', length = 50),
-        Field('payment_terms', 'string', length = 50),
-        Field('partial_shipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Partial Shipment')),
-        Field('transhipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Transhipment')))
-    if form.process(onvalidation = validate_outgoing_mail).accepted:        
-        response.flash = 'FORM SAVE'
-        _pre.update_record(serial_key = _skey) 
-        _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
-        _pur.update_record(status_id = 22)
-        db.Outgoing_Mail.insert(
-            purchase_order_no_id = _po.id,
-            insurance_master_id = form.vars.insurance_master_id,
-            mail_prefix_no_id = form.vars.mail_prefix_no_id,
-            outgoing_mail_no = form.vars.outgoing_mail_no,            
-            mail_subject = form.vars.mail_subject,
-            mail_sender = 'The Management',
-            mail_addressee = form.vars.mail_addressee,
-            print_process = True)
-        db.Insurance_Details.insert(
-            purchase_order_no_id = _po.id,
-            insurance_master_id = form.vars.insurance_master_id,
-            subject = form.vars.mail_subject,
-            description = form.vars.description,
-            payment_terms = form.vars.payment_terms,
-            partial_shipment = form.vars.partial_shipment,
-            transhipment = form.vars.transhipment)        
-        redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
-    elif form.errors:
-        response.flash = 'FORM HAS ERROR'
-    
-    return dict(form = form, _ckey = _ckey)
 # -----------------------  ACCOUNT GRID  -----------------------------
 def get_purchase_receipt_worklow_grid():
     row = []
@@ -3496,7 +3298,7 @@ def validate_date_range(form):
     else:
         form.vars.status_id = 19
 
-@auth.requires_membership('ROOT')
+# @auth.requires_membership('ROOT')
 @auth.requires_login()
 def purchase_request_form():
     session.currency_id = 5
@@ -3836,7 +3638,7 @@ def purchase_request_item_code_description():
 def get_purchase_request_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Purchase_Request.created_by == auth.user.id) & (db.Purchase_Request.archives == False) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
+    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_request_transaction_view', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -3985,7 +3787,7 @@ def purchase_request_transaction_view():
     db.Purchase_Request.dept_code_id.writable = False
     db.Purchase_Request.supplier_code_id.writable = False
     db.Purchase_Request.location_code_id.writable = False
-    # db.Purchase_Request.supplier_reference_order.writable = False
+    db.Purchase_Request.supplier_reference_order.writable = False
     db.Purchase_Request.estimated_time_of_arrival.writable = False
     db.Purchase_Request.foreign_currency_value.writable = False    
     db.Purchase_Request.local_currency_value.writable = False
@@ -3994,18 +3796,17 @@ def purchase_request_transaction_view():
     db.Purchase_Request.total_amount.writable = False
     db.Purchase_Request.total_amount_after_discount.writable = False
     db.Purchase_Request.discount_percentage.writable = False    
+    
     # db.Purchase_Request.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 19)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     # db.Purchase_Request.status_id.default = 19 
     db.Purchase_Request.status_id.writable = False
-    db.Purchase_Request.mode_of_shipment.writable = False        
-    _url = URL('default','download')
+    db.Purchase_Request.mode_of_shipment.writable = False            
     _id = db(db.Purchase_Request.id == request.args(0)).select().first()
     _ex = db(db.Currency_Exchange.id == _id.currency_id).select().first()
     session.supplier_code_id = _id.supplier_code_id
     session.dept_code_id = _id.dept_code_id
-    session.location_code_id = _id.location_code_id
-    
-    form = SQLFORM(db.Purchase_Request, request.args(0), upload=_url)
+    session.location_code_id = _id.location_code_id    
+    form = SQLFORM(db.Purchase_Request, request.args(0),  upload=URL('default','download'))
     # form = SQLFORM(db.Purchase_Request, request.args(0),upload=URL('default','download'))
     if form.process(onvalidation = validateproforma).accepted:
         session.flash = 'RECORD UPDATED'
@@ -4022,11 +3823,11 @@ def purchase_request_transaction_view_details():
     row = body = foot = []
     ctr = _total_amount = 0
     _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)
-    if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
+    if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'): 
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty.'),TH('Closing Stock'),TH('Order In Transit'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))    
     else:
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('MRS Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))    
-    _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete != True)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = ~db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
+    _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete != True)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
     for n in _query:
         ctr += 1
         _total_amount += n.Purchase_Request_Transaction.total_amount
@@ -8420,3 +8221,206 @@ def unorder():
     db(db.Purchase_Order_Transaction).update(consolidated = False)
     return locals()
 
+
+# ------------------------------------------------------------------------------------------
+# -------------------------  P R O C U R E M E N T   C O N F I G  --------------------------
+# ------------------------------------------------------------------------------------------
+
+@auth.requires_login()
+def stock_file_grid():
+    db.Stock_File.item_code_id.represent = lambda id, r: db.Item_Master(id).item_code
+    db.Stock_File.location_code_id.represent = lambda id, r: db.Location(id).location_name    
+    return dict(grid = SQLFORM.grid(db.Stock_File))
+
+@auth.requires_login()
+def item_prices_grid():
+    db.Item_Prices.item_code_id.represent = lambda id, r: db.Item_Master(id).item_code
+    db.Item_Prices.currency_id.represent = lambda id, r: db.Currency(id).mnemonic
+    return dict(grid = SQLFORM.grid(db.Item_Prices))
+
+@auth.requires_login()
+def get_purchase_receipt_grid_():
+    db.Purchase_Receipt.purchase_receipt_no_id_consolidated.represent = lambda id, r: db.Purchase_Receipt_Ordered_Warehouse_Consolidated(id).id
+    db.Purchase_Receipt.status_id.represent = lambda id, r: db.Stock_Status(id).description
+    db.Purchase_Receipt.posted.writable = True
+    return dict(grid = SQLFORM.grid(db.Purchase_Receipt))
+
+def get_purchase_receipt_transaction_grid():
+    db.Purchase_Receipt_Transaction.purchase_receipt_no_id_consolidated.represent = lambda id, r: db.Purchase_Receipt_Ordered_Warehouse_Consolidated(id).id
+    return dict(grid = SQLFORM.grid(db.Purchase_Receipt_Transaction))
+
+@auth.requires_login()
+def insurance_proposal_grid():
+    row = []
+    ctr = 0
+    head = THEAD(TR(TD('#'),TH('Insurance Name'),TH('Contact Person'),TH('Address'),TH('City'),TH('Country'),TH('Action')))
+    for n in db().select(db.Insurance_Master.ALL):
+        ctr += 1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('insurance_proposal_edit', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        row.append(TR(TD(ctr),TD(n.insurance_name),TD(n.contact_person.upper()),TD(n.address),TD(n.city),TD(n.country_id.description),TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class= 'table')    
+    return dict(table = table)
+
+@auth.requires_login()
+def insurance_proposal():
+    form = SQLFORM(db.Insurance_Master)
+    if form.process().accepted:
+        response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+@auth.requires_login()
+def insurance_proposal_edit():
+    form = SQLFORM(db.Insurance_Master, request.args(0))
+    if form.process().accepted:
+        response.flash = 'FORM UPDATED'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
+def validate_ins_pro(form):
+    form.vars.purchase_request_no_id = request.args(0)
+
+@auth.requires_login()
+def insurance_proposal_details():
+    # _om = db.Outgoing_Mail(request.args(0)) or redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
+    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
+    if not _om:
+        redirect(URL('procurement','insurance_proposal_details_new', args = request.args(0)))
+    else:
+        redirect(URL('procurement','insurance_proposal_details_view', args = request.args(0)))
+    _id = db(db.Insurance_Details.id == request.args(0)).select().first()
+    form1 = SQLFORM(db.Outgoing_Mail, _om, showid = False)
+    if form1.process().accepted:
+        response.flash = 'FORM SAVE'
+        # redirect(URL('procurement','insurance_proposal_reports', args = request.args(0)))
+    elif form1.errors:
+        response.flash = 'FORM HAS ERROR'
+    
+    return dict(form1 = form1, _id = _id)
+
+@auth.requires_login()
+def insurance_proposal_details_view():
+    _om = db(db.Outgoing_Mail.purchase_request_no_id == request.args(0)).select().first()
+    form1 = SQLFORM(db.Outgoing_Mail, _om, showid = False)
+    if form1.process().accepted:
+        response.flash = 'FORM UPDATED'
+    elif form1.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form1 = form1)
+
+@auth.requires_login()
+def validate_outgoing_mail(form):
+    _ip = db(db.Insurance_Master.id == request.vars.insurance_master_id).select().first()
+    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
+    _skey = _pre.serial_key
+    _skey += 1  
+    _usr_f = str(auth.user.first_name.upper())
+    _usr_l = str(auth.user.last_name.upper())
+    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
+    form.vars.outgoing_mail_no = _ckey
+    form.vars.mail_prefix_no_id = _pre.id    
+    form.vars.mail_addressee = _ip.insurance_name
+
+@auth.requires_login()
+def insurance_proposal_details_new():        
+    _po = db(db.Purchase_Order.purchase_request_no_id == request.args(0)).select().first()
+    # _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
+    _pur = db(db.Purchase_Request.id == request.args(0)).select().first()
+    # _po = db(db.Purchase_Order.id == request.args(0)).select().first()    
+    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
+    _skey = _pre.serial_key
+    _skey += 1    
+    _usr_f = str(auth.user.first_name.upper())
+    _usr_l = str(auth.user.last_name.upper())
+    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
+    _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
+    form = SQLFORM.factory(
+        Field('insurance_master_id','reference Insurance_Master',ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
+        Field('mail_subject','string', length = 50, default = _subject),
+        Field('description', 'string', length = 50),
+        Field('payment_terms', 'string', length = 50),
+        Field('partial_shipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Partial Shipment')),
+        Field('transhipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Transhipment')))
+    if form.process(onvalidation = validate_outgoing_mail).accepted:        
+        response.flash = 'FORM SAVE'
+        _pre.update_record(serial_key = _skey) 
+        _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
+        _pur.update_record(status_id = 22)
+        db.Outgoing_Mail.insert(
+            # purchase_order_no_id = _po.id,
+            insurance_master_id = form.vars.insurance_master_id,
+            mail_prefix_no_id = form.vars.mail_prefix_no_id,
+            outgoing_mail_no = form.vars.outgoing_mail_no,            
+            mail_subject = form.vars.mail_subject,
+            mail_sender = 'The Management',
+            mail_addressee = form.vars.mail_addressee,
+            print_process = True)
+        session.outgoing_mail_no = form.vars.outgoing_mail_no
+        session.mail_subject = form.vars.mail_subject
+        db.Insurance_Details.insert(
+            purchase_order_no_id = _po.id,
+            insurance_master_id = form.vars.insurance_master_id,
+            subject = form.vars.mail_subject,
+            description = form.vars.description,
+            payment_terms = form.vars.payment_terms,
+            partial_shipment = form.vars.partial_shipment,
+            transhipment = form.vars.transhipment) 
+        # _id = db(db.Outgoing_Mail.outgoing_mail_no == form.vars.outgoing_mail_no).select().first()       
+        redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'    
+    return dict(form = form, _ckey = _ckey)
+
+@auth.requires_login()
+def insurance_proposal_details_on_hold():
+    _po = db(db.Purchase_Order.id == request.args(0)).select().first()
+    _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()            
+    _pur = db(db.Purchase_Request.id == request.args(0)).select().first()    
+    
+    _pre = db(db.Communication_Tranx_Prefix.prefix_key == 'LTR').select().first()
+    _skey = _pre.serial_key
+    _skey += 1    
+    _usr_f = str(auth.user.first_name.upper())
+    _usr_l = str(auth.user.last_name.upper())
+    _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
+    _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
+    form = SQLFORM.factory(
+        Field('insurance_master_id','reference Insurance_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
+        Field('mail_subject','string', length = 50, default = _subject),
+        Field('description', 'string', length = 50),
+        Field('payment_terms', 'string', length = 50),
+        Field('partial_shipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Partial Shipment')),
+        Field('transhipment','string',length = 25, requires = IS_IN_SET(['Allowed','Not Allowed'], zero = 'Choose Transhipment')))
+    if form.process(onvalidation = validate_outgoing_mail).accepted:        
+        response.flash = 'FORM SAVE'
+        _pre.update_record(serial_key = _skey) 
+        _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
+        _pur.update_record(status_id = 22)
+        db.Outgoing_Mail.insert(
+            purchase_order_no_id = _po.id,
+            insurance_master_id = form.vars.insurance_master_id,
+            mail_prefix_no_id = form.vars.mail_prefix_no_id,
+            outgoing_mail_no = form.vars.outgoing_mail_no,            
+            mail_subject = form.vars.mail_subject,
+            mail_sender = 'The Management',
+            mail_addressee = form.vars.mail_addressee,
+            print_process = True)
+        db.Insurance_Details.insert(
+            purchase_order_no_id = _po.id,
+            insurance_master_id = form.vars.insurance_master_id,
+            subject = form.vars.mail_subject,
+            description = form.vars.description,
+            payment_terms = form.vars.payment_terms,
+            partial_shipment = form.vars.partial_shipment,
+            transhipment = form.vars.transhipment)        
+        redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    
+    return dict(form = form, _ckey = _ckey)

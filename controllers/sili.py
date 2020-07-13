@@ -2,9 +2,13 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
-def generate():
-    for n in db(db.Merch_Stock_Transaction.category_id == "P").select(db.Merch_Stock_Transaction.ALL):    
-        n.update_record(price_cost_pcs = n.average_cost / n.uom)
+def generate():    
+    for n in db().select(db.Merch_Stock_Transaction.ALL):
+        _i = db(db.Item_Master.item_code == n.item_code).select().first()
+        _p = db(db.Item_Prices.item_code_id == _i.id).select().first()
+        # print n.item_code, _i.item_code, _p.item_code_id, _p.item_code_id.item_code
+        # _i = db(db.Item_Prices.item_code_id.item_code == y.item_code).select().first()
+        n.update_record(selective_tax_price = _p.selective_tax_price)
     return dict()
 
 def merch():
@@ -64,6 +68,7 @@ def put_sales_invoice_consolidation():
                     vansale_price = x.vansale_price or 0,
                     tax_amount = x.vat_percentage or 0,
                     selected_tax = x.selective_tax,
+                    selective_tax_price = x.selective_tax_price,
                     supplier_code = _i.supplier_code_id.supp_code,
                     sales_man_code = n.sales_man_id.mv_code,                
                     dept_code = n.dept_code_id,                    
@@ -72,95 +77,6 @@ def put_sales_invoice_consolidation():
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
                     retail_price_pcs = x.retail_price_pcs or 0)               
        
-def testing():
-        if not _chk:
-            db.Merch_Stock_Header.insert(
-                voucher_no = n.sales_invoice_no,
-                location = n.stock_source_id,
-                transaction_type = 2, # credit
-                transaction_date = n.sales_invoice_date_approved,
-                account = n.customer_code_id.account_code,
-                dept_code = n.dept_code_id,
-                total_amount = n.total_amount,                
-                discount_added = n.discount_added or 0,
-                total_selective_tax = n.total_selective_tax or 0,
-                total_selective_tax_foc = n.total_selective_tax_foc or 0,
-                # stock_destination = x,
-                sales_man_code = n.sales_man_id.mv_code,
-                batch_code_id = _batch_id.id)
-            _id = db(db.Merch_Stock_Header.voucher_no == n.sales_invoice_no).select().first()
-            for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):                
-                _i = db(db.Item_Master.id == x.item_code_id).select().first()
-                db.Merch_Stock_Transaction.insert(
-                    merch_stock_header_id = _id.id,
-                    voucher_no = n.sales_invoice_no,
-                    location = n.stock_source_id,
-                    transaction_type = _id.transaction_type,
-                    transaction_date = n.sales_invoice_date_approved,
-                    item_code = x.item_code_id.item_code,
-                    category_id = x.category_id,
-                    uom = x.uom,
-                    quantity = x.quantity,
-                    average_cost = x.average_cost or 0,
-                    price_cost = x.price_cost or 0,
-                    sale_cost = x.sale_cost or 0,
-                    discount = x.discount_percentage or 0,
-                    wholesale_price = x.wholesale_price or 0,
-                    retail_price = x.retail_price or 0,
-                    vansale_price = x.vansale_price or 0,
-                    tax_amount = x.vat_percentage or 0,
-                    selected_tax = x.selective_tax,
-                    supplier_code = _i.supplier_code_id.supp_code,
-                    sales_man_code = n.sales_man_id.mv_code,                
-                    dept_code = n.dept_code_id,                    
-                    price_cost_pcs = x.price_cost_pcs or 0,
-                    average_cost_pcs = x.average_cost_pcs or 0,
-                    wholesale_price_pc = x.wholesale_price_pcs or 0,
-                    retail_price_pcs = x.retail_price_pcs or 0)                        
-        else:                 
-            _chk.update_record(
-                voucher_no = n.sales_invoice_no,
-                location = n.stock_source_id,
-                transaction_type = 3, # credit
-                transaction_date = n.sales_invoice_date_approved,
-                account = n.customer_code_id,
-                dept_code = n.dept_code_id,
-                total_amount = n.total_amount,                
-                discount_added = n.discount_added or 0,
-                total_selective_tax = n.total_selective_tax or 0,
-                total_selective_tax_foc = n.total_selective_tax_foc or 0,
-                # stock_destination = x,
-                sales_man_code = n.sales_man_id.mv_code,
-                batch_code_id = _batch_id.id)
-            _id = db(db.Merch_Stock_Header.voucher_no == n.sales_invoice_no).select().first()
-            for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):                
-                _i = db(db.Item_Master.id == x.item_code_id).select().first()
-                x.update_record(
-                    merch_stock_header_id = _id.id,
-                    voucher_no = n.sales_invoice_no,
-                    location = n.stock_source_id,
-                    transaction_type = _id.transaction_type,
-                    transaction_date = n.sales_invoice_date_approved,
-                    item_code = x.item_code_id.item_code,
-                    category_id = x.category_id,
-                    uom = x.uom,
-                    quantity = x.quantity,
-                    average_cost = x.average_cost or 0,
-                    price_cost = x.price_cost or 0,
-                    sale_cost = x.sale_cost or 0,
-                    discount = x.discount_percentage or 0,
-                    wholesale_price = x.wholesale_price or 0,
-                    retail_price = x.retail_price or 0,
-                    price_cost_pcs = x.price_cost_pcs or 0,
-                    average_cost_pcs = x.average_cost_pcs or 0,
-                    wholesale_price_pcs = x.wholesale_price_pcs or 0,
-                    retail_price_pcs = x.retail_price_pcs or 0,
-                    vansale_price = x.vansale_price or 0,
-                    tax_amount = x.vat_percentage or 0,
-                    selected_tax = x.selective_tax,
-                    supplier_code = _i.supplier_code_id.supp_code,
-                    sales_man_code = n.sales_man_id.mv_code,                
-                    dept_code = n.dept_code_id)
 def queue_task():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
 

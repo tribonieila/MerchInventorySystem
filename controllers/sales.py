@@ -3274,11 +3274,11 @@ def sales_order_manager_grid():
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()    
     if auth.has_membership(role = 'INVENTORY SALES MANAGER'):
         if not _usr:
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.archives == False)).select(orderby = ~db.Sales_Order.id)                
+            _query = db(db.Sales_Order.status_id == 4).select(orderby = ~db.Sales_Order.id)                
         elif _usr.section_id == 'N':            
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'N') & (db.Sales_Order.archives == False) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)            
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'N') & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)            
         else:        
-            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'F') & (db.Sales_Order.archives == False) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
+            _query = db((db.Sales_Order.status_id == 4) & (db.Sales_Order.section_id == 'F') & (db.Sales_Order.cancelled == False) & (db.Sales_Order.dept_code_id == _usr.department_id)).select(orderby = ~db.Sales_Order.id)    
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
         # if not _usr:            
@@ -3579,7 +3579,7 @@ def get_sales_order_trnx_redo_id():
 
 def sales_order_manager_view():
     db.Sales_Order.sales_order_date.writable = False
-    db.Sales_Order.dept_code_id.writable = sales_order_manager_grid
+    db.Sales_Order.dept_code_id.writable = False
     db.Sales_Order.stock_source_id.writable = False
     db.Sales_Order.customer_code_id.writable = False
     db.Sales_Order.customer_order_reference.writable = False
@@ -3894,6 +3894,7 @@ def sync_to_sales_invoice_db():
             _price_cost = (n.average_cost / n.uom)
         else:
             _price_cost = (n.wholesale_price / n.uom)
+        _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
         db.Sales_Invoice_Transaction.insert(
             sales_invoice_no_id = _si.id,
             item_code_id = n.item_code_id,
@@ -3917,6 +3918,7 @@ def sync_to_sales_invoice_db():
             net_price = n.net_price,
             selective_tax = n.selective_tax,
             selective_tax_foc = n.selective_tax_foc,
+            selective_tax_price = _i.selective_tax_price,
             packet_selective_tax = n.packet_selective_tax,
             packet_selective_tax_foc = n.packet_selective_tax_foc,
             vat_percentage = n.vat_percentage,

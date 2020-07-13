@@ -715,7 +715,7 @@ db.define_table('Merch_Stock_Transaction',
     Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.   
     Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.
     Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.
-
+    Field('selective_tax_price','decimal(20,2)', default = 0), # from item_prices
     # Field('sales_lady_code', 'string',length = 10), # sales, pos
     Field('supplier_code','string', length = 10), # from item code
     Field('dept_code','integer'), # from item master
@@ -1430,9 +1430,9 @@ db.define_table('Sales_Invoice_Transaction',
     Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
     Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
 
-    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
     Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
-
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
     Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
     Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
     Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
@@ -1466,7 +1466,11 @@ db.define_table('Stock_Request',
     Field('stock_receipt_date_approved', 'datetime', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),
     Field('ticket_no', 'string', length = 10, writable = False, requires = [IS_LENGTH(10),IS_UPPER(), IS_NOT_IN_DB(db, 'Stock_Request.ticket_no')]),
-    Field('archive','boolean', default = False),    
+    Field('archive','boolean', default = False),
+    Field('cancelled','boolean',default = False),
+    Field('cancelled_by','reference auth_user',ondelete='NO ACTION',writable=False),
+    Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1531,6 +1535,7 @@ db.define_table('Stock_Transfer',
     Field('stock_receipt_no', 'integer', writable = False),    
     Field('stock_receipt_date_approved', 'datetime', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),   
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1578,6 +1583,7 @@ db.define_table('Stock_Receipt',
     Field('stock_receipt_no', 'integer', writable = False),    
     Field('stock_receipt_date_approved', 'datetime', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),   
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
