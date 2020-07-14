@@ -3,12 +3,8 @@ from datetime import datetime
 now = datetime.now() # current date and time
 
 def generate():    
-    for n in db().select(db.Merch_Stock_Transaction.ALL):
-        _i = db(db.Item_Master.item_code == n.item_code).select().first()
-        _p = db(db.Item_Prices.item_code_id == _i.id).select().first()
-        # print n.item_code, _i.item_code, _p.item_code_id, _p.item_code_id.item_code
-        # _i = db(db.Item_Prices.item_code_id.item_code == y.item_code).select().first()
-        n.update_record(selective_tax_price = _p.selective_tax_price)
+    for n in db().select(db.Merch_Stock_Transaction.voucher_no, orderby = db.Merch_Stock_Transaction.voucher_no, groupby = db.Merch_Stock_Transaction.voucher_no):
+        print n.voucher_no
     return dict()
 
 def merch():

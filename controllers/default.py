@@ -1232,7 +1232,7 @@ def sales_order_report_account_user(): # print direct to printer
     
     _st_tbl = Table(_st, colWidths=[20,60,'*',25,25,50,50,45,50,50])
     _st_tbl.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
         # ('SPAN',(2,4),(5,4)),
         ('BOTTOMPADDING',(0,0),(-1,0),0),
         ('TOPPADDING',(0,1),(-1,1),0),

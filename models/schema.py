@@ -1,51 +1,3 @@
-# auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
-
-# auth = Auth(globals(),db)
-
-
-# Duplicate Entry error = SAME VALUE ALREADY EXIST OR EMPTY
-# error_message = 'Record already exist or empty.'
-
-# auth.settings.actions_disabled=['register', 'request_reset_password','retrieve_username']
-# if request.controller != 'appadmin': auth.settings.actions_disabled +=['register']
-
-# db.define_table('Division_Group',
-#     Field('division_group_name','string',label = 'Division',length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Division_Group.division_group_name')]))
-
-# db.define_table('Department_Group',
-#     Field('division_group_id','reference Division_Group', ondelete = 'NO ACTION', label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
-#     Field('department_group_name','string',label = 'Department', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db,'Department_Group.department_group_name')]))
-
-# db.define_table('Section_Group',
-#     Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION', label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
-#     Field('section_group_name','string',label = 'Section', length = 50, requires = [IS_UPPER(), IS_LENGTH(50), IS_NOT_IN_DB(db, 'Section_Group.section_group_name')]))
-
-# db.define_table(
-#     auth.settings.table_user_name,
-#     Field('first_name', length=128),
-#     Field('last_name', length=128),
-#     Field('username', unique = True, readable = False),
-#     Field('email', length=128), # required
-#     Field('password', 'password', length=512,readable=False, label='Password'), # required
-#     # Field('division_group_id', 'reference Division_Group', ondelete = 'NO ACTION',label = 'Division',requires = IS_IN_DB(db, db.Division_Group.id, '%(division_group_name)s', zero = 'Choose Division')),
-#     # Field('department_group_id', 'reference Department_Group', ondelete = 'NO ACTION',label = 'Department', requires = IS_IN_DB(db, db.Department_Group.id,'%(department_group_name)s', zero = 'Choose Department')),
-#     # Field('section_group_id', 'reference Section_Group', ondelete = 'NO ACTION', label = 'Section', requires = IS_IN_DB(db, db.Section_Group.id,'%(section_group_name)s', zero = 'Choose Section')),
-#     Field('registration_key', length=512, writable=False, readable=False, default=''),# required
-#     Field('reset_password_key', length=512,writable=False, readable=False, default=''),# required
-#     Field('registration_id', length=512, writable=False, readable=False, default=''), format = '%(first_name)s %(last_name)s')# required
-
-
-# # db.auth_user.id.represent = lambda auth_id, row: row.first_name + ' ' + row.last_name
-# ## do not forget validators
-# custom_auth_table = db[auth.settings.table_user_name] # get the custom_auth_table
-# custom_auth_table.first_name.requires =   IS_NOT_EMPTY(error_message=auth.messages.is_empty)
-# custom_auth_table.last_name.requires =   IS_NOT_EMPTY(error_message=auth.messages.is_empty)
-# # custom_auth_table.division_id.requires =  IS_IN_DB(db, db.division.id, '%(division)s', zero = 'Choose division')
-# custom_auth_table.password.requires = [CRYPT()]
-# custom_auth_table.email.requires =   IS_EMAIL(error_message=auth.messages.invalid_email)
-
-# auth.settings.table_user = custom_auth_table # tell auth to use custom_auth_table
-# auth.define_tables(username = True)
 
 db.define_table('Status', # Item Master
     Field('status','string',length=20, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Status.status')]),
@@ -1065,7 +1017,6 @@ db.define_table('Sales_Order',
     Field('total_amount_after_discount','decimal(20,2)', default = 0),    
     Field('total_selective_tax', 'decimal(20,2)', default = 0),
     Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),
-    # Field('discount_percentage', 'decimal(20,2)',default =0), # on hold structure
     Field('discount_added','decimal(10,2)', default = 0),
     Field('total_vat_amount', 'decimal(20,2)', default = 0),
     Field('sales_order_date_approved','datetime', writable = False),

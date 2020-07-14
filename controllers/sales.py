@@ -602,7 +602,8 @@ def sales_order_form():
                 total_amount = n.total_amount)
             _grand_total += n.total_amount
             _total_selective_tax += n.selective_tax or 0
-            _total_selective_tax_foc += n.selective_tax_foc or 0
+            _total_selective_tax_foc += n.selective_tax_foc 
+            print n.id, _total_selective_tax_foc, n.selective_tax_foc or 0
         _discount = session.discount or 0
         # _discount = float(_grand_total) * float(_discount) / 100
         _after_discount = float(_grand_total) - float(session.discount or 0)
@@ -1923,12 +1924,12 @@ def sales_order_transaction_table():
         _selective_tax_foc += n.Sales_Order_Transaction.selective_tax_foc or 0
         
         if _selective_tax > 0.0:
-            _div_tax = DIV(H4('TOTAL SELECTIVE TAX: ',locale.format('%.2F', _selective_tax or 0, grouping = True)))            
+            _div_tax = DIV('TOTAL SELECTIVE TAX: ',locale.format('%.2F', _selective_tax or 0, grouping = True))
         else:
             _div_tax = DIV('')
 
         if _selective_tax_foc > 0.0:
-            _div_tax_foc = DIV(H4('TOTAL SELECTIVE TAX FOC: ',locale.format('%.2F', _selective_tax_foc or 0, grouping = True)))
+            _div_tax_foc = DIV('TOTAL SELECTIVE TAX FOC: ',locale.format('%.2F', _selective_tax_foc or 0, grouping = True))
         else:
             _div_tax_foc = DIV('')
         # ownership 
@@ -1971,11 +1972,11 @@ def sales_order_transaction_table():
         _total_amount_after_discount = float(_total_amount or 0) - float(_id.discount_added or 0)
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_id='net_amount',_name='net_amount',_disabled = True,_value=locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True)), _align = 'right'),TD()))
-    foot += TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _id.total_amount or 0, grouping = True),_id='total_amount', _align = 'right'),TD()))
+    foot += TFOOT(TR(TD(),TD(_div_tax_foc,_colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _id.total_amount or 0, grouping = True),_id='total_amount', _align = 'right'),TD()))
     if _id.status_id == 8:
-        foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_value =locale.format('%.2F',_id.discount_added or 0, grouping = True),  _disabled = True)),TD(_id="error")))
+        foot += TFOOT(TR(TD(),TD(_div_tax,_colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_value =locale.format('%.2F',_id.discount_added or 0, grouping = True),  _disabled = True)),TD(_id="error")))
     else:
-        foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_value =locale.format('%.2F',_id.discount_added or 0, grouping = True))),TD(_id="error")))
+        foot += TFOOT(TR(TD(),TD(_div_tax,_colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(INPUT(_class='form-control',_type='text',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_value =locale.format('%.2F',_id.discount_added or 0, grouping = True))),TD(_id="error")))
     table = TABLE(*[head, body, foot], _class='table', _id='tbltrnx')
     return dict(table = table, _total_amount = _total_amount, _total_amount_after_discount = _total_amount_after_discount)        
 
@@ -3264,8 +3265,8 @@ def get_workflow_reports_transaction_id():
         _total_amount += n.total_amount
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True), _align = 'right')))
-    foot += TFOOT(TR(TD(),TD(_div_tax_foc),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _id.total_amount or 0, grouping = True), _align = 'right')))    
-    foot += TFOOT(TR(TD(),TD(_div_tax),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.discount_added or 0, grouping = True), _align = 'right')))
+    foot += TFOOT(TR(TD(),TD(_div_tax_foc, _colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F', _id.total_amount or 0, grouping = True), _align = 'right')))    
+    foot += TFOOT(TR(TD(),TD(_div_tax, _colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.discount_added or 0, grouping = True), _align = 'right')))
     table = TABLE(*[head, body, foot], _class='table table-striped')
     return dict(table = table)        
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
@@ -3415,17 +3416,7 @@ def invoice_info(e = request.args(0)):
     return table
 
 def sales_order_view_account_user():
-    db.Sales_Order.sales_order_date.writable = False
-    db.Sales_Order.dept_code_id.writable = False
-    db.Sales_Order.stock_source_id.writable = False
-    db.Sales_Order.customer_code_id.writable = False
-    db.Sales_Order.customer_order_reference.writable = False
-    db.Sales_Order.delivery_due_date.writable = False
-    db.Sales_Order.total_amount.writable = False
-    db.Sales_Order.total_selective_tax.writable = False
-    db.Sales_Order.total_vat_amount.writable = False    
-    db.Sales_Order.sales_man_id.writable = False    
-    db.Sales_Order.section_id.writable = False
+    get_sales_order_header_writable_false()
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 7) | (db.Stock_Status.id == 8)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 8
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -3486,17 +3477,7 @@ def validate_store_keeper(form):
         form.vars.delivery_note_approved_by = auth.user_id          
 
 def sales_order_store_keeper_view():
-    db.Sales_Order.sales_order_date.writable = False
-    db.Sales_Order.dept_code_id.writable = False
-    db.Sales_Order.stock_source_id.writable = False
-    db.Sales_Order.customer_code_id.writable = False
-    db.Sales_Order.customer_order_reference.writable = False
-    db.Sales_Order.delivery_due_date.writable = False
-    db.Sales_Order.total_amount.writable = False
-    db.Sales_Order.total_selective_tax.writable = False
-    db.Sales_Order.total_vat_amount.writable = False    
-    db.Sales_Order.sales_man_id.writable = False    
-    db.Sales_Order.section_id.writable = False
+    get_sales_order_header_writable_false()
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 9)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     db.Sales_Order.status_id.default = 9
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
@@ -3508,7 +3489,7 @@ def sales_order_store_keeper_view():
             redirect(URL('inventory', 'str_kpr_grid'))
         elif form.accepted:    
             session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' process.'
-            redirect(URL('inventory', 'str_kpr_grid'))        
+            response.js = 'jQuery(redirect())'            
         elif form.errors:
             response.flash = 'FORM HAS ERROR'            
         
@@ -3577,7 +3558,7 @@ def get_sales_order_trnx_redo_id():
         _s.probational_balance = int(_s.closing_stock) + int(_s.stock_in_transit)
         _s.update_record()    
 
-def sales_order_manager_view():
+def get_sales_order_header_writable_false():
     db.Sales_Order.sales_order_date.writable = False
     db.Sales_Order.dept_code_id.writable = False
     db.Sales_Order.stock_source_id.writable = False
@@ -3585,13 +3566,16 @@ def sales_order_manager_view():
     db.Sales_Order.customer_order_reference.writable = False
     db.Sales_Order.delivery_due_date.writable = False
     db.Sales_Order.total_amount.writable = False
+    db.Sales_Order.total_amount_after_discount.writable = False
     db.Sales_Order.total_selective_tax.writable = False
-    db.Sales_Order.total_vat_amount.writable = False    
-    db.Sales_Order.sales_man_id.writable = False    
-    db.Sales_Order.status_id.writable = False    
-    db.Sales_Order.section_id.writable = False
+    db.Sales_Order.total_selective_tax_foc.writable = False
     db.Sales_Order.discount_added.writable = False
-    db.Sales_Order.total_amount_after_discount.writable = False    
+    db.Sales_Order.total_vat_amount.writable = False    
+    db.Sales_Order.section_id.writable = False    
+    db.Sales_Order.sales_man_id.writable = False
+def sales_order_manager_view():
+    get_sales_order_header_writable_false()
+    db.Sales_Order.status_id.writable = False           
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Order, request.args(0)) # check who approved and date/time, onvalidation = validate_mngr_approved
     form.process(onvalidation = validate_mngr_approved, detect_record_change=True)    
@@ -3683,8 +3667,9 @@ def sale_order_manager_delivery_note_approved_form():
             response.js = "jQuery(redirect())"
         else:
             get_generate_delivery_note_id()            
-            sync_to_delivery_note_db()             
-            response.js = "jQuery(report())"
+            sync_to_delivery_note_db()            
+            session.flash = 'Sales order processed.' 
+            response.js = "jQuery(report(),redirect())"
         # else:            
     
 
@@ -3820,6 +3805,9 @@ def sales_order_manager_invoice_no_approved():
         else:            
             get_generate_sales_invoice_id()
             sync_to_sales_invoice_db()
+            session.flash = 'Delivery note processed.'     
+            response.js = '$("#tblso").get(0).reload(), PrintInvoice(%s)' % (request.args(0)) #window.open("{{=URL("default","sales_order_report_account_user",args = request.args(0))}}")'
+
         
 def get_sales_invoice_validation(x):        
     _id = db(db.Sales_Order.id == request.args(0)).select().first()    
@@ -3835,26 +3823,14 @@ def get_generate_sales_invoice_id():
     _skey = _trns_pfx.current_year_serial_key
     _skey += 1    
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)            
-    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)    
-    db(db.Delivery_Note.sales_order_no == _id.sales_order_no).update(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)
+    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)        
+    db(db.Delivery_Note.sales_order_no == _id.sales_order_no).update(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)    
     for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select():
         _stk_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
         _transit = int(_stk_file.stock_in_transit) + int(n.quantity)
         _pro_bal = int(_stk_file.closing_stock) + int(_stk_file.stock_in_transit)
         _clo_stk = int(_stk_file.closing_stock) - int(n.quantity)
-        _stk_file.update_record(
-            closing_stock = _clo_stk, 
-            stock_in_transit = _transit, 
-            probational_balance = _pro_bal, 
-            last_transfer_quantity = n.quantity, 
-            last_transfer_date = request.now)
-        # print _transit, _pro_bal, _clo_stk
-        # OLD STATEMENTS
-        # _diff = _stk_file.closing_stock - n.quantity
-        # _transit = _stk_file.stock_in_transit - n.quantity
-        # _stk_file.update_record(closing_stock = _diff, stock_in_transit = _transit, last_transfer_quantity = _diff, last_transfer_date = request.now)
-    session.flash = 'Sales Invoice No. ' + str(_id.sales_invoice_no) + ' process '     
-    response.js = '$("#tblso").get(0).reload(), PrintInvoice(%s)' % (request.args(0)) #window.open("{{=URL("default","sales_order_report_account_user",args = request.args(0))}}")'
+        _stk_file.update_record(closing_stock = _clo_stk, stock_in_transit = _transit, probational_balance = _pro_bal, last_transfer_quantity = n.quantity, last_transfer_date = request.now)
     # redirect(URL('default','sales_order_report_account_user', args = request.args(0)))
 
 def sync_to_sales_invoice_db():
@@ -3946,8 +3922,9 @@ def sale_order_manager_invoice_no_form_approved(): # from forms approval
         else:
             # print 'equal'
             get_generate_sales_invoice_id()
-            sync_to_sales_invoice_db()
-            response.js = 'jQuery(report())'        
+            sync_to_sales_invoice_db()      
+            session.flash = 'Sales Invoice No. ' + str(_id.sales_invoice_no) + ' process '      
+            response.js = 'jQuery(report(), redirect())'        
 
         
 def sales_order_cancel_id():

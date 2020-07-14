@@ -123,6 +123,7 @@
                                     <div class="col-sm-8">    
                                         {{ if _id.status_id == 9 or _id.status_id == 1:}}
                                             <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">
+                                            <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
                                             <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
                                             <!-- <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>                                             -->
                                             <!-- <a class="btn btn-info" id="btncdn" role="submit">create Sales Order & print</a>                                                                   -->
@@ -167,8 +168,8 @@ $(document).ready(function(){
  
         }        
     });
-    $('#btnCreate').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');
+    $('#btnCreate').click(function(){        
+        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');        
     });
     $("#btnCancel").change(function(){
         if($("#btnCancel").is(":checked")) {            
@@ -184,8 +185,7 @@ $(document).ready(function(){
         console.log('reload');
     }
 
-    function report(){        
-        location.reload();  
+    function report(){                
         window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
     }
 

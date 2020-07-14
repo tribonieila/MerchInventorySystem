@@ -152,11 +152,11 @@
 			<div class="menubar-scroll-panel">
 				<!-- BEGIN MAIN MENU -->
 				<!-- <i class="fas fa-[NAME]"></i> -->
-			
+				
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ROOT')):}}
 			<ul id="main-menu" class="gui-controls">
 				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
-				<!-- <li><a href="{{=URL('inventory','stock_adjustment_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">APPROVALS</span></a></li> -->
+				
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
 					<ul>
 						<li class="gui-folder expanded">
@@ -238,10 +238,8 @@
 						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
 						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
-						<li><a href="#" ><span class="title">Reports</span></a></li>
-						
-						<!-- <li><a href="{{=URL('procurement', 'insurance_proposal_grid')}}" ><span class="title">Insurance Proposal</span></a></li> -->
-						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><s	pan class="title">D/1 Register</span></a></li>
+						<li><a href="#" ><span class="title">Reports</span></a></li>												
+						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
@@ -253,8 +251,7 @@
 								<li><a href="{{=URL('sales', 'get_area_name_grid')}}" ><span class="title">Area Name</span></a></li>
 								<li><a href="{{=URL('sales', 'get_sales_man_grid')}}" ><span class="title">Sales Man</span></a></li>
 								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">Sales Man Location</span></a></li>
-								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>
-								<!-- <li><a href="#" ><span class="title"></span></a></li> -->
+								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>								
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
@@ -276,30 +273,7 @@
 						</li>
 					</ul>
 				</li>
-				<!-- <li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-bar"></i></div><span class="title">FINANCES</span></a></li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-users"></i></div><span class="title">HUMAN RESOURCES</span></a></li>
-				<li><a href="http://128.1.2.2:8080"><div class="gui-icon"><i class="md fas fa-calculator"></i></div><span class="title">POS</span></a></li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-briefcase"></i></div><span class="title">OFFICE ADMINISTRATION</span></a>
-					<ul>
-						<li class="gui-folder expanded">
-							<a href="javascript:void(0);"><span class="title">Communication</span></a>
-							<ul>
-								<li><a href="{{=URL('communication', 'incoming_mail_browse')}}" ><span class="title">Incoming Mail</span></a></li>		
-								<li><a href="{{=URL('communication', 'outgoing_mail_browse')}}" ><span class="title">Outgoing Mail</span></a></li>		
-								<li><a href="{{=URL('communication', 'circular_browse')}}" ><span class="title">Circular</span></a></li>
-								<li><a href="{{=URL('communication', 'memorandum_browse')}}" ><span class="title">Memorandom</span></a></li>
-								<li><a href="{{=URL('communication', 'fax_browse')}}" ><span class="title">Fax</span></a></li>															
-							</ul>
-						</li>
-						<li class="gui-folder expanded">
-							<a href="javascript:void(0);"><span class="title">Master</span></a>
-							<ul>
-									<li><a href="{{=URL('procurement', 'insurance_proposal')}}" ><span class="title">Insurance</span></a></li>		
-							</ul>
-						</li>
-						<li><a href="{{=URL('communication', 'communication_tranx_prefix')}}" ><span class="title">Settings</span></a></li>
-					</ul> -->
-				</li>
+				
 				<li><a href="{{=URL('sili','labuyo')}}"><div class="gui-icon"><i class="md fas fa-user-shield"></i></div><span class="title">ADMINISTRATOR</span></a></li>
 
 			</ul>
@@ -464,7 +438,7 @@
 				<li><a href="{{=URL('inventory', 'get_back_off_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
-						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Transfer Vouchers</span></a></li>
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Request</span></a></li>
 						<!-- <li><a href="{{=URL('sales','get_sales_invoice_workflow_reports')}}" ><span class="title">Sales Invoice</span></a></li> -->
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
 						
@@ -482,7 +456,7 @@
 				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
-						<li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
 						<!-- <li><a href="{{=URL('inventory','get_stv_sales_mngr_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li> -->
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Order</span></a></li>
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
@@ -500,7 +474,7 @@
 				<li><a href="{{=URL('inventory','str_kpr_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>			
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
-						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 3)}}" ><span class="title">Delivery Note</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>						
 						<li><a href="{{=URL('procurement', 'get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>

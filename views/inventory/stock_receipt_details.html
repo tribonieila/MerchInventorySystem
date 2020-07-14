@@ -122,7 +122,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.srn_status_id == 6: }}
+                                {{ if _id.srn_status_id == 27 or _id.srn_status_id == 2 or _id.srn_status_id == 26 or _id.srn_status_id == 5 or _id.srn_status_id == 6: }}
                                     <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
                                     <p class="help-block">readonly</p>    
                                 {{ else: }}
@@ -197,8 +197,14 @@
                                             <input class="btn btn-success" type="submit" value="generate stock transfer" id="btncreate">                                                                                
                                         {{pass}}
                                     {{pass}}
-                                    {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}                                    
-                                        <input class="btn btn-success" type="submit" value="submit" id="btnReceive">
+                                    {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}      
+                                        {{ if _id.srn_status_id == 3 or _id.srn_status_id == 4 or _id.srn_status_id == 10:}}
+                                            <input class="btn btn-success" type="submit" value="submit" id="btnSubmit">
+                                        {{elif _id.srn_status_id == 27 or _id.srn_status_id == 2 or _id.srn_status_id == 26:}}
+                                            <input class="btn btn-success" type="button" value="submit" disabled>
+                                        {{else:}}
+                                            <input class="btn btn-success" type="submit" value="submit" id="btnReceive">
+                                        {{pass}}
                                     {{pass}}
 
                                 </div>                            
@@ -219,7 +225,7 @@ $(document).ready(function(){
     $('#btncreate').attr('disabled','disabled');
     $('#btnApproved').attr('disabled','disabled');
     $('#btnReceive').attr('disabled','disabled');
-    
+    // $('#btnSubmit').attr('disabled','disabled');    
     $('#genstr').click(function(){
         // ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')
         window.open("{{=URL('inventory','stock_receipt_report', args = request.args(0))}}");        
