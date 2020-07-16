@@ -66,12 +66,13 @@ def put_sales_invoice_consolidation():
                     selected_tax = x.selective_tax,
                     selective_tax_price = x.selective_tax_price,
                     supplier_code = _i.supplier_code_id.supp_code,
-                    sales_man_code = n.sales_man_id.mv_code,                
-                    dept_code = n.dept_code_id,                    
+                    sales_man_code = n.sales_man_id.mv_code,
+                    dept_code = n.dept_code_id,
                     price_cost_pcs = x.price_cost_pcs or 0,
                     average_cost_pcs = x.average_cost_pcs or 0,
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
-                    retail_price_pcs = x.retail_price_pcs or 0)               
+                    retail_price_pcs = x.retail_price_pcs or 0,
+                    price_cost_after_discount = x.price_cost_after_discount or 0)               
        
 def queue_task():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
@@ -145,8 +146,7 @@ def get_sync_invoice():
             for x in db(db.Sales_Invoices_Transaction.sales_order_no_id == n.id).select():
                 print '        ', x.id, x.sales_order_no_id   
 
-def get_sync_all():
-    print 'get_sync_all'
+def get_sync_all():    
     for n in db(db.Sales_Order.status_id == 7).select(orderby = db.Sales_Order.id):#, left = db.Sales_Order.on(db.Sales_Order.id == db.Sales_Order_Transaction.sales_order_no_id)):
         db.Sales_Invoice.insert(
             transaction_prefix_id = n.transaction_prefix_id,

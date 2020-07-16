@@ -661,6 +661,7 @@ db.define_table('Merch_Stock_Transaction',
     Field('vansale_price', 'decimal(20,6)', default = 0), # from item prices
     Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
     Field('selected_tax','decimal(20,2)'), # in sales
+    Field('price_cost_after_discount','decimal(20,2)'), # included in sales invoice transaction
     Field('sales_man_code','string',length=15),
 
     Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
@@ -1140,12 +1141,19 @@ db.define_table('Sales_Return_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    Field('price_cost', 'decimal(20,6)', default = 0),
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
     Field('total_amount','decimal(20,6)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
     Field('sale_cost', 'decimal(20,6)', default = 0), # packet
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
+    
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+    
+    Field('price_cost_after_discount','decimal(20,2)'), 
     Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
@@ -1375,12 +1383,11 @@ db.define_table('Sales_Invoice_Transaction',
     Field('vansale_price', 'decimal(20,2)',default =0),
     Field('discount_percentage', 'decimal(20,2)',default =0),
     Field('net_price', 'decimal(20,2)',default =0),
-
     Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
     Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
     Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
     Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
-
+    Field('price_cost_after_discount','decimal(20,2)'), 
     Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
     Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
     Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
@@ -1434,9 +1441,15 @@ db.define_table('Stock_Request_Transaction',
     Field('quantity', 'integer', default = 0),
     Field('uom','integer', default = 0),
     Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost', 'decimal(10,4)', default = 0 ),
-    Field('wholesale_price', 'decimal(10,2)', default = 0),
-    Field('retail_price', 'decimal(10,2)',default = 0),
+    Field('price_cost','decimal(10,4)', default = 0 ), # with tax included
+    Field('wholesale_price','decimal(10,2)', default = 0),
+    Field('retail_price','decimal(10,2)',default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # after discount
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. with tax included
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+
     Field('vansale_price', 'decimal(10,2)',default =0),
     Field('remarks','string', length = 50),
     Field('delete', 'boolean', default = False),
@@ -1499,9 +1512,15 @@ db.define_table('Stock_Transfer_Transaction',
     Field('quantity', 'integer', default = 0),
     Field('uom','integer', default = 0),
     Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost','decimal(10,4)', default = 0 ),
+    Field('price_cost','decimal(10,4)', default = 0 ), # with tax included
     Field('wholesale_price','decimal(10,2)', default = 0),
     Field('retail_price','decimal(10,2)',default = 0),
+
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. with tax included
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+
     Field('vansale_price','decimal(10,2)',default =0),
     Field('total_amount','decimal(20,2)',default =0),
     Field('remarks','string', length = 50),    

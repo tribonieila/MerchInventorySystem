@@ -607,9 +607,10 @@ def sales_order_form():
         _discount = session.discount or 0
         # _discount = float(_grand_total) * float(_discount) / 100
         _after_discount = float(_grand_total) - float(session.discount or 0)
-        _trnx = db(db.Sales_Order_Transaction.sales_order_no_id == _id.id).select().first()
-        if float(session.discount or 0) > 0:
-            _sale_cost = float(_trnx.sale_cost) - float(session.discount or 0)
+        _trnx = db(db.Sales_Order_Transaction.sales_order_no_id == _id.id).select().first()    
+        # if float(session.discount or 0) > 0:
+        if _id.discount_added:
+            _sale_cost = float(_trnx.sale_cost) - float(_id.discount_added)
             _trnx.update_record(sale_cost = _sale_cost, discounted = True)
         _after_discount = float(_grand_total) - float(request.vars.discount_var or 0)
         _id.update_record(total_amount = _grand_total,  total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_selective_tax_foc) # discount_added = _discount,
@@ -2385,7 +2386,12 @@ def sales_return_form():
             
             _item = db(db.Item_Master.id == n.item_code_id).select().first()
             _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
-
+            if (int(n.category_id) == 3) or (int(n.category_id) == 1):
+                _price_cost = (_pric.average_cost / _item.uom_value)
+                _price_cost_discount = (_pric.average_cost / _item.uom_value)
+            else:
+                _price_cost = (_pric.wholesale_price / _item.uom_value)
+                _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
             db.Sales_Return_Transaction.insert(
                 sales_return_no_id = _id.id,
                 item_code_id = n.item_code_id,
@@ -2401,6 +2407,12 @@ def sales_return_form():
                 discount_percentage = n.discount_percentage,
                 selective_tax = n.selective_tax,
                 selective_tax_foc = n.selective_tax_foc,
+                
+                price_cost_pcs = _price_cost,  #n.price_cost / _item.uom_value,
+                average_cost_pcs = _pric.average_cost / _item.uom_value,
+                wholesale_price_pcs = _pric.wholesale_price / _item.uom_value,
+                retail_price_pcs = _pric.retail_price / _item.uom_value,
+                price_cost_after_discount = _price_cost_discount, #((n.price_cost * (100 - n.discount_percentage)) / 100) / _item.uom_value,
                 total_amount = n.total_amount,
                 net_price = n.net_price)
             _grand_total += n.total_amount or 0
@@ -2505,7 +2517,7 @@ def validate_sales_return_transaction(form):
                 _excise_tax_amount_foc = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
                 _excise_tax_price_per_piece_foc = _excise_tax_amount_foc / _id.uom_value
                 _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount_foc                
+                _unit_price = float(_price.wholesale_price) + _excise_tax_amount_foc                      
             # elif int(request.vars.category_id) == 1 or int(request.vars.category_id) == 4:
             #     form.errors.item_code = 'error not allowed'
             else:
@@ -2537,7 +2549,7 @@ def validate_sales_return_transaction(form):
         if int(_total_pcs) > int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit):
             form.errors.quantity = 'Quantity should not be more than probational balance.'
         
-   
+        
         form.vars.item_code_id = _id.id
         form.vars.selective_tax = _selective_tax
         form.vars.selective_tax_foc = _selective_tax_foc
@@ -3868,9 +3880,12 @@ def sync_to_sales_invoice_db():
     for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
         if (int(n.category_id) == 3) or (int(n.category_id) == 1):
             _price_cost = (n.average_cost / n.uom)
+            _price_cost_discount = (n.average_cost / n.uom)
         else:
             _price_cost = (n.wholesale_price / n.uom)
+            _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
         _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+        # _price_cost_discount = ((n.price_cost * (100 - n.discount_percentage)) / 100) / n.uom
         db.Sales_Invoice_Transaction.insert(
             sales_invoice_no_id = _si.id,
             item_code_id = n.item_code_id,
@@ -3883,9 +3898,9 @@ def sync_to_sales_invoice_db():
             average_cost = n.average_cost,
             sale_cost = n.sale_cost,
             wholesale_price = n.wholesale_price,
-            retail_price = n.retail_price,
-            # price_cost_pcs = (n.price_cost / n.uom) ,
+            retail_price = n.retail_price,            
             price_cost_pcs = _price_cost, # if item normal/foc
+            price_cost_after_discount = _price_cost_discount, 
             average_cost_pcs = (n.average_cost / n.uom),
             wholesale_price_pcs = (n.wholesale_price / n.uom),
             retail_price_pcs = (n.retail_price / n.uom),
@@ -5011,12 +5026,12 @@ def sales_order_transaction_table_reports():
     
         
 
-    (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
+    (_whole, _frac) = (int(_id.total_amount_after_discount), locale.format('%.2f',_id.total_amount_after_discount or 0, grouping = True))
     _amount_in_words = 'QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS'
 
-    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_selective_tax,'','','','','','Net Amount','',':',locale.format('%.2F',_id.total_amount or 0, grouping = True)])
     _st.append([_selective_tax_foc,'','','','','','Discount %','',':',locale.format('%.2F',_id.discount_added or 0, grouping = True)])
-    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _st.append([_amount_in_words,'','','','','','Total Amount','',':',locale.format('%.2F',_id.total_amount_after_discount or 0, grouping = True)])
     _st_tbl = Table(_st, colWidths=[20,60,'*',30,30,50,50,50,50,50], repeatRows=1)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        

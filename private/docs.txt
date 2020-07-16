@@ -1,3 +1,12 @@
+Activities:
+
+2020-7-16 # price_cost_after_discount field added
+
+Procurement         WH      ACCOUNTS
+PR = 1,3,19,20,11   17      18-25
+PO = 22-17-18-25-21 17-18
+
+
 SALES ORDER
 
 total = quantity * wholesale price

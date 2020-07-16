@@ -2,7 +2,8 @@
 <input class="btn btn-default" type="button" value="Sync Sales Invoice" onclick="sync_invoice()">
 <input class="btn btn-default" type="button" value="Sync All" onclick="sync_all()">
 <input class="btn btn-default" type="button" value="Consolidate" onclick="sync_consolidate()">
-<input class="btn btn-default" type="button" value="Truncate Consolidation" onclick="truncate_table()">
+
+
 
 <script>
     function sync_note(){

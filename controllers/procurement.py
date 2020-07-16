@@ -961,6 +961,7 @@ def purchase_receipt_account_grid_view_validate():
             response.flash = 'RECORD UPDATED'
         elif form3.errors:
             response.flash = 'FORM HAS ERROR'  
+            print 'frm: ',form3.errors
     else:        
         form3 = SQLFORM.factory(
             Field('location_code_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Source', default = 1, requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
@@ -981,6 +982,7 @@ def purchase_receipt_account_grid_view_validate():
             # elif request.vars.btnAbort:
             #     response.flash = 'abort'
         elif form3.errors:
+            print 'form 4: ', form3.errors
             response.flash = 'FORM HAS ERROR'  
                         
     return dict(table = table, form3 = form3, frm = frm)
@@ -3637,8 +3639,8 @@ def purchase_request_item_code_description():
 # @auth.requires_membership('ROOT')
 def get_purchase_request_grid():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
+    head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Purchase Order No.'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) |(db.Purchase_Request.status_id == 17) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_request_transaction_view', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -3681,8 +3683,8 @@ def get_purchase_request_grid():
         row.append(TR(
             TD(n.purchase_request_date),
             TD(_pr),
-            # TD(_po),
-            # TD(_px),
+            TD(_po),
+            TD(_px),
             TD(n.dept_code_id.dept_name),
             TD(n.supplier_code_id.supp_name),
             TD(n.supplier_reference_order),
@@ -3826,7 +3828,7 @@ def purchase_request_transaction_view_details():
     if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'): 
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty.'),TH('Closing Stock'),TH('Order In Transit'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))    
     else:
-        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('MRS Price'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))    
+        head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('MRS Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))    
     _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete != True)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
     for n in _query:
         ctr += 1
@@ -3886,13 +3888,13 @@ def purchase_request_transaction_view_details():
                 TD(_pieces, _align = 'right', _style="width:100px;"),
                 TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=n.Purchase_Request_Transaction.price_cost or 0), _align = 'right', _style="width:120px;"), 
                 TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Purchase_Request_Transaction.total_amount or 0), _align = 'right', _style="width:120px;"),  
-                TD(n.Purchase_Request_Transaction.item_remarks),
+                
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(I('(FX : ',_exc_rate.exchange_rate_value,')')),TD(H4('Net Amount in QR'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control net_amount_local',_id='net_amount_local',_name='net_amount_local',_type='text',_value=_local_net_price or 0), _align = 'right')),TD(_btnUpdate),TD()))            
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount in ',_id.currency_id.mnemonic ), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=_total_amount or 0), _align = 'right')),TD(),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control discount',_name='discount',_id='discount',_type='number',_value=_id.discount_percentage or 0), _align = 'right')),TD(),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount in ', _id.currency_id.mnemonic), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control net_amount_foreign',_name='net_amount_foreign',_type='text',_value=_net_price or 0), _align = 'right')),TD(),TD()))
+            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(I('(FX : ',_exc_rate.exchange_rate_value,')')),TD(H4('Net Amount in QR'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control net_amount_local',_id='net_amount_local',_name='net_amount_local',_type='text',_value=_local_net_price or 0), _align = 'right')),TD(_btnUpdate, _style="width:100px;")))            
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount in ',_id.currency_id.mnemonic ), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=_total_amount or 0), _align = 'right')),TD()))
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control discount',_name='discount',_id='discount',_type='number',_value=_id.discount_percentage or 0), _align = 'right')),TD()))
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount in ', _id.currency_id.mnemonic), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control net_amount_foreign',_name='net_amount_foreign',_type='text',_value=_net_price or 0), _align = 'right')),TD()))
     table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblPRT'))
     if table.accepts(request,session):
         if request.vars.btnRemarks:
@@ -4454,7 +4456,7 @@ def purchase_request_grid_view_store_keeper():
 def selected_po():
     # _supplier = 0
     from collections import Counter
-    _po = db(db.Purchase_Order.id == request.args(0)).select().first()    
+    _po = db(db.Purchase_Request.id == request.args(0)).select().first()    
 
     session.dept_code_id = _po.dept_code_id
     session.supplier_code_id = _po.supplier_code_id
@@ -4472,14 +4474,14 @@ def selected_po():
             # print 'same:',x
             response.js = "$('#btnPro').removeAttr('disabled');"  
 
-            for n in db(db.Purchase_Order_Transaction.purchase_order_no_id == request.args(0)).select():        
+            for n in db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select():        
                 n.update_record(selected = True, updated_by = auth.user_id, updated_on = request.now)        
 
 @auth.requires_login()
 def deselected_po():
     # from collections import Counter
     _pr = db(db.Purchase_Request.id == request.args(0)).select().first()
-    _query = db(db.Purchase_Order_Transaction.purchase_order_no_id == request.args(0)).select()
+    _query = db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select()
     for n in _query:
         n.update_record(selected = False, updated_by = auth.user_id, updated_on = request.now)
 
@@ -4629,7 +4631,7 @@ def validate_warehouse_pieces():
 @auth.requires_login()
 def purchase_receipt_warehouse_grid_process():
     # purchase_receipt_warehouse_grid_consolidate
-    _id = db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False)).select().first()
+    _id = db((db.Purchase_Request_Transaction.selected == True) & (db.Purchase_Request_Transaction.consolidated == False)).select().first()
     # print 'id: ', _id.id, _id.purchase_order_no_id
     if not _id:
         redirect(URL('default','index'))
@@ -4637,7 +4639,7 @@ def purchase_receipt_warehouse_grid_process():
     session.ticket_no_id = ticket_no_id 
     row = []
     ctr = grand_total = 0   
-    _qty = db.Purchase_Order_Transaction.quantity.sum()
+    _qty = db.Purchase_Request_Transaction.quantity.sum()
     _supplier = db(db.Supplier_Master.id == session.supplier_code_id).select().first()
     # head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Prod. Date'),TH('Exp. Date'),TH('Quantity'),TH('Pieces'),TH('Action'),_class='bg-success'))        
     head = THEAD(TR(
@@ -4645,24 +4647,24 @@ def purchase_receipt_warehouse_grid_process():
         TD(DIV(LABEL('Supplier:'),DIV(_supplier.supp_name),_class='form-group'),_colspan='2')))        
     head += THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Action'),_class='bg-success'))        
     # for x in db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False) & (db.Purchase_Order_Transaction.updated_by == auth.user_id)).select(db.)
-    for n in db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False) & (db.Purchase_Order_Transaction.updated_by == auth.user_id)).select(
-        db.Purchase_Order_Transaction.item_code_id, 
-        db.Purchase_Order_Transaction.category_id,
-        _qty,orderby = ~db.Purchase_Order_Transaction.item_code_id, groupby = db.Purchase_Order_Transaction.item_code_id | db.Purchase_Order_Transaction.category_id):
+    for n in db((db.Purchase_Request_Transaction.selected == True) & (db.Purchase_Request_Transaction.consolidated == False) & (db.Purchase_Request_Transaction.updated_by == auth.user_id)).select(
+        db.Purchase_Request_Transaction.item_code_id, 
+        db.Purchase_Request_Transaction.category_id,
+        _qty,orderby = ~db.Purchase_Request_Transaction.item_code_id, groupby = db.Purchase_Request_Transaction.item_code_id | db.Purchase_Request_Transaction.category_id):
 
         ctr += 1              
-        _cls = db(db.Purchase_Order_Transaction.item_code_id == n.Purchase_Order_Transaction.item_code_id).select().first()
+        _cls = db(db.Purchase_Request_Transaction.item_code_id == n.Purchase_Request_Transaction.item_code_id).select().first()
         
-        cut_lnk = A(I(_class='fas fa-cut'), _title='Cut Row', _type='button  ', _role='button', _class='btn btn-icon-toggle cut',callback=URL( args = [_cls.item_code_id,_cls.purchase_order_no_id]), **{'_data-id':(_cls.item_code_id), '_data-pr':(_cls.purchase_order_no_id)})
+        cut_lnk = A(I(_class='fas fa-cut'), _title='Cut Row', _type='button  ', _role='button', _class='btn btn-icon-toggle cut',callback=URL( args = [_cls.item_code_id,_cls.purchase_request_no_id]), **{'_data-id':(_cls.item_code_id), '_data-pr':(_cls.purchase_request_no_id)})
         btn_lnk = DIV(cut_lnk)
-        _itm = db(db.Item_Master.id == n.Purchase_Order_Transaction.item_code_id).select().first()
+        _itm = db(db.Item_Master.id == n.Purchase_Request_Transaction.item_code_id).select().first()
 
         row.append(TR(
             TD(ctr),
-            TD(n.Purchase_Order_Transaction.item_code_id.item_code, INPUT(_type='text',_name='item_code_id', _hidden = True, _value= n.Purchase_Order_Transaction.item_code_id)),
+            TD(n.Purchase_Request_Transaction.item_code_id.item_code, INPUT(_type='text',_name='item_code_id', _hidden = True, _value= n.Purchase_Request_Transaction.item_code_id)),
             TD(_itm.item_description.upper(),INPUT(_type='text',_name='qty', _hidden = True, _value= n[_qty])),
             TD(_itm.uom_value,INPUT(_type='number',_name='uom', _hidden = True, _value= _itm.uom_value)),
-            TD(n.Purchase_Order_Transaction.category_id.description,INPUT(_type='number',_name='category_id', _hidden = True, _value= n.Purchase_Order_Transaction.category_id)),
+            TD(n.Purchase_Request_Transaction.category_id.description,INPUT(_type='number',_name='category_id', _hidden = True, _value= n.Purchase_Request_Transaction.category_id)),
             TD(cut_lnk))) 
     session.ctr = ctr  
     # row.append(TR(TD(DIV(LABEL('Location:'),DIV(SELECT(_name='location_code_id', _class='form-control', *[OPTION(i.location_name, _value=i.id) for i in db().select(db.Location.ALL, orderby = db.Location.id)])),_class='form-group'),_colspan='2'),TD(),TD(),TD(),TD(INPUT(_type='submit', _value='Generate GRV',_class='btn btn-success'))))
@@ -4674,85 +4676,87 @@ def purchase_receipt_warehouse_grid_process():
         _tp = db((db.Transaction_Prefix.dept_code_id == session.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
         _skey = _tp.current_year_serial_key        
         _skey += 1
-        _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)                   
-        db.Purchase_Receipt_Warehouse_Consolidated.insert(
-            purchase_receipt_no_prefix_id = _tp.id, 
-            purchase_receipt_no = _skey,
-            purchase_receipt_approved_by = auth.user_id, 
-            purchase_receipt_date_approved = request.now, 
-            status_id = 17, 
-            supplier_code_id = _supplier.id,
-            location_code_id = form.vars.location_code_id,
-            )
+        _tp.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
+        db(db.Purchase_Request.id == _id.purchase_request_no_id).update(purchase_receipt_no_prefix_id = _tp.id, purchase_receipt_no = _skey,purchase_receipt_approved_by = auth.user_id, 
+            purchase_receipt_date_approved = request.now, status_id = 17, supplier_code_id = _supplier.id,location_code_id = form.vars.location_code_id)
+        # db.Purchase_Receipt_Warehouse_Consolidated.insert(
+        #     purchase_receipt_no_prefix_id = _tp.id, 
+        #     purchase_receipt_no = _skey,
+        #     purchase_receipt_approved_by = auth.user_id, 
+        #     purchase_receipt_date_approved = request.now, 
+        #     status_id = 17, 
+        #     supplier_code_id = _supplier.id,
+        #     location_code_id = form.vars.location_code_id,
+        #     )
         
         _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
 
         # UPDATE ADDTIONAL ITEMS
         # print 'session.ticket_no', session.ticket_no, _pr.id, _pr.purchase_receipt_no
         
-        db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.ticket_no_id == str(session.ticket_no)).update(purchase_receipt_no_id = int(_pr.id))
+        # db(db.Purchase_Receipt_Transaction_Consolidated_New_Item.ticket_no_id == str(session.ticket_no)).update(purchase_receipt_no_id = int(_pr.id))
         
         # GENERATE PURCHASE ORDER DETAILS CONSOLIDATION
-        # _proc = db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False)).select(db.Purchase_Order_Transaction.purchase_order_no_id, groupby = db.Purchase_Order_Transaction.purchase_order_no_id)
-        _proc = db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False) & (db.Purchase_Order_Transaction.updated_by == auth.user_id)).select(db.Purchase_Order_Transaction.ALL)
-        for p in _proc:                                    
-            _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
-            db.Purchase_Receipt_Ordered_Warehouse_Consolidated.insert(
-                purchase_receipt_no_id = int(_pr.id),
-                purchase_order_no_id = int(p.purchase_order_no_id),   
-                status_id = 17)
-            y = db(db.Purchase_Order.id == p.purchase_order_no_id).select().first()
-            y.update_record(consolidated = True)
-        for x in db(db.Purchase_Order_Transaction.purchase_order_no_id == int(p.purchase_order_no_id)).select():
-            x.update_record(consolidated = True)        
+        # _proc = db((db.Purchase_Request_Transaction.selected == True) & (db.Purchase_Request_Transaction.consolidated == False)).select(db.Purchase_Request_Transaction.purchase_order_no_id, groupby = db.Purchase_Request_Transaction.purchase_order_no_id)
+        # _proc = db((db.Purchase_Request_Transaction.selected == True) & (db.Purchase_Request_Transaction.consolidated == False) & (db.Purchase_Request_Transaction.updated_by == auth.user_id)).select(db.Purchase_Request_Transaction.ALL)
+        # for p in _proc:                                    
+        #     _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
+        #     db.Purchase_Receipt_Ordered_Warehouse_Consolidated.insert(
+        #         purchase_receipt_no_id = int(_pr.id),
+        #         purchase_order_no_id = int(p.purchase_order_no_id),   
+        #         status_id = 17)
+        #     y = db(db.Purchase_Order.id == p.purchase_order_no_id).select().first()
+        #     y.update_record(consolidated = True)
+        # for x in db(db.Purchase_Request_Transaction.purchase_order_no_id == int(p.purchase_order_no_id)).select():
+        #     x.update_record(consolidated = True)        
 
         # GENERATE PURCHASE RECEIPT TRANSACTION CONSOLIDATION        
         # _prowc = db(db.Purchase_Receipt_Ordered_Warehouse_Consolidated.purchase_receipt_no_id == _pr.id).select().first()
-        for x in xrange(ctr):
-            _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
-            if int(ctr) <= 1:
-                _item_code_id = int(request.vars['item_code_id'])
-                _prt = db((db.Purchase_Order_Transaction.item_code_id == _item_code_id) & (db.Purchase_Order_Transaction.purchase_order_no_id == int(_id.purchase_order_no_id))).select().first()                  
-                db.Purchase_Receipt_Transaction_Consolidated.insert(                    
-                    purchase_receipt_no_id = int(_pr.id),
-                    item_code_id = _item_code_id, #int(request.vars['item_code_id'][x]),
-                    category_id = int(request.vars['category_id']),
-                    uom = int(request.vars['uom']),
-                    # quantity = _total_pieces,                    
-                    # production_date = str(request.vars['production_date'][x]), 
-                    # expiration_date = str(request.vars['expiration_date'][x]), 
-                    purchase_ordered_quantity = int(request.vars['qty']),
-                    price_cost = _prt.price_cost,
-                    # total_amount = _prt.total_amount,
-                    average_cost = _prt.average_cost,
-                    sale_cost = _prt.sale_cost,
-                    wholesale_price = _prt.wholesale_price,
-                    retail_price = _prt.retail_price,
-                    vansale_price = _prt.vansale_price)                
-                # print '1. price cost', _prt.price_cost
-            else:
-                _item_code_id = int(request.vars['item_code_id'][x])
+        # for x in xrange(ctr):
+        #     _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
+        #     if int(ctr) <= 1:
+        #         _item_code_id = int(request.vars['item_code_id'])
+        #         _prt = db((db.Purchase_Request_Transaction.item_code_id == _item_code_id) & (db.Purchase_Request_Transaction.purchase_order_no_id == int(_id.purchase_order_no_id))).select().first()                  
+        #         db.Purchase_Receipt_Transaction_Consolidated.insert(                    
+        #             purchase_receipt_no_id = int(_pr.id),
+        #             item_code_id = _item_code_id, #int(request.vars['item_code_id'][x]),
+        #             category_id = int(request.vars['category_id']),
+        #             uom = int(request.vars['uom']),
+        #             # quantity = _total_pieces,                    
+        #             # production_date = str(request.vars['production_date'][x]), 
+        #             # expiration_date = str(request.vars['expiration_date'][x]), 
+        #             purchase_ordered_quantity = int(request.vars['qty']),
+        #             price_cost = _prt.price_cost,
+        #             # total_amount = _prt.total_amount,
+        #             average_cost = _prt.average_cost,
+        #             sale_cost = _prt.sale_cost,
+        #             wholesale_price = _prt.wholesale_price,
+        #             retail_price = _prt.retail_price,
+        #             vansale_price = _prt.vansale_price)                
+        #         # print '1. price cost', _prt.price_cost
+        #     else:
+        #         _item_code_id = int(request.vars['item_code_id'][x])
 
-                # _total_pieces = int(request.vars['quantity'][x]) * int(request.vars['uom'][x]) + int(request.vars['pieces'][x])     
+        #         # _total_pieces = int(request.vars['quantity'][x]) * int(request.vars['uom'][x]) + int(request.vars['pieces'][x])     
                                 
-                _prt = db((db.Purchase_Order_Transaction.item_code_id == int(request.vars['item_code_id'][x])) & (db.Purchase_Order_Transaction.purchase_order_no_id == int(_id.purchase_order_no_id))).select().first()  
-                # print '2. price cost', int(request.vars['item_code_id'][x]), _prt.item_code_id, _prt.price_cost, _prt.id, _id.purchase_order_no_id
-                db.Purchase_Receipt_Transaction_Consolidated.insert(                    
-                    purchase_receipt_no_id = int(_pr.id),
-                    item_code_id = _prt.item_code_id, #int(request.vars['item_code_id'][x]),
-                    category_id = int(request.vars['category_id'][x]),
-                    uom = int(request.vars['uom'][x]),
-                    # quantity = _total_pieces,                    
-                    # production_date = str(request.vars['production_date'][x]), 
-                    # expiration_date = str(request.vars['expiration_date'][x]), 
-                    purchase_ordered_quantity = int(request.vars['qty'][x]),
-                    price_cost = _prt.price_cost,                                        
-                    # total_amount = _prt.total_amount,
-                    average_cost = _prt.average_cost,
-                    sale_cost = _prt.sale_cost,
-                    wholesale_price = _prt.wholesale_price,
-                    retail_price = _prt.retail_price,
-                    vansale_price = _prt.vansale_price)                     
+        #         _prt = db((db.Purchase_Request_Transaction.item_code_id == int(request.vars['item_code_id'][x])) & (db.Purchase_Request_Transaction.purchase_order_no_id == int(_id.purchase_order_no_id))).select().first()  
+        #         # print '2. price cost', int(request.vars['item_code_id'][x]), _prt.item_code_id, _prt.price_cost, _prt.id, _id.purchase_order_no_id
+        #         db.Purchase_Receipt_Transaction_Consolidated.insert(                    
+        #             purchase_receipt_no_id = int(_pr.id),
+        #             item_code_id = _prt.item_code_id, #int(request.vars['item_code_id'][x]),
+        #             category_id = int(request.vars['category_id'][x]),
+        #             uom = int(request.vars['uom'][x]),
+        #             # quantity = _total_pieces,                    
+        #             # production_date = str(request.vars['production_date'][x]), 
+        #             # expiration_date = str(request.vars['expiration_date'][x]), 
+        #             purchase_ordered_quantity = int(request.vars['qty'][x]),
+        #             price_cost = _prt.price_cost,                                        
+        #             # total_amount = _prt.total_amount,
+        #             average_cost = _prt.average_cost,
+        #             sale_cost = _prt.sale_cost,
+        #             wholesale_price = _prt.wholesale_price,
+        #             retail_price = _prt.retail_price,
+        #             vansale_price = _prt.vansale_price)                     
         response.flash = 'PURCHASE RECEIPT GENERATED'      
         redirect(URL('inventory','str_kpr_grid'))      
     elif form.errors:
@@ -4761,12 +4765,12 @@ def purchase_receipt_warehouse_grid_process():
     row = []
     ctr = 0
     head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Purchase Request'),_class='bg-success'))
-    for n in db((db.Purchase_Order_Transaction.selected == True) & (db.Purchase_Order_Transaction.consolidated == False)).select(db.Purchase_Order_Transaction.purchase_order_no_id, groupby = db.Purchase_Order_Transaction.purchase_order_no_id):
-        _id = db(db.Purchase_Order.id == n.purchase_order_no_id).select().first()
+    for n in db((db.Purchase_Request_Transaction.selected == True) & (db.Purchase_Request_Transaction.consolidated == False)).select(db.Purchase_Request_Transaction.purchase_request_no_id, groupby = db.Purchase_Request_Transaction.purchase_request_no_id):
+        _id = db(db.Purchase_Request.id == n.purchase_request_no_id).select().first()
         row.append(TR(
             TD(_id.purchase_order_date_approved),
             TD(_id.purchase_order_no),
-            TD(_id.purchase_request_no_id.purchase_request_no)))
+            TD(_id.purchase_request_no)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class= 'table')
     return dict(form = form, ticket_no_id= ticket_no_id, table = table)     
@@ -4951,7 +4955,12 @@ def document_register_grid_process():
     _po = db(db.Purchase_Request.id == request.args(0)).select().first()
     head = THEAD(TR(TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Location'),TH('Supplier')))
     for n in db(db.Purchase_Request.id == request.args(0)).select():        
-        row.append(TR(TD(n.purchase_order_date),TD(n.purchase_order_no_prefix_id.prefix,n.purchase_order_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.supplier_code_id.supp_name)))
+        row.append(TR(
+            TD(n.purchase_request_date),
+            TD(n.purchase_order_no_prefix_id.prefix,n.purchase_order_no),
+            TD(n.dept_code_id.dept_name),
+            TD(n.location_code_id.location_name),
+            TD(n.supplier_code_id.supp_name)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class = 'table')
     
@@ -5378,7 +5387,7 @@ def purchase_receipt_warehouse_grid(): # hakim's form
     session.supplier = []
     row = []
     head = THEAD(TR(TH(),TH('Date'),TH('Purchase Order No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Created By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-success'))
-    for n in db((db.Purchase_Order.status_id == 17) & (db.Purchase_Order.consolidated == False) & (db.Purchase_Order.archives == False)).select(orderby = ~db.Purchase_Order.id):
+    for n in db((db.Purchase_Request.status_id == 17) & (db.Purchase_Request.consolidated == False) & (db.Purchase_Request.archives == False)).select(orderby = ~db.Purchase_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_warehouse_grid_view', args = n.id, extension = False))        
         insu_lnk = A(I(_class='fas fa-car-crash'), _title='Insurance', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)
         purh_lnk = A(I(_class='fas fa-shopping-bag'), _title='Generage Purchase Order', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)    
@@ -6203,48 +6212,48 @@ def generate_purchase_order_no_and_insurance_proposal():
     _skey += 1
     _tp.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)   
     _id.update_record(status_id = 22, purchase_order_no_prefix_id = _tp.id, purchase_order_no = _skey, purchase_order_approved_by = auth.user_id, purchase_order_date_approved = request.now)    
-    for n in db(db.Purchase_Request.id == request.args(0)).select():        
-        db.Purchase_Order.insert(
-            purchase_request_no_id = request.args(0),
-            purchase_order_no_prefix_id = _tp.id,
-            purchase_order_no = _skey,
-            purchase_order_approved_by = auth.user_id,
-            purchase_order_date = request.now,
-            purchase_order_date_approved = request.now,
-            dept_code_id = n.dept_code_id,
-            supplier_code_id = n.supplier_code_id,
-            mode_of_shipment = n.mode_of_shipment,
-            location_code_id = n.location_code_id,
-            supplier_reference_order = n.supplier_reference_order,
-            estimated_time_of_arrival = n.estimated_time_of_arrival,
-            total_amount = n.total_amount,
-            total_amount_after_discount = n.total_amount_after_discount,
-            insured = n.insured,
-            foreign_currency_value = n.foreign_currency_value,
-            local_currency_value = n.local_currency_value,
-            exchange_rate = n.exchange_rate,
-            trade_terms_id = n.trade_terms_id,
-            discount_percentage = n.discount_percentage,
-            currency_id = n.currency_id,
-            remarks = n.remarks,
-            status_id = 22)
+    # for n in db(db.Purchase_Request.id == request.args(0)).select():        
+    #     db.Purchase_Order.insert(
+    #         purchase_request_no_id = request.args(0),
+    #         purchase_order_no_prefix_id = _tp.id,
+    #         purchase_order_no = _skey,
+    #         purchase_order_approved_by = auth.user_id,
+    #         purchase_order_date = request.now,
+    #         purchase_order_date_approved = request.now,
+    #         dept_code_id = n.dept_code_id,
+    #         supplier_code_id = n.supplier_code_id,
+    #         mode_of_shipment = n.mode_of_shipment,
+    #         location_code_id = n.location_code_id,
+    #         supplier_reference_order = n.supplier_reference_order,
+    #         estimated_time_of_arrival = n.estimated_time_of_arrival,
+    #         total_amount = n.total_amount,
+    #         total_amount_after_discount = n.total_amount_after_discount,
+    #         insured = n.insured,
+    #         foreign_currency_value = n.foreign_currency_value,
+    #         local_currency_value = n.local_currency_value,
+    #         exchange_rate = n.exchange_rate,
+    #         trade_terms_id = n.trade_terms_id,
+    #         discount_percentage = n.discount_percentage,
+    #         currency_id = n.currency_id,
+    #         remarks = n.remarks,
+    #         status_id = 22)
     
-    _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete == False)).select()
-    _po = db(db.Purchase_Order.purchase_request_no_id == request.args(0)).select().first()
-    for n in _query:       
-        db.Purchase_Order_Transaction.insert(            
-            purchase_order_no_id = _po.id,
-            item_code_id = n.item_code_id,
-            category_id = n.category_id,
-            quantity = n.quantity,
-            uom = n.uom,
-            price_cost = n.price_cost,
-            total_amount = n.total_amount,
-            average_cost = n.average_cost,
-            sale_cost = n.sale_cost,
-            wholesale_price = n.wholesale_price,
-            retail_price = n.retail_price,
-            vansale_price = n.vansale_price)
+    # _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete == False)).select()
+    # _po = db(db.Purchase_Order.purchase_request_no_id == request.args(0)).select().first()
+    # for n in _query:       
+        # db.Purchase_Order_Transaction.insert(            
+        #     purchase_order_no_id = _po.id,
+        #     item_code_id = n.item_code_id,
+        #     category_id = n.category_id,
+        #     quantity = n.quantity,
+        #     uom = n.uom,
+        #     price_cost = n.price_cost,
+        #     total_amount = n.total_amount,
+        #     average_cost = n.average_cost,
+        #     sale_cost = n.sale_cost,
+        #     wholesale_price = n.wholesale_price,
+        #     retail_price = n.retail_price,
+        #     vansale_price = n.vansale_price)
     # session.po = _po.id
     # session.flash = 'PURCHASE ORDER APPROVED'
     response.js = "$('#PRtbl').get(0).reload()"
