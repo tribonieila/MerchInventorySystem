@@ -435,7 +435,32 @@ def skip_not_new_items():
         n.update_record(new_item = True, skip = False)
 
 @auth.requires_login()
-def puchase_receipt_account_grid(): # manoj
+def puchase_receipt_account_grid():
+    row = []    
+    head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Created By'),TH('Updated By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+    _query = db((db.Purchase_Request.status_id == 18) | (db.Purchase_Request.status_id == 25)).select(db.Purchase_Request.ALL , orderby = ~db.Purchase_Request.id)
+    for n in _query:
+        vali_lnk = A(I(_class='fas fa-check'), _title='Edit Rows', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view_validated', args = n.id, extension = False)) #callback = URL(args = n.id, extension = False)) #_href = URL('procurement','purchase_receipt_account_grid_view_validate', args = n.id, extension = False))
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_account_grid_view', args = n.id, extension = False))                
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _class='btn btn-icon-toggle', _target = '_blank', _href = URL('procurement','purchase_receipt_reports_draft', args = n.id, extension = False))                                                    
+        newi_lnk = A(I(_class='fas fa-unlock'), _title='New Item(s) inserted', _type='button  ', _role='button', _class='btn btn-icon-toggle')            
+        btn_lnk = DIV(view_lnk, vali_lnk, newi_lnk, prin_lnk)        
+        row.append(TR(
+            TD(n.purchase_receipt_date_approved),
+            TD(n.purchase_receipt_no_prefix_id.prefix_key,n.purchase_receipt_no),
+            TD(n.dept_code_id.dept_name),                        
+            TD(n.supplier_code_id.supp_name),
+            TD(n.location_code_id.location_name),
+            TD(n.created_by.first_name.upper()),
+            TD(n.updated_by.first_name.upper()),
+            TD(n.status_id.description),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))      
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id='PRtbl')    
+    return dict(table = table)            
+@auth.requires_login()
+def puchase_receipt_account_grid_(): # manoj
     row = []    
     head = THEAD(TR(TH('Date'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Location'),TH('Created By'),TH('Updated By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
     _query = db((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 18) | (db.Purchase_Receipt_Warehouse_Consolidated.status_id == 25)).select(db.Purchase_Receipt_Warehouse_Consolidated.ALL , orderby = ~db.Purchase_Receipt_Warehouse_Consolidated.id)
