@@ -17,64 +17,7 @@ def put_sales_invoice_consolidation_():
         if not _chk:
             print 'insert here: ', n.sales_invoice_no
         else:
-            print 'update here: ', n.sales_invoice_no           
-
-def put_sales_invoice_consolidation():    
-    _ctr = db(db.Dbf_Batch_Table).count() + 1
-    _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
-    db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
-    _batch_id = db().select(db.Dbf_Batch_Table.ALL).last()    
-    for n in db().select(orderby = db.Sales_Invoice.id):        
-        _chk = db((db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)) & (db.Merch_Stock_Header.transaction_type == 2)).select().first()
-        if not _chk: # update consolidated records here
-            # print 'insert here: ', n.sales_invoice_no
-            db.Merch_Stock_Header.insert(
-                voucher_no = n.sales_invoice_no,
-                location = n.stock_source_id,
-                transaction_type = 2, # credit
-                transaction_date = n.sales_invoice_date_approved,
-                account = n.customer_code_id.account_code,
-                dept_code = n.dept_code_id,
-                total_amount = n.total_amount,           
-                total_amount_after_discount = n.total_amount_after_discount,
-                discount_added = n.discount_added or 0,
-                total_selective_tax = n.total_selective_tax or 0,
-                total_selective_tax_foc = n.total_selective_tax_foc or 0,                
-                sales_man_code = n.sales_man_id.mv_code,
-                batch_code_id = _batch_id.id)
-            _id = db((db.Merch_Stock_Header.voucher_no == n.sales_invoice_no) & (db.Merch_Stock_Header.transaction_type == 2)).select().first()
-            for x in db(db.Sales_Invoice_Transaction.sales_invoice_no_id == n.id).select(orderby = db.Sales_Invoice_Transaction.id):                
-                _i = db(db.Item_Master.id == x.item_code_id).select().first()
-                db.Merch_Stock_Transaction.insert(
-                    merch_stock_header_id = _id.id,
-                    voucher_no = n.sales_invoice_no,
-                    location = n.stock_source_id,
-                    transaction_type = _id.transaction_type,
-                    transaction_date = n.sales_invoice_date_approved,
-                    item_code = x.item_code_id.item_code,
-                    category_id = x.category_id.mnemonic, # convert to normal
-                    uom = x.uom,
-                    quantity = x.quantity,
-                    average_cost = x.average_cost or 0,
-                    price_cost = x.price_cost or 0,
-                    sale_cost = x.sale_cost or 0,
-                    sale_cost_notax_pcs = x.sale_cost_notax_pcs,
-                    discount = x.discount_percentage or 0,
-                    wholesale_price = x.wholesale_price or 0,
-                    retail_price = x.retail_price or 0,
-                    vansale_price = x.vansale_price or 0,
-                    tax_amount = x.vat_percentage or 0,
-                    selected_tax = x.selective_tax,
-                    selective_tax_price = x.selective_tax_price,
-                    supplier_code = _i.supplier_code_id.supp_code,
-                    sales_man_code = n.sales_man_id.mv_code,
-                    dept_code = n.dept_code_id,
-                    stock_destination = n.stock_source_id,
-                    price_cost_pcs = x.price_cost_pcs or 0,
-                    average_cost_pcs = x.average_cost_pcs or 0,
-                    wholesale_price_pcs = x.wholesale_price_pcs or 0,
-                    retail_price_pcs = x.retail_price_pcs or 0,
-                    price_cost_after_discount = x.price_cost_after_discount or 0)          
+            print 'update here: ', n.sales_invoice_no                  
 
 def put_sales_return_consolidation():        
     _ctr = db(db.Dbf_Batch_Table).count() + 1
@@ -122,8 +65,8 @@ def put_sales_return_consolidation():
                     retail_price = x.retail_price or 0,
                     vansale_price = x.vansale_price or 0,
                     tax_amount = x.vat_percentage or 0,
-                    selected_tax = x.selective_tax or 0,
-                    selective_tax_price = x.selective_tax_price or 0,
+                    selected_tax = x.selective_tax,
+                    selective_tax_price = x.selective_tax_price,
                     supplier_code = _i.supplier_code_id.supp_code,
                     sales_man_code = n.sales_man_id.mv_code,
                     dept_code = n.dept_code_id,
@@ -133,79 +76,12 @@ def put_sales_return_consolidation():
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
                     retail_price_pcs = x.retail_price_pcs or 0,
                     price_cost_after_discount = x.price_cost_after_discount or 0)               
-
-def put_stock_transfer_consolidation():       
-    for n in db().select(orderby = db.Stock_Receipt.id):
-        print n.id
-        for x in db(db.Stock_Receipt_Transaction.stock_receipt_no_id == n.id).select():
-            print '      ', x.id
-
-def put_stock_transfer_consolidation_():        
-    _ctr = db(db.Dbf_Batch_Table).count() + 1
-    _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
-    db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
-    _batch_id = db().select(db.Dbf_Batch_Table.ALL).last()    
-    for n in db().select(orderby = db.Stock_Receipt.id):        
-        _chk = db((db.Merch_Stock_Header.voucher_no == int(n.stock_receipt_no)) & (db.Merch_Stock_Header.transaction_type == 5)).select().first()
-        if not _chk: # update consolidated records here
-            _acct = db(db.Sales_Man.users_id == n.created_by).select().first()
-            db.Merch_Stock_Header.insert(
-                voucher_no = n.stock_receipt_no,
-                location = n.stock_source_id,
-                stock_destination = n.stock_destination_id,
-                transaction_type = 5, # credit
-                transaction_date = n.stock_receipt_date_approved,
-                account = _acct.mv_code,
-                dept_code = n.dept_code_id,
-                total_amount = n.total_amount,           
-                total_amount_after_discount = n.total_amount,
-                discount_added = 0,
-                total_selective_tax = 0,
-                total_selective_tax_foc = 0,                
-                sales_man_code = _acct.mv_code,
-                batch_code_id = _batch_id.id)
-            _id = db((db.Merch_Stock_Header.voucher_no == int(n.stock_receipt_no)) & (db.Merch_Stock_Header.transaction_type == 5)).select().first()
-            for x in db(db.Stock_Receipt_Transaction.stock_receipt_no_id == n.id).select(orderby = db.Stock_Receipt_Transaction.id):                
-                _i = db(db.Item_Master.id == x.item_code_id).select().first()
-                db.Merch_Stock_Transaction.insert(
-                    merch_stock_header_id = _id.id,
-                    voucher_no = n.stock_receipt_no,
-                    location = n.stock_source_id,
-                    transaction_type = _id.transaction_type,
-                    transaction_date = n.stock_receipt_date_approved,
-                    item_code = x.item_code_id.item_code,
-                    category_id = x.category_id.mnemonic, # convert to normal
-                    uom = x.uom,
-                    quantity = x.quantity,
-                    average_cost = x.average_cost or 0,
-                    price_cost = x.price_cost or 0,
-                    sale_cost = x.sale_cost or 0,
-                    sale_cost_notax_pcs = x.sale_cost_notax_pcs or 0,
-                    discount = 0,
-                    wholesale_price = x.wholesale_price or 0,
-                    retail_price = x.retail_price or 0,
-                    vansale_price = x.vansale_price or 0,
-                    tax_amount = x.vat_percentage or 0,
-                    selected_tax = x.selective_tax or 0,
-                    selective_tax_price = x.selective_tax_price or 0,
-                    supplier_code = _i.supplier_code_id.supp_code,
-                    sales_man_code = _acct.mv_code,
-                    dept_code = n.dept_code_id,
-                    stock_destination = n.stock_destination_id,
-                    price_cost_pcs = x.price_cost_pcs or 0,
-                    average_cost_pcs = x.average_cost_pcs or 0,
-                    wholesale_price_pcs = x.wholesale_price_pcs or 0,
-                    retail_price_pcs = x.retail_price_pcs or 0,
-                    price_cost_after_discount = x.price_cost_after_discount or 0)               
-  
+       
 def queue_task():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
 
 @auth.requires_login()
 def admin():
-    return dict()
-
-def stock_transfer():
     return dict()
 
 def sales_return():

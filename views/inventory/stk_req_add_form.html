@@ -2,14 +2,18 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'FMCG') : }}    
-            {{ else: }}
+            
+            
                 <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                     <li class="active"><a href="#">+ ADD NEW</a></li>
-                    <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                    {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}    
+                        <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
+                    {{ elif auth.has_membership(role = 'SALES'): }}
+                        <li class=""><a href="#" onclick=window.location="{{=URL('inventory','get_fmcg_workflow_grid')}}";>BROWSE</a></li>
+                    {{ pass }}
                 </ul>
     
-            {{ pass }}
+            
 
             <span class="card-title">STOCK REQUEST FORM</span>
         </div>
@@ -22,7 +26,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Request Order</label>
-                            <div class="col-sm-8">                                
+                            <div class="col-sm-8">                               
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                 <div id="_stk_req_no_div"></div>
                             </div>                           

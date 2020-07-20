@@ -156,7 +156,7 @@ $(document).ready(function(){
         $("#vdiscount").val(inDiscount);    
         $("#vnet_amount").val(inNetAmount);    
         console.log(inTotalAmount,inDiscount,inNetAmount);
-        ajax("{{=URL('sales','update_sales_transaction',args=request.args(0))}}",['vtotal_amount','vdiscount','vnet_amount','remarks'])
+        ajax("{{=URL('sales','update_sales_transaction',args=request.args(0))}}",['vtotal_amount','vdiscount','vnet_amount','status_id','remarks'])
         window.location.href = '{{=URL('inventory','get_back_off_workflow_grid')}}';
     });
 });

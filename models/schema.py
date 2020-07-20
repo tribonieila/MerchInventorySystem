@@ -635,7 +635,7 @@ db.define_table('Merch_Stock_Header',
     Field('total_selective_tax','decimal(20,6)', default = 0),
     Field('total_selective_tax_foc','decimal(20,6)', default = 0),
     Field('stock_destination','integer'),
-    Field('sales_man_code','string',length=15),
+    Field('sales_man_code','string',length=15),    
     Field('batch_code_id','reference Dbf_Batch_Table',ondelete='NO ACTION'),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -655,6 +655,7 @@ db.define_table('Merch_Stock_Transaction',
     Field('average_cost','decimal(20,6)', default = 0), # average cost
     Field('price_cost', 'decimal(20,6)', default = 0), # pieces
     Field('sale_cost','decimal(20,6)', default = 0), # after discount
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
     Field('discount', 'integer', default = 0), # normal discount from pos
     Field('wholesale_price', 'decimal(20,6)', default = 0), # from item prices
     Field('retail_price', 'decimal(20,6)', default = 0), # from item prices
@@ -1130,6 +1131,7 @@ db.define_table('Sales_Return',
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('archives', 'boolean', default = False),    
+    Field('processed','boolean',default=False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1145,6 +1147,7 @@ db.define_table('Sales_Return_Transaction',
     Field('total_amount','decimal(20,6)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
     Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
     
@@ -1159,6 +1162,7 @@ db.define_table('Sales_Return_Transaction',
     Field('net_price', 'decimal(20,2)',default =0),
     Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'),
     Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'),
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
     Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
@@ -1364,8 +1368,11 @@ db.define_table('Sales_Invoice',
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('archives', 'boolean', default = False),    
+    Field('processed','boolean',default=False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False), format = 'sales_order_no')
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
  
 db.define_table('Sales_Invoice_Transaction',
     Field('sales_invoice_no_id','reference Sales_Invoice',ondelete = 'NO ACTION',writable = False),
@@ -1378,6 +1385,7 @@ db.define_table('Sales_Invoice_Transaction',
     Field('total_amount','decimal(20,2)', default = 0),
     Field('average_cost','decimal(20,4)', default = 0),
     Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
     Field('wholesale_price', 'decimal(20,2)', default = 0),
     Field('retail_price', 'decimal(20,2)',default = 0),
     Field('vansale_price', 'decimal(20,2)',default =0),
@@ -1436,29 +1444,39 @@ db.define_table('Stock_Request',
 
 db.define_table('Stock_Request_Transaction',    
     Field('stock_request_id', 'reference Stock_Request', ondelete = 'NO ACTION',readable = False), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION'), #requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
-    Field('quantity', 'integer', default = 0),
-    Field('uom','integer', default = 0),
-    Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost','decimal(10,4)', default = 0 ), # with tax included
-    Field('wholesale_price','decimal(10,2)', default = 0),
-    Field('retail_price','decimal(10,2)',default = 0),
-    Field('sale_cost', 'decimal(20,6)', default = 0), # after discount
-    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. with tax included
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
     Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
     Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
     Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
-
-    Field('vansale_price', 'decimal(10,2)',default =0),
-    Field('remarks','string', length = 50),
-    Field('delete', 'boolean', default = False),
-    Field('total_amount','decimal(20,2)',default =0),
-    Field('ticket_no_id', 'string', length = 10, writable = False, readable = False),
+    Field('price_cost_after_discount','decimal(20,2)'), 
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),    
+    Field('remarks','string', length = 50),        
+    Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', writable = False, readable = False),
-    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
 
 db.define_table('Stock_Transaction_Temp',    
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code'))),
@@ -1507,28 +1525,38 @@ db.define_table('Stock_Transfer',
 
 db.define_table('Stock_Transfer_Transaction',    
     Field('stock_transfer_no_id', 'reference Stock_Transfer', ondelete = 'NO ACTION',readable = False), 
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION'), 
-    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
-    Field('quantity', 'integer', default = 0),
-    Field('uom','integer', default = 0),
-    Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost','decimal(10,4)', default = 0 ), # with tax included
-    Field('wholesale_price','decimal(10,2)', default = 0),
-    Field('retail_price','decimal(10,2)',default = 0),
-
-    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. with tax included
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
     Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
     Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
     Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
-
-    Field('vansale_price','decimal(10,2)',default =0),
-    Field('total_amount','decimal(20,2)',default =0),
-    Field('remarks','string', length = 50),    
-    Field('delete', 'boolean', default = False),
+    Field('price_cost_after_discount','decimal(20,2)'), 
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),       
+    Field('remarks','string', length = 50),             
+    Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', writable = False, readable = False),
-    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Stock_Receipt',       
     Field('stock_request_no_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
@@ -1554,6 +1582,7 @@ db.define_table('Stock_Receipt',
     Field('stock_receipt_date_approved', 'datetime', writable = False),
     Field('stock_receipt_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),   
     Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
+    Field('processed','boolean',default=False),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1561,22 +1590,38 @@ db.define_table('Stock_Receipt',
 
 db.define_table('Stock_Receipt_Transaction',    
     Field('stock_receipt_no_id', 'reference Stock_Receipt', ondelete = 'NO ACTION',readable = False), #writable = False), #requires = IS_IN_DB(db, db.Stock_Request.id, '%(stock_request_no)s')),
-    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION'), #requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
-    Field('category_id', 'reference Transaction_Item_Category',ondelete = 'NO ACTION'), 
-    Field('quantity', 'integer', default = 0),
-    Field('uom','integer', default = 0),
-    Field('average_cost','decimal(10,4)', default =0),
-    Field('price_cost','decimal(10,4)', default = 0 ),
-    Field('wholesale_price','decimal(10,2)', default = 0),
-    Field('retail_price','decimal(10,2)',default = 0),
-    Field('vansale_price','decimal(10,2)',default =0),
-    Field('total_amount','decimal(20,2)',default =0),
-    Field('remarks','string', length = 50),    
-    Field('delete', 'boolean', default = False),
+    Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
+    Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+    Field('price_cost_after_discount','decimal(20,2)'), 
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
+    Field('remarks','string', length = 50),        
+    Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
-    Field('updated_on', 'datetime', writable = False, readable = False),
-    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False))
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 #---------- S   A   L   E   S   S c h e m a ----------
 
@@ -2004,7 +2049,8 @@ db.define_table('Insurance_Master',
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', writable = False, readable = False), format = 'insurance_name')
 
 db.define_table('Insurance_Details',    
-    Field('purchase_order_no_id','reference Purchase_Order',ondelete = 'NO ACTION',writable = False),
+    # Field('purchase_order_no_id','reference Purchase_Order',ondelete = 'NO ACTION',writable = False),
+    Field('purchase_order_no','string',length = 25, writable = False),
     Field('insurance_master_id','reference Insurance_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
     Field('subject','string', length = 50),
     Field('description', 'string', length = 50),

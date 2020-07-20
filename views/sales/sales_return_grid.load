@@ -1,12 +1,11 @@
 {{=table}}
 <script>   
-$(document).ready(function(){
-    $(".table").DataTable();
+$(document).ready(function(){ 
 });
     function PrintSalesReturn(x){
-        console.log("PrintSalesReturn");
-        var _x = x
+        var _x = x        
         window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0), extension = False)}}" + "/" + _x );
+        window.location.reload();
     };
         $('.delete').click(function(){
             var _id = $(this).attr('data-id');

@@ -50,6 +50,7 @@ $('.delete').click(function(){
             if (result) {
                 ajax("{{=URL('sales','sales_order_delete_view')}}" + '/' + _id);
                 parent.fadeOut('slow');
+                //location.reload();
             }
         }
     })

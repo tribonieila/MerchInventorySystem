@@ -523,7 +523,7 @@ def sales_order_form_testing():
 @auth.requires_login()
 def sales_order_form():    
     _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
-    if auth.has_membership('INVENTORY BACK OFFICE'):
+    if auth.has_membership('SALES'):
         if _usr.van_sales == True: # Van sales => limited customer
             _query_dept = db.Department.id == 3
             _defa_dept = 3
@@ -603,7 +603,7 @@ def sales_order_form():
             _grand_total += n.total_amount
             _total_selective_tax += n.selective_tax or 0
             _total_selective_tax_foc += n.selective_tax_foc 
-            print n.id, _total_selective_tax_foc, n.selective_tax_foc or 0
+            # print n.id, _total_selective_tax_foc, n.selective_tax_foc or 0
         _discount = session.discount or 0
         # _discount = float(_grand_total) * float(_discount) / 100
         _after_discount = float(_grand_total) - float(session.discount or 0)
@@ -1132,7 +1132,7 @@ def get_sales_invoice_workflow_reports():
     table = TABLE(*[head, body], _class='table', _id = 'tblSO')#, **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
     return dict(table = table)
 
-@auth.requires(lambda: auth.has_membership('FMCG') | auth.has_membership('ROOT'))        
+@auth.requires(lambda: auth.has_membership('SALES') | auth.has_membership('ROOT'))        
 def get_fmcg_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
@@ -1168,7 +1168,7 @@ def get_fmcg_sales_order_workflow_grid():
     return dict(table = table)    
     
 
-@auth.requires(lambda: auth.has_membership('FMCG') | auth.has_membership('ROOT'))        
+@auth.requires(lambda: auth.has_membership('SALES') | auth.has_membership('ROOT'))        
 def get_fmcg_sales_return_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
@@ -1423,7 +1423,7 @@ def get_sales_report_transaction_id_():
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc =  DIV('')
     _id = db((db.Sales_Order.id == session.sales_order_no_id) & (db.Sales_Order.id == request.args(0))).select().first()
-    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'SALES'):
         _query = db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id))
         _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
     else:
@@ -1603,9 +1603,7 @@ def sales_order_view():
     session.stock_source_id = _id.stock_source_id
     form = SQLFORM(db.Sales_Order, request.args(0))
     if form.process().accepted:
-        response.flash = 'RECORD UPDATED'        
-        if int(request.vars.status_id) == 10:
-            cancelled()
+        response.flash = 'RECORD UPDATED'
         redirect(URL('inventory','get_back_off_workflow_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERROR'            
@@ -1772,29 +1770,30 @@ def sales_order_cancelled_view():
 def sales_order_delete_view():
     _st = db(db.Sales_Order_Transaction.id == request.args(0)).select().first()    
     _so = db(db.Sales_Order.id == _st.sales_order_no_id).select().first()
-    _ctr = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).count()
-    # print 'ctr: ', _ctr
-    if _ctr <= 1: # flash to cancel sales order transaction
-        # print '1', _so.discount_added
-        response.js = 'jQuery(trnx_cancel())'
-    else: # allow delete records
-        _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.stock_source_id)).select().first()    
-        _st.update_record(delete = True)
-        if float(_so.discount_added or 0): # check if discount added                                    
-            _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id).first()
-            _sale_cost = (float(_trnx.wholesale_price or 0) / int(_trnx.uom or 0)) - float(_so.discount_added or 0)
-            _trnx.update_record(sale_cost = _sale_cost)
+    
+    _total = _selective_tax = _selective_tax_foc = 0
 
-        _total_amount = _so.total_amount - _st.total_amount
-        _total_amount_after_discount = (_so.total_amount_after_discount - _total_amount) - _so.discount_added
-        _so.update_record(total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)
-        
-        # # update the stock file table
-        _sf.stock_in_transit += int(_st.quantity or 0)
-        _sf.probational_balance += int(_st.quantity or 0)
-        _sf.update_record()        
-        session.flash = 'RECORD DELETED'    
-        response.js = "$('#tbltrnx').get(0).reload()"
+    _sf = db((db.Stock_File.item_code_id == _st.item_code_id) & (db.Stock_File.location_code_id == _so.stock_source_id)).select().first()    
+    # # update the stock file table
+    _sf.stock_in_transit += int(_st.quantity or 0)
+    _sf.probational_balance += int(_st.quantity or 0)
+    _sf.update_record()     
+
+    _st.update_record(delete = True)
+
+    _total_amount = _selective_tax = _selective_tax_foc = 0
+    for n in db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
+        _total_amount += float(n.total_amount or 0)
+        _selective_tax += float(n.selective_tax or 0)
+        _selective_tax_foc += float(n.selective_tax_foc or 0)
+    _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id).first()
+    if float(_so.discount_added or 0): # check if discount added                                                
+        _sale_cost = (float(_trnx.wholesale_price or 0) / int(_trnx.uom or 0)) - float(_so.discount_added or 0)
+        _trnx.update_record(sale_cost = _sale_cost)
+    _total_amount_after_discount = _total_amount - float(_so.discount_added or 0)
+    _so.update_record(total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)          
+    session.flash = 'RECORD DELETED'        
+    response.js = '$("#tbltrnx").get(0).reload()'       
 
         
 
@@ -1902,7 +1901,7 @@ def sales_order_transaction_table():
     _selective_tax = _selective_tax_foc = _total_amount_after_discount = 0
     _div_tax = _div_tax_foc =  DIV('')
     _id = db((db.Sales_Order.id == session.sales_order_no_id) & (db.Sales_Order.id == request.args(0))).select().first()
-    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'SALES'):
         _query = db((db.Sales_Order_Transaction.sales_order_no_id == session.sales_order_no_id) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Order_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id))
         _id = db(db.Sales_Order.id == session.sales_order_no_id).select().first()
     else:
@@ -1987,9 +1986,9 @@ def update_sales_transaction(): # audited
         _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id).first()
         _sale_cost = (float(_trnx.wholesale_price) / int(_trnx.uom)) - float(request.vars.vdiscount or 0)
         _trnx.update_record(sale_cost = _sale_cost)        
-        _id.update_record(remarks = request.vars.remarks, discount_added = request.vars.vdiscount, total_amount =request.vars.vtotal_amount,total_amount_after_discount=request.vars.vnet_amount)
+        _id.update_record(status_id = request.vars.status_id, remarks = request.vars.remarks, discount_added = request.vars.vdiscount, total_amount =request.vars.vtotal_amount,total_amount_after_discount=request.vars.vnet_amount)
     else:        
-        _id.update_record(remarks = request.vars.remarks)
+        _id.update_record(status_id = request.vars.status_id,remarks = request.vars.remarks)
     response.flash = "RECORD UPDATED"
 
 # @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
@@ -2165,8 +2164,9 @@ def sales_return_accounts_form():
     session.sales_return_no_id = request.args(0)
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
     form = SQLFORM(db.Sales_Return, request.args(0))
-    if form.process().accepted:
-        sales_return_accounts_form_approved()
+    if form.process().accepted:        
+        session.flash = 'Sales return processed.'
+        redirect(URL('inventory','account_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _id = _id)     
@@ -2182,6 +2182,7 @@ def sales_return_accounts_form_approved():
         _id = db(db.Sales_Return.id == request.args(0)).select().first()
         _damaged_qty = 0
         for n in db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select():
+            _price = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
             _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first() 
             _stk_in_trn = int(_stk_des.stock_in_transit) - int(n.quantity)
             _stk_in_clo = int(_stk_des.closing_stock) + int(n.quantity)
@@ -2191,10 +2192,10 @@ def sales_return_accounts_form_approved():
             if int(n.category_id) == 1: # damaged return
                 _stk_des.update_record(probational_balance = _stk_in_pro, damaged_stock_qty = _stk_in_dam, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
             if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
-                _stk_des.update_record(closing_stock = _stk_in_clo, probational_balance = _stk_in_nor, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)
+                _stk_des.update_record(closing_stock = _stk_in_clo, probational_balance = _stk_in_nor, stock_in_transit = _stk_in_trn, last_transfer_qty = n.quantity, last_transfer_date = request.now)                    
         _id.update_record(status_id = 13, accounts_date = request.now, accounts_id = auth.user_id)    
         _flash = 'Sales return approved.'        
-        response.js = "jQuery(PrintSalesReturn(%s)), $('#tblsrt').get(0).reload()" % (_id.id)    
+        response.js = "jQuery(PrintSalesReturn(%s))" % (_id.id)    
     session.flash = _flash
 
 @auth.requires_login()
@@ -2386,10 +2387,12 @@ def sales_return_form():
             
             _item = db(db.Item_Master.id == n.item_code_id).select().first()
             _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
-            if (int(n.category_id) == 3) or (int(n.category_id) == 1):
+            if int(n.category_id) == 3:
                 _price_cost = (_pric.average_cost / _item.uom_value)
                 _price_cost_discount = (_pric.average_cost / _item.uom_value)
+                _sale_cost_no_tax = 0 
             else:
+                _sale_cost_no_tax = 0
                 _price_cost = (_pric.wholesale_price / _item.uom_value)
                 _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
             db.Sales_Return_Transaction.insert(
@@ -2401,13 +2404,14 @@ def sales_return_form():
                 price_cost = n.price_cost,
                 average_cost = _pric.average_cost,
                 sale_cost = (n.net_price / _item.uom_value), # converted to pieces
+                sale_cost_notax_pcs = ((n.net_price / _item.uom_value) - (_pric.selective_tax_price /  _item.uom_value)),
                 wholesale_price = _pric.wholesale_price,
                 retail_price = _pric.retail_price,
                 vansale_price = _pric.vansale_price,
                 discount_percentage = n.discount_percentage,
                 selective_tax = n.selective_tax,
                 selective_tax_foc = n.selective_tax_foc,
-                
+                selective_tax_price = _pric.selective_tax_price,
                 price_cost_pcs = _price_cost,  #n.price_cost / _item.uom_value,
                 average_cost_pcs = _pric.average_cost / _item.uom_value,
                 wholesale_price_pcs = _pric.wholesale_price / _item.uom_value,
@@ -2492,8 +2496,11 @@ def validate_sales_return_transaction(form):
             (db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & 
             (db.Sales_Return_Transaction_Temporary.item_code == request.vars.item_code) & 
             ((int(request.vars.category_id) == 1) | (int(request.vars.category_id) == 4))).select().first()
-        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)      
-
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(request.vars.pieces or 0)     
+        _item_discount = float(request.vars.discount_percentage or 0) 
+        _retail_price_per_uom = _price.retail_price / _id.uom_value     
+        _wholesale_price_per_uom = _price.wholesale_price / _id.uom_value
+        _selective_tax_per_uom = _price.selective_tax_price / _id.uom_value
         if _not_allowed:
             # form.errors.item_code = CENTER(DIV(B('Info! '),'Not Allowed to returned both Normal/Damaged.',_class='alert alert-danger',_role='alert'))            
             form.errors.item_code = "Not Allowed to returned both Normal/Damaged."
@@ -2503,35 +2510,55 @@ def validate_sales_return_transaction(form):
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
             form.error.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
 
-        _excise_tax_amount = 0
-        _unit_price = 0
+        _excise_tax_amount = _selective_tax_total =_selective_tax_total_foc = 0
+        _unit_price = _tax_per_uom= 0
         _total_excise_tax = _net_price= _total_amount = 0
         _selective_tax = _selective_tax_foc = _total_excist_tax_foc = 0
+
+        if _price.selective_tax_price > 0:                        
+            _tax_per_uom = _selective_tax_per_uom
+        else:
+            _tax_per_uom = 0
+
         if _exist:
             form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'            
         else:
 
             if int(request.vars.category_id) == 3:
-                _unit_price = 0
-                # computation for excise tax foc
-                _excise_tax_amount_foc = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
-                _excise_tax_price_per_piece_foc = _excise_tax_amount_foc / _id.uom_value
-                _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount_foc                      
-            # elif int(request.vars.category_id) == 1 or int(request.vars.category_id) == 4:
-            #     form.errors.item_code = 'error not allowed'
+                # computation for excise tax foc        
+                _selective_tax = 0
+                if float(_price.selective_tax_price) == 0:
+                    _selective_tax_foc = 0
+                else:
+                    _selective_tax_foc =  float(_tax_per_uom) * _id.uom_value
+
+                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc
+                _selective_tax_total_foc += float(_tax_per_uom) * _total_pcs
             else:
                 # computation for excise tax
-                _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value
-                _selective_tax += _excise_tax_price_per_piece * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
+                _selective_tax_foc = _unit_price1 = 0
+                if float(_price.selective_tax_price) == 0:
+                    _selective_tax = 0
+
+                else:
+                    _selective_tax =  float(_selective_tax_per_uom or 0) #* _id.uom_value
+
+                _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + (float(_selective_tax or 0) * _id.uom_value)
                 
-                # computation for price per unit
-                _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0 ))) / 100
-                _price_per_piece = _net_price / _id.uom_value
-                # _price_per_piece = _unit_price / _id.uom_value
-                _total_amount = _total_pcs * _price_per_piece                 
+                _selective_tax_total += float(_selective_tax) * _total_pcs          
+                if float(_price.selective_tax_price) == 0: # without selective tax
+                    _net_price = 0
+                    _net_price = _unit_price - ((_unit_price * _item_discount) / 100) #+ (float(_selective_tax or 0) * _id.uom_value)
+                    _total_amount = _net_price / _id.uom_value * _total_pcs                    
+                else:   # with selective tax                    
+                    # _net_price = 0
+                    # _net_price_at_wholesale = 0.0
+                    # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
+                    
+                    _net_price = (float(_price.wholesale_price) * (100 - _item_discount) / 100) + float(_price.selective_tax_price)
+                    # _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
+                    # # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
+                    _total_amount = (_net_price / _id.uom_value) * _total_pcs                
 
         if _id.uom_value == 1:
             form.vars.pieces = 0
@@ -2551,8 +2578,8 @@ def validate_sales_return_transaction(form):
         
         
         form.vars.item_code_id = _id.id
-        form.vars.selective_tax = _selective_tax
-        form.vars.selective_tax_foc = _selective_tax_foc
+        form.vars.selective_tax = _selective_tax_total
+        form.vars.selective_tax_foc = _selective_tax_total_foc
         form.vars.total_pieces = _total_pcs
         form.vars.price_cost = _unit_price
         form.vars.total_amount = _total_amount or 0
@@ -2742,7 +2769,7 @@ def sales_return_transaction_table():
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
     _id = db((db.Sales_Return.id == request.args(0)) | (db.Sales_Return.id == session.sales_return_no_id)).select().first()
-    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+    if auth.has_membership(role = 'ROOT') | auth.has_membership(role = 'SALES'):
         _query = db((db.Sales_Return_Transaction.sales_return_no_id == request.args(0)) & (db.Sales_Return_Transaction.delete == False)).select(db.Sales_Return_Transaction.ALL, db.Item_Master.ALL,orderby = db.Sales_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Sales_Return_Transaction.item_code_id))
         _id = db((db.Sales_Return.id == request.args(0)) | (db.Sales_Return.id == session.sales_return_no_id)).select().first()
     else:
@@ -2960,7 +2987,7 @@ def get_workflow_reports():
             title = 'Sales Order Workflow Report'
             head = THEAD(TR(TH('Date'),TH('Sales Invoice No.'),TH('Delivery Note No.'),TH('Sales Order No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
             _query = db((db.Sales_Invoice.sales_order_approved_by == auth.user_id) & (db.Sales_Invoice.status_id == 7)).select(orderby = ~db.Sales_Invoice.id)
-        elif auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+        elif auth.has_membership(role = 'SALES'):
             title = 'Sales Invoice Workflow Report'
             head = THEAD(TR(TH('Date'),TH('Sales Invoice No.'),TH('Delivery Note No.'),TH('Sales Order No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
             _query = db((db.Sales_Invoice.sales_man_id == _usr.id) & (db.Sales_Invoice.status_id == 7)).select(orderby = ~db.Sales_Invoice.id)
@@ -2984,7 +3011,7 @@ def get_workflow_reports():
             if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_workflow_reports_id', args = [1, n.id]))
                 prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('delivery_note_reports','get_workflow_delivery_reports_id', args = n.id))
-            elif auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'INVENTORY SALES MANAGER'):                
+            elif auth.has_membership(role = 'SALES') | auth.has_membership(role = 'INVENTORY SALES MANAGER'):                
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_workflow_reports_id', args = [1, n.id]))
             elif auth.has_membership(role = 'ACCOUNTS'):                
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sales','get_workflow_reports_id', args = [1, n.id]))
@@ -3053,7 +3080,7 @@ def get_workflow_reports():
             _query = db(db.Sales_Return.warehouse_id == auth.user_id).select(orderby = ~db.Sales_Return.id)
         elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):
             _query = db(db.Sales_Return.sales_manager_id == auth.user_id).select(orderby = ~db.Sales_Return.id)
-        elif auth.has_membership(role = 'INVENTORY BACK OFFICE'):
+        elif auth.has_membership(role = 'SALES'):
             _query = db(db.Sales_Return.sales_man_id == _usr.id).select(orderby = ~db.Sales_Return.id)
         head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
         for n in _query:  
@@ -3878,13 +3905,16 @@ def sync_to_sales_invoice_db():
         status_id = _id.status_id)
     _si = db(db.Sales_Invoice.sales_order_no == _id.sales_order_no).select().first()    
     for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
-        if (int(n.category_id) == 3) or (int(n.category_id) == 1):
+        if int(n.category_id) == 3:
             _price_cost = (n.average_cost / n.uom)
             _price_cost_discount = (n.average_cost / n.uom)
+            _sale_cost_no_tax = 0 
         else:
+            _sale_cost_no_tax = (n.sale_cost - (_i.selective_tax_price / n.uom))
             _price_cost = (n.wholesale_price / n.uom)
             _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
         _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+
         # _price_cost_discount = ((n.price_cost * (100 - n.discount_percentage)) / 100) / n.uom
         db.Sales_Invoice_Transaction.insert(
             sales_invoice_no_id = _si.id,
@@ -3897,6 +3927,7 @@ def sync_to_sales_invoice_db():
             total_amount = n.total_amount,
             average_cost = n.average_cost,
             sale_cost = n.sale_cost,
+            sale_cost_notax_pcs = _sale_cost_no_tax,
             wholesale_price = n.wholesale_price,
             retail_price = n.retail_price,            
             price_cost_pcs = _price_cost, # if item normal/foc

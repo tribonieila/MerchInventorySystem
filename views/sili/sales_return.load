@@ -1,0 +1,11 @@
+<input class="btn btn-default" type="button" value="Sync Sales Return" onclick="sync_sales_return()">
+
+
+
+<script>
+    function sync_sales_return(){
+        console.log("sync_sales_return")
+        ajax("{{=URL('sili','put_sales_return_consolidation')}}");
+    }
+
+</script>

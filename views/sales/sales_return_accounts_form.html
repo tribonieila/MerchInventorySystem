@@ -148,9 +148,8 @@ $(document).ready(function(){
             $('#btnreturn').attr('disabled','disabled');
         }
     });
-    $('#btnreturn').click(function(){
-        window.location.reload();
-        window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0))}}");
+    $('#btnreturn').click(function(){                                
+        window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0))}}");                        
     })
 });
 </script>

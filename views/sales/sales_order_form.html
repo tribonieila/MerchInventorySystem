@@ -2,10 +2,14 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_browse')}}";>BROWSE</a></li>
-            </ul> -->
+                {{ if auth.has_membership(role = 'SALES'): }}
+                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','get_fmcg_workflow_grid')}}";>BROWSE</a></li>
+                {{ pass }}
+
+    
+            </ul>
             <span class="card-title">SALES ORDER FORM</span>
         </div>
         <div class="card-body tab-content">                                            

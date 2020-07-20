@@ -3665,7 +3665,7 @@ def purchase_request_item_code_description():
 def get_purchase_request_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Purchase Order No.'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) |(db.Purchase_Request.status_id == 17) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
+    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) |(db.Purchase_Request.status_id == 17) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 22) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_request_transaction_view', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -4714,7 +4714,7 @@ def purchase_receipt_warehouse_grid_process():
         #     location_code_id = form.vars.location_code_id,
         #     )
         
-        _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
+        # _pr = db(db.Purchase_Receipt_Warehouse_Consolidated.purchase_receipt_no == int(_skey)).select().first()
 
         # UPDATE ADDTIONAL ITEMS
         # print 'session.ticket_no', session.ticket_no, _pr.id, _pr.purchase_receipt_no
@@ -5427,8 +5427,7 @@ def purchase_receipt_warehouse_grid(): # hakim's form
             TD(n.supplier_code_id.supp_name),
             TD(n.supplier_reference_order),
             TD(n.location_code_id.location_name),
-            TD(n.purchase_order_approved_by.first_name.upper(),' ', n.purchase_order_approved_by.last_name.upper()),
-            # TD(n.currency_id.mnemonic,' ',locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True)),
+            TD(n.purchase_order_approved_by.first_name.upper(),' ', n.purchase_order_approved_by.last_name.upper()),            
             TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
         session.supplier_code_id = n.supplier_code_id
     body = TBODY(*row)
@@ -6571,9 +6570,11 @@ doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=30,leftMargin=30, t
 
 #  ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
 def insurance_proposal_reports():
-    _id = db(db.Insurance_Details.purchase_order_no_id == request.args(0)).select().first()    
+    _po = db(db.Purchase_Request.id == request.args(0)).select().first()
+    _id = db(db.Insurance_Details.purchase_order_no == _po.purchase_order_no).select().first()    
     _ip = db(db.Insurance_Master.id == _id.insurance_master_id).select().first()
-    _po = db(db.Purchase_Order.id == request.args(0)).select().first()
+    # _po = db(db.Purchase_Order.id == request.args(0)).select().first()
+    
     _sum = db.Purchase_Order_Transaction.total_amount.sum()
     _pt = db(db.Purchase_Order_Transaction.purchase_order_no_id == request.args(0)).select(_sum).first()[_sum]
     # _om = db(db.Outgoing_Mail.purchase_order_no_id == request.args(0)).select().first()
@@ -8373,7 +8374,7 @@ def insurance_proposal_details_new():
     _usr_f = str(auth.user.first_name.upper())
     _usr_l = str(auth.user.last_name.upper())
     _ckey = 'MP' + '/' + str(_pre.prefix) + '/' + str(_skey) + '/' + str(date.today().strftime("%Y")) + '/' + _usr_f[:1] + _usr_l[:1]
-    _subject = 'Insurance Proposal for ' + str(_po.purchase_order_no_prefix_id.prefix) + str(_po.purchase_order_no)        
+    _subject = 'Insurance Proposal for ' + str(_pur.purchase_order_no_prefix_id.prefix) + str(_pur.purchase_order_no)        
     form = SQLFORM.factory(
         Field('insurance_master_id','reference Insurance_Master',ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Insurance_Master.id, '%(insurance_name)s', zero = 'Choose Insurance')),
         Field('mail_subject','string', length = 50, default = _subject),
@@ -8384,8 +8385,7 @@ def insurance_proposal_details_new():
     if form.process(onvalidation = validate_outgoing_mail).accepted:        
         response.flash = 'FORM SAVE'
         _pre.update_record(serial_key = _skey) 
-        _po.update_record(status_id = 22, insurance_letter_reference = _ckey)     
-        _pur.update_record(status_id = 22)
+        _pur.update_record(status_id = 22, insurance_letter_reference = _ckey)             
         db.Outgoing_Mail.insert(
             # purchase_order_no_id = _po.id,
             insurance_master_id = form.vars.insurance_master_id,
@@ -8398,7 +8398,7 @@ def insurance_proposal_details_new():
         session.outgoing_mail_no = form.vars.outgoing_mail_no
         session.mail_subject = form.vars.mail_subject
         db.Insurance_Details.insert(
-            purchase_order_no_id = _po.id,
+            purchase_order_no = _pur.purchase_order_no,
             insurance_master_id = form.vars.insurance_master_id,
             subject = form.vars.mail_subject,
             description = form.vars.description,
@@ -8406,7 +8406,7 @@ def insurance_proposal_details_new():
             partial_shipment = form.vars.partial_shipment,
             transhipment = form.vars.transhipment) 
         # _id = db(db.Outgoing_Mail.outgoing_mail_no == form.vars.outgoing_mail_no).select().first()       
-        redirect(URL('procurement','insurance_proposal_reports', args = _po.id))
+        redirect(URL('procurement','insurance_proposal_reports', args = _pur.id))
     elif form.errors:
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _ckey = _ckey)

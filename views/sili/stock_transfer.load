@@ -1,0 +1,11 @@
+<input class="btn btn-default" type="button" value="Sync Stock Transfer" onclick="sync_stock_transfer()">
+
+
+
+<script>
+    function sync_stock_transfer(){
+        
+        ajax("{{=URL('sili','put_stock_transfer_consolidation')}}");
+    }
+
+</script>
