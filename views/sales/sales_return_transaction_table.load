@@ -1,4 +1,8 @@
 {{=table}} 
+<input type="text" class="form-control" id="var_total_amount" name="var_total_amount" value="0" hidden>
+<input type="text" class="form-control" id="var_discount_added" name="0">
+<input type="text" class="form-control" id="var_net_amount" name="var_net_amount" value="0">
+
 <script>
 $(document).ready(function(){
     $(".price_cost, .net_price, .total_amount, .net_total,.quantity, .pieces, .discount_percentage").prop("readonly", true);
@@ -29,9 +33,11 @@ $(document).ready(function(){
         var _total_amount = $("#total_amount").val();
         var _discount = $("#discount").val();
         _discounted = _total_amount - _discount
-        $("#discount_var").val(_discount);
+        
+        $("#var_discount_added").val(_discount);
         $("#net_amount").val(_discounted);
         $("#net_amount_var").val(_discounted);
+        $("#var_net_amount").val(Number(_discounted.toFixed(2)))
     
     })    
 });

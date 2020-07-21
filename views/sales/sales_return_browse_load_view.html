@@ -137,7 +137,22 @@
                 </div>
             </div>
             <hr>
+            <input type="text" class="form-control" id="vdiscount" name="vdiscount" value="0" hidden>
+            <input type="text" class="form-control" id="vnet_amount" name="vnet_amount" value="0" hidden>
             {{=LOAD('sales','sales_return_transaction_table.load', ajax = True, args = request.args(0))}}
         </div>
     </div>
 </div>
+<script>
+$(document).ready(function(){    
+    $("#btnsubmit").click(function(){
+        var inDiscount = document.getElementById("var_discount_added").value
+        var inNetAmount = document.getElementById("var_net_amount").value
+        $("#vdiscount").val(inDiscount);    
+        $("#vnet_amount").val(inNetAmount);    
+        console.log(inDiscount,inNetAmount);
+        ajax("{{=URL('sales','update_sales_return_transaction',args=request.args(0))}}",['vdiscount','vnet_amount','remarks'])
+    })
+
+});
+</script>

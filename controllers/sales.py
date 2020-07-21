@@ -1174,7 +1174,7 @@ def get_fmcg_sales_order_workflow_grid():
             TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
             TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table', _id = 'tblso', **{'_data-toggle':'table','_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true'})
+    table = TABLE(*[head, body], _class='table', _id = 'tblSOR')
     return dict(table = table)    
     
 
@@ -1191,14 +1191,14 @@ def get_fmcg_sales_return_workflow_grid():
             TD(n.sales_return_date),
             TD(n.transaction_prefix_id.prefix,n.sales_return_no),
             TD(n.dept_code_id.dept_name),
-            TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
+            TD(n.customer_code_id.account_name,', ',n.customer_code_id.account_code),
             TD(n.location_code_id.location_name),
-            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),            
+            TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),            
             TD(n.status_id.description),
             TD(n.status_id.required_action),
             TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    table = TABLE(*[head, body], _class='table', _id='tblSRT')
     return dict(table = table)    
     
 @auth.requires_login()
@@ -2260,14 +2260,7 @@ def sales_return_view():
    
 def update_sales_return_transaction():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
-    if float(request.vars.discount_var or 0) != float(_id.discount_added or 0):
-        _trnx = db((db.Sales_Return_Transaction.sales_return_no_id == _id.id) & (db.Sales_Return_Transaction.delete == False)).select(orderby = db.Sales_Return_Transaction.id).first()
-        _sale_cost = (float(_trnx.wholesale_price) / int(_trnx.uom)) - float(request.vars.discount_var or 0)
-        _trnx.update_record(sale_cost = _sale_cost)
-        _id.update_record(remarks = request.vars.remarks, discount_added = request.vars.discount_var, total_amount_after_discount = request.vars.net_amount_var)
-    else:
-        _id.update_record(remarks = request.vars.remarks)    
-    session.flash = 'Sales return updated.'
+    _id.update_record(remarks = request.vars.remarks, discount_added = request.vars.vdiscount, total_amount_after_discount = request.vars.vnet_amount)
     
 
 @auth.requires_login()   
