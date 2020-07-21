@@ -3032,6 +3032,7 @@ def category_option():
 @auth.requires(lambda: auth.has_membership('SALES') | auth.has_membership('INVENTORY POS') | auth.has_membership('SALES')| auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def stk_req_add_form():          
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+    _slm = db(db.Sales_Man.users_id == auth.user_id).select().first()
     ctr = db(db.Transaction_Prefix.prefix_key == 'SRN').select().first()
     _skey = ctr.current_year_serial_key 
     _skey += 1        
@@ -3065,7 +3066,7 @@ def stk_req_add_form():
             stock_destination_id = form.vars.stock_destination_id,
             srn_status_id = form.vars.srn_status_id,
             requested_by = auth.user_id,
-            section_id = _usr.section_id,
+            section_id = _slm.section_id,
             remarks = form.vars.remarks)            
         
         _id = db(db.Stock_Request.stock_request_no == ctr.current_year_serial_key ).select().first()
@@ -7301,13 +7302,10 @@ def get_fmcg_stock_request_workflow_grid():
 
         if int(n.srn_status_id) == 4 and int(n.stock_destination_id == _usr.location_code_id):
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
-            _action_req = 'FOR PRE-APPROVAL'
-            print '4'
-        elif int(n.srn_status_id) == 5 and int(n.stock_destination_id == _usr.location_code_id):
-            print '5'
+            _action_req = 'FOR PRE-APPROVAL'            
+        elif int(n.srn_status_id) == 5 and int(n.stock_destination_id == _usr.location_code_id):            
             gene_lnk = A(I(_class='fas fa-user-plus'), _title='Generate stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                                
-        elif int(n.srn_status_id == 26) and int(n.stock_source_id == _usr.location_code_id):                
-            print '26'
+        elif int(n.srn_status_id == 26) and int(n.stock_source_id == _usr.location_code_id):                            
             gene_lnk = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, gene_lnk,prin_lnk)
         row.append(TR(TD(n.stock_request_date),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))

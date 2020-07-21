@@ -554,6 +554,12 @@ def sales_order_form():
         Field('remarks', 'string'),         
         Field('status_id','reference Stock_Status', default = 4, requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
     if form.process().accepted:        
+        if int(db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).count()) == 0:
+            print 'empty'
+            session.flash = 'Transactions empty not allowed.'
+            redirect(URL('index'))
+        else:
+            print 'not empty'
         ctr = db((db.Transaction_Prefix.prefix_key == 'SOR') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
         _skey = ctr.current_year_serial_key
         _skey += 1
@@ -610,7 +616,7 @@ def sales_order_form():
         _trnx = db(db.Sales_Order_Transaction.sales_order_no_id == _id.id).select().first()    
         # if float(session.discount or 0) > 0:
         if _id.discount_added:
-            _sale_cost = float(_trnx.sale_cost) - float(_id.discount_added)
+            _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom))- float(_id.discount_added)) / int(_trnx.uom)
             _trnx.update_record(sale_cost = _sale_cost, discounted = True)
         _after_discount = float(_grand_total) - float(request.vars.discount_var or 0)
         _id.update_record(total_amount = _grand_total,  total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_selective_tax_foc) # discount_added = _discount,
@@ -1019,9 +1025,13 @@ def sales_order_transaction_temporary_delete():
     _s.stock_in_transit += _id.total_pieces
     _s.probational_balance = int(_s.closing_stock) - int(_id.total_pieces)
     _s.update_record()        
-    db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()    
-    response.flash = 'RECORD DELETED'
-    response.js = "$('#tblsot').get(0).reload()"
+    db(db.Sales_Order_Transaction_Temporary.id == request.args(0)).delete()     
+    if db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() == 0:            
+        response.flash = 'RECORD DELETED'
+        response.js = "$('#tblsot').get(0).reload(), jQuery('#btnsubmit').attr('disabled','disabled')"
+    else:    
+        response.flash = 'RECORD DELETED'
+        response.js = "$('#tblsot').get(0).reload()"
 
 def get_sales_order_workflow_grid():    
     row = []
@@ -1136,7 +1146,7 @@ def get_sales_invoice_workflow_reports():
 def get_fmcg_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7)).select(orderby = ~db.Sales_Order.id):          
+    for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7) & (db.Sales_Order.status_id != 10)).select(orderby = ~db.Sales_Order.id):          
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -1778,7 +1788,7 @@ def sales_order_delete_view():
     _sf.stock_in_transit += int(_st.quantity or 0)
     _sf.probational_balance += int(_st.quantity or 0)
     _sf.update_record()     
-
+    if _st.discount_percentage: 
     _st.update_record(delete = True)
 
     _total_amount = _selective_tax = _selective_tax_foc = 0
@@ -1787,13 +1797,20 @@ def sales_order_delete_view():
         _selective_tax += float(n.selective_tax or 0)
         _selective_tax_foc += float(n.selective_tax_foc or 0)
     _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id).first()
-    if float(_so.discount_added or 0): # check if discount added                                                
-        _sale_cost = (float(_trnx.wholesale_price or 0) / int(_trnx.uom or 0)) - float(_so.discount_added or 0)
-        _trnx.update_record(sale_cost = _sale_cost)
+    if _trnx:
+        if float(_so.discount_added or 0): # check if discount added                                                
+            _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(_so.discount_added or 0)) / int(_trnx.uom)            
+            _trnx.update_record(sale_cost = _sale_cost)   
     _total_amount_after_discount = _total_amount - float(_so.discount_added or 0)
-    _so.update_record(total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)          
-    session.flash = 'RECORD DELETED'        
-    response.js = '$("#tbltrnx").get(0).reload()'       
+    
+    if db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).count() == 0:
+        _so.update_record(status_id = 10, total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)         
+        session.flash = 'RECORD DELETED'        
+        response.js = 'jQuery(redirect())'       
+    else:
+        _so.update_record(total_amount = _total_amount, total_amount_after_discount = _total_amount_after_discount)         
+        session.flash = 'RECORD DELETED'        
+        response.js = '$("#tbltrnx").get(0).reload()'       
 
         
 
@@ -2328,8 +2345,6 @@ def get_sales_return_grid():
     table = TABLE(*[head, body], _class='table',_id='tblsrt')
     return dict(table = table)  
 
-
-
 @auth.requires_login()
 def sales_return_archived():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
@@ -2389,12 +2404,13 @@ def sales_return_form():
             _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
             if int(n.category_id) == 3:
                 _price_cost = (_pric.average_cost / _item.uom_value)
-                _price_cost_discount = (_pric.average_cost / _item.uom_value)
+                # _price_cost_discount = (_pric.average_cost / _item.uom_value)
                 _sale_cost_no_tax = 0 
             else:
-                _sale_cost_no_tax = 0
+                _sale_cost_no_tax = ((n.net_price / _item.uom_value) - (_pric.selective_tax_price /  _item.uom_value))           
                 _price_cost = (_pric.wholesale_price / _item.uom_value)
-                _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
+            
+            _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
             db.Sales_Return_Transaction.insert(
                 sales_return_no_id = _id.id,
                 item_code_id = n.item_code_id,
@@ -2404,7 +2420,7 @@ def sales_return_form():
                 price_cost = n.price_cost,
                 average_cost = _pric.average_cost,
                 sale_cost = (n.net_price / _item.uom_value), # converted to pieces
-                sale_cost_notax_pcs = ((n.net_price / _item.uom_value) - (_pric.selective_tax_price /  _item.uom_value)),
+                sale_cost_notax_pcs = _sale_cost_no_tax, #((n.net_price / _item.uom_value) - (_pric.selective_tax_price /  _item.uom_value)),
                 wholesale_price = _pric.wholesale_price,
                 retail_price = _pric.retail_price,
                 vansale_price = _pric.vansale_price,
@@ -2416,7 +2432,7 @@ def sales_return_form():
                 average_cost_pcs = _pric.average_cost / _item.uom_value,
                 wholesale_price_pcs = _pric.wholesale_price / _item.uom_value,
                 retail_price_pcs = _pric.retail_price / _item.uom_value,
-                price_cost_after_discount = _price_cost_discount, #((n.price_cost * (100 - n.discount_percentage)) / 100) / _item.uom_value,
+                price_cost_after_discount = _price_cost_discount, #(_pric.wholesale_price / _item.uom_value) - (_pric.wholesale_price / _item.uom_value) * n.discount_percentage / 100, #((n.price_cost * (100 - n.discount_percentage)) / 100) / _item.uom_value,
                 total_amount = n.total_amount,
                 net_price = n.net_price)
             _grand_total += n.total_amount or 0
@@ -2424,7 +2440,7 @@ def sales_return_form():
             _total_foc += n.selective_tax_foc or 0
         if float(request.vars.discount_var or 0): # check global discount exist
             _trnx = db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select().first()
-            _sale_cost = float(_trnx.sale_cost) - float(request.vars.discount_var or 0)
+            _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(request.vars.discount_var or 0)) / int(_trnx.uom)
             _trnx.update_record(sale_cost = _sale_cost)
         _id.update_record(total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_foc)        
         db(db.Sales_Return_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
@@ -2695,9 +2711,13 @@ def sales_return_transaction_temporary_delete():
     _stk_file.stock_in_transit -= _id.total_pieces    
     _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
     _stk_file.update_record()        
-    db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).delete()    
-    response.flash = 'RECORD DELETED'
-    response.js = "$('#tblSR').get(0).reload()"
+    db(db.Sales_Return_Transaction_Temporary.id == request.args(0)).delete()
+    if db(db.Sales_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() == 0:
+        response.flash = 'RECORD DELETED' 
+        response.js = "$('#tblSR').get(0).reload(), jQuery('#btnsubmit').attr('disabled','disabled')"
+    else:
+        response.flash = 'RECORD DELETED'
+        response.js = "$('#tblSR').get(0).reload()"
 
 @auth.requires_login()
 def sales_return_grid():
@@ -2920,7 +2940,23 @@ def sales_return_delete_view_():
     _id.update_record(delete = True)
 
 @auth.requires_login()
+def sales_return_delete_view_():
+    _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()
+    _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()    
+
+    # check if only 1 remaining to remove
+    if db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).count() == 1:
+        response.js = 'jQuery(autoCancel())'
+    else:
+        print 'more '
+
+@auth.requires_login()
 def sales_return_delete_view():
+    # check if only 1 remaining to remove
+    # if db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).count() == 1:
+    #     print 'are you sure?'
+    # else:
+    #     print 'more '
     # initialization of variable    
     _id = db(db.Sales_Return_Transaction.id == request.args(0)).select().first()
     _so = db(db.Sales_Return.id == _id.sales_return_no_id).select().first()    
@@ -2944,15 +2980,23 @@ def sales_return_delete_view():
         _selective_tax += float(n.selective_tax or 0)
         _selective_tax_foc += float(n.selective_tax_foc or 0)
     # _discount = float(_total) * int(_so.discount_percentage or 0) / 100
-    _trnx = db(db.Sales_Return_Transaction.sales_return_no_id == _so.id).select().first()
-    if _so.discount_added:
-        _sale_cost = (float(_trnx.wholesale_price) / int(_trnx.uom)) - float(_so.discount_added or 0)
-        _trnx.update_record(sales_cost = _sale_cost)    
+    _trnx = db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).select(orderby = db.Sales_Return_Transaction.id).first()
+    if _trnx:
+        if float(_so.discount_added or 0):
+            _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(_so.discount_added or 0)) / int(_trnx.uom)        
+            _trnx.update_record(sale_cost = _sale_cost)
     
     # update the sales order table    
     _total_amount_after_discount = _total - float(_so.discount_added or 0)
-    _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount, selective_tax = _selective_tax, selective_tax_foc = _selective_tax_foc)
-    session.flash = 'RECORD DELETED'    
+    
+    if db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).count() == 0:                
+        _so.update_record(status_id = 10, total_amount = _total, total_amount_after_discount = _total_amount_after_discount, selective_tax = _selective_tax, selective_tax_foc = _selective_tax_foc)
+        session.flash = 'RECORD DELETED'    
+        response.js = "jQuery(redirect())"
+    else:        
+        _so.update_record(total_amount = _total, total_amount_after_discount = _total_amount_after_discount, selective_tax = _selective_tax, selective_tax_foc = _selective_tax_foc)
+        session.flash = 'RECORD DELETED'    
+        # response.js = "$('#tblSR').get(0).reload()"
 
 @auth.requires_login()
 def sales_return_form_abort():
@@ -3162,6 +3206,47 @@ def get_workflow_reports():
                 TD(btn_lnk)))
         body = TBODY(*row)
         table = TABLE(*[head, body], _class='table', _id='tblDN')           
+    elif int(request.args(0)) == int(5): # sales order cancelled/rejected
+        if auth.has_membership(role = 'SALES'):
+            title = 'Sales Order Workflow Report'
+
+            head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
+            _query = db(db.Sales_Order.sales_man_id == _usr.id).select(orderby = ~db.Sales_Order.id)
+            for n in _query:
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('sales','get_workflow_reports_id', args = [1, n.id]))
+                prin_lnk = A(I(_class='fas fa-print'), _target="#",_title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('default','get_workflow_sales_invoice_reports_id', args = n.id))
+                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+
+                btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
+
+                if not n.transaction_prefix_id:
+                    _sales = 'None'
+                else:
+                    _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)            
+                    _sales = A(_sales,_class='text-primary')#, _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+                if not n.delivery_note_no_prefix_id:
+                    _note = 'None'
+                else:
+                    _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+                    _note = A(_note,  _class='text-warning')#, _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+                if not n.sales_invoice_no_prefix_id:
+                    _inv = 'None'            
+                else:
+                    _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
+                    _inv = A(_inv, _class='text-danger')#, _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})                        
+                row.append(TR(
+                    TD(n.sales_order_date),
+                    TD(_sales),
+                    TD(n.dept_code_id.dept_name),                
+                    TD(n.stock_source_id.location_name),
+                    TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),
+                    TD(n.sales_man_id.employee_id.first_name.upper(), ' ',n.sales_man_id.employee_id.last_name.upper()),
+                    TD(n.status_id.description),
+                    TD(n.status_id.required_action),
+                    TD(btn_lnk)))
+        body = TBODY(*row)
+        table = TABLE(*[head, body], _class='table', _id='tblSO')                                
     else:
         title = table = ''        
     return dict(title = title, table = table)

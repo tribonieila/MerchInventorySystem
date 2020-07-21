@@ -55,7 +55,9 @@ $('.delete').click(function(){
         }
     })
 });    
-
+    function redirect(){
+        window.location.replace("{{=URL('inventory','get_fmcg_workflow_grid',extension=False)}}")
+    }
 function trnx_cancel(){
     //console.log("Removing last item will automatically cancel the transactions... Yes/No?");
     bootbox.confirm({
