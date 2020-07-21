@@ -617,7 +617,7 @@ def sales_order_form():
         # if float(session.discount or 0) > 0:
         if _id.discount_added:
             _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom))- float(_id.discount_added)) / int(_trnx.uom)
-            _trnx.update_record(sale_cost = _sale_cost, discounted = True)
+            _trnx.update_record(sale_cost = _sale_cost, discounted = True, discount_added = _id.discount_added)
         _after_discount = float(_grand_total) - float(request.vars.discount_var or 0)
         _id.update_record(total_amount = _grand_total,  total_amount_after_discount = _after_discount, total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_selective_tax_foc) # discount_added = _discount,
         db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
@@ -1788,7 +1788,7 @@ def sales_order_delete_view():
     _sf.stock_in_transit += int(_st.quantity or 0)
     _sf.probational_balance += int(_st.quantity or 0)
     _sf.update_record()     
-    if _st.discount_percentage: 
+
     _st.update_record(delete = True)
 
     _total_amount = _selective_tax = _selective_tax_foc = 0
@@ -1796,11 +1796,11 @@ def sales_order_delete_view():
         _total_amount += float(n.total_amount or 0)
         _selective_tax += float(n.selective_tax or 0)
         _selective_tax_foc += float(n.selective_tax_foc or 0)
-    _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id).first()
+    _trnx = db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False) & (db.Sales_Order_Transaction.discounted==False) & (db.Sales_Order_Transaction.category_id==4)).select(orderby = db.Sales_Order_Transaction.id).first()
     if _trnx:
         if float(_so.discount_added or 0): # check if discount added                                                
             _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(_so.discount_added or 0)) / int(_trnx.uom)            
-            _trnx.update_record(sale_cost = _sale_cost)   
+            _trnx.update_record(discounted = True, sale_cost = _sale_cost, discount_added=_so.discount_added)   
     _total_amount_after_discount = _total_amount - float(_so.discount_added or 0)
     
     if db((db.Sales_Order_Transaction.sales_order_no_id == _so.id) & (db.Sales_Order_Transaction.delete == False)).count() == 0:
@@ -2441,7 +2441,7 @@ def sales_return_form():
         if float(request.vars.discount_var or 0): # check global discount exist
             _trnx = db(db.Sales_Return_Transaction.sales_return_no_id == _id.id).select().first()
             _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(request.vars.discount_var or 0)) / int(_trnx.uom)
-            _trnx.update_record(sale_cost = _sale_cost)
+            _trnx.update_record(sale_cost = _sale_cost, discounted=True,discount_added=float(request.vars.discount_var))
         _id.update_record(total_selective_tax = _total_selective_tax, total_selective_tax_foc = _total_foc)        
         db(db.Sales_Return_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
         response.flash = 'Sales Return No ' + str(_skey) + 'process.'    
@@ -2980,11 +2980,11 @@ def sales_return_delete_view():
         _selective_tax += float(n.selective_tax or 0)
         _selective_tax_foc += float(n.selective_tax_foc or 0)
     # _discount = float(_total) * int(_so.discount_percentage or 0) / 100
-    _trnx = db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)).select(orderby = db.Sales_Return_Transaction.id).first()
+    _trnx = db((db.Sales_Return_Transaction.sales_return_no_id == _so.id) & (db.Sales_Return_Transaction.delete == False)&(db.Sales_Return_Transaction.discounted==False) & (db.Sales_Return_Transaction.category_id==4)).select(orderby = db.Sales_Return_Transaction.id).first()
     if _trnx:
         if float(_so.discount_added or 0):
             _sale_cost = ((float(_trnx.sale_cost) * int(_trnx.uom)) - float(_so.discount_added or 0)) / int(_trnx.uom)        
-            _trnx.update_record(sale_cost = _sale_cost)
+            _trnx.update_record(discounted = True, sale_cost = _sale_cost, discount_added=_so.discount_added)
     
     # update the sales order table    
     _total_amount_after_discount = _total - float(_so.discount_added or 0)
