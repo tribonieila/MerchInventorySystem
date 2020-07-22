@@ -134,18 +134,19 @@ def put_sales_return_consolidation():
                     retail_price_pcs = x.retail_price_pcs or 0,
                     price_cost_after_discount = x.price_cost_after_discount or 0)               
 
-def put_stock_transfer_consolidation():       
+def put_stock_transfer_consolidation_():       
     for n in db().select(orderby = db.Stock_Receipt.id):
-        print n.id
+        print 'h:', n.id
         for x in db(db.Stock_Receipt_Transaction.stock_receipt_no_id == n.id).select():
-            print '      ', x.id
+            print '      t:', x.id
 
-def put_stock_transfer_consolidation_():        
+def put_stock_transfer_consolidation():        
     _ctr = db(db.Dbf_Batch_Table).count() + 1
     _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
     db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
     _batch_id = db().select(db.Dbf_Batch_Table.ALL).last()    
     for n in db().select(orderby = db.Stock_Receipt.id):        
+        print n.created_by
         _chk = db((db.Merch_Stock_Header.voucher_no == int(n.stock_receipt_no)) & (db.Merch_Stock_Header.transaction_type == 5)).select().first()
         if not _chk: # update consolidated records here
             _acct = db(db.Sales_Man.users_id == n.created_by).select().first()
@@ -155,7 +156,7 @@ def put_stock_transfer_consolidation_():
                 stock_destination = n.stock_destination_id,
                 transaction_type = 5, # credit
                 transaction_date = n.stock_receipt_date_approved,
-                account = _acct.mv_code,
+                account = _acct.employee_id.first_name,
                 dept_code = n.dept_code_id,
                 total_amount = n.total_amount,           
                 total_amount_after_discount = n.total_amount,
@@ -176,27 +177,30 @@ def put_stock_transfer_consolidation_():
                     item_code = x.item_code_id.item_code,
                     category_id = x.category_id.mnemonic, # convert to normal
                     uom = x.uom,
-                    quantity = x.quantity,
-                    average_cost = x.average_cost or 0,
+                    quantity = x.quantity,                                        
                     price_cost = x.price_cost or 0,
                     sale_cost = x.sale_cost or 0,
-                    sale_cost_notax_pcs = x.sale_cost_notax_pcs or 0,
+                    # sale_cost_notax_pcs = x.sale_cost_notax_pcs or 0,
                     discount = 0,
+                    average_cost = x.average_cost or 0,
                     wholesale_price = x.wholesale_price or 0,
                     retail_price = x.retail_price or 0,
                     vansale_price = x.vansale_price or 0,
-                    tax_amount = x.vat_percentage or 0,
+                    # tax_amount = x.vat_percentage or 0,
                     selected_tax = x.selective_tax or 0,
-                    selective_tax_price = x.selective_tax_price or 0,
+                    # selective_tax_price = x.selective_tax_price or 0,
+                    
                     supplier_code = _i.supplier_code_id.supp_code,
                     sales_man_code = _acct.mv_code,
                     dept_code = n.dept_code_id,
                     stock_destination = n.stock_destination_id,
+
                     price_cost_pcs = x.price_cost_pcs or 0,
                     average_cost_pcs = x.average_cost_pcs or 0,
                     wholesale_price_pcs = x.wholesale_price_pcs or 0,
                     retail_price_pcs = x.retail_price_pcs or 0,
-                    price_cost_after_discount = x.price_cost_after_discount or 0)               
+
+                    price_cost_after_discount = x.total_amount or 0)               
   
 def queue_task():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)

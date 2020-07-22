@@ -1,15 +1,14 @@
 {{extend 'layout.html'}}
-<style>
-@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
-</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'FMCG') | auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}    
+            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'FMCG'): }}    
+            {{ elif auth.has_membership(role = 'SALES'): }}    
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#"> DETAILS</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('get_fmcg_workflow_grid')}}";>BROWSE</a></li>
+                </ul>
+
             {{ else: }}            
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#"> DETAILS</a></li>
@@ -125,6 +124,7 @@
                                 {{ if _id.srn_status_id == 27 or _id.srn_status_id == 2 or _id.srn_status_id == 26 or _id.srn_status_id == 5 or _id.srn_status_id == 6: }}
                                     <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
                                     <p class="help-block">readonly</p>    
+                                
                                 {{ else: }}
                                     {{ if auth.has_membership(role = 'INVENTORY SALES MANAGER'): }}    
                                     <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
@@ -187,26 +187,40 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
-                                    {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}                                    
-                                        <input class="btn btn-success" type="submit" value="submit" id="btnApproved">
+                                    {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}          
+                                        {{ if _id.srn_status_id == 27: }}                                                                  
+                                            <input class="btn btn-success" type="button" value="Approved" id="btnStoreApproved">
+                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
+                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
+                                        {{ elif _id.srn_status_id == 26: }}
+                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnStoreDispatched">
+                                        {{ else: }}
+                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
+                                            <input class="btn btn-success" type="button" value="Approved" id="btnApproved" hidden>
+                                            <input class="btn btn-success" type="button" value="Reject" id="btnReject" hidden>
+                                        {{ pass}}                                            
                                     {{pass}}
                                     {{ if auth.has_membership(role = 'ACCOUNTS'): }}
-                                        {{ if _id.srn_status_id == 6: }}                                                                                                                    
-                                            <input class="btn btn-info" type="button" value="generate stock transfer" disabled>                                              
+                                        {{ if _id.srn_status_id == 2: }}                       
+                                            <input class="btn btn-success" type="button" value="Approved & generate stock transfer" id="btnAccountApproved">
+                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
                                         {{ else: }}
-                                            <input class="btn btn-success" type="submit" value="generate stock transfer" id="btncreate">                                                                                
+                                            <input class="btn btn-success" type="button" value="Approved" id="btnAccountApproved" hidden>
+                                            <input class="btn btn-success" type="button" value="Reject" id="btnAccountReject" hidden>                                            
                                         {{pass}}
                                     {{pass}}
-                                    {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}      
+                                    {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'SALES'): }}      
                                         {{ if _id.srn_status_id == 3 or _id.srn_status_id == 4 or _id.srn_status_id == 10:}}
-                                            <input class="btn btn-success" type="submit" value="submit" id="btnSubmit">
-                                        {{elif _id.srn_status_id == 27 or _id.srn_status_id == 2 or _id.srn_status_id == 26:}}
-                                            <input class="btn btn-success" type="button" value="submit" disabled>
+                                            <input class="btn btn-success" type="button" value="submit" id="btnSubmit">
+                                        {{elif _id.srn_status_id == 5:}}
+                                            <input class="btn btn-success" type="button" value="Receipt" id='btnReceipt'>
                                         {{else:}}
-                                            <input class="btn btn-success" type="submit" value="submit" id="btnReceive">
+                                            <input class="btn btn-success" type="button" value="submit" disabled>
+                                            
+                                            
                                         {{pass}}
                                     {{pass}}
-
+                                    <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                 </div>                            
                             </div>                    
                         </div>                              
@@ -222,9 +236,9 @@
 
 <script>
 $(document).ready(function(){
-    $('#btncreate').attr('disabled','disabled');
-    $('#btnApproved').attr('disabled','disabled');
-    $('#btnReceive').attr('disabled','disabled');
+    // $('#btncreate').attr('disabled','disabled');
+    // $('#btnApproved').attr('disabled','disabled');
+    // $('#btnReceive').attr('disabled','disabled');
     // $('#btnSubmit').attr('disabled','disabled');    
     $('#genstr').click(function(){
         // ajax('{{=URL('inventory','stock_receipt_generator', args = request.args(0))}}')
@@ -235,14 +249,37 @@ $(document).ready(function(){
         // $('#genstr').attr('disabled','disabled');
     });
 
-    $('#btncreate').click(function(){        
+    $('#btnAccountApproved').click(function(){        
         ajax('{{=URL('inventory','get_stock_transfer_process', args = request.args(0))}}',['remarks'])
-        location.reload();
+        window.location.href = "{{=URL('inventory','account_grid')}}";        
     });
     $('#btndispatched').click(function(){        
         ajax('{{=URL('inventory','get_stock_request_dispatch_id', args = request.args(0))}}',['remarks'])
         location.reload();
     });    
+    $('#btnStoreApproved').click(function(){        
+        ajax('{{=URL('inventory','put_stock_request_id', args = request.args(0))}}',['remarks'])
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
+        
+    }); 
+
+    $('#btnReceipt').click(function(){        
+        ajax('{{=URL('inventory','put_stock_receipt_id', args = request.args(0))}}',['remarks'])
+        window.location.href = "{{=URL('inventory','get_fmcg_workflow_grid')}}";
+        
+    }); 
+    
+    $('#btnStoreDispatched').click(function(){        
+        ajax('{{=URL('inventory','put_stock_transfer_dispatch_id', args = request.args(0))}}',['remarks'])
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
+        
+    }); 
+
+    $('#btnStoreReject').click(function(){        
+        ajax('{{=URL('inventory','put_stock_request_reject_id', args = request.args(0))}}',['remarks'])
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
+    });    
+
     {{ if auth.has_membership(role = 'ACCOUNTS'): }}
         $('#Stock_Request_srn_status_id').change(function(){
             var _var = $(this).find(":selected").val()        

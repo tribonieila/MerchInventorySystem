@@ -3,6 +3,12 @@
     <div class="card card-underline">
         <div class="card-head">
             {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'FMCG'): }}    
+            {{ elif auth.has_membership(role = 'SALES'): }}    
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#">DETAILS</a></li>
+                    <li class=""><a href="#" onclick=window.location="{{=URL('inventory','get_fmcg_workflow_grid')}}";>BROWSE</a></li>
+                </ul>
+
             {{ else: }}            
                 <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                     <li class="active"><a href="#">DETAILS</a></li>

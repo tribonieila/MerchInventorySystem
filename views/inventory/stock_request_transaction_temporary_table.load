@@ -59,7 +59,7 @@ $(document).ready(function(){
             var ppp = parseFloat(pri) / parseInt(uom);
             var sub = parseInt(itm, 10) * parseFloat(ppp);                        
             console.log(itm, ppp, sub);
-            if (parseInt(qty) < parseInt(0)){
+            if (parseInt(qty) < parseInt(0)){ 
                 $("#btnUpdate").attr('disabled','disabled');
                 return alert("Please enter a positive integer.");
             } else if (parseInt(pcs) < parseInt(0)){   

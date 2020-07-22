@@ -18,7 +18,7 @@ $(document).ready(function(){
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
             var sub = parseInt(itm, 10) * parseFloat(ppp);       
-            
+             
             if (parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
                 return alert("Please enter a positive integer.");                
