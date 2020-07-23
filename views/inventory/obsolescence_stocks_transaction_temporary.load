@@ -67,7 +67,7 @@ $(document).ready(function(){
        return false; 
     });
     
-    $('.delete').click(function(){
+    $('.delete').click(function(){ 
         var _id = $(this).attr('data-id');
         var parent = $(this).parent("div").parent("td").parent("tr");
         bootbox.confirm({ 

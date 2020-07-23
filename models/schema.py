@@ -661,8 +661,8 @@ db.define_table('Merch_Stock_Transaction',
     Field('retail_price', 'decimal(20,6)', default = 0), # from item prices
     Field('vansale_price', 'decimal(20,6)', default = 0), # from item prices
     Field('tax_amount', 'decimal(20,2)', default = 0), # in sales
-    Field('selected_tax','decimal(20,2)'), # in sales
-    Field('price_cost_after_discount','decimal(20,2)'), # included in sales invoice transaction
+    Field('selected_tax','decimal(20,2)', default = 0), # in sales
+    Field('price_cost_after_discount','decimal(20,2)', default = 0), # included in sales invoice transaction
     Field('sales_man_code','string',length=15),
     Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs.
     Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.   
@@ -1225,9 +1225,9 @@ db.define_table('Obsolescence_Stocks_Transaction',
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
     Field('price_cost', 'decimal(10,6)', default = 0),
-    Field('total_amount','decimal(10,6)', default = 0),
+    Field('total_amount','decimal(10,2)', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
-    Field('sale_cost', 'decimal(10,2)', default = 0),
+    Field('sale_cost', 'decimal(10,6)', default = 0),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),

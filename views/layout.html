@@ -352,7 +352,7 @@
 			{{pass}}
 
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS MANAGER')):}}
-			<ul id="main-menu" class="gui-controls">
+			<ul id="main-menu" class="gui-controls"> 
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>				
 				<li><a href="{{=URL('inventory', 'account_manager_workflow')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>

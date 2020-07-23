@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNT MANAGER'): }}    
+            {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS MANAGER'): }}    
             {{ else: }}
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">EDIT VIEW</a></li>
@@ -81,7 +81,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.status_id.remarks}}" disabled>
+                                <input type="text" class="form-control" value="{{=_id.status_id.remarks}}">
                             </div>
                         </div>                           
                     </div>
@@ -92,7 +92,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                {{ if auth.has_membership(role = 'ACCOUNT MANAGER'): }}
+                                {{ if auth.has_membership(role = 'ACCOUNTS MANAGER'): }}
                                     {{ if _id.status_id == 16: }}
                                         <input class="btn btn-primary" type="submit" value="approved" disabled>
                                         <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>reject</a>

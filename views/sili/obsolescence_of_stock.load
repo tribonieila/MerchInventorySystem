@@ -1,0 +1,6 @@
+<input class="btn btn-default" type="button" value="Sync Obsolescence of Stock" onclick="obsolescence_of_stock()">
+<script>
+    function obsolescence_of_stock(){        
+        ajax("{{=URL('sili','put_obsolescence_of_stock_consolidation')}}");
+    }
+</script>

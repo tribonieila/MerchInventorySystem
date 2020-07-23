@@ -6,6 +6,11 @@ Procurement         WH      ACCOUNTS
 PR = 1,3,19,20,11   17      18-25
 PO = 22-17-18-25-21 17-18
 
+Thing's to do:
+- create 1 grid in all transaction
+- create 1 function for all grid approval/rejection (all transaction)
+- create 1 function for all form approval/rejection (all transaction)
+
 
 SALES ORDER
 

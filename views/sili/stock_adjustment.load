@@ -1,0 +1,10 @@
+<input class="btn btn-default" type="button" value="Sync Stock Adjustment" onclick="sync_stock_adjustment()">
+
+
+
+<script>
+    function sync_stock_adjustment(){        
+        ajax("{{=URL('sili','put_stock_adjustment_consolidation')}}");
+    }
+
+</script>

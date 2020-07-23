@@ -2008,7 +2008,7 @@ def update_sales_transaction(): # audited
         _id.update_record(status_id = request.vars.status_id,remarks = request.vars.remarks)
     response.flash = "RECORD UPDATED"
 
-# @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
+# @auth.requires(lambda: auth.has_membership('ACCOUNTS MANAGER') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('ROOT'))
 def sales_order_utility_tool():    
     head = THEAD(TR(TH('Date'),TH('Item Code'),TH('Item Description'),TH('UOM'),TH('Quantity'),TH('Unit Price'),TH('Total Amount'),TH('Remarks'),TH('Focal Person'),TH('Action')), _class='bg-primary')
     for k in db(db.Sales_Order_Transaction_Temporary).select(db.Item_Master.ALL, db.Sales_Order_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Sales_Order_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction_Temporary.item_code_id),db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction_Temporary.item_code_id)]):
@@ -2728,7 +2728,7 @@ def sales_return_grid():
         #     _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
         # else:
         _query = db((db.Sales_Return.status_id == 14) & (db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = db.Sales_Return.id)                    
-    elif auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
+    elif auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
         _query = db((db.Sales_Return.status_id == 12) & (db.Sales_Return.archives == False)).select(orderby = db.Sales_Return.id)
     head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in _query:
@@ -2760,7 +2760,7 @@ def sales_return_grid():
             #     appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             #     reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                
             #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','sales_return_report_account_user', args = n.id, extension = False))        
-        if auth.has_membership(role = 'ACCOUNT MANAGER'):
+        if auth.has_membership(role = 'ACCOUNTS MANAGER'):
                 view_lnk = A(I(_class='fas fa-search'), _title='View Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_accounts_form', args = n.id, extension = False))  
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_approved', args = n.id, extension = False))
                 reje_lnk = A(I(_class='fas fa-times'), _title='Reject Sales Return Request', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_return_accounts_form_rejected', args = n.id, extension = False))                
@@ -2794,7 +2794,7 @@ def sales_return_transaction_table():
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price/Sel.Tax'),TH('Discount'),TH('Net Price'),TH('Total Amount'),TH('Action')),_class='bg-primary')
     for n in _query:
         ctr += 1
-        if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'ACCOUNT MANAGER'):
+        if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'ACCOUNTS MANAGER'):
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')
         else:
             if _id.status_id > 4:
@@ -3109,7 +3109,7 @@ def get_workflow_reports():
             _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id != 3)).select(orderby = ~db.Sales_Return.id)
         else:
             _query = db((db.Sales_Return.archives == False) & (db.Sales_Return.dept_code_id == 3)).select(orderby = ~db.Sales_Return.id)   
-        if auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
+        if auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
             _query = db(db.Sales_Return.status_id == 13).select(orderby = ~db.Sales_Return.id)   
         elif auth.has_membership(role = 'ACCOUNTS'):             
             _query = db(db.Sales_Return.accounts_id == auth.user_id).select(orderby = ~db.Sales_Return.id)   
@@ -3386,7 +3386,7 @@ def get_workflow_reports_transaction_id():
     foot += TFOOT(TR(TD(),TD(_div_tax, _colspan='3'),TD(),TD(),TD(),TD(),TD(),TD('Added Discount:', _align = 'right',_colspan='2'),TD(locale.format('%.2F',_id.discount_added or 0, grouping = True), _align = 'right')))
     table = TABLE(*[head, body, foot], _class='table table-striped')
     return dict(table = table)        
-# @auth.requires(lambda: auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
+# @auth.requires(lambda: auth.has_membership('ACCOUNTS MANAGER') | auth.has_membership('ACCOUNT USERS') | auth.has_membership('INVENTORY SALES MANAGER') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 @auth.requires_login()
 def sales_order_manager_grid():
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()    
@@ -3406,10 +3406,10 @@ def sales_order_manager_grid():
         #     print 'in usr'
         _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.cancelled == False)).select(orderby = db.Sales_Order.delivery_note_no)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))        
-    elif auth.has_membership(role = 'ACCOUNT MANAGER'):
+    elif auth.has_membership(role = 'ACCOUNTS MANAGER'):
         _query = db((db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
-    elif auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
+    elif auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
         _query = db((db.Sales_Order.status_id == 8) & (db.Sales_Order.cancelled == False)).select(orderby = db.Sales_Order.delivery_note_no)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Delivery Note No.'),TH('Sales Order No.'), TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     else:
@@ -3453,7 +3453,7 @@ def sales_order_manager_grid():
                 # reje_lnk = A(I(_class='fas fa-user-times'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                                   
                 prin_lnk = A(I(_class='fas fa-print'), _title='Print Delivery Note',_type='button ', _target='blank', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_delivery_note_report_store_keeper', args = n.id, extension = False))  
                 # clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')          
-        if auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):
+        if auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):
             if n.status_id == 8:
                 edit_lnk = A(I(_class='fas fa-search'), _title='View Delivery Note', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view_account_user', args = n.id, extension = False))        
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Generate Sales Invoice', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('sales','sales_order_manager_invoice_no_approved', args = n.id, extension = False))
@@ -3482,7 +3482,7 @@ def sales_order_manager_grid():
             row.append(TR(TD(ctr),TD(n.sales_order_date),TD(_sales),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
         elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
             row.append(TR(TD(ctr),TD(n.sales_order_date),TD(_sales),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
-        elif auth.has_membership(role = 'ACCOUNT MANAGER') | auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):            
+        elif auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):            
             row.append(TR(TD(ctr),TD(n.delivery_note_date_approved.date()),TD(_note),TD(_sales),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))        
         else:            
             row.append(TR(TD(ctr),TD(n.sales_order_date),TD(_sales),TD(_note),TD(_inv),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True), _align = 'right'),TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),TD(n.status_id.description),TD(n.status_id.required_action),TD(btn_lnk)))
@@ -4657,7 +4657,7 @@ def sales_order_delivery_note_report_store_keeper():
     response.headers['Content-Type']='application/pdf'
     return pdf_data    
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNT MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('ROOT'))
 def sales_return_report_account_user():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
    
@@ -4840,7 +4840,7 @@ def sales_return_report_account_user():
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNT MANAGER') | auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS') |  auth.has_membership('ACCOUNTS MANAGER') | auth.has_membership('ROOT'))
 def sales_order_report_account_user(): # print direct to printer
     row = []
     _id = db(db.Sales_Order.id == request.args(0)).select().first()

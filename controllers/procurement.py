@@ -4327,7 +4327,7 @@ def get_workflow_reports():
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_receipt_grid_view', args = n.id, extension = False))        
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')         
             clea_lnk = A(I(_class='fas fa-trash-alt'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            if auth.has_membership('ACCOUNT USERS') or auth.has_membership('ACCOUNT MANAGER'):
+            if auth.has_membership('ACCOUNT USERS') or auth.has_membership('ACCOUNTS MANAGER'):
                 prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _target='_blank',_class='btn btn-icon-toggle print', _href = URL('procurement','purchase_receipt_reports', args = n.id, extension = False))
             else:
                 prin_lnk = A(I(_class='fas fa-print'), _title='Print', _type='button ', _role='button', _target='_blank',_class='btn btn-icon-toggle print', _href = URL('procurement','warehouse_receipt_reports', args = n.id, extension = False))

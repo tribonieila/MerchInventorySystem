@@ -96,13 +96,23 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                                
+
                                 {{ if _id.status_id == 23: }}
-                                    <input class="btn btn-primary" type="submit" value="post" disabled>                                
-                                    <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>reject</a>
+                                    <input class="btn btn-primary" type="submit" value="approved" hidden>
+                                    <a class="btn btn-danger" id="btncancel" role="button" href="#" hidden>reject</a>
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="post" id="btnsubmit">
-                                    <input class="btn btn-danger" type="submit" value="reject" id="btnrejected">                                                                                                                                   
-                                {{ pass }}                                                                
+                                    <input class="btn btn-primary" type="button" value="approved" id="btnsubmit">
+                                    <input class="btn btn-danger" type="button" value="reject" id="btnrejected">
+                                {{ pass }}
+                                {{ if auth.has_membership(role = 'ACCOUNTS MANAGER'): }}
+                                    {{ if _id.status_id == 23: }}
+                                        <input class="btn btn-primary" type="button" value="post" id="btnAccountPost">
+                                        <input class="btn btn-danger" type="button" value="reject" id="btnAccountReject">
+                                    {{else:}}
+                                    {{pass}}
+                                {{ else: }}
+
+                                {{ pass }}
                                 {{=form.custom.end}}
                             </div>        
                         </div>                        
@@ -120,11 +130,15 @@
 <script>
 $(document).ready(function(){
     $('#btnsubmit').click(function(){
-        ajax('{{=URL('inventory','obsol_mngr_approved', args = request.args(0))}}')
+        ajax('{{=URL('inventory','obsol_mngr_approved', args = request.args(0))}}',['remarks'])
         location.reload();
     });
     $('#btnrejected').click(function(){
-        ajax('{{=URL('inventory','obsol_grid_view_rejected', args = request.args(0))}}')
+        ajax('{{=URL('inventory','obsol_mngr_rejected', args = request.args(0))}}',['remarks'])
+        location.reload();
+    });    
+    $('#btnAccountPost').click(function(){
+        ajax('{{=URL('inventory','obsol_grid_view_approved', args = request.args(0))}}',['remarks'])
         location.reload();
     });
 

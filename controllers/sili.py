@@ -209,6 +209,15 @@ def queue_task():
 def admin():
     return dict()
 
+def obsolescence_of_stock():
+    return dict()
+
+def stock_adjustment():
+    return dict()
+
+def stock_corrections():
+    return dict()
+
 def stock_transfer():
     return dict()
 
@@ -271,14 +280,119 @@ def get_sync_note():
                 vat_percentage = x.vat_percentage)                
                 # print '        ', x.id, x.sales_order_no_id
 
-def get_sync_invoice():
-    print 'get_sync_invoice'
-    for n in db(db.Sales_Order.status_id == 7).select():        
-        _dn = db(db.Sales_Invoice.sales_order_no == n.sales_order_no).select().first()
-        if not _dn:
-            print 'insert here' 
-            for x in db(db.Sales_Invoices_Transaction.sales_order_no_id == n.id).select():
-                print '        ', x.id, x.sales_order_no_id   
+def put_obsolescence_of_stock_consolidation(): # validated
+    # print 'put_obsolescence_of_stock_consolidation'
+    _ctr = db(db.Dbf_Batch_Table).count() + 1
+    _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
+    db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
+    _batch_id = db().select(db.Dbf_Batch_Table.ALL).last()    
+
+    for n in db(db.Obsolescence_Stocks.status_id == 24).select():
+        # print 'id: ', n.id, n.obsolescence_stocks_no, n.obsolescence_stocks_date, n.dept_code_id, n.stock_type_id, n.location_code_id,
+        # n.account_code_id, n.total_amount, n.total_amount_after_discount, n.total_selective_tax, n.total_selective_tax_foc,
+        # n.total_vat_amount, n.obsolescence_stocks_date_approved, n.obsolescence_stocks_approved_by,n.remarks, n.status_id
+        _s = db((db.Employee_Master.first_name == n.created_by.first_name) & (db.Employee_Master.last_name == n.created_by.last_name)).select().first()
+        _chk = db((db.Merch_Stock_Header.voucher_no == int(n.obsolescence_stocks_no)) & (db.Merch_Stock_Header.transaction_type == 10)).select().first()
+        if not _chk:
+            db.Merch_Stock_Header.insert(
+                voucher_no = n.obsolescence_stocks_no,
+                location = n.location_code_id,
+                transaction_type = 10,
+                transaction_date = n.obsolescence_stocks_date,
+                account = n.account_code_id.account_code,
+                dept_code = n.dept_code_id,
+                total_amount = n.total_amount,
+                total_amount_after_discount = n.total_amount,
+                total_selective_tax = n.total_selective_tax,
+                total_selective_tax_foc = n.total_selective_tax_foc,
+                stock_destination = n.location_code_id,
+                sales_man_code = _s.account_code,
+                batch_code_id = _batch_id.id)
+            _id = db(db.Merch_Stock_Header.voucher_no == n.obsolescence_stocks_no).select().first()
+            for y in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == n.id).select():                
+                # print '=>      id: ', y.id, y.item_code_id,y.category_id,y.quantity,y.uom,y.price_cost,y.total_amount,y.average_cost,y.sale_cost,
+                # y.wholesale_price, y.retail_price,y.vansale_price,y.net_price,y.selective_tax,y.selective_tax_foc,y.vat_percentage
+                _i = db(db.Item_Master.id == y.item_code_id).select().first()
+                _p = db(db.Item_Prices.item_code_id == y.item_code_id).select().first()
+                db.Merch_Stock_Transaction.insert(
+                    merch_stock_header_id=_id.id,
+                    voucher_no = n.obsolescence_stocks_no,
+                    location =n.location_code_id,
+                    transaction_type = 10,
+                    transaction_date= n.obsolescence_stocks_date,
+                    item_code = y.item_code_id.item_code,
+                    category_id=y.category_id,
+                    uom=y.uom,
+                    quantity=y.quantity,
+                    average_cost=y.average_cost,
+                    price_cost=y.price_cost,
+                    sale_cost= y.sale_cost,
+                    sale_cost_notax_pcs=0,
+                    discount=0,
+                    wholesale_price=_p.wholesale_price,
+                    retail_price=_p.retail_price,
+                    vansale_price=0,
+                    tax_amount=0,
+                    selected_tax=0,
+                    price_cost_after_discount=0,
+                    sales_man_code=_s.account_code,
+                    price_cost_pcs=_p.average_cost / y.uom,
+                    average_cost_pcs=_p.average_cost / y.uom,
+                    wholesale_price_pcs=_p.wholesale_price / y.uom,
+                    retail_price_pcs=_p.retail_price / y.uom,
+                    selective_tax_price= _p.selective_tax_price,
+                    supplier_code=_i.supplier_code_id.supp_code,
+                    dept_code=n.dept_code_id,
+                    stock_destination=n.location_code_id,
+                )
+                #     y.item_code_id,
+                #     y.category_id,
+                #     y.quantity,
+                #     y.uom,
+                #     y.price_cost,
+                #     y.total_amount,
+                #     y.average_cost,
+                #     y.sale_cost,
+                #     y.wholesale_price, 
+                #     y.retail_price,
+                #     y.vansale_price,
+                #     y.net_price,
+                #     y.selective_tax,
+                #     y.selective_tax_foc,
+                #     y.vat_percentage
+                # )
+def put_stock_correction_consolidation(): # validated
+    print 'put_stock_correction_consolidation'
+    for n in db(db.Stock_Corrections.status_id == 16).select():
+        print 'insert: ', n.id
+        db.Merch_Stock_Header.insert(
+            voucher_no = n.stock_corrections_no,
+            location = n.location_code_id,
+            transaction_type = n,
+        #     transaction_date = n.,
+        #     account = n.,
+        #     dept_code = n.,
+        #     total_amount = n.,
+        #     total_amount_after_discount = n.,
+        #     discount_percentage = n.,
+        #     discount_added = n.,
+        #     total_selective_tax = n.,
+        #     total_selective_tax_foc = n.,
+        #     stock_destination = n.,
+        #     sales_man_code = n.,
+        #     batch_code_id = n.,
+        )
+        _id = db(db.Merch_Stock_Header.voucher_no == n.stock_corrections_no).select().first()
+        for y in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == n.id).select():
+            print '          insert: ', y.id
+            db.Merch_Stock_Transaction.insert(
+                merch_stock_header_id = _id.id,
+                voucher_no = _id.voucher_no,
+                # location,transaction_type,transaction_date,item_code,category_id,uom,quantity,average_cost,price_cost,
+                # sale_cost,sale_cost_notax_pcs,discount,wholesale_price,retail_price,vansale_price,tax_amount,selected_tax,price_cost_after_discount,
+                # sales_man_code,price_cost_pcs,average_cost_pcs,wholesale_price_pcs,retail_price_pcs,selective_tax_price,supplier_code,
+                # dept_code,stock_destination
+            )
 
 def get_sync_all():    
     for n in db(db.Sales_Order.status_id == 7).select(orderby = db.Sales_Order.id):#, left = db.Sales_Order.on(db.Sales_Order.id == db.Sales_Order_Transaction.sales_order_no_id)):

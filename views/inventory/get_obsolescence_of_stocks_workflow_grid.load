@@ -1,2 +1,12 @@
 {{=table}}
 
+ <script>
+$(document).ready(function(){
+    $(".table").DataTable();
+    $(".btn").click(function(){
+        //console.log('reload');
+        //ajax({{=URL('inventory','reload')}})
+        //$( "#obsolescene" ).load(window.location.href + " #obsolescene" );
+    });
+})
+</script>
