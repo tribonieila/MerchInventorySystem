@@ -85,8 +85,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 # pdfmetrics.registerFont(TTFont('Arabic', '../fonts/ae_Arab.ttf'))
-pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
-# pdfmetrics.registerFont(TTFont('Arabic', '/Users/user/Desktop/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
+# pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
+pdfmetrics.registerFont(TTFont('Arabic', '/Users/user/Desktop/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
@@ -217,17 +217,17 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-logo_path = request.folder + 'static/images/Merch.jpg'
-text_path = request.folder + 'static/fonts/reports'
-img = Image(logo_path)
-img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
-img.drawWidth = 3.25 * inch
-img.hAlign = 'CENTER'
+# logo_path = request.folder + 'static/images/Merch.jpg'
+# text_path = request.folder + 'static/fonts/reports'
+# img = Image(logo_path)
+# img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
+# img.drawWidth = 3.25 * inch
+# img.hAlign = 'CENTER'
 
-_limage = Image(logo_path)
-_limage.drawHeight = 2.55*inch * _limage.drawHeight / _limage.drawWidth
-_limage.drawWidth = 2.25 * inch
-_limage.hAlign = 'CENTER'
+# _limage = Image(logo_path)
+# _limage.drawHeight = 2.55*inch * _limage.drawHeight / _limage.drawWidth
+# _limage.drawWidth = 2.25 * inch
+# _limage.hAlign = 'CENTER'
 
 merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
 

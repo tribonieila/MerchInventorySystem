@@ -3864,7 +3864,7 @@ def get_stock_request_workflow_grid():
             _query = ((db.Stock_Request.created_by == auth.user_id)) & (db.Stock_Request.srn_status_id != 6)    
         else:
             _query = ((db.Stock_Request.created_by == auth.user_id) | (db.Stock_Request.stock_source_id == _usr.location_code_id) | (db.Stock_Request.stock_destination_id == _usr.location_code_id)) & (db.Stock_Request.srn_status_id != 6)
-    elif auth.has_membership(role = 'INVENTORY STORE KEEPER'): # warehouse personnel
+    if auth.has_membership(role = 'INVENTORY STORE KEEPER'): # warehouse personnel
         _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id != 6) | ((db.Stock_Request.srn_status_id == 27)|(db.Stock_Request.srn_status_id == 2)|(db.Stock_Request.srn_status_id == 26)|(db.Stock_Request.srn_status_id == 5)&(db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1))
         # if _dep.section_id == 'N':
         #     _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.section_id == 'N') &(db.Stock_Request.srn_status_id != 6) | ((db.Stock_Request.srn_status_id != 6)&(db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1))
@@ -4000,7 +4000,7 @@ def get_stock_request_grid():
     row = []
     thead = THEAD(TR(TH('Date'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Requested By'),TH('Approved By'),TH('Status'),TH('Required Action')), _class='bg-primary')
     for n in db((db.Stock_Request.srn_status_id == 4) | (db.Stock_Request.srn_status_id == 27)| (db.Stock_Request.srn_status_id == 2)).select(orderby = ~db.Stock_Request.id):
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle')
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stock_request_report', args = n.id), _target="blank")
@@ -7735,8 +7735,8 @@ _limage.drawWidth = 2.25 * inch
 _limage.hAlign = 'CENTER'
 
 
-merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
-
+merch = Paragraph('Merch & Partners Co. WLL. | Merch ERP',style = _courier)
+# merch = Paragraph('''<font size=8>Merch & Partners Co. WLL. <font color="black">|</font></font> <font size=7 color="black"> Merch ERP</font>''',styles["BodyText"])
 def _landscape_header(canvas, doc):
     canvas.saveState()
     header = Table([[_limage],['PRICE LIST REPORT']], colWidths='*')
@@ -7854,7 +7854,7 @@ def _header_footer_stock_receipt(canvas, doc):
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('FONTSIZE',(0,0),(-1,-1),8),        
         ('ALIGN',(0,0),(-1,2),'CENTER'),        
-        ('FONTNAME',(0,0),(-1,-2),'Courier'),
+        ('FONTNAME',(0,0),(-1,-1),'Courier'),
         ('TOPPADDING',(0,0),(-1,1),0),
         ('BOTTOMPADDING',(0,0),(-1,1),0),        
         ('SPAN',(0,-2),(4,-2)),        
@@ -8274,7 +8274,7 @@ def stock_request_report():
         _i = db(db.Item_Master.id == n.item_code_id).select().first()
         # _price_cost = n.quantity * n.price_cost
         _grand_total +=n.total_amount
-        stk_trn.append([ctr,Paragraph(n.item_code_id.item_code, style=_style),str(_i.brand_line_code_id.brand_line_name) + str('\n') + str(_i.item_description),
+        stk_trn.append([ctr,Paragraph(n.item_code_id.item_code, style=_courier),str(_i.brand_line_code_id.brand_line_name) + str('\n') + str(_i.item_description),
         _i.uom_id,n.category_id.mnemonic,n.uom,card(_i.id,n.quantity,n.uom),locale.format('%.2F',n.price_cost or 0, grouping = True),locale.format('%.2F',n.total_amount or 0, grouping = True)])
         # _i.uom_id.mnemonic,n.category_id.mnemonic,n.uom,card(_i.id,n.quantity,n.uom),locale.format('%.2F',n.price_cost or 0, grouping = True),locale.format('%.2F',n.total_amount or 0, grouping = True)])
     # for i in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select(db.Stock_Request_Transaction.ALL, db.Item_Master.ALL, db.Stock_Request.ALL,
