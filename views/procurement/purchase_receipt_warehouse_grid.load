@@ -1,6 +1,6 @@
 {{=table}}
 
-<a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">process</a>
+<a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">consolidate </a>
 <script>    
     $(document).ready(function(){
         $('#btnCon').attr('disabled','disabled');        

@@ -10,13 +10,13 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Supplier/Acct Code</label>
-                    <div class="col-sm-8">{{=_pr.supplier_account_code}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_code_id}}</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">                    
                     <label class="col-sm-4 control-label">Supplier/Account Name</label>
-                    <div class="col-sm-8">{{=_pr.supplier_account_code_description}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_code_id.supp_name}}</div>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <div class="col-md-4">
                 <div class="form-group">                    
                     <label class="col-sm-4 control-label">Supplier Invoice</label>
-                    <div class="col-sm-8">{{=_pr.supplier_invoice}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_reference_order}}</div>
                 </div>
             </div>
         </div>   
