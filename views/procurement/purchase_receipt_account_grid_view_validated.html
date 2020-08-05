@@ -99,8 +99,8 @@
                     <div class="col-md-12">
                         <div class="col-sm-9"></div>
                         <div class="col-sm-3">
-                            <input class="btn btn-success" type="submit" value="submit" id="btnSubmit">
-                            <input class="btn btn-primary" type="button" value="Proceed" id="btnProceed" disabled="True">
+                            <input class="btn btn-success" type="button" value="submit" id="btnSubmit">
+                            <input class="btn btn-primary" type="button" value="Save" id="btnSave">
                             <input class="btn btn-danger" type="button" value="abort" id="btnAbort">    
                         </div>
                     </div>
@@ -135,15 +135,16 @@ $(document).ready(function(){
         }        
     });
     
-    $('#btnProceed').click(function(){
-        ajax('{{=URL('procurement','session_receipt')}}', ['landed_cost', 'exchange_rate']);        
-        $('#TrnxDetails').slideDown();
-        $('#btnSubmit').attr('disabled','disabled');  
-        $('#btnProceed').attr('disabled','disabled');  
-       
+    $('#btnSubmit').click(function(){
+        ajax('{{=URL('procurement','put_purchase_request_submit_id', args = request.args(0))}}',['supplier_account_code','supplier_account_code_description','trade_terms_id','currency_id','remarks']);
     });
-    $('#no_table_supplier_account_code').change(function(){        
-        ajax('{{=URL('generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
+
+    $('#btnSave').click(function(){
+        ajax('{{=URL('procurement','put_purchase_request_save_id', args = request.args(0))}}',['supplier_account_code','supplier_account_code_description','trade_terms_id','supplier_invoice','currency_id','remarks']);
+    });
+
+    $('#Purchase_Request_supplier_account_code').change(function(){        
+        // ajax('{{=URL('procurement','generate_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_supplier_code_id');             
     });
 
 

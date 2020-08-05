@@ -10,7 +10,7 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Supplier/Acct Code</label>
-                    <div class="col-sm-8">{{=_pr.supplier_code_id}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_code_id.supp_name}}</div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -36,7 +36,7 @@
             <div class="col-md-4">
                 <div class="form-group">                    
                     <label class="col-sm-4 control-label">Supplier Invoice</label>
-                    <div class="col-sm-8">{{=_pr.supplier_reference_order}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_invoice}}</div>
                 </div>
             </div>
         </div>   
@@ -74,12 +74,29 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <label class="col-sm-4 control-label"></label>
-                <div class="col-sm-4"></div>
-                
+
+                {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
+                    <input class="btn btn-success" type="button" value="approved" id="btnApproved">
+                    <input class="btn btn-danger" type="button" value="reject" id="btnReject">
+                {{pass}}
+
             </div>
         </div>                 
     
 </div>
+
 <hr>
+
 {{=table}}
+
+<script>
+    $(document).ready(function(){
+        $('#btnApproved').click(function(){
+            ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0),extension=False)}}");
+        });
+    
+        $("#btnReject").click(function(){
+            ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0),extension=False)}}");            
+        })
+    })
+</script>

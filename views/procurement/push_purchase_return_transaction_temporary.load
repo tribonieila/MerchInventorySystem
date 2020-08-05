@@ -1,17 +1,7 @@
 
     <hr>
     {{=table}}
-    {{if form.errors:}}    
-    <ul>
-        {{for fieldname in form.errors:}}
-            <li>{{=form.errors[fieldname]}}</li>
-        {{pass}}
-    </ul>
-    {{form.errors.clear()}}
-    {{pass}}
-    
-    
-
+  
     {{=form.custom.begin}}
     <div class="form-horizontal">   
     <div class="row">
@@ -83,14 +73,14 @@ $(document).ready(function(){
         $("#no_table_item_code").focus();    
         $('#no_table_quantity').val('0');
         $('#no_table_pieces').val('0');
-        $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
-        $('#Stock_Adjustment_location_code_id').removeAttr('disabled');                    
-        $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');                    
-        ajax('{{=URL('stock_adjustment_description')}}',['item_code', 'location_code_id', 'adjustment_type', 'dept_code_id'], '_stk_adj_desc');        
-        ajax('{{=URL('stock_adjustment_average_cost')}}',['item_code'], 'average_cost');        
-        $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
-        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
-        $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');          
+        $('#Purchase_Return_dept_code_id').removeAttr('disabled');
+        $('#Purchase_Return_location_code_id').removeAttr('disabled');                    
+        $('#Purchase_Return_adjustment_type').removeAttr('disabled');                    
+        ajax('{{=URL('get_item_code_description')}}',['item_code', 'location_code_id', 'adjustment_type', 'dept_code_id'], '_stk_adj_desc');        
+        ajax('{{=URL('get_item_average_cost')}}',['item_code'], 'average_cost');        
+        $('#Purchase_Return_dept_code_id').attr('disabled','disabled');
+        $('#Purchase_Returnt_location_code_id').attr('disabled','disabled');
+        $('#Purchase_Return_adjustment_type').attr('disabled','disabled');          
         return false;      
     }); 
     function add(){

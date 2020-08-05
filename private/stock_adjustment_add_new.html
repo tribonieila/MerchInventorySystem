@@ -1,290 +1,148 @@
 {{extend 'layout.html'}}
-<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");</style>
-<script src="//unpkg.com/vue"></script>
-<script src="//unpkg.com/element-ui"></script>
-<script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>
-<script>ELEMENT.locale(ELEMENT.lang.en)</script>
-<div id="app"> 
-    <div class="col-md-12">
-        <div class="card card-underline">
-            <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class="active"><a href="#">+ ADD NEW</a></li>
-                    <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
-                </ul>
-                <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
-            </div>
-            <div class="card-body tab-content" >         
-                {{=form.custom.begin}}	
-                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
-                <input type="text" id="dept_code_id_hid" hidden>
-                <input type="text" id="locatio_code_id_hid" hidden>
-                <input type="text" id="adjustment_type_hid" hidden>
-                <div class="form-horizontal">   
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Stock Adjustment No</label>
-                                <div class="col-sm-8">      
-                                    <div id="_stk_adj_no"></div>
-                                </div>                           
-                            </div>                        
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Date</label>
-                                <div class="col-sm-8"> {{import datetime}}
-                                    {{=form.custom.widget.stock_adjustment_date}}
-                                </div>
-                            </div>                    
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Department</label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.widget.dept_code_id}}
-                                </div>
-                            </div>            
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Location</label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.widget.location_code_id}}
-                                </div>
-                            </div>                                           
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Adjustment Type</label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.widget.adjustment_type}}                                         
-                                </div>
-                            </div>                    
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Stock Adjustment Code</label>
-                                <div class="col-sm-8">
-                                    <div id="adjustment_code"></div>
-                                    <!-- <input type="text" class="form-control" id="Stock_Adjustment_stock_adjustment_code" value ='28-00' readonly >  -->
-                                    <!-- <p class="help-block">readonly</p>     -->
-                                    
-                                </div>
-                            </div>                    
-                        </div>        
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label">Status</label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.widget.srn_status_id}}
-                                </div>
-                            </div>                    
-                        </div>
-                        <div class="col-md-6">  
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label"></label>
-                                <div class="col-sm-8">
-                                    {{=form.custom.submit}}                
-                                </div>                            
-                            </div>                    
-                        </div>
-                    </div>
-                </div>   
-                {{=form.custom.end}}
-                <hr>
-                <div id = "_stk_adj_desc"></div>
-                
-                <hr>
-                {{=form2.custom.begin}}                   
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
+            </ul> -->
+            <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
+        </div>
+        <div class="card-body tab-content" >         
+            {{=form.custom.begin}}	
+            <div class="form-horizontal">   
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Item Code</label>
-                            <!-- <el-autocomplete
-                            class="inline-input"
-                            v-model="state2"
-                            :fetch-suggestions="querySearch"
-                            placeholder="Item Code"
-                            :trigger-on-focus="false"
-                            @select="handleSelect"
-                          ></el-autocomplete> -->
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.item_code_id}}
-                            </div>
-                        </div>   
+                            <label class="col-sm-4 control-label">Transaction No</label>
+                            <div class="col-sm-8">      
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <div id="_stk_adj_no"></div>
+                            </div>                           
+                        </div>                        
                     </div>
-                
-                
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">
-                                Quantity
-                            </label>
-                            <div class="col-sm-8">
-                                {{=form2.custom.widget.quantity}}
-                                <!-- <el-input-number v-model="num1" controls-position="right" @change="handleChange" :min="0" :max="10"></el-input-number> -->
+                            <label class="col-sm-4 control-label">Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                {{=form.custom.widget.stock_adjustment_date}}
                             </div>
-                        </div>   
+                        </div>                    
                     </div>
-                
-                    <div class="col-md-2">
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Pieces</label>
+                            <label class="col-sm-4 control-label">Department</label>
                             <div class="col-sm-8">
-                                <!-- <el-input-number v-model="num2" controls-position="right" @change="handleChange" :min="0" :max="10"></el-input-number> -->
-                                
-                                {{=form2.custom.widget.pieces}}
+                                {{=form.custom.widget.dept_code_id}}
                             </div>
-                        </div>   
+                        </div>            
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Average Cost</label>
+                            <label class="col-sm-4 control-label">Location</label>
                             <div class="col-sm-8">
-                                <!-- <el-input placeholder="Average Cost" v-model="input"></el-input> -->
-                                <div id="average_cost"></div>
-                                
-                                
+                                {{=form.custom.widget.location_code_id}}
                             </div>
-                        </div>   
-                    </div>    
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Category</label>                            
-                            <div class="col-sm-8">
-                                    <!-- <el-select v-model="value" placeholder="Select">
-                                        <el-option
-                                            v-for="item in options"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                        </el-option>
-                                        </el-select> -->
-                                {{=form2.custom.widget.category_id}}
-                            </div>
-                        </div>   
+                        </div>                                           
                     </div>
-                    <div class="col-md-1">
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Adjustment Type</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.adjustment_type}}                                         
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Stock Adjustment Code</label>
+                            <div class="col-sm-8">
+                                <div id="adjustment_code"></div>
+                            </div>
+                        </div>                    
+                    </div>        
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.srn_status_id}}
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">  
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">            
-                                    <!-- <el-button type="success">Add</el-button> -->
-                            <input class="btn btn-success" type="button" onclick="btnsubmit();" value="Add">
-                            </div>
-                        </div>        
-                    </div>            
+                            <div class="col-sm-8">
+                                <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
+                                <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_adjustment_browse')}}">abort</a>
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
+                                
+                            </div>                            
+                        </div>                    
+                    </div>
                 </div>
-                <hr>
-                
-                {{=form2.custom.end}}
-                
-                <div id = "_stk_adj_tbl"></div>          
-                       
-            </div>
+            </div>   
+            {{=form.custom.end}}
+            
+            <div id = "request_panel">
+                {{=LOAD('inventory','stock_adjutment_transaction_temporary_table.load', ajax = True, target = 'tmptbl')}}
+            </div>                       
         </div>
     </div>
 </div>
 
 <script>
-    var Main = {
-        data() {
-            return {
-                options: [{  {{for s in db((db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)).select(db.Stock_Status.ALL):}}
-                    value: '{{=s.id}}',
-                    label: '{{=s.description}}', {{ pass }}
-                    }, 
-                ], 
-                value: '',                
-                input: '',
-                state2: '',
-                num1: 0,
-                num2: 0
-            };
-        },
-        methods: {
-            handleChange(value) {
-            console.log(value)
-        },
-            querySearch(queryString, cb) {
-                var links = this.links;
-                var results = queryString ? links.filter(this.createFilter(queryString)) : links;
-            // call callback function to return suggestions
-            cb(results);
-        },
-            createFilter(queryString) {
-                return (link) => {
-                    return (link.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-            };
-        },
-        loadAll() {
-        return [ {{for i in db(db.Item_Master).select(db.Item_Master.ALL):}}
-          { "value": "{{=i.id}}", "link": "{{=i.item_code}}" }, {{ pass }}
-         ];
-      },
-        handleSelect(item) {
-            console.log(item);
-      }
-    },
-    mounted() {
-      this.links = this.loadAll();
-    }
-
-    }
-
-    var Ctor = Vue.extend(Main)
-    new Ctor().$mount('#app')
-
-</script>
-
-<script>
-    
-    // $("input[type=submit]").click(function(){
-    //     $("#Stock_Adjustment_dept_code_id").prop('disabled',false);
-    //     $("#Stock_Adjustment_location_code_id").prop('disabled',false);
-    //     $("#Stock_Adjustment_adjustment_type").prop('disabled',false);
-    // });    
-
-    function btnsubmit(){
-        // $("#Stock_Adjustment_location_code_id").prop('disabled',false);
-        ajax('{{=URL('stock_adjustment_table')}}', ['item_code_id', 'quantity', 'pieces', 'average_cost','category_id', 'ticket_no_id', 'location_code_id'], '_stk_adj_tbl');        
-        // $("#Stock_Adjustment_location_code_id").prop('disabled', true);
-        return false;
-    }
+$(document).ready(function(){
+    var str_ctr = 0
+    $('#btnsubmit').attr('disabled','disabled');
+    $('#btnhelp').attr('disabled','disabled');
+    $('#btnrequest').attr('disabled','disabled');
+    $('#request_panel').hide();   
+    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_location_code_id').change(function(){
+        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $('#Stock_Adjustment_location_code_id').val()) {
+            $('#btnrequest').removeAttr('disabled');
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }
+    });
 
     $('#Stock_Adjustment_dept_code_id').change(function(){
-        ajax('{{=URL('stock_adjustment_no')}}',['dept_code_id'], '_stk_adj_no');
-        return false;  
-    })
-
-    // $('#Stock_Adjustment_Transaction_Temp_item_code_id').click(function(){
-    //     // $("#Stock_Adjustment_location_code_id").prop('enabled',true);
-    // }) 
-
-    $('#Stock_Adjustment_Transaction_Temp_item_code_id').change(function(){
-        // $("#Stock_Adjustment_dept_code_id").attr('disabled','false');
-        // $("#Stock_Adjustment_adjustment_type").attr('disabled','false');
-        // $("#Stock_Adjustment_location_code_id").prop('disabled',false);        
-        ajax('{{=URL('stock_adjustment_description')}}',['item_code_id', 'location_code_id'], '_stk_adj_desc');        
-        ajax('{{=URL('stock_adjustment_average_cost')}}',['item_code_id'], 'average_cost');
-        // $("#Stock_Adjustment_dept_code_id").prop('disabled',true);
-        // $("#Stock_Adjustment_location_code_id").prop('disabled',true);
-        // $("#Stock_Adjustment_adjustment_type").prop('disabled',true);
-
-        return false;          
-    })
+        ajax('{{=URL('put_transaction_no')}}',['dept_code_id'], '_stk_adj_no');        
+    });
 
     $('#Stock_Adjustment_location_code_id').change(function(){
         ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
-        return false;
-    })
-    
-    
+    });
 
+    $('#btnsubmit').click(function(){
+        $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
+        $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');
+        $('#Stock_Adjustment_stock_adjustment_date').removeAttr('disabled');
+        $('#Stock_Adjustment_location_code_id').removeAttr('disabled');
+        $('#Stock_Adjustment_srn_status_id').removeAttr('disabled');
+        ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','stock_adjustment_date','location_code_id', 'srn_status_id']);        
+    });
+
+    $('#btnrequest').click(function(){
+        $('#request_panel').slideDown('slow');
+        $('#no_table_item_code').focus();                
+        $('#btnhelp').removeAttr('disabled');        
+        ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id','adjustment_type']);
+        $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
+        $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
+        $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
+        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
+        $('#btnrequest').attr('disabled','disabled');
+        $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');
+        return false;
+    }); 
+    
+});
 </script>
