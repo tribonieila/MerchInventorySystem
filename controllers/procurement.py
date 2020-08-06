@@ -491,10 +491,10 @@ def get_transaction_no():
 
 def get_purchase_return_id():
     _id = db(db.Purchase_Return.id == request.args(0)).select().first()
-    if _id.status_id == 4:
-        _default = 4
-    db.Purchase_Return.status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')        
-    db.Purchase_Return.status_id.default = _default
+    if _id.status_id == 4:        
+        db.Purchase_Return.status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')        
+        db.Purchase_Return.status_id.default = 4
+
     form = SQLFORM(db.Purchase_Return, request.args(0))
     if form.process().accepted:
         response.flash = 'Form save.'
@@ -4766,6 +4766,30 @@ def get_workflow_reports():
                 TD(btn_lnk)))
         body = TBODY(*row)
         table = TABLE(*[head, body], _class = 'table', _id='PCtbl')        
+    elif int(request.args(0)) == 6: # purchase return
+        title = 'Purchase Return Workflow Reports'
+        row = []
+        head = THEAD(TR(TH('Date'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+        _query = db().select(orderby = db.Purchase_Return.id)
+        for n in _query:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('procurement','get_purchase_return_id', args = n.id, extension = False))
+            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk) 
+
+            row.append(TR(
+                TD(n.purchase_return_date),
+                TD(n.purchase_return_no_prefix_id.prefix,n.purchase_return_no),
+                TD(n.dept_code_id.dept_name),
+                TD(n.location_code_id.location_name),
+                TD(n.adjustment_type.description),
+                TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
+                TD(n.status_id.description),
+                TD(n.status_id.required_action),
+                TD(btn_lnk)))        
+        body = TBODY(*row)                    
+        table = TABLE(*[head, body], _class='table', _id='tblPRn')
     else:
         title = table = ''
     return dict(title = title, table = table)

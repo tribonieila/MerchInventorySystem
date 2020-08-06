@@ -14,18 +14,31 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Transaction No</label>
-                            <div class="col-sm-8">      
-                                <input type="text" class="form-control"  value="{{=_id.transaction_no}}" readonly>
+                            {{if _id.status_id != 4:}}
+                            <label class="col-sm-4 control-label">Purchase Return No.</label>
+                            <div class="col-sm-8">                                                                                                  
+                                    <input type="text" class="form-control"  value="{{=_id.purchase_return_no_prefix_id.prefix}}{{=_id.purchase_return_no}}" readonly>                                
                             </div>                           
+                            {{else:}}
+                                <label class="col-sm-4 control-label">Transaction No</label>
+                                <div class="col-sm-8">                                                                                                  
+                                        <input type="text" class="form-control"  value="{{=_id.transaction_no}}" readonly>                                
+                                </div>                           
+
+                            {{pass}}
                         </div>                        
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Date</label>
                             <div class="col-sm-8"> {{import datetime}}
-                                {{=form.custom.widget.transaction_date}}
+                                {{if _id.status_id != 4:}}
+                                    <input type="text" class="form-control"  value="{{=_id.purchase_return_date}}" readonly>     
+                                {{else:}}    
+                                    {{=form.custom.widget.transaction_date}}
+                                {{pass}}
                             </div>
+
                         </div>                    
                     </div>
                 </div>
@@ -60,7 +73,11 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
+                                {{if _id.status_id != 4:}}
+                                    <input type="text" class="form-control"  value="{{=_id.status_id.description}}" readonly>
+                                {{else:}}
                                 {{=form.custom.widget.status_id}}
+                                {{pass}}
                             </div>                            
 
                             <!-- <label class="col-sm-4 control-label">Supplier Code</label>
@@ -86,11 +103,18 @@
                                 {{if auth.has_membership(role = 'ACCOUNTS'):}}
                                     {{if _id.status_id == 4:}}
                                         <input class="btn btn-primary"  type="button" value="submit"  id="btnsubmit">
+                                    {{else:}}
+                                        <input class="btn btn-primary"  type="button" value="submit"  id="btnsubmit" disabled>
                                     {{pass}}
                                 {{pass}}
                                 {{if auth.has_membership(role = 'ACCOUNTS MANAGER'):}}
-                                    <input class="btn btn-success"  type="button" value="approved"  id="btnApproved">
-                                    <input class="btn btn-danger"  type="button" value="reject"  id="btnReject">
+                                    {{if _id.status_id != 4:}}
+                                        <input class="btn btn-success"  type="button" value="approved" disabled >
+                                        <input class="btn btn-danger"  type="button" value="reject"  disabled>
+                                    {{else:}}
+                                        <input class="btn btn-success"  type="button" value="approved"  id="btnApproved">
+                                        <input class="btn btn-danger"  type="button" value="reject"  id="btnReject">
+                                    {{pass}}
                                 {{pass}}
                                 <!-- <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                 
