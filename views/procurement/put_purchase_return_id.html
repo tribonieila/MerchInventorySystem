@@ -1,0 +1,153 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                <li class="active"><a href="#">+ ADD NEW</a></li>
+                <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
+            </ul> -->
+            <span class="card-title">Purchase Return</span>
+        </div>
+        <div class="card-body tab-content" >         
+            {{=form.custom.begin}}	
+            <div class="form-horizontal">   
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Transaction No</label>
+                            <div class="col-sm-8">      
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <div id="_stk_adj_no"></div>
+                            </div>                           
+                        </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Date</label>
+                            <div class="col-sm-8"> {{import datetime}}
+                                {{=form.custom.widget.transaction_date}}
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Department</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.dept_code_id}}
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Location</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.location_code_id}}
+                            </div>
+                        </div>                                           
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Adjustment Type</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.adjustment_type}}                                         
+                            </div>
+                        </div>                    
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.status_id}}
+                            </div>                            
+
+                            <!-- <label class="col-sm-4 control-label">Supplier Code</label>
+                            <div class="col-sm-8">
+                                <div id="supplier_code"></div>
+                            </div>                             -->
+                        </div>                    
+                    </div>        
+                </div>
+                <div class="row">
+                    <div class="col-md-6">       
+                        <div class="form-group">
+                            <!-- <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.status_id}}
+                            </div>                             -->
+                        </div>                                    
+                    </div>
+                    <div class="col-md-6">  
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">
+                                <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
+                                <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_adjustment_browse')}}">abort</a>
+                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
+                                
+                            </div>                            
+                        </div>                    
+                    </div>
+                </div>
+            </div>   
+            {{=form.custom.end}}
+            
+            <div id = "request_panel">
+                {{=LOAD('procurement','push_purchase_return_transaction_temporary.load', ajax = True, target = 'tmptbl')}}
+            </div>                       
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    var str_ctr = 0
+    $('#btnsubmit').attr('disabled','disabled');
+    $('#btnhelp').attr('disabled','disabled');
+    $('#btnrequest').attr('disabled','disabled');
+    $('#request_panel').hide();   
+    $('#Purchase_Return_dept_code_id, #Purchase_Return_adjustment_type, #Purchase_Return_status_id, #Purchase_Return_location_code_id').change(function(){
+        if ($('#Purchase_Return_dept_code_id').val() && $('#Purchase_Return_adjustment_type').val() && $('#Purchase_Return_status_id').val() && $('#Purchase_Return_location_code_id').val()) {
+            $('#btnrequest').removeAttr('disabled');
+        } else {
+            $('#btnrequest').attr('disabled','disabled');
+        }
+    });
+
+    $('#Purchase_Return_dept_code_id').change(function(){
+        ajax('{{=URL('get_transaction_no')}}',['dept_code_id'], '_stk_adj_no');        
+    });
+
+    // $('#Purchase_Return_location_code_id').change(function(){
+    //     ajax('{{=URL('inventory','stock_adjustment_code')}}',['location_code_id'], 'supplier_code');
+    // });
+
+    $('#btnsubmit').click(function(){
+        $('#Purchase_Return_dept_code_id').removeAttr('disabled');
+        $('#Purchase_Return_adjustment_type').removeAttr('disabled');
+        $('#Purchase_Return_stock_adjustment_date').removeAttr('disabled');
+        $('#Purchase_Return_location_code_id').removeAttr('disabled');
+        $('#Purchase_Return_status_id').removeAttr('disabled');
+        ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','transaction_date','location_code_id', 'status_id']);        
+    });
+
+    $('#btnrequest').click(function(){
+        $('#request_panel').slideDown('slow');
+        $('#no_table_item_code').focus();                
+        $('#btnhelp').removeAttr('disabled');        
+        ajax('{{=URL('put_purchase_return_session')}}',['dept_code_id','location_code_id','adjustment_type']);
+        $('#Purchase_Return_dept_code_id').attr('disabled','disabled');
+        $('#Purchase_Return_adjustment_type').attr('disabled','disabled');
+        $('#Purchase_Return_stock_adjustment_date').attr('disabled','disabled');
+        $('#Purchase_Return_location_code_id').attr('disabled','disabled');
+        $('#btnrequest').attr('disabled','disabled');
+        $('#Purchase_Return_status_id').attr('disabled','disabled');
+        return false;
+    }); 
+    
+});
+</script>

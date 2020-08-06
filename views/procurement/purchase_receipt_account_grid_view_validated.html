@@ -108,7 +108,7 @@
                 {{=form.custom.end}}
             </div>            
             <hr>
-            {{=LOAD('procurement','purchase_receipt_account_validated_transaction.load', ajax = True, args = request.args(0), target = 'POTtbl')}}
+            {{=LOAD('procurement','purchase_receipt_account_validated_transaction.load', ajax=True, args = request.args(0), target = 'POTtbl')}}
         </div>
     </div>
 </div>
@@ -136,7 +136,7 @@ $(document).ready(function(){
     });
     
     $('#btnSubmit').click(function(){
-        ajax('{{=URL('procurement','put_purchase_request_submit_id', args = request.args(0))}}',['supplier_account_code','supplier_account_code_description','trade_terms_id','currency_id','remarks']);
+        ajax('{{=URL('procurement','put_purchase_request_submit_id', args = request.args(0))}}',['supplier_account_code','supplier_account_code_description','trade_terms_id','supplier_invoice','currency_id','remarks']);
     });
 
     $('#btnSave').click(function(){

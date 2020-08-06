@@ -33,4 +33,27 @@
             }
         });
     });
+    $('.del').click(function(){
+        var _idd = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('inventory','stock_adjustment_browse_details_delete')}}" + '/'+ _idd);                                        
+                }
+
+            }
+        })
+    });        
 </script>

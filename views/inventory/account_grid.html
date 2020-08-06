@@ -52,7 +52,7 @@
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','push_purchase_return')}}">+ create purchase return</a>
                     </div>                    
                     <div role="tabpanel" class="tab-pane" id="direct_purchase_receipt">                        
-                        {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}                            
+                    {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True)}}                            
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ create new direct purchase</a>                    
                     </div>
                     <div role="tabpanel" class="tab-pane" id="stock_adjustment">

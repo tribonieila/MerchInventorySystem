@@ -1,0 +1,55 @@
+<hr>
+{{=table}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+$(document).ready(function(){
+    var $tblrows = $("#tblPRn tbody tr");    
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity, .pieces").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var pri = $tblrow.find("[name=average_cost]").val();
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var sub = parseInt(itm, 10) * parseFloat(ppp);            
+            if (!isNaN(sub)){
+                var total_cost = 0;
+                $tblrow.find(".total_amount").val(sub.toFixed(2));
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    total_cost += isNaN(stval) ? 0 : stval;
+                });
+                $("#total_cost").val(total_cost);
+            }
+
+        });
+    });
+
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        bootbox.confirm({
+            size: "small",
+            message: "Delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','delete_purchase_return_transaction_id')}}" + '/'+ _id);                    
+                }
+
+            }
+        })
+    });        
+})
+</script>

@@ -5296,6 +5296,7 @@ def stock_adjustment_browse_details():
     return dict(form = form, _stk_adj = _stk_adj)
 
 def stock_adjustment_browse_details_transaction():
+    _id = db(db.Stock_Adjustment.id == request.args(0)).select().first()
     row = []
     ctr = 0
     _total_amount = 0
@@ -5309,7 +5310,7 @@ def stock_adjustment_browse_details_transaction():
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         else:
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_browse_details_edit', args = i.Stock_Adjustment_Transaction.id, extension = False))
-            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _id = 'del',callback = URL('stock_adjustment_browse_details_delete', args = i.Stock_Adjustment_Transaction.id, extension = False))
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle del',callback = URL(args = i.Stock_Adjustment_Transaction.id, extension = False), **{'_data-id':(i.Stock_Adjustment_Transaction.id)})
         btn_lnk = DIV(edit_lnk, dele_lnk)
         _price_cost = int(i.Stock_Adjustment_Transaction.quantity) * float(i.Stock_Adjustment_Transaction.price_cost)
         row.append(TR(TD(ctr),
@@ -5321,6 +5322,7 @@ def stock_adjustment_browse_details_transaction():
         TD(locale.format('%.2F',i.Stock_Adjustment_Transaction.average_cost or 0, grouping = True), _align = 'right'),
         TD(locale.format('%.2F', _price_cost or 0, grouping = True), _align = 'right'),
         TD(btn_lnk)))
+    print 'id: ', _id.id, request.args(0)
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL COST:', _align = 'right')),TD(H4(locale.format('%.2F',_total_amount or 0, grouping = True)),_align = 'right'),TD()))
     table = TABLE(*[head, body, foot],  _class='table', _id = 'dettbl')    
@@ -6842,7 +6844,7 @@ def stock_corrections_transaction_table():
             TD(i.Item_Master.item_description.upper()),
             TD(i.Stock_Corrections_Transaction.uom),
             TD(card(i.Stock_Corrections_Transaction.item_code_id, i.Stock_Corrections_Transaction.quantity, i.Stock_Corrections_Transaction.uom)),
-            TD(btn_lnk)))
+            TD(btn_lnk)))    
     body = TBODY(*row)
     table = TABLE(*[head, body],  _class='table', _id = 'tblcor')                
     return dict(table = table)    

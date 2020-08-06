@@ -62,7 +62,7 @@
             }, 1);
     });
     $('#no_table_item_code').change(function(){
-        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('purchase_request_item_code_description',args = request.args(0))}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
         return false;
     });    
