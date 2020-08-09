@@ -80,7 +80,7 @@ $(document).ready(function(){
                 var local = 0;
                 var foa = 0;
                 
-                $tblrow.find(".total_amount").val(sub.toFixed(2));                               
+                $tblrow.find(".total_amount").val(sub.toFixed(3));                               
                                 
                 $(".total_amount").each(function(){
                     var stval = parseFloat($(this).val());
@@ -90,9 +90,9 @@ $(document).ready(function(){
                 //discount = (parseFloat(grandTotal) * (100 - parseInt(dis))) / 100;
                 local = parseFloat(xch) * parseFloat(grandTotal);
 
-                $(".grand_total").val(grandTotal.toFixed(2));
-                $(".net_amount_foreign").val(grandTotal.toFixed(2));
-                $(".net_amount_local").val(local.toFixed(2));
+                $(".grand_total").val(grandTotal.toFixed(3));
+                $(".net_amount_foreign").val(grandTotal.toFixed(3));
+                $(".net_amount_local").val(local.toFixed(3));
             }                        
         });
     });
@@ -105,8 +105,8 @@ $(document).ready(function(){
         var discount = 0
         discount = (parseFloat(grd) * (100 - parseInt(dis))) / 100;
         local = parseFloat(xch) * parseFloat(discount);
-        $(".net_amount_foreign").val(discount.toFixed(2))
-        $(".net_amount_local").val(local.toFixed(2))
+        $(".net_amount_foreign").val(discount.toFixed(3))
+        $(".net_amount_local").val(local.toFixed(3))
         console.log('discount change', fox, loc, dis);
     });
 
@@ -130,7 +130,7 @@ $(document).ready(function(){
     }    
 
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
-        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('purchase_request_item_code_description', args = request.args(0))}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
         ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
         return false;

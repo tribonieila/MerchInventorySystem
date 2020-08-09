@@ -1667,6 +1667,7 @@ db.define_table('Purchase_Request',
     Field('supplier_account_code','string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
     Field('supplier_account_code_description','string', length = 50),
     Field('supplier_invoice','string', length = 25),
+
     Field('landed_cost','decimal(10,6)', default = 0),
     Field('other_charges','decimal(10,6)', default = 0),    
     Field('custom_duty_charges','decimal(10,6)', default = 0),        
@@ -1681,7 +1682,7 @@ db.define_table('Purchase_Request',
     Field('partial','boolean', default = False), 
     Field('received','boolean', default = False),
     Field('archives', 'boolean', default = False),   
-    Field('proforma_file','upload',requires=IS_UPLOAD_FILENAME(extension='pdf')),
+    Field('proforma_file','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -1954,7 +1955,11 @@ db.define_table('Purchase_Receipt_Transaction',
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),        
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0), # manoj
-    Field('receive_quantity','integer', default = 0), # hakim
+    # Field('receive_quantity','integer', default = 0), # hakim
+    Field('quantity_ordered','integer', default = 0), # quantity ordered
+    Field('quantity_received','integer', default = 0), # quantity received/warehouse
+    Field('quantity_invoiced','integer', default = 0), # quantity invoiced/accounts
+
     Field('uom','integer', default = 0),    
     Field('difference_quantity', 'integer', default = 0), # diff
     Field('price_cost', 'decimal(15,6)', default = 0),
@@ -1976,6 +1981,8 @@ db.define_table('Purchase_Receipt_Transaction',
     Field('received','boolean', default = False),
     Field('old_average_cost','decimal(15,4)', default = 0),
     Field('old_landed_cost','decimal(10,6)', default = 0),
+    Field('production_date', 'date'),
+    Field('expiration_date', 'date'),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),

@@ -184,15 +184,7 @@ def purchase_receipt_approved():
         elif int(n.category_id) == 4:    # normal items
             # _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _id.purchase_receipt_no_id_consolidated).select().first()        
             # _price_cost = n.price_cost * _id.landed_cost
-            db.Purchase_Batch_Cost.insert( # Purchase Batch Cost
-                purchase_receipt_no_id = request.args(0),
-                item_code_id = n.item_code_id,
-                purchase_receipt_date = request.now,
-                batch_cost = _id.landed_cost, 
-                supplier_price = n.price_cost,
-                batch_quantity = n.quantity,
-                batch_production_date = n.production_date,
-                batch_expiry_date = n.expiration_date)
+
             
             _stk_fil = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()
             _lan = (_id.landed_cost * n.price_cost) / n.uom
@@ -228,7 +220,8 @@ def purchase_receipt_approved():
                 _stk_fil.update_record(closing_stock = _clo_stk, last_transfer_qty = n.quantity, order_in_transit = _odr_trn)
                 db(db.Item_Prices.item_code_id == n.item_code_id).update(average_cost = _average_cost, most_recent_landed_cost = _most_recent_landed_cost, most_recent_cost = n.price_cost)
     _id.update_record(status_id = 21, posted = True)
-    
+    sync_purchase_receipt()
+
     # db(db.Purchase_Order.id == _id.purchase_receipt_no_id_consolidated.purchase_order_no_id).update(status_id = 21)
 
     # db(db.Purchase_Receipt_Warehouse_Consolidated.id == int(_id.purchase_receipt_no_id_consolidated)).update(status_id = 21)
@@ -243,6 +236,74 @@ def purchase_receipt_approved():
     # redirect(URL('inventory','account_manager_workflow'))
     # response.js = "jQuery(location.reload())"
 
+def sync_purchase_receipt():
+    print 'sync_purchase_receipt', request.args(0)
+    _id = db(db.Purchase_Request.id == request.args(0)).select().first()
+    _trnx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'GRV')).select().first()
+    _skey = _trnx.current_year_serial_key
+    _skey +=1 
+    _trnx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)    
+    db.Purchase_Receipt.insert(
+        purchase_receipt_no_prefix_id = _trnx.id,
+        purchase_receipt_no = _skey,
+        purchase_receipt_date = request.now,
+        purchase_receipt_approved_by = auth.user_id,
+        purchase_receipt_date_approved = _id.purchase_receipt_date_approved,
+        dept_code_id = _id.dept_code_id,
+        supplier_code_id = _id.supplier_code_id,
+        mode_of_shipment = _id.mode_of_shipment,
+        location_code_id = _id.location_code_id,
+        exchange_rate = _id.exchange_rate,
+        trade_terms_id = _id.trade_terms_id,
+        landed_cost = _id.landed_cost,
+        other_charges = _id.other_charges,
+        custom_duty_charges = _id.custom_duty_charges,
+        selective_tax = _id.selective_tax,
+        supplier_invoice = _id.supplier_invoice,
+        supplier_account_code = _id.supplier_account_code,
+        supplier_account_code_description = _id.supplier_account_code_description,
+        discount_percentage = _id.discount_percentage,
+        currency_id = _id.currency_id,
+        remarks = _id.remarks,        
+        status_id = 17)
+    _i = db(db.Purchase_Receipt.purchase_receipt_no == _skey).select().first()
+    for n in db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select():
+        db.Purchase_Batch_Cost.insert( # Purchase Batch Cost
+            purchase_receipt_no_id = _i.id,
+            item_code_id = n.item_code_id,
+            purchase_receipt_date = _id.purchase_receipt_date_approved,
+            batch_cost = _id.landed_cost, 
+            supplier_price = n.price_cost,
+            batch_quantity = n.quantity,
+            batch_production_date = n.production_date,
+            batch_expiry_date = n.expiration_date)    
+
+        db.Purchase_Receipt_Transaction.insert(
+            purchase_receipt_no_id = _i.id,
+            item_code_id = n.item_code_id,
+            category_id = n.category_id,
+            quantity = n.quantity, # requested
+            quantity_ordered = n.quantity_ordered, # ordered
+            quantity_received = n.quantity_received, # received/warehouse
+            quantity_invoiced = n.quantity_invoiced, # invoiced
+            uom = n.uom,
+            price_cost = n.price_cost,
+            total_amount = n.total_amount,
+            average_cost = n.average_cost,
+            sale_cost = n.sale_cost,
+            wholesale_price = n.wholesale_price,
+            retail_price = n.retail_price,
+            vansale_price = n.vansale_price,
+            selective_tax = n.selective_tax,
+            selective_tax_foc = n.selective_tax_foc,
+            vat_percentage = n.vat_percentage,
+            remarks = n.item_remarks,
+            # old_average_cost = n.,
+            # old_landed_cost = n.,
+            # difference_quantity = n.,        
+            production_date = n.production_date,
+            expiration_date = n.expiration_date
+        )
 def purchase_receipt_grid_view():
     _row = []
     _ctr = 0
@@ -337,7 +398,7 @@ def purchase_receipt_grid_view():
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:'),TD(_pr.currency_id.mnemonic,' ', locale.format('%.3F',_net_amount or 0, grouping = True), _align = 'right'),TD(),TD()))       
             table = TABLE(*[head, body, foot ], _class = 'table', _id = 'PRtbl')
     return dict(_pr = _pr, _table = _table, table = table)    
-    
+   
 @auth.requires_login()
 def direct_purchase_receipt_account_grid():
     row = []
@@ -755,6 +816,19 @@ def put_purchase_return_approved():
     _skey += 1
     db(db.Purchase_Return.id==request.args(0)).update(purchase_return_no_prefix_id = _trns_pfx.id,purchase_return_no=_skey, purchase_return_date=request.now,purchase_return_approved_by=auth.user_id, purchase_return_date_approved=request.now,status_id = 15)
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
+    for n in db(db.Purchase_Return_Transaction.transaction_no_id == request.args(0)).select():
+        _stock_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.location_code_id)).select().first()             
+        if not _stock_file: # if not found insert on it's destination
+            if _id.adjustment_type == 1:
+                db.Stock_File.insert(item_code_id = n.item_code_d, location_code_id = _id.location_code_id, closing_stock = n.quantity, last_transfer_date = request.now)
+            else:
+                response.flash = 'Location error.'
+        elif _id.adjustment_type == 1:
+            _closing_stock_file = _stock_file.closing_stock + n.quantity
+            _stock_file.update_record(closing_stock = _closing_stock_file, last_transfer_date = request.now)
+        else:
+            _closing_stock_file = _stock_file.closing_stock - n.quantity
+            _stock_file.update_record(closing_stock = _closing_stock_file, last_transfer_date = request.now)
     session.flash = 'Purchase return no. ' + str(_skey) + ' generated.'
     response.js = "jQuery(Redirect())"
 
@@ -3719,7 +3793,7 @@ def purchase_request_form():
         Field('estimated_time_of_arrival', 'date', default = request.now.date(), requires = IS_DATE_IN_RANGE(minimum=request.now.date())),
         Field('trade_terms_id', 'reference Supplier_Trade_Terms', default = 1, ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  
         Field('remarks', 'string'),        
-        Field('proforma_file','upload'),
+        Field('proforma_file','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),
         Field('status_id','reference Stock_Status',default = 19, requires = IS_IN_DB(db(db.Stock_Status.id == 19), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
     if form.process(onvalidation = validate_date_range).accepted:
         ctr = db((db.Transaction_Prefix.prefix_key == 'POR') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
@@ -3738,6 +3812,7 @@ def purchase_request_form():
             supplier_reference_order = form.vars.supplier_reference_order,
             estimated_time_of_arrival = form.vars.estimated_time_of_arrival,
             trade_terms_id = form.vars.trade_terms_id,
+            proforma_file = form.vars.proforma_file,
             # total_amount = form.vars.total_amount,
             # total_amount_after_discount = form.vars.total_amount_after_discount,
             discount_percentage = form.vars.discount_percentage,
@@ -3979,8 +4054,7 @@ def purchase_request_transaction_temporary_delete():
 @auth.requires_login()
 def purchase_request_item_code_description():
     # print 'session in description: ', session.supplier_code_id, session.dept_code_id, request.vars.item_code
-    _id = db(db.Purchase_Request.id == request.args(0)).select().first()
-    print _id.dept_code_id
+    _id = db(db.Purchase_Request.id == request.args(0)).select().first()    
     response.js = "$('#btnadd').removeAttr('disabled'), $('#no_table_pieces').removeAttr('disabled'), $('#discount').removeAttr('disabled')"
     _icode = db((db.Item_Master.item_code == str(request.vars.item_code)) & (db.Item_Master.dept_code_id == _id.dept_code_id) & (db.Item_Master.supplier_code_id == int(_id.supplier_code_id))).select().first()    
     if not _icode:
@@ -4045,7 +4119,7 @@ def purchase_request_item_code_description():
 def get_purchase_request_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Purchase Request No.'),TH('Purchase Order No.'),TH('Purchase Receipt No.'),TH('Department'),TH('Supplier Code'),TH('Supplier Ref. Order'),TH('Location'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) |(db.Purchase_Request.status_id == 17) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 22) | (db.Purchase_Request.status_id == 11))).select(orderby = ~db.Purchase_Request.id):
+    for n in db((db.Purchase_Request.created_by == auth.user.id) & ((db.Purchase_Request.status_id == 1) | (db.Purchase_Request.status_id == 3) |(db.Purchase_Request.status_id == 17) | (db.Purchase_Request.status_id == 19) | (db.Purchase_Request.status_id == 20) | (db.Purchase_Request.status_id == 22) | (db.Purchase_Request.status_id == 11))).select(orderby = db.Purchase_Request.id):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','purchase_request_transaction_view', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -4220,7 +4294,7 @@ def purchase_request_transaction_view():
         redirect(URL('inventory','get_back_off_workflow_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'        
-    return dict(form = form, _id = _id, _ex = _ex)
+    return dict(form = form, _id = _id, _ex = _ex, row = _id)
 
 @auth.requires_login()
 def purchase_request_transaction_view_details():
@@ -4291,15 +4365,15 @@ def purchase_request_transaction_view_details():
                 TD(n.Purchase_Request_Transaction.category_id.mnemonic, _style="width:100px;"),            
                 TD(_quantity, _align = 'right', _style="width:100px;"),
                 TD(_pieces, _align = 'right', _style="width:100px;"),
-                TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=n.Purchase_Request_Transaction.price_cost or 0), _align = 'right', _style="width:120px;"), 
-                TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=n.Purchase_Request_Transaction.total_amount or 0), _align = 'right', _style="width:120px;"),  
+                TD(INPUT(_class='form-control price_cost',_name='price_cost',_type='text',_value=locale.format('%.3F',n.Purchase_Request_Transaction.price_cost or 0)), _align = 'right', _style="width:120px;"), 
+                TD(INPUT(_class='form-control total_amount',_name='total_amount',_type='text',_value=locale.format('%.3F',n.Purchase_Request_Transaction.total_amount or 0)), _align = 'right', _style="width:120px;"),  
                 
                 TD(btn_lnk)))
             body = TBODY(*row)        
-            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(I('(FX : ',_exc_rate.exchange_rate_value,')')),TD(H4('Net Amount in QR'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control net_amount_local',_id='net_amount_local',_name='net_amount_local',_type='text',_value=_local_net_price or 0), _align = 'right')),TD(_btnUpdate, _style="width:100px;")))            
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount in ',_id.currency_id.mnemonic ), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=_total_amount or 0), _align = 'right')),TD()))
+            foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(I('(FX : ',_exc_rate.exchange_rate_value,')')),TD(H4('Net Amount in QR'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control net_amount_local',_id='net_amount_local',_name='net_amount_local',_type='text',_value=locale.format('%.3F',_local_net_price or 0)), _align = 'right')),TD(_btnUpdate, _style="width:100px;")))            
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Total Amount in ',_id.currency_id.mnemonic ), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control grand_total',_name='grand_total',_type='text',_value=locale.format('%.3F',_total_amount or 0)), _align = 'right')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Discount'), _align = 'right', _colspan='2'),TD(H4(INPUT(_class='form-control discount',_name='discount',_id='discount',_type='number',_value=_id.discount_percentage or 0), _align = 'right')),TD()))
-            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount in ', _id.currency_id.mnemonic), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control net_amount_foreign',_name='net_amount_foreign',_type='text',_value=_net_price or 0), _align = 'right')),TD()))
+            foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('Net Amount in ', _id.currency_id.mnemonic), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control net_amount_foreign',_name='net_amount_foreign',_type='text',_value=locale.format('%.3F',_net_price or 0)), _align = 'right')),TD()))
     table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblPRT'))
     if table.accepts(request,session):
         if request.vars.btnRemarks:
@@ -4318,7 +4392,7 @@ def purchase_request_transaction_view_details():
             response.js = "$('#tblPRT').get(0).reload()"
         elif request.vars.btnUpdate:            
             response.flash = 'RECORD UPDATED'
-            _pur = db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select().first()
+            _pur = db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select().first()            
             if isinstance(request.vars.ctr, list):
                 row = 0
                 for x in request.vars.ctr:
@@ -4332,7 +4406,12 @@ def purchase_request_transaction_view_details():
                 _qty = int(request.vars.quantity) * int(request.vars.uom) + int(request.vars.pieces)
                 if int(_row.quantity) != int(_qty):        
                     _pur.update_record(quantity = _qty, total_amount = request.vars.total_amount)
-            db(db.Purchase_Request.id == request.args(0)).update(total_amount_after_discount = request.vars.grand_total.replace(",",""))            
+            db(db.Purchase_Request.id == request.args(0)).update(
+                total_amount = request.vars.grand_total,
+                discount_percentage = request.vars.discount,
+                total_amount_after_discount = request.vars.net_amount_foreign.replace(",",""),
+                foreign_currency_value = request.vars.net_amount_foreign.replace(",",""),
+                local_currency_value = request.vars.net_amount_local)            
             response.js = "$('#tblPRT').get(0).reload()"
     
     form = SQLFORM.factory(
@@ -4353,14 +4432,15 @@ def purchase_request_transaction_view_details():
             retail_price = form.vars.retail_price,
             vansale_price = form.vars.vansale_price,
             average_cost = form.vars.average_cost)
-        response.js = "$('#tblPr').get(0).reload();"
+        response.js = "$('#tblPRT').get(0).reload();"
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'           
     return dict(form = form, table = table, _foc = _foc)    
 
 def validate_purchase_request_transaction_view_details(form):
     # _id = db(db.Item_Master.item_code == request.vars.item_code.upper()).select().first()
-    _id = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == session.dept_code_id) & (db.Item_Master.supplier_code_id == session.supplier_code_id)).select().first()        
+    _id = db(db.Purchase_Request.id == request.args(0)).select().first()
+    _id = db((db.Item_Master.item_code == request.vars.item_code) & (db.Item_Master.dept_code_id == _id.dept_code_id) & (db.Item_Master.supplier_code_id == _id.supplier_code_id)).select().first()
     if not _id:
         # form.errors.item_code ='Item code does not exist or empty.'
         form.errors.item_code = "Item code no " + str(request.vars.item_code) +" doesn't belongs to the selected supplier. "
@@ -4769,15 +4849,14 @@ def get_workflow_reports():
     elif int(request.args(0)) == 6: # purchase return
         title = 'Purchase Return Workflow Reports'
         row = []
-        head = THEAD(TR(TH('Date'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+        head = THEAD(TR(TH('Date'),TH('Purchase Return No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
         _query = db().select(orderby = db.Purchase_Return.id)
         for n in _query:
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('procurement','get_purchase_return_id', args = n.id, extension = False))
-            appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                
-            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk) 
-
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle',_target='_blank', _href=URL('procurement','get_purchase_return_report_id', args = n.id, extension = False))
+            btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)        
             row.append(TR(
                 TD(n.purchase_return_date),
                 TD(n.purchase_return_no_prefix_id.prefix,n.purchase_return_no),
@@ -4792,6 +4871,34 @@ def get_workflow_reports():
         table = TABLE(*[head, body], _class='table', _id='tblPRn')
     else:
         title = table = ''
+    return dict(title = title, table = table)
+
+def get_transaction_reports_grid():
+    if int(request.args(0)) == 1:
+        title = 'Purchase Return Reports'
+        row = []
+        head = THEAD(TR(TH('Date'),TH('Purchase Return No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+        _query = db(db.Purchase_Return.status_id == 15).select(orderby = db.Purchase_Return.id)
+        for n in _query:
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('procurement','get_purchase_return_id', args = n.id, extension = False))
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle',_target='_blank', _href=URL('procurement','get_purchase_return_report_id', args = n.id, extension = False))
+            btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)        
+            row.append(TR(
+                TD(n.purchase_return_date),
+                TD(n.purchase_return_no_prefix_id.prefix,n.purchase_return_no),
+                TD(n.dept_code_id.dept_name),
+                TD(n.location_code_id.location_name),
+                TD(n.adjustment_type.description),
+                TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
+                TD(n.status_id.description),
+                TD(n.status_id.required_action),
+                TD(btn_lnk)))        
+        body = TBODY(*row)                    
+        table = TABLE(*[head, body], _class='table', _id='tblPRn')
+    else:
+        title = table = 'None'
     return dict(title = title, table = table)
 
 def purchase_history():
@@ -7212,7 +7319,7 @@ def purchase_request_reports():
     ctr = _total_amount = 0
     _row = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Total Amount']]    
     _exch = db(db.Currency_Exchange.currency_id == _id.currency_id).select().first()        
-    for n in db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select(orderby = ~db.Purchase_Request_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id)):
+    for n in db(db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)).select(orderby = db.Purchase_Request_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id)):
         ctr += 1
         _total_amount += n.Purchase_Request_Transaction.total_amount
         _discount = (float(_total_amount) * (int(100) - float(_id.discount_percentage))) / int(100)
@@ -8671,6 +8778,84 @@ def document_register_report():
     row.append(_admi_copy_table)
     row.append(PageBreak())
 
+    doc.build(row)
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'    
+    return pdf_data
+
+def get_purchase_return_report_id():
+    _id = db(db.Purchase_Return.id == request.args(0)).select().first()    
+    _header = [
+        ['PURCHASE RETURN'],
+        ['Purchase Return No',':', str(_id.purchase_return_no_prefix_id.prefix) + str(_id.purchase_return_no),'','Purchase Return Date',':',_id.purchase_return_date],
+        ['Deparment',':',_id.dept_code_id.dept_name,'','Location',':',_id.location_code_id.location_name],        
+        ['Adjustment Type',':',_id.adjustment_type.description,'','','',],        
+    ]
+    _header_table = Table(_header, colWidths=['*',20,'*',20,'*',20,'*'])
+    _header_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,0),(-1,0)),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),  
+        ('FONTSIZE',(0,0),(-1,0),10),        
+        ('FONTSIZE',(0,1),(-1,-1),8),
+        ('ALIGN',(0,0),(0,0),'CENTER'), 
+        ('VALIGN',(0,3),(2,3),'TOP'),
+        ('BOTTOMPADDING',(0,0),(0,0),20),   
+        ('TOPPADDING',(0,1),(-1,-1),0),
+        ('BOTTOMPADDING',(0,1),(-1,-1),0),
+    ]))
+
+    ctr = _total_amount = 0
+    _row = [['#','Item Code','Item Description','UOM','Cat','Qty','Unit Price','Total Amount']]    
+    
+    for n in db(db.Purchase_Return_Transaction.transaction_no_id == request.args(0)).select(orderby = db.Purchase_Return_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Purchase_Return_Transaction.item_code_id)):
+        ctr += 1
+        _total_amount += n.Purchase_Return_Transaction.total_amount
+        _row.append([            
+            ctr,            
+            n.Purchase_Return_Transaction.item_code_id.item_code,
+            str(n.Item_Master.brand_line_code_id.brand_line_name)+ str('\n') +str(n.Item_Master.item_description),
+            n.Purchase_Return_Transaction.uom,
+            n.Purchase_Return_Transaction.category_id.description,
+            card(n.Purchase_Return_Transaction.quantity,n.Purchase_Return_Transaction.uom),
+            locale.format('%.2F',n.Purchase_Return_Transaction.average_cost or 0, grouping = True),
+            locale.format('%.2F',n.Purchase_Return_Transaction.total_amount or 0, grouping = True),
+            ])
+    _row.append(['','','','','','Total Amount',':',locale.format('%.2F',_total_amount or 0, grouping = True)])
+    _table = Table(_row, colWidths=[20,60,'*',30,35,55,65,90])
+    _table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-5), (-1,-5), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.25, colors.black,None, (2,2)),
+        ('TOPPADDING',(0,0),(-1,0),5),
+        ('BOTTOMPADDING',(0,0),(-1,0),5),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
+        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('ALIGN',(6,1),(7,-1),'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'TOP')
+    ]))    
+
+    _footer = [
+        ['Remarks',':',_id.remarks,'','','','']]
+    _footer_table = Table(_footer, colWidths=['*',20,'*',20,'*',20,'*'])
+    _footer_table.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),  
+        ('FONTSIZE',(0,0),(-1,-1),8),        
+        ('TOPPADDING',(0,1),(-1,-1),0),
+        ('BOTTOMPADDING',(0,1),(-1,-1),0),
+    ]))
+
+    row.append(_header_table)
+    row.append(Spacer(1,.5*cm))
+    row.append(_table)
+    row.append(Spacer(1,.5*cm))
+    row.append(_footer_table)
     doc.build(row)
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
