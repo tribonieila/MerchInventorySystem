@@ -3031,9 +3031,13 @@ def category_option():
 
 @auth.requires(lambda: auth.has_membership('INVENTORY BACK OFFICE') | auth.has_membership('INVENTORY POS') | auth.has_membership('SALES')| auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def stk_req_add_form():          
-    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
 
-    _slm = db(db.Sales_Man.users_id == auth.user_id).select().first()
+    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+    if auth.has_membership(role='INVENTORY POS'):
+        _section_id = 'N'        
+    else:
+        _slm = db(db.Sales_Man.users_id == auth.user_id).select().first()
+        _section_id = _slm.section_id
     ctr = db(db.Transaction_Prefix.prefix_key == 'SRN').select().first()
     _skey = ctr.current_year_serial_key 
     _skey += 1        
@@ -3067,7 +3071,7 @@ def stk_req_add_form():
             stock_destination_id = form.vars.stock_destination_id,
             srn_status_id = form.vars.srn_status_id,
             requested_by = auth.user_id,
-            section_id = _slm.section_id,
+            section_id = _section_id,
             remarks = form.vars.remarks)            
         
         _id = db(db.Stock_Request.stock_request_no == ctr.current_year_serial_key ).select().first()
@@ -3865,7 +3869,8 @@ def get_stock_request_workflow_grid():
         else:
             _query = ((db.Stock_Request.created_by == auth.user_id) | (db.Stock_Request.stock_source_id == _usr.location_code_id) | (db.Stock_Request.stock_destination_id == _usr.location_code_id)) & (db.Stock_Request.srn_status_id != 6)
     if auth.has_membership(role = 'INVENTORY STORE KEEPER'): # warehouse personnel
-        _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id != 6) | ((db.Stock_Request.srn_status_id == 27)|(db.Stock_Request.srn_status_id == 2)|(db.Stock_Request.srn_status_id == 26)|(db.Stock_Request.srn_status_id == 5)&(db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1))
+        _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id != 6) 
+        _query |= ((db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1)) & (db.Stock_Request.srn_status_id != 6)
         # if _dep.section_id == 'N':
         #     _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.section_id == 'N') &(db.Stock_Request.srn_status_id != 6) | ((db.Stock_Request.srn_status_id != 6)&(db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1))
         # else:
@@ -3899,13 +3904,10 @@ def get_stock_request_workflow_grid():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             if int(n.srn_status_id) == 4 and int(n.stock_destination_id == _usr.location_code_id):
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
-                _action_req = 'FOR PRE-APPROVAL'
-                print '4'
-            elif int(n.srn_status_id) == 5 and int(n.stock_destination_id == _usr.location_code_id):
-                print '5'
+                _action_req = 'FOR PRE-APPROVAL'                
+            elif int(n.srn_status_id) == 5 and int(n.stock_destination_id == _usr.location_code_id):                
                 gene_lnk = A(I(_class='fas fa-user-plus'), _title='Generate stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                                
-            elif int(n.srn_status_id == 26) and int(n.stock_source_id == _usr.location_code_id):                
-                print '26'
+            elif int(n.srn_status_id == 26) and int(n.stock_source_id == _usr.location_code_id):                                
                 gene_lnk = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, gene_lnk,prin_lnk)
         elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):
@@ -3913,8 +3915,10 @@ def get_stock_request_workflow_grid():
                 appr = A(I(_class='fas fa-user-plus'), _title='Approved Stock Request', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_request_id',args = n.id, extension = False), **{'_data-id':(n.id)})
                 reje = A(I(_class='fas fa-user-times'), _title='Reject Stock Request', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_request_reject_id',args = n.id, extension = False), **{'_data-id':(n.id)})
                 prin_lnk = A(I(_class='fas fa-print'), _title='Print Stock Request', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('str_kpr_rpt', args = n.id, extension =False), _target="blank")                
-            elif int(n.srn_status_id == 5) and (int(n.stock_destination_id) ==1 or int(n.stock_source_id) ==1):
+            elif int(n.srn_status_id == 5) and int(n.stock_source_id) ==1:
                 appr = A(I(_class='fas fa-user-minus'), _title='Dispatch Stock Transfer', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                
+            elif int(n.srn_status_id == 5) and int(n.stock_destination_id) == 1:
+                appr = A(I(_class='fas fa-user-plus'), _title='Approved Stock Receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                
             elif int(n.srn_status_id == 26) and (int(n.stock_destination_id) ==1 or int(n.stock_source_id) ==1):                
                 appr = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
             else:
@@ -3963,7 +3967,7 @@ def put_stock_request_id():
         _flash = 'Stock request no. ' + str(_id.stock_request_no) + ' already been ' + str(_id.srn_status_id.description) + ' by ' + str(_id.stock_request_approved_by.first_name)        
     else:
         _id.update_record(srn_status_id = 2, stock_request_date_approved = request.now, stock_request_approved_by = auth.user_id, remarks = request.vars.remarks)                
-        _flash = 'Stock request no. ' + str(_id.stock_request_no) +' processed.'
+        _flash = 'Stock request no. ' + str(_id.stock_request_no) +' approved.'
     session.flash = _flash
     response.js = "$('#tblSR').get(0).reload()" #, PrintReceipt(%s)" %(request.args(0))
 
@@ -3989,9 +3993,12 @@ def put_stock_receipt_id():
         _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)
         db(db.Stock_Transfer.stock_request_no == _id.stock_request_no).update(srn_status_id = 6, stock_receipt_no_id = _trns_pfx.id, stock_receipt_no = _skey, stock_receipt_date_approved = request.now, stock_receipt_approved_by = auth.user_id, remarks = request.vars.remarks)
         sync_stock_receipt_id()
-        _flash = 'Stock transfer no. ' + str(_id.stock_transfer_no) +' processed.'
+        _flash = 'Stock receipt no. ' + str(_skey) +' generated.'
     session.flash = _flash
-    response.js = "$('#tblSR').get(0).reload(), PrintReceipt(%s)" %(request.args(0))
+    if auth.has_membership(role='INVENTORY STORE KEEPER'):
+        response.js = "$('#tblSR').get(0).reload(), PrintReceipt(%s)" %(request.args(0))    
+    else:
+        response.js = "$('#tblSR').get(0).reload(), PrintReceipt(%s)" %(request.args(0))
     
     
 
@@ -4515,8 +4522,8 @@ def stock_request_approved():
     if int(_id.srn_status_id) == 27 or int(_id.srn_status_id) == 3:
         _flash = 'Stock request no. ' + str(_id.stock_request_no) + ' already been ' + str(_id.srn_status_id.description.lower()) + ' by ' + str(_id.stock_request_approved_by.first_name)
     else:
-        _id.update_record(srn_status_id = 27, stock_request_date_approved = request.now, stock_request_approved_by = auth.user_id)
-        _flash = 'Stock request no. ' + str(_id.stock_request_no) + ' processed.' #+str(_id.srn_status_id.description.lower())
+        _id.update_record(srn_status_id = 27, stock_request_pre_date_approved = request.now, stock_request_pre_approved_by = auth.user_id)
+        _flash = 'Stock request no. ' + str(_id.stock_request_no) + ' pre-approved.' #+str(_id.srn_status_id.description.lower())
     session.flash = _flash
     response.js = "$('#tblsr').get(0).reload()"
 
@@ -6903,11 +6910,14 @@ def get_workflow_reports():
             _query = db((db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id == 6)).select(orderby = db.Stock_Request.id)
         elif auth.has_membership('INVENTORY SALES MANAGER'):
             _title = 'Stock Request Workflow Reports'
-            _query = db((db.Stock_Request.stock_request_approved_by == auth.user_id) & (db.Stock_Request.srn_status_id == 6)).select(orderby = db.Stock_Request.id)
+            _query = db((db.Stock_Request.stock_request_pre_approved_by == auth.user_id)).select(orderby = db.Stock_Request.id)
         elif auth.has_membership('INVENTORY STORE KEEPER'):
-            _query = db((db.Stock_Request.stock_transfer_dispatched_by == auth.user_id) & (db.Stock_Request.srn_status_id == 6)).select(orderby = db.Stock_Request.id)
+            _query = db(((db.Stock_Request.stock_transfer_dispatched_by == auth.user_id) | (db.Stock_Request.stock_request_approved_by == auth.user_id)) & (db.Stock_Request.srn_status_id == 6)).select(orderby = db.Stock_Request.id)
         elif auth.has_membership('ACCOUNTS'):
             _query = db((db.Stock_Request.stock_transfer_approved_by == auth.user_id) & (db.Stock_Request.srn_status_id == 6)).select(orderby = db.Stock_Request.id)
+        elif auth.has_membership('INVENTORY POS'):
+            _loc = db(db.User_Location.user_id == auth.user_id).select().first()
+            _query = db((db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id == 6) & ((db.Stock_Request.stock_source_id == _loc.location_code_id) | (db.Stock_Request.stock_destination_id == _loc.location_code_id))).select(orderby = db.Stock_Request.id)
 
         head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
         # for n in db((db.Stock_Request.srn_status_id == 6) & (db.Stock_Request.stock_destination_id == 1)).select(orderby = ~db.Stock_Request.id):
@@ -6935,6 +6945,9 @@ def get_workflow_reports():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle',_target='blank',_href=URL('inventory','stock_receipt_report', args = n.id, extension = False))
+            if auth.has_membership('INVENTORY SALES MANAGER'):
+                if n.srn_status_id != 6:
+                    repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, repo_lnk)
 
             # btn_lnk = DIV(view_lnk, rec_lnk, repo_lnk, arch_lnk)
@@ -7098,10 +7111,8 @@ def get_pos_stock_request_workflow_grid():
     row = []
     _total_amount = _amount = 0    
     _loc = db(db.User_Location.user_id == auth.user_id).select().first()
-    _query = (db.Stock_Request.created_by == auth.user_id) | (db.Stock_Request.stock_source_id == int(_loc.location_code_id))
-    _query &= ((db.Stock_Request.srn_status_id == 4) | (db.Stock_Request.srn_status_id == 2) | (db.Stock_Request.srn_status_id == 5) )
-    # _query &= db.Stock_Request.stock_source_id == int(_loc.location_code_id)    
-    # _query &= db.Stock_Request.srn_status_id != 6
+    _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id != 6)
+    _query |= ((db.Stock_Request.stock_source_id == int(_loc.location_code_id)) | (db.Stock_Request.stock_destination_id == int(_loc.location_code_id))) & (db.Stock_Request.srn_status_id != 6)
     
     head = THEAD(TR(TH('Date'),TH('Stock Request No'),TH('Stock Transfer No'),TH('Stock Receipt No'),TH('Stock Source'),TH('Stock Destination'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions')), _class='bg-primary' )
     for n in db(_query).select(orderby = ~db.Stock_Request.id):
@@ -7122,10 +7133,15 @@ def get_pos_stock_request_workflow_grid():
             # pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle', _id='btnSTV',callback=URL('inventory', 'get_generate_stock_transfer', args = n.id, extension = False))            
         else:
             pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer', _type=' button', _role='button', _class='btn btn-icon-toggle disabled')
+
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-        btn_lnk = DIV(view_lnk, edit_lnk, pst_lnk, dele_lnk)
+        appr = A(I(_class='fas fa-user-plus'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')                
+        reje = A(I(_class='fas fa-user-times'), _title='Print stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
+        if (n.srn_status_id == 26) & (n.stock_source_id == _loc.location_code_id):
+            appr = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
+        btn_lnk = DIV(view_lnk, appr, reje, dele_lnk)
         row.append(TR(TD(n.stock_request_date),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblSR')
@@ -7138,17 +7154,12 @@ def get_pos_stock_receipt_workflow_grid():
     ctr = 0
     _loc = db(db.User_Location.user_id == auth.user_id).select().first()
     
-    # _query |= db.Stock_Request.stock_receipt_approved_by == auth.user_id        
-    _query = db.Stock_Request.srn_status_id == 5
-    # _query &= db.Stock_Request.srn_status_id != 6    
-    # _query &= db.Stock_Request.stock_destination_id != 1
-    # _query &= db.Stock_Request.archive == False
-    _query &= db.Stock_Request.stock_destination_id == _loc.location_code_id
-    _query | db.Stock_Request.created_by == auth.user_id
-    print 'user: ', _loc.user_id, _loc.location_code_id, auth.user_id
+    _query = (db.Stock_Request.srn_status_id != 6) & (db.Stock_Request.created_by == auth.user_id)
+    _query |= ((db.Stock_Request.stock_destination_id == _loc.location_code_id) | (db.Stock_Request.stock_source_id == _loc.location_code_id)) & (db.Stock_Request.srn_status_id != 6)
+    
     head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
     for n in db(_query).select(orderby = ~db.Stock_Request.id):
-        print 'approved: ', n.stock_receipt_approved_by
+        # print 'approved: ', n.stock_receipt_approved_by
         ctr += 1
         view_lnk = A(I(_class='fas fa-search'), _title='View Details Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('stock_receipt_details', args = n.id, extension = False))
         if n.srn_status_id == 6:
@@ -7347,17 +7358,17 @@ def get_fmcg_stock_request_workflow_grid():
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
             _action_req = 'FOR PRE-APPROVAL'            
         
-        elif int(n.srn_status_id) == 5 or int(n.stock_destination_id == _usr.location_code_id):          
+        # elif int(n.srn_status_id) == 5 or int(n.stock_destination_id == _usr.location_code_id):          
         
-            gene_lnk = A(I(_class='fas fa-user-plus'), _title='Generate stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                                
-        elif int(n.srn_status_id == 26) or int(n.stock_source_id == _usr.location_code_id):                            
+        #     gene_lnk = A(I(_class='fas fa-user-plus'), _title='Generate stock receipt', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_receipt_id',args = n.id, extension = False), **{'_data-id':(n.id)})                                
+        # elif int(n.srn_status_id == 26) or int(n.stock_source_id == _usr.location_code_id):                            
         
-            gene_lnk = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
+        #     gene_lnk = A(I(_class='fas fa-user-minus'), _title='Dispatched', _type='button ', _role='button', _class='btn btn-icon-toggle', callback=URL('inventory','put_stock_transfer_dispatch_id',args = n.id, extension = False), **{'_data-id':(n.id)})
         
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, gene_lnk,prin_lnk)
         row.append(TR(TD(n.stock_request_date),TD(_stock_request),TD(_stock_transfer),TD(_stock_receipt),TD(n.stock_source_id.location_name),TD(n.stock_destination_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    table = TABLE(*[head, body], _class='table', _id = 'tblSR')
     return dict(table = table)    
     
 def get_user_location_grid():
@@ -7563,7 +7574,7 @@ def get_stock_transfer_process():
                 _clo_stk_in_trn = int(_stk_src.closing_stock) - int(n.quantity) # 3 closing stock in source                        
                 _stk_src.update_record(closing_stock = _clo_stk_in_trn, probational_balance = _pro_bal,stock_in_transit = _stk_in_trn_src,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
         session.flash = 'Stock Transfer No. ' + str(_skey) + ' generated.'
-        # redirect(URL('inventory','account_grid'))
+        redirect(URL('inventory','account_grid'))
 
 def sync_stock_transfer_id():
     _id = db(db.Stock_Request.id == request.args(0)).select().first()

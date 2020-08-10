@@ -1159,8 +1159,8 @@ def purchase_receipt_account_grid_view_validated():
         row.append(TR(
             TD(ctr),
             TD(n.purchase_receipt_date_approved),
-            TD(n.purchase_receipt_no_prefix_id.prefix,n.purchase_receipt_no),
-            TD(n.purchase_order_no_prefix_id.prefix,n.purchase_order_no),
+            TD(n.purchase_receipt_no_prefix_id,n.purchase_receipt_no),
+            TD(n.purchase_order_no_prefix_id,n.purchase_order_no),
             TD(n.dept_code_id.dept_name),
             TD(n.location_code_id.location_name),
             TD(n.status_id.description),

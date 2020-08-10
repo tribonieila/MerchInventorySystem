@@ -25,7 +25,7 @@
                         </div>                         
                         <div role="tabpanel" class="tab-pane" id="warehouse_purchase_receipt">                        
                             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidated.load', ajax = True)}}
-                        </div>                         
+                        </div>                          
                         <div role="tabpanel" class="tab-pane" id="stock_request">                        
                             {{=LOAD('inventory','get_stock_request_workflow_grid.load', ajax = True,target='tblSR')}} 
                             <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">+ create stock request</a>

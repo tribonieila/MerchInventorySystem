@@ -1428,9 +1428,13 @@ db.define_table('Stock_Request',
     Field('stock_destination_id','reference Location', ondelete = 'NO ACTION',label = 'Stock Destination', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),    
     Field('total_amount','decimal(10,2)', default = 0),
     Field('srn_status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
+    Field('stock_request_pre_date_approved', 'datetime', writable = False),
+    Field('stock_request_pre_approved_by', 'reference auth_user',ondelete = 'NO ACTION', writable = False),
+
     Field('stock_request_date_approved','datetime',writable=False),
     Field('stock_request_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('remarks', 'string'),    
+
     Field('stock_transfer_no_id', 'reference Transaction_Prefix',ondelete = 'NO ACTION', writable = False),    
     Field('stock_transfer_no', 'integer', writable = False),
     Field('stock_transfer_date_approved', 'datetime', writable = False),

@@ -20,15 +20,12 @@
             callback: function (result) {
                 if (result) {
                     parent.fadeOut('slow');
-                    ajax("{{=URL('inventory','stock_receipt_generator')}}" + '/'+ _id);
-                    parent.fadeIn('slow'); 
-                    location.reload();
-                    window.open("{{=URL('inventory','stock_receipt_report')}}" + '/' + _id);
+                    ajax("{{=URL('inventory','put_stock_receipt_id')}}" + '/'+ _id);
                 } 
-                // else {
-                //     ajax("{{=URL('inventory','gen_rep')}}" + '/'+ _id);
-                // }                
             }
         });
     });
+    function PrintReceipt(x){    
+        window.open('{{=URL('inventory','stock_receipt_report', extension=False)}}' + '/' + x);
+    }
 </script>
