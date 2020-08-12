@@ -1,57 +1,6 @@
 <hr>
 {{=table}}
-{{=form.custom.begin}}
-<div class="row">    
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">                                
-                {{=form.custom.widget.item_code}}
-            </div>                           
-        </div>                        
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Quantity</label>
-            <div class="col-sm-6"> 
-                {{=form.custom.widget.quantity}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Pieces</label>
-            <div class="col-sm-6">                                
-                {{=form.custom.widget.pieces}}
-            </div>                           
-        </div>    
-    </div>
-    <div class="col-md-3">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Most Recent Cost</label>
-            <div class="col-sm-4"> 
-                <div id = "_most_recent_cost"></div>
-            </div>
-        </div>                    
-    </div>                   
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Category</label>
-            <div class="col-sm-8"> 
-                {{=form.custom.widget.category_id}}
-                
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-1">                        
-        <input class="btn btn-primary" type="submit" value="add" id="btnadd">
-        
-    </div>                                              
-</div>
-{{=form.custom.end}}
-<div id = "_item_code_description"></div>      
 
-<script>
 $(document).ready(function(){
     var $tblrows = $("#DPtbl tbody tr");
 

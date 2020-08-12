@@ -3,8 +3,8 @@ from datetime import datetime
 now = datetime.now() # current date and time
 
 def generate():    
-    for n in db().select(db.Merch_Stock_Transaction.voucher_no, orderby = db.Merch_Stock_Transaction.voucher_no, groupby = db.Merch_Stock_Transaction.voucher_no):
-        print n.voucher_no
+    for n in db().select(db.Sales_Return.ALL):
+        
     return dict()
 
 def merch():

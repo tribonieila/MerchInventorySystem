@@ -4456,7 +4456,8 @@ def str_kpr_grid_gen_stk_trn():
 # @auth.requires(lambda: auth.has_membership('INVENTORY POS') | auth.has_membership('ROOT'))
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('ROOT'))
 def get_generate_stock_transfer():    
-    _id = db(db.Stock_Request.id == request.args(0)).select().first()    
+    _id = db(db.Stock_Request.id == request.args(0)).select().first()   
+    _stk_in_transit = 0 
     if int(_id.srn_status_id) == 26 or int(_id.srn_status_id) == 3:
         _flash = 'Stock request no. ' + str(_id.stock_request_no) + ' already been ' + str(_id.srn_status_id.description) + ' by ' + str(_id.stock_transfer_approved_by.first_name)        
     else:
@@ -4470,6 +4471,7 @@ def get_generate_stock_transfer():
         for n in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select():
             _stk_des = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _stk_rcpt.stock_destination_id)).select().first()
             _stk_src = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _stk_rcpt.stock_source_id)).select().first()
+            
             if _stk_des:            
                 _stk_in_transit = int(_stk_des.stock_in_transit) - int(n.quantity) # 1 stock in transit destination
                 _clo_stk = int(_stk_des.closing_stock) + int(n.quantity) # 2 closing stocks in destination
@@ -4482,11 +4484,17 @@ def get_generate_stock_transfer():
                 
                 if (int(n.category_id) == 4) or (int(n.category_id) == 3): # normal and foc stocks
                     _stk_des.update_record(probational_balance = _nor_bal, closing_stock = _clo_stk, stock_in_transit = _stk_in_transit,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
+
+                if int(_stk_rcpt.stock_destination_id) != 1:                    
+                    _stk_in_transit = int(n.quantity) + int(_stk_des.pos_stock)
+                    _stk_des.update_record(pos_stock = _stk_in_transit)
+
             if _stk_src:
                 _stk_in_trn_src = int(_stk_src.stock_in_transit) + int(n.quantity) # 1 stock in transit source
                 _pro_bal = int(_stk_src.closing_stock) + int(_stk_src.stock_in_transit) # 2 provisional balance in source
                 _clo_stk_in_trn = int(_stk_src.closing_stock) - int(n.quantity) # 3 closing stock in source                        
                 _stk_src.update_record(closing_stock = _clo_stk_in_trn, probational_balance = _pro_bal,stock_in_transit = _stk_in_trn_src,last_transfer_qty = n.quantity, last_transfer_date = request.now)  
+
         _flash = 'Stock Transfer No. ' + str(_skey) + ' generated.'
     session.flash = _flash 
     response.js = "$('#tblSTV').get(0).reload()"
@@ -7173,7 +7181,7 @@ def get_pos_stock_receipt_workflow_grid():
         if n.srn_status_id == 5:
             repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         else:
-            repo_lnk = A(I(_class='fas fa-print'), _title='Print Stock Receipt', _type='button  ', _role='button', _class='btn btn-icon-toggle',_target="blank", _href=URL('inventory','stock_receipt_report', args = n.id))
+            repo_lnk = A(I(_class='fas fa-print'), _title='Print Stock Receipt', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled',_target="blank", _href=URL('inventory','stock_receipt_report', args = n.id))
     
         btn_lnk = DIV(view_lnk, rec_lnk, repo_lnk, arch_lnk)
         if n.stock_receipt_no_id == None:

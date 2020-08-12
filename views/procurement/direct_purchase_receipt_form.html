@@ -1,6 +1,6 @@
 {{extend 'layout.html'}}
 <div class="col-md-12">
-    <div class="card card-underline">
+    <div class="card card-underline"> 
         <div class="card-head">
             <ul class="nav nav-tabs pull-right" data-toggle="tabs">
                 <li class="active"><a href="#">+ ADD NEW</a></li>
@@ -232,9 +232,9 @@ $(document).ready(function(){
     var str_ctr = 0
 
     $('#btnsubmit').attr('disabled','disabled');
-    $('#btnhelp').attr('disabled','disabled');
+    // $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
-    $("#order_panel").hide();
+    // $("#order_panel").hide();
     $("#Direct_Purchase_Receipt_supplier_code_id, #Direct_Purchase_Receipt_mode_of_shipment, #Direct_Purchase_Receipt_location_code_id, #Direct_Purchase_Receipt_trade_terms_id, #Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_currency_id, #Direct_Purchase_Receipt_status_id").change(function(){
         if ($("#Direct_Purchase_Receipt_supplier_code_id").val() && $("#Direct_Purchase_Receipt_mode_of_shipment").val() && $("#Direct_Purchase_Receipt_location_code_id").val() &&
         $("#Direct_Purchase_Receipt_trade_terms_id").val() && $("#Direct_Purchase_Receipt_supplier_account_code").val() && $("#Direct_Purchase_Receipt_currency_id").val() &&
@@ -245,6 +245,9 @@ $(document).ready(function(){
         }
     });
 
+    $("#Direct_Purchase_Receipt_currency_id").change(function(){
+        ajax('{{=URL('procurement','generate_exchange_rate')}}',['currency_id'])
+    });
     $('#discount').change(function(){
         ajax('{{=URL('discount_session')}}',['discount'])
     });
