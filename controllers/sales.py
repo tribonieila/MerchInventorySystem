@@ -1146,7 +1146,7 @@ def get_sales_invoice_workflow_reports():
 def get_fmcg_sales_order_workflow_grid():
     row = []
     head = THEAD(TR(TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
-    for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7) & (db.Sales_Order.status_id != 10)).select(orderby = ~db.Sales_Order.id):          
+    for n in db((db.Sales_Order.created_by == auth.user.id) & (db.Sales_Order.archives == False) & (db.Sales_Order.status_id != 7) & (db.Sales_Order.status_id != 10)).select(orderby = db.Sales_Order.id):          
         if n.status_id == 7:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_order_view', args = n.id, extension = False))        
@@ -1170,8 +1170,16 @@ def get_fmcg_sales_order_workflow_grid():
         else:
             _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
             _inv = A(_inv, _class='text-danger')#, _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
-        row.append(TR(TD(n.sales_order_date),TD(_sales),TD(_note),TD(_inv),TD(n.dept_code_id.dept_name),TD(n.customer_code_id.customer_account_no,' - ',n.customer_code_id.customer_name),
-            TD(n.stock_source_id.location_name),TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),TD(n.status_id.description),
+        row.append(TR(
+            TD(n.sales_order_date),
+            TD(_sales),
+            TD(_note),
+            TD(_inv),
+            TD(n.dept_code_id.dept_name),
+            TD(n.customer_code_id.account_name,', ',n.customer_code_id.account_code ),
+            TD(n.stock_source_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True), _align = 'right'),
+            TD(n.status_id.description),
             TD(n.status_id.required_action),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id = 'tblSOR')
@@ -3983,15 +3991,16 @@ def sync_to_sales_invoice_db():
         status_id = _id.status_id)
     _si = db(db.Sales_Invoice.sales_order_no == _id.sales_order_no).select().first()    
     for n in db((db.Sales_Order_Transaction.sales_order_no_id == _id.id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
+        _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
         if int(n.category_id) == 3:
             _price_cost = (n.average_cost / n.uom)
             _price_cost_discount = (n.average_cost / n.uom)
             _sale_cost_no_tax = 0 
-        else:
+        else:            
             _sale_cost_no_tax = (n.sale_cost - (_i.selective_tax_price / n.uom))
             _price_cost = (n.wholesale_price / n.uom)
             _price_cost_discount = _price_cost - ((_price_cost * n.discount_percentage) / 100)
-        _i = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+        
 
         # _price_cost_discount = ((n.price_cost * (100 - n.discount_percentage)) / 100) / n.uom
         db.Sales_Invoice_Transaction.insert(
@@ -4048,7 +4057,7 @@ def sale_order_manager_invoice_no_form_approved(): # from forms approval
             get_generate_sales_invoice_id()
             sync_to_sales_invoice_db()      
             session.flash = 'Sales Invoice No. ' + str(_id.sales_invoice_no) + ' process '      
-            response.js = 'jQuery(report(), redirect())'        
+            response.js = 'jQuery(report(), AccountRedirect())'        
 
         
 def sales_order_cancel_id():
@@ -4206,7 +4215,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
-pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
+# pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applications/mtc_inv/static/fonts/ae_Arab.ttf'))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
 style = ParagraphStyle(name='Normal',fontName="Arabic", fontSize=25)
 

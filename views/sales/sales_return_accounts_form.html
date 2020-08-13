@@ -123,7 +123,7 @@
                                 {{ if _id.status_id == 13: }}
                                     <input class="btn btn-primary" type="submit" value="create sales return & print" id="btnreturn" disabled>
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="create sales return & print" id="btnreturn">                                                                              
+                                    <input class="btn btn-primary" type="button" value="create sales return & print" id="btnreturn">                                                                              
                                 {{ pass }}            
                                 {{=form.custom.end}}
                             </div>
@@ -148,8 +148,16 @@ $(document).ready(function(){
             $('#btnreturn').attr('disabled','disabled');
         }
     });
-    $('#btnreturn').click(function(){                                
-        window.open("{{=URL('default','sales_return_report_account_user', args = request.args(0))}}");                        
+    $('#btnreturn').click(function(){     
+        ajax("{{=URL('sales','sales_return_accounts_form_approved', args = request.args(0))}}",'[remarks]');
+        
     })
+    
 });
+        function PrintSalesReturn(x){
+        var _x = x        
+        window.open("{{=URL('default','sales_return_report_account_user', extension = False)}}" + "/" + _x );
+        window.location.href("{{=URL('inventory','account_grid')}}");
+        
+    };
 </script>

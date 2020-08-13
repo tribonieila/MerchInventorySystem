@@ -3,8 +3,7 @@ from datetime import datetime
 now = datetime.now() # current date and time
 
 def generate():    
-    for n in db().select(db.Sales_Return.ALL):
-        
+
     return dict()
 
 def merch():

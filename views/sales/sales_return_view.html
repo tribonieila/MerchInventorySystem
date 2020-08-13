@@ -124,12 +124,12 @@
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>                                
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="#" disabled>cancel</a> -->
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">        
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">        
                                     <!-- <a class="btn btn-danger" id="btncancel" role="button" href="{{=URL('sales','sales_return_browse')}}" >cancel</a>                         -->
                                                                                                
                                 {{ pass }}
                                 <input type="text" id="discount_var" name="discount_var" class="form-control" value=0 hidden>
-                                <input type="text" id="net_amount_var" name="net_amount_var" class="form-control" value=0 hidden>
+                                <input type="text" id="net_amount_var" name="net_amount_var" class="form-control" value=0 hidden>                               
                                 <!-- <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                 -->
                                 <!-- <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a> -->
                                 {{=form.custom.end}}
@@ -143,15 +143,3 @@
         </div>
     </div>
 </div>
-<script>
-    $(document).ready(function(){
-        $("#btnsubmit").click(function(){
-            var inDiscount = document.getElementById("discount").value
-            var inNetAmount = document.getElementById("net_amount").value
-            $("#discount_var").val(inDiscount);
-            $("#net_amount_var").val(inNetAmount);
-            ajax("{{=URL('sales','update_sales_return_transaction',args=request.args(0))}}",['discount_var','net_amount_var','remarks'])
-            window.location.href = '{{=URL('inventory','get_back_off_workflow_grid')}}';
-        });
-    }); 
-</script>

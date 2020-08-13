@@ -1,7 +1,7 @@
 {{=table}} 
 <input type="text" class="form-control" id="var_total_amount" name="var_total_amount" value="0" hidden>
-<input type="text" class="form-control" id="var_discount_added" name="0">
-<input type="text" class="form-control" id="var_net_amount" name="var_net_amount" value="0">
+<input type="text" class="form-control" id="var_discount_added" name="0" hidden>
+<input type="text" class="form-control" id="var_net_amount" name="var_net_amount" value="0" hidden>
 
 <script>
 $(document).ready(function(){

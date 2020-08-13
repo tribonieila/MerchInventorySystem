@@ -223,13 +223,13 @@ $(document).ready(function(){
     function reload(){
         location.reload();          
     }
-    function report(){
-        location.reload();       
+    function report(){        
+        // location.reload();       
         window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
         
     }
-    function redirect(){        
-        window.location.replace("{{=URL('inventory','account_grid')}}")
+    function AccountRedirect(){             
+        window.location.assign("{{=URL('inventory','account_grid')}}");                     
     }
     function Cancel(){
         // console.log("Cancelled transaction...");

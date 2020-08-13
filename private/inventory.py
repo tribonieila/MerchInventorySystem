@@ -4875,7 +4875,7 @@ def stock_adjustment_add_new():
                 vansale_price = _itm_price.vansale_price, 
                 selective_tax = _itm_price.selective_tax_price, 
                 average_cost = i.average_cost, 
-                price_cost = i.price_cost, 
+                # price_cost = i.price_cost, 
                 total_amount = i.total_amount)                  
         _id.update_record(total_amount = _total_cost)       
         db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).delete()     
@@ -5129,6 +5129,7 @@ def put_transaction_no():
     x = datetime.datetime.now()
     _stk_no = str(x.strftime('%m%d%y%H%M'))    
     return INPUT(_type="text", _class="form-control", _id='_stk_no', _name='_stk_no', _value=_stk_no, _disabled = True)    
+    
 def get_transaction_no_id():
     x = datetime.datetime.now()
     _stk_no = str(x.strftime('%m%d%y%H%M'))    

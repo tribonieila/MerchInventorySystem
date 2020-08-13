@@ -16,9 +16,9 @@
                 <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Stock Adjustment No</label>
+                                <label class="col-sm-4 control-label">Transaction No</label>
                                 <div class="col-sm-8">      
-                                    <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_no_id.prefix}}{{=_stk_adj.stock_adjustment_no}}"readonly >
+                                    <input type="text" class="form-control" value="{{=_stk_adj.transaction_no}}"readonly >
                                     <p class="help-block">autogenerate</p>                            
                                 </div>                           
                             </div>                        
@@ -27,7 +27,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Date</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_date}}"readonly >
+                                    <input type="text" class="form-control" value="{{=_stk_adj.transaction_date}}"readonly >
                                     <p class="help-block">readonly</p>                            
                                 </div>
                             </div>                    
@@ -90,17 +90,18 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
+                                
                                 {{ if _stk_adj.srn_status_id == 2 or _stk_adj.srn_status_id == 15:}}
-                                <input class="btn btn-primary" type="submit" value="Submit" disabled>
+                                    <input class="btn btn-primary" type="submit" value="Submit" disabled>
                                 {{ else: }}
-                                <input class="btn btn-primary" type="submit" value="Submit">
+                                    <input class="btn btn-primary" type="submit" value="Submit">
                                 {{ pass }}
     
 
                             </div>                            
                         </div>                    
                     </div>
-                </div>
+                </div> 
         </div>   
         {{=form.custom.end}}
         <hr>
