@@ -209,7 +209,7 @@
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                         {{ elif _id.srn_status_id == 26: }}
                                             <input class="btn btn-success" type="button" value="Dispatched" id="btnStoreDispatched">                                            
-                                        {{ elif _id.srn_status_id == 5: }}                                            
+                                        {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == _usr.location_code_id):}}                                            
                                             <input class="btn btn-success" type="button" value="Received" id='btnStoreReceipt'>
                                         {{ else: }}
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>

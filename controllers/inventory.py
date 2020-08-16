@@ -7469,7 +7469,7 @@ def get_pos_stock_transfer_workflow_grid(): # location user == stock source
             # pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer & Print', _type=' button', _role='button', _class='btn btn-icon-toggle', _id='btnSTV',callback=URL('inventory', 'get_generate_stock_transfer', args = n.id, extension = False))            
         else:
             pst_lnk = A(I(_class='fas fa-user-plus'),  _title='Generate Stock Transfer', _type=' button', _role='button', _class='btn btn-icon-toggle disabled')
-        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_request_id', args = n.id, extension = False))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','stk_req_details_form', args = n.id, extension = False))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
         if (n.stock_source_id == _loc.location_code_id) & (n.srn_status_id == 27):            
@@ -7570,15 +7570,15 @@ def get_pos_stock_receipt_workflow_grid():
     _loc = db(db.User_Location.user_id == auth.user_id).select().first()
     
     # _query |= db.Stock_Request.stock_receipt_approved_by == auth.user_id        
-    _query = db.Stock_Request.srn_status_id == 5
+    _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id == 5)
     # _query &= db.Stock_Request.srn_status_id != 6    
     # _query &= db.Stock_Request.stock_destination_id != 1
     # _query &= db.Stock_Request.archive == False
-    _query &= db.Stock_Request.stock_destination_id == _loc.location_code_id
-    _query |= db.Stock_Request.created_by == auth.user_id
+    _query &= (db.Stock_Request.stock_destination_id == _loc.location_code_id) & (db.Stock_Request.srn_status_id == 5)
+    
     # print 'user: ', _loc.user_id, _loc.location_code_id, auth.user_id
     head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
-    for n in db(_query).select(orderby = ~db.Stock_Request.id):
+    for n in db(_query).select(orderby = db.Stock_Request.id):
         # print 'approved: ', n.stock_receipt_approved_by
         ctr += 1
         view_lnk = A(I(_class='fas fa-search'), _title='View Details Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('get_stock_request_id', args = n.id, extension = False))
@@ -8028,7 +8028,7 @@ def get_stock_request_id():
     body = TBODY(*row)
     foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2f',grand_total or 0, grouping = True)), _align = 'right'),TD()))
     table = TABLE(*[head, body, foot], _id='tblIC',_class='table')
-    return dict(form = form, table = table, _id = _id, title=title)
+    return dict(form = form, table = table, _id = _id, title=title, _usr = _usr)
 
 def get_stock_transfer_id():
     _id = db(db.Stock_Transfer.id == request.args(0)).select().first()

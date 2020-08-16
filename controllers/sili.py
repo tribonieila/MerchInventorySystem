@@ -3,7 +3,8 @@ from datetime import datetime
 now = datetime.now() # current date and time
 
 def generate():    
-
+    for n in db().select(db.Stock_File.ALL):
+        n.update_record(pos_stock=0)
     return dict()
 
 def merch():
