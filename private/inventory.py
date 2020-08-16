@@ -5054,7 +5054,7 @@ def get_stock_adjustment_workflow_grid():
                 btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk)
 
 
-        row.append(TR(TD(n.stock_adjustment_date),TD(n.transaction_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(btn_lnk)))
+        row.append(TR(TD(n.transaction_date),TD(n.transaction_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblSAd',**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     return dict(table = table)

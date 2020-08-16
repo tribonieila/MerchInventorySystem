@@ -4,14 +4,7 @@
         <div class="card-head">
             
             
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class="active"><a href="#">+ ADD NEW</a></li>
-                    {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}    
-                        <li class=""><a href="#" onclick=window.location="{{=URL('stk_req_form')}}";>BROWSE</a></li>
-                    {{ elif auth.has_membership(role = 'SALES'): }}
-                        <li class=""><a href="#" onclick=window.location="{{=URL('inventory','get_fmcg_workflow_grid')}}";>BROWSE</a></li>
-                    {{ pass }}
-                </ul>
+
     
             
 

@@ -1,0 +1,11 @@
+{{=table}}
+<script>
+    $('#btnStkTrnPrint').click(function() {
+        ajax('{{=URL('str_kpr_grid_gen_stk_trn')}}',['_id']);
+        window.open('{{=URL('inventory','stock_transaction_report', args = request.args(0))}}');
+    });
+    function PrintReceipt(x){    
+        window.open('{{=URL('inventory','stock_receipt_report', extension=False)}}' + '/' + x);
+    }
+
+</script>

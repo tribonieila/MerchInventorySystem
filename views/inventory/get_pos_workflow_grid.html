@@ -10,6 +10,7 @@
                     <!-- Nav tabs -->
                     <ul class="nav nav-pills" role="tablist">
                       <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request </a></li> 
+                      <li role="presentation"><a href="#stock_transfer" aria-controls="stock_transfer" role="tab" data-toggle="tab">Stock Transfer </a></li>                      
                       <li role="presentation"><a href="#stock_receipt" aria-controls="stock_receipt" role="tab" data-toggle="tab">Stock Receipt </a></li>                      
                     </ul>                  
                     <!-- Tab panes -->
@@ -18,6 +19,10 @@
                         {{=LOAD('inventory','get_pos_stock_request_workflow_grid.load',ajax=True, target='tblSR')}}
                         <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('inventory','stk_req_add_form', extension = False)}}">+ create stock request</a>
                       </div> 
+                      <div role="tabpanel" class="tab-pane" id="stock_transfer">                                                
+                        {{=LOAD('inventory','get_pos_stock_transfer_workflow_grid.load',ajax=True, target='tblST')}}                        
+                      </div> 
+
                       <div role="tabpanel" class="tab-pane" id="stock_receipt">                        
                         {{=LOAD('inventory','get_pos_stock_receipt_workflow_grid.load',ajax=True, target='tblSTR')}}
                       </div>
