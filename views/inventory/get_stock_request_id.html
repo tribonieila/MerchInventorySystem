@@ -280,8 +280,7 @@ $(document).ready(function(){
     $('#btnAccountApproved').click(function(){                
         ajax('{{=URL('inventory','get_stock_transfer_process', args = request.args(0))}}',['remarks'])        
         window.open("{{=URL('inventory','stock_transfer_report',args = request.args(0))}}")        
-        window.location.href = "{{=URL('inventory','account_grid')}}";        
-        
+        window.location.href = "{{=URL('inventory','account_grid')}}";                
     });
     $('#btndispatched').click(function(){        
         ajax('{{=URL('inventory','get_stock_request_dispatch_id', args = request.args(0))}}',['remarks'])
@@ -289,8 +288,7 @@ $(document).ready(function(){
     });    
     $('#btnStoreApproved').click(function(){        
         ajax('{{=URL('inventory','put_stock_request_id', args = request.args(0))}}',['remarks'])
-        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
-        
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";        
     }); 
 
     $('#btnReceipt').click(function(){        

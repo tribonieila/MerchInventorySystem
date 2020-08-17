@@ -7354,9 +7354,14 @@ def get_workflow_reports():
         # if not _usr:            
         #     _query = db(db.Stock_Request.dept_code_id != 3).select(orderby = db.Stock_Request.id)      
         # else:                 
-        _usr = db(db.User_Location.user_id == auth.user_id).select().first()       
-        _query = db.Stock_Transfer.created_by == auth.user_id 
-        _query |= (db.Stock_Transfer.stock_source_id == _usr.location_code_id) | (db.Stock_Transfer.stock_destination_id == _usr.location_code_id)
+        _usr = db(db.User_Location.user_id == auth.user_id).select().first()
+        if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
+            _query = db.Stock_Transfer.created_by == auth.user_id
+
+        else:
+            _query = db.Stock_Transfer.created_by == auth.user_id 
+            _query |= (db.Stock_Transfer.stock_source_id == _usr.location_code_id) | (db.Stock_Transfer.stock_destination_id == _usr.location_code_id)
+
         # _query = (db.Stock_Transfer.stock_receipt_approved_by == auth.user_id) | (db.Stock_Transfer.created_by == auth.user_id) & (db.Stock_Transfer.stock_destination_id != 1) & (db.Stock_Transfer.srn_status_id == 6)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Receipt No.'),TH('Stock Transfer No.'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
         # for n in db((db.Stock_Transfer.srn_status_id == 6) & (db.Stock_Transfer.stock_destination_id == 1)).select(orderby = ~db.Stock_Transfer.id):
@@ -7454,12 +7459,50 @@ def get_workflow_reports():
                 TD(n.srn_status_id.required_action),
                 TD(btn_lnk)))    
         body = TBODY(*row)
-        table = TABLE(*[head, body],_class='table')    
+        table = TABLE(*[head, body],_class='table')        
     else:
         _title = ''
-        table = 0
-    
+        table = 0    
     return dict(_title = _title, table = table)
+
+def get_transaction_reports():
+    _title = table = ''    
+    if int(request.args(0)) == 1: # all stock request transaction
+        print 'all stock request'
+    elif int(request.args(0)) == 2: # all stock transfer transaction
+        _title = 'Stock Transfer Report'
+        row = []
+        ctr = 0    
+        head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Receipt No.'),TH('Stock Transfer No.'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
+        for n in db().select(orderby = ~db.Stock_Transfer.id):
+            ctr += 1
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_transfer_id', args = n.id, extension = False))
+            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled',_target='blank',_href=URL('inventory','stock_receipt_report', args = n.id, extension = False))
+            btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, repo_lnk)
+            row.append(TR(
+                TD(ctr),
+                TD(n.stock_request_date),
+                TD(n.stock_receipt_no_id.prefix,n.stock_receipt_no),
+                TD(n.stock_transfer_no_id.prefix,n.stock_transfer_no),                
+                TD(n.stock_request_no_id.prefix, n.stock_request_no),
+                TD(n.stock_source_id.location_name),
+                TD(n.stock_destination_id.location_name),
+                TD(n.created_by.first_name.upper() + ' ' + n.created_by.last_name.upper()),
+                TD(locale.format('%.2F',n.total_amount or 0, grouping = True),_align = 'right'),
+                TD(n.srn_status_id.description),
+                TD(n.srn_status_id.required_action),
+                TD(btn_lnk)))    
+        body = TBODY(*row)
+        table = TABLE(*[head, body],_class='table')           
+    elif int(request.args(0)) == 3: # all stock received transaction
+        print 'all stock receipt'
+    else:
+        _title = table = ''
+    return dict(table = table, title = _title)
+
+
 # ---- Stock File     -----
 
 # ---- Stock Receipt     -----
