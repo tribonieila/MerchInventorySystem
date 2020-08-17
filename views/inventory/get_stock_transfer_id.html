@@ -1,21 +1,10 @@
 {{extend 'layout.html'}}
+
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY POS') | auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'FMCG'): }}    
-            {{ elif auth.has_membership(role = 'SALES'): }}    
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class="active"><a href="#"> DETAILS</a></li>
-                    <li class=""><a href="#" onclick=window.location="{{=URL('get_fmcg_workflow_grid')}}";>BROWSE</a></li>
-                </ul>
+            <span class="card-title">Stock Transfer Workflow Reports</span>
 
-            {{ else: }}            
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#"> DETAILS</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('account_grid')}}";>BROWSE</a></li>
-            </ul>
-            {{ pass }}
-            <span class="card-title">{{=title}}</span>
         </div>
         <div class="card-body tab-content">            
             <div class="form-horizontal">   
@@ -34,7 +23,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Receipt Date</label>
                             <div class="col-sm-8"> {{import datetime}}                               
-                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_receipt_date_approved}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.stock_receipt_date_approved.date()}}" readonly >
                                 <p class="help-block">readonly</p>                            
                             </div>                           
                         </div>                        
@@ -46,7 +35,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Transfer No</label>
                             <div class="col-sm-8"> 
-                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_transfer_no_id}}{{=form.custom.widget.stock_transfer_no}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.stock_transfer_no_id.prefix}}{{=_id.stock_transfer_no}}" readonly >
                                 <p class="help-block">autogenerate</p>                            
 
                             </div>
@@ -57,7 +46,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Transfer Date</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=form.custom.widget.stock_transfer_date_approved}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.stock_transfer_date_approved.date()}}" readonly >
                             </div>
                         </div>                                           
                     </div>    
@@ -120,20 +109,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
-                            <div class="col-sm-8">
-                                {{ if _id.srn_status_id == 27 or _id.srn_status_id == 2 or _id.srn_status_id == 26 or _id.srn_status_id == 5 or _id.srn_status_id == 6: }}
+                            <div class="col-sm-8">                                
                                     <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
                                     <p class="help-block">readonly</p>    
-                                
-                                {{ else: }}
-                                    {{ if auth.has_membership(role = 'INVENTORY SALES MANAGER'): }}    
-                                    <input type="text" class="form-control" value="{{=_id.srn_status_id.description}}" readonly >
-                                    <p class="help-block">readonly</p>    
-                                    {{ else: }}
-                                    {{=form.custom.widget.srn_status_id}}
-                                    {{ pass }}
-                                {{ pass }}
-
                             </div>
                         </div>                    
                     </div>
@@ -153,23 +131,8 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
-                                {{ if auth.has_membership(role = 'ACCOUNTS'): }}
-                                    {{ if _id.srn_status_id == 6: }}
-                                        <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
-                                        <p class="help-block">readonly</p>    
-                                    {{ else: }}
-                                        {{=form.custom.widget.remarks}}
-                                    {{ pass }}
-                                {{ elif auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}
-                                    {{ if _id.srn_status_id == 5: }}
-                                    <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
-                                    <p class="help-block">readonly</p>    
-                                    {{ else: }}
-                                        {{=form.custom.widget.remarks}}
-                                    {{ pass }}
-                                {{else:}}
-                                    {{=form.custom.widget.remarks}}
-                                {{ pass }}
+                                <input type="text" class="form-control" value="{{=_id.remarks}}" readonly >
+                                <p class="help-block">readonly</p>    
                             </div>
                         </div>                  
                     </div>
@@ -187,57 +150,6 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
-                                    {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}          
-                                        {{ if _id.srn_status_id == 27: }}                                                                  
-                                            <input class="btn btn-success" type="button" value="Approved" id="btnStoreApproved">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
-                                        {{ elif _id.srn_status_id == 26: }}
-                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnStoreDispatched">                                            
-                                        {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == 1): }}                                            
-                                            <input class="btn btn-success" type="button" value="Received" id='btnStoreReceipt'>
-                                        {{ else: }}
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
-                                            <input class="btn btn-success" type="button" value="Approved" id="btnApproved" hidden>
-                                            <input class="btn btn-success" type="button" value="Reject" id="btnReject" hidden>
-                                        {{ pass}}                                            
-                                    {{pass}}
-                                    {{ if auth.has_membership(role = 'INVENTORY POS'): }}          
-                                        {{ if _id.srn_status_id == 27: }}                                                                  
-                                            <input class="btn btn-success" type="button" value="Approved" id="btnStoreApproved">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
-                                        {{ elif _id.srn_status_id == 26: }}
-                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnPOSDispatched">                                            
-                                        {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == _usr.location_code_id):}}                                            
-                                            <input class="btn btn-success" type="button" value="Received" id='btnPOSReceipt'>
-                                        {{ else: }}
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
-                                            <input class="btn btn-success" type="button" value="Approved" id="btnApproved" hidden>
-                                            <input class="btn btn-success" type="button" value="Reject" id="btnReject" hidden>
-                                        {{ pass}}                                            
-                                    {{pass}}                                    
-                                    {{ if auth.has_membership(role = 'ACCOUNTS'): }}
-                                        {{ if _id.srn_status_id == 2: }}                       
-                                            <input class="btn btn-success" type="button" value="Approved & generate stock transfer" id="btnAccountApproved">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
-                                        {{ else: }}
-                                            <input class="btn btn-success" type="button" value="Approved" id="btnAccountApproved" hidden>
-                                            <input class="btn btn-success" type="button" value="Reject" id="btnAccountReject" hidden>                                            
-                                        {{pass}}
-                                    {{pass}}
-                                    {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE') | auth.has_membership(role = 'SALES'): }}      
-                                        {{ if _id.srn_status_id == 3 or _id.srn_status_id == 4 or _id.srn_status_id == 10:}}
-                                            <input class="btn btn-success" type="button" value="submit" id="btnSubmit">
-                                        {{elif _id.srn_status_id == 5:}}
-                                            <input class="btn btn-success" type="button" value="Received" id='btnReceipt'>
-                                        {{else:}}
-                                            <input class="btn btn-success" type="button" value="submit" disabled>
-                                            
-                                            
-                                        {{pass}}
-                                    {{pass}}
-                                    <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                 </div>                            
                             </div>                    
                         </div>                              
@@ -267,12 +179,11 @@ $(document).ready(function(){
     });
    
     $('#btnStoreReceipt').click(function(){        
-        ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')
-        window.open("{{=URL('inventory','stock_receipt_report',args = request.args(0))}}")
+        ajax('{{=URL('inventory','put_stock_receipt_id', args = request.args(0))}}',['remarks'])
         window.location.href = "{{=URL('inventory','str_kpr_grid')}}";        
     }); 
     $('#btnPOSReceipt').click(function(){        
-        ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')
+        ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}',['remarks'])
         window.open("{{=URL('inventory','stock_receipt_report',args = request.args(0))}}")
         window.location.href = "{{=URL('inventory','get_pos_workflow_grid')}}";        
     }); 
@@ -301,12 +212,8 @@ $(document).ready(function(){
     
     $('#btnStoreDispatched').click(function(){        
         ajax('{{=URL('inventory','put_stock_transfer_dispatch_id', args = request.args(0))}}',['remarks'])
-        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";        
-    }); 
-    
-    $('#btnPOSDispatched').click(function(){        
-        ajax('{{=URL('inventory','put_stock_transfer_dispatch_id', args = request.args(0))}}',['remarks'])
-        window.location.href = "{{=URL('inventory','get_pos_workflow_grid')}}";        
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
+        
     }); 
 
     $('#btnStoreReject').click(function(){        

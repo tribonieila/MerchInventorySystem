@@ -127,7 +127,7 @@
                           <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">
-                                    {{ if (_id.srn_status_id == 2) or (_id.srn_status_id == 5) or (_id.srn_status_id == 6): }}
+                                    {{ if (_id.srn_status_id != 4): }}
                                         <input class="btn btn-success" type="button" value="submit" disabled>     
                                     {{ else: }}
                                         <input class="btn btn-success" type="submit" id="btnSubmit" value="submit">                                         

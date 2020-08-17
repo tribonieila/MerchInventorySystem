@@ -1,1 +1,6 @@
 {{=table}}
+<script>
+    function PrintStockTransfer(x){        
+        window.open("{{=URL('inventory','stock_transfer_report',extension=False)}}" + '/' + x)
+    }
+</script>

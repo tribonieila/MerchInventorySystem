@@ -1,12 +1,14 @@
 {{=table}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
+    $(document).ready(function(){
+        $(".table").DataTable();
     $("#posrcpt").click(function(){
         var parent = $(this).parent("div").parent("td").parent("tr") 
         var _id = $(this).attr('data-id');
         bootbox.confirm({
             size: "small",
-            message: "Would you like to generate Stock Receipt and Print?",
+            message: "Would you like to receive and print?",
             buttons: {
                 confirm: {
                     label: 'Yes',
@@ -24,7 +26,9 @@
                 } 
             }
         });
+    });        
     });
+
     function PrintReceipt(x){    
         window.open('{{=URL('inventory','stock_receipt_report', extension=False)}}' + '/' + x);
     }
