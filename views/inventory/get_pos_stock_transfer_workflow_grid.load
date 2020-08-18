@@ -3,7 +3,7 @@
 <script>
     $(document).ready(function(){
         $(".table").DataTable();
-
+    });
         $('.stv').click(function(){
             var parent = $(this).parent("div").parent("td").parent("tr")
             var _id = $(this).attr('data-id');
@@ -36,5 +36,5 @@
                 }
             });
         });
-    });
+
 </script>

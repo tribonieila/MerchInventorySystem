@@ -314,9 +314,9 @@
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
-								<li><a href="{{=URL('inventory', 'get_stock_request_grid.html')}}" ><span class="title">Stock Request</span></a></li>
-								<li><a href="{{=URL('inventory', 'get_stock_transaction_grid')}}" ><span class="title">Stock Transfer</span></a></li>
-								<li><a href="{{=URL('inventory', 'get_stock_receipt_grid')}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 2)}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>																
 								<li><a href="{{=URL('inventory', 'stock_adjustment_browse')}}" ><span class="title">Adjustment (+/-)</span></a></li>	
 								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
 								<li><a href="{{=URL('inventory', 'stock_corrections')}}" ><span class="title">Stock Corrections</span></a></li>			
@@ -442,7 +442,7 @@
 				<li><a href="{{=URL('inventory', 'get_back_off_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
-						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Request</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
 						<!-- <li><a href="{{=URL('sales','get_sales_invoice_workflow_reports')}}" ><span class="title">Sales Invoice</span></a></li> -->
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>						
 						<!-- <li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>						 -->

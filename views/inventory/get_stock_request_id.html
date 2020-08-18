@@ -193,9 +193,19 @@
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                         {{ elif _id.srn_status_id == 26: }}
-                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnStoreDispatched">                                            
+                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnStoreDispatched">                                                                                        
                                         {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == 1): }}                                            
-                                            <input class="btn btn-success" type="button" value="Received" id='btnStoreReceipt'>
+                                            <!-- <input class="btn btn-success" type="button" value="Received" id='btnStoreReceipt'>              -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                  <a class="dropdown-item" type="button" href="#" id="btnStoreReceipt">Received</a>
+                                                  <a class="dropdown-item" type="button" href="#" id="btnStoreReceiptAndPrint">Received & Print</a>
+                                                  <!-- <a class="dropdown-item" href="#">Something else here</a> -->
+                                                </div>
+                                              </div>                                                                             
                                         {{ else: }}
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                             <input class="btn btn-success" type="button" value="Approved" id="btnApproved" hidden>
@@ -208,9 +218,21 @@
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                         {{ elif _id.srn_status_id == 26: }}
-                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnPOSDispatched">                                            
-                                        {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == _usr.location_code_id):}}                                            
-                                            <input class="btn btn-success" type="button" value="Received" id='btnPOSReceipt'>
+                                            <input class="btn btn-success" type="button" value="Dispatched" id="btnPOSDispatched">        
+                                                                                      
+                                        {{ elif (_id.srn_status_id == 5) & (_id.stock_destination_id == _usr.location_code_id):}}                                                                                                                                      
+                                            <!-- <input class="btn btn-success" type="button" value="Received" id='btnPOSReceipt'> -->
+                                            <!-- Single button -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                  <a class="dropdown-item" type="button" href="#" id="btnPOSReceipt">Received</a>
+                                                  <a class="dropdown-item" type="button" href="#" id="btnPOSReceiptAndPrint">Received & Print</a>
+                                                  <!-- <a class="dropdown-item" href="#">Something else here</a> -->
+                                                </div>
+                                            </div>                                           
                                         {{ else: }}
                                             <input class="btn btn-danger" type="button" value="Reject" id="btnStoreDispatched" hidden>
                                             <input class="btn btn-success" type="button" value="Approved" id="btnApproved" hidden>
@@ -219,8 +241,19 @@
                                     {{pass}}                                    
                                     {{ if auth.has_membership(role = 'ACCOUNTS'): }}
                                         {{ if _id.srn_status_id == 2: }}                       
-                                            <input class="btn btn-success" type="button" value="Approved & generate stock transfer" id="btnAccountApproved">
-                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject">
+                                            <!-- <input class="btn btn-success" type="button" value="Approved & generate stock transfer" id="btnAccountApproved">
+                                            <input class="btn btn-danger" type="button" value="Reject" id="btnStoreReject"> -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                  <a class="dropdown-item" title="Approved & Generate Stock Transfer" type="button" href="#" id="btnAccountApproved">Approved</a>
+                                                  <a class="dropdown-item" title="Approved, Print & Generate Stock Transfer" type="button" href="#" id="btnAccountApprovedAndPrint">Approved and Print</a>
+                                                  <a class="dropdown-item" title="Reject" type="button" href="#" id="btnAccountReject">Reject</a>
+                                                  <!-- <a class="dropdown-item" href="#">Something else here</a> -->
+                                                </div>
+                                            </div>                                                
                                         {{ else: }}
                                             <input class="btn btn-success" type="button" value="Approved" id="btnAccountApproved" hidden>
                                             <input class="btn btn-success" type="button" value="Reject" id="btnAccountReject" hidden>                                            
@@ -252,7 +285,14 @@
 
 
 <script>
+    
 $(document).ready(function(){
+ 
+    if ($("#btnPOSReceipt").prop(true)) { 
+        console.log("active");
+    } else {
+        console.log("disabled");
+    }
     // $('#btncreate').attr('disabled','disabled');
     // $('#btnApproved').attr('disabled','disabled');
     // $('#btnReceive').attr('disabled','disabled');
@@ -267,21 +307,36 @@ $(document).ready(function(){
     });
    
     $('#btnStoreReceipt').click(function(){        
+        ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')    
+        window.location.href = "{{=URL('inventory','str_kpr_grid')}}";        
+    }); 
+
+    $('#btnStoreReceiptAndPrint').click(function(){        
         ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')
         window.open("{{=URL('inventory','stock_receipt_report',args = request.args(0))}}")
         window.location.href = "{{=URL('inventory','str_kpr_grid')}}";        
-    }); 
+    });
+
     $('#btnPOSReceipt').click(function(){        
+        ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')        
+        window.location.href = "{{=URL('inventory','get_pos_workflow_grid')}}";        
+    }); 
+    
+    $('#btnPOSReceiptAndPrint').click(function(){        
         ajax('{{=URL('inventory','put_stock_receipt_view_id', args = request.args(0))}}')
         window.open("{{=URL('inventory','stock_receipt_report',args = request.args(0))}}")
         window.location.href = "{{=URL('inventory','get_pos_workflow_grid')}}";        
     }); 
-    
-    $('#btnAccountApproved').click(function(){                
+    $('#btnAccountApprovedAndPrint').click(function(){                
         ajax('{{=URL('inventory','get_stock_transfer_process', args = request.args(0))}}',['remarks'])        
         window.open("{{=URL('inventory','stock_transfer_report',args = request.args(0))}}")        
         window.location.href = "{{=URL('inventory','account_grid')}}";                
     });
+    $('#btnAccountApproved').click(function(){                
+        ajax('{{=URL('inventory','get_stock_transfer_process', args = request.args(0))}}',['remarks'])                
+        window.location.href = "{{=URL('inventory','account_grid')}}";                
+    });
+
     $('#btndispatched').click(function(){        
         ajax('{{=URL('inventory','get_stock_request_dispatch_id', args = request.args(0))}}',['remarks'])
         location.reload();
@@ -310,6 +365,11 @@ $(document).ready(function(){
     $('#btnStoreReject').click(function(){        
         ajax('{{=URL('inventory','put_stock_request_reject_id', args = request.args(0))}}',['remarks'])
         window.location.href = "{{=URL('inventory','str_kpr_grid')}}";
+    });    
+
+    $('#btnAccountReject').click(function(){        
+        ajax('{{=URL('inventory','put_stock_request_reject_id', args = request.args(0))}}',['remarks'])
+        window.location.href = "{{=URL('inventory','account_grid')}}";
     });    
 
     {{ if auth.has_membership(role = 'ACCOUNTS'): }}
