@@ -5224,7 +5224,7 @@ def stock_corrections_header_footer_reports(canvas, doc):
     # Header 'Stock Corrections Report'
     for n in db(db.Stock_Corrections.id == request.args(0)).select():
         _sh = [
-            [_limage],
+            [],
             ['STOCK CORRECTIONS'],
             ['Stock Corrections No.',':',str(n.stock_corrections_id.prefix)+str(n.stock_corrections_no),'','Stock Corrections Date',':',n.date_approved.strftime('%d-%m-%Y, %H:%M %p')],
             ['Department',':',n.dept_code_id.dept_name,'','Stock Quantity From',':',n.stock_quantity_from_id.description],
@@ -5266,7 +5266,7 @@ def stock_corrections_transaction_table_reports():
     _id = db(db.Stock_Corrections.id == request.args(0)).select().first()
     ctr = 0
     _sc = [['#','Item Code','Description','UOM','Quantity']]
-    for n in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == request.args(0)).select(orderby = ~db.Stock_Corrections_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Corrections_Transaction.item_code_id)):
+    for n in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == request.args(0)).select(orderby = db.Stock_Corrections_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Corrections_Transaction.item_code_id)):
         ctr += 1
         if n.Stock_Corrections_Transaction.uom == 1:
             _qty = n.Stock_Corrections_Transaction.quantity

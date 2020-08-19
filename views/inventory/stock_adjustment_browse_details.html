@@ -9,26 +9,37 @@
             </ul> -->
             <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
         </div>
-        <div class="card-body tab-content" >
-            
+        <div class="card-body tab-content" >            
         {{=form.custom.begin}}	
         <div class="form-horizontal">   
                 <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Transaction No</label>
-                                <div class="col-sm-8">      
-                                    <input type="text" class="form-control" value="{{=_stk_adj.transaction_no}}"readonly >
-                                    <p class="help-block">autogenerate</p>                            
-                                </div>                           
+                                {{if (_stk_adj.stock_adjustment_no_id == None):}}
+                                    <label class="col-sm-4 control-label">Transaction No</label>
+                                    <div class="col-sm-8">      
+                                        <input type="text" class="form-control" value="{{=_stk_adj.transaction_no}}"readonly >
+                                        <p class="help-block">autogenerate</p>                            
+                                    </div>                           
+                                {{else:}}
+                                    <label class="col-sm-4 control-label">Stock Adjustment No</label>
+                                    <div class="col-sm-8">      
+                                        <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_no_id.prefix}}{{=_stk_adj.stock_adjustment_no}}"readonly >
+                                        <p class="help-block">autogenerate</p>                            
+                                    </div>                           
+                                {{pass}}
                             </div>                        
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group">                                
                                 <label class="col-sm-4 control-label">Date</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" value="{{=_stk_adj.transaction_date}}"readonly >
-                                    <p class="help-block">readonly</p>                            
+                                    {{if (_stk_adj.stock_adjustment_no_id == None):}}
+                                        <input type="text" class="form-control" value="{{=_stk_adj.transaction_date}}"readonly >
+                                    {{else:}}
+                                        <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_date}}"readonly >
+                                    {{pass}}
+                                        <p class="help-block">readonly</p>                            
                                 </div>
                             </div>                    
                         </div>
@@ -81,7 +92,7 @@
                                 {{ if _stk_adj.srn_status_id == 2 or _stk_adj.srn_status_id == 15:}}
                                     <input type="text" class="form-control" value="{{=_stk_adj.srn_status_id.description}}"readonly >
                                 {{ else: }}
-                                {{=form.custom.widget.srn_status_id}}
+                                    {{=form.custom.widget.srn_status_id}}
                                 {{ pass }}
                             </div>
                         </div>                    
@@ -94,7 +105,14 @@
                                 {{ if _stk_adj.srn_status_id == 2 or _stk_adj.srn_status_id == 15:}}
                                     <input class="btn btn-primary" type="submit" value="Submit" disabled>
                                 {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="Submit">
+                                    {{if auth.has_membership(role = 'ACCOUNTS MANAGER'):}}
+                                        <input class="btn btn-primary" type="button" id="btnApproved" value="Approved">
+                                        <input class="btn btn-danger" type="button" id="btnReject" value="Reject">
+                                    {{else:}}
+                                        <input class="btn btn-primary" type="submit" value="Submit">
+                                    {{pass}}
+
+                                    
                                 {{ pass }}
     
 
@@ -112,7 +130,14 @@
 
 <script>
     $(document).ready(function(){
-
+        $("#btnApproved").click(function(){            
+            ajax("{{=URL('inventory','stock_adjustment_manager_details_approved',args=[request.args(0),1])}}")
+            window.location.href = "{{=URL('inventory','account_manager_workflow')}}";
+        });
+        $("#btnReject").click(function(){
+            ajax("{{=URL('inventory','stock_adjustment_manager_details_reject',args=[request.args(0),1])}}")
+            window.location.href = "{{=URL('inventory','account_manager_workflow')}}";
+        });
 
     });
 </script>
