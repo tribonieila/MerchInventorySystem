@@ -5340,7 +5340,7 @@ def obslo_stock_header_footer_reports(canvas, doc):
     # Header 'Stock Corrections Report'
     for n in db(db.Obsolescence_Stocks.id == request.args(0)).select():
         _sh = [
-            [_limage],
+            [],
             ['STOCK ISSUE VOUCHER'],
             ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
             ['Department',':',n.dept_code_id.dept_name,'','Account Code',':',n.account_code_id.account_code],
@@ -5383,7 +5383,7 @@ def obslo_stock_transaction_table_reports():
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
     ctr = 0
     _sc = [['#','Item Code','Description','UOM','Quantity']]
-    for n in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)).select(orderby = ~db.Obsolescence_Stocks_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id)):
+    for n in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)).select(orderby = db.Obsolescence_Stocks_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id)):
         ctr += 1
         if n.Obsolescence_Stocks_Transaction.uom == 1:
             _qty = n.Obsolescence_Stocks_Transaction.quantity

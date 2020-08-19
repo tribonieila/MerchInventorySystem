@@ -11,7 +11,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             
-                            <label class="col-sm-4 control-label">Stock Corrections No</label>
+                            <label class="col-sm-4 control-label">Transaction No</label>
                             <div class="col-sm-8">      
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                 <div id="_stk_gen_no"></div>
@@ -124,7 +124,7 @@ $(document).ready(function(){
         }
     });    
     $('#Stock_Corrections_dept_code_id').change(function(){
-        ajax('{{=URL('gen_stock_corrections')}}',['dept_code_id'], '_stk_gen_no');        
+        ajax('{{=URL('put_transaction_no')}}',['dept_code_id'], '_stk_gen_no');        
     });
     $('#Stock_Corrections_location_code_id').change(function(){
         ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');

@@ -2,13 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNT USERS'): }}    
-            {{ else: }}
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
-            </ul>
-            {{ pass }}
             <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -17,7 +10,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Issue No</label>
+                            <label class="col-sm-4 control-label">Transaction No</label>
                             <div class="col-sm-8">                                
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                 <div id="_obsol_stocks_no"></div>
@@ -26,7 +19,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Issue Date</label>
+                            <label class="col-sm-4 control-label">Transaction Date</label>
                             <div class="col-sm-8"> {{import datetime}}
                                 <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >
                                 <p class="help-block">readonly</p>                            
@@ -133,7 +126,7 @@ $(document).ready(function(){
         }        
     });
     $('#no_table_dept_code_id').change(function(){
-        ajax('{{=URL('generate_obsol_stocks_no')}}', ['dept_code_id'], '_obsol_stocks_no');     
+        ajax('{{=URL('put_transaction_no')}}', ['dept_code_id'], '_obsol_stocks_no');     
     });
 
     $('#btnproceed').click(function(){

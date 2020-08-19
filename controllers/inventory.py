@@ -4183,7 +4183,7 @@ def stk_req__trans_edit_form():
     _tot_amt = _id.quantity * _id.price_cost
 
     form = SQLFORM.factory(    
-        Field('quantity','integer', default = _qty),
+        Field('quantity','integer', default = _qty), 
         Field('pieces','integer', default = _pcs))
     if form.process(onvalidation = validate_stock_in_transit).accepted:
         _id.update_record(quantity = form.vars.quantity, updated_on = request.now, updated_by = auth.user_id)
@@ -5256,6 +5256,7 @@ def get_transaction_no_id():
     x = datetime.datetime.now()
     _stk_no = str(x.strftime('%m%d%y%H%M'))    
     return _stk_no
+    
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def stock_adjustment_code():        
     _loc_code = db(db.Location.id == request.vars.location_code_id).select().first()
@@ -5876,7 +5877,7 @@ def get_obsolescence_of_stocks_workflow_grid():
         if auth.has_membership('INVENTORY STORE KEEPER'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','obsol_of_stocks_view', args = n.id, extension=False))
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','obsol_of_stocks_view', args = n.id, extension=False))
+                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','obsol_of_stocks_view', args = n.id, extension=False))
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href = URL('sales','obslo_stock_transaction_table_reports', args = n.id, extension = False)) 
                 btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
@@ -5902,13 +5903,13 @@ def get_obsolescence_of_stocks_workflow_grid():
 
         elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):
             if n.status_id == 2:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_grid_view', args = n.id, extension = False))
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_of_stocks_view', args = n.id, extension = False))
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _href = URL('sales','obslo_stock_transaction_table_reports', args = n.id, extension = False))
                 btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk)
             else:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_grid_view', args = n.id, extension = False))                                
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_of_stocks_view', args = n.id, extension = False))                                
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','obsol_mngr_approved', args = n.id, extension = False))
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','obsol_mngr_rejected', args = n.id, extension = False))
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -5956,23 +5957,33 @@ def obsol_of_stocks_view():
         response.flash = 'RECORD UPDATED'
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
+   
+    return dict(form = form, _id = _id)
+
+def get_obsolescence_stocks_transaction():
+    _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
     ctr = 0
     row = []                
     grand_total = 0
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Unit Price/Sel.Tax'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
-    _query = db((db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)) & (db.Obsolescence_Stocks_Transaction.delete == False)).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction.ALL, db.Item_Prices.ALL, orderby = ~db.Obsolescence_Stocks_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction.item_code_id)])
+    _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')       
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
+    _query = db((db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)) & (db.Obsolescence_Stocks_Transaction.delete == False)).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Obsolescence_Stocks_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction.item_code_id)])
     for n in _query:
         ctr += 1      
-        if _id.status_id == 24:
-            
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        if _id.status_id == 24:            
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-        else:
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', _href=URL('inventory','obsol_of_stocks_edit_view', args = n.Obsolescence_Stocks_Transaction.id, extension = False))
+        else:            
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Obsolescence_Stocks_Transaction.id, extension = False), **{'_data-id':(n.Obsolescence_Stocks_Transaction.id)})
-        btn_lnk = DIV( edit_lnk, dele_lnk)
+        if int(_id.status_id) != 4 or auth.has_membership(role = 'ACCOUNTS MANAGER') or auth.has_membership(role = 'INVENTORY SALES MANAGER'):
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')       
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+            response.js = "jQuery($('.quantity, .pieces').attr('disabled',true))"
+        else:    
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')           
+
+        btn_lnk = DIV(dele_lnk)
         _selective_tax += n.Obsolescence_Stocks_Transaction.selective_tax
         _selective_tax_foc += n.Obsolescence_Stocks_Transaction.selective_tax_foc
         if _selective_tax > 0.0 or _selective_tax_foc > 0.0:            
@@ -5983,22 +5994,37 @@ def obsol_of_stocks_view():
             _div_tax = DIV('')
             _div_tax_foc = DIV('')
         grand_total += n.Obsolescence_Stocks_Transaction.total_amount                
+        _quantity = n.Obsolescence_Stocks_Transaction.quantity / n.Obsolescence_Stocks_Transaction.uom
+        _pieces = n.Obsolescence_Stocks_Transaction.quantity - n.Obsolescence_Stocks_Transaction.quantity / n.Obsolescence_Stocks_Transaction.uom * n.Obsolescence_Stocks_Transaction.uom
         row.append(TR(
-            TD(ctr),
+            TD(ctr,INPUT(_class='form-control ctr',_type='number',_name='ctr',_hidden='true',_value=n.Obsolescence_Stocks_Transaction.id)),
             TD(n.Obsolescence_Stocks_Transaction.item_code_id.item_code),
             TD(n.Item_Master.item_description.upper()),
             TD(n.Obsolescence_Stocks_Transaction.category_id.mnemonic),
-            TD(n.Item_Master.uom_value),
-            TD(card(n.Obsolescence_Stocks_Transaction.item_code_id, n.Obsolescence_Stocks_Transaction.quantity, n.Obsolescence_Stocks_Transaction.uom)),
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),             
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+            TD(n.Obsolescence_Stocks_Transaction.uom,INPUT(_class='form-control uom',_type='number',_name='uom',_hidden='true',_value=n.Obsolescence_Stocks_Transaction.uom)),
+            TD(INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_quantity), _style="width:100px;"),
+            TD(INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pieces), _style="width:100px;"),                        
+            TD(INPUT(_class='form-control average_cost',_type='number',_name='average_cost',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.average_cost or 0, grouping = True)),_style="width:100px;"),
+            TD(INPUT(_class='form-control total_amount',_type='number',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True)),_style="width:100px;"),            
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD()))    
-    table = TABLE(*[head, body, foot], _class='table', _id = 'tblSOT')    
-    return dict(form = form, table = table, _id = _id)
-    
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'),_colspan='2', _align = 'right'),TD(INPUT(_class='form-control grand_total',_type='text',_name='grand_total',_readonly='true',_value=locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD(_btnUpdate)))    
+    table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblSOT'))
+    if table.accepts(request, session):
+        if request.vars.btnUpdate:
+            if isinstance(request.vars.ctr, list):                
+                row = 0
+                for x in request.vars.ctr:
+                    _qty = (int(request.vars.quantity[row]) * int(request.vars.uom[row])) + int(request.vars.pieces[row])
+                    db(db.Obsolescence_Stocks_Transaction.id == x).update(quantity = _qty, total_amount = request.vars.total_amount[row])
+                    row+=1
+            else:
+                _qty = (int(request.vars.quantity) * int(request.vars.uom)) + int(request.vars.pieces)
+                db(db.Obsolescence_Stocks_Transaction.id == int(request.vars.ctr)).update(quantity = _qty, total_amount = request.vars.total_amount)
+            db(db.Obsolescence_Stocks.id == request.args(0)).update(total_amount = request.vars.grand_total)
+            response.js = "$('#tblSOT').get(0).reload()"       
+    return dict(table = table, _id = _id)
+
 def validate_obsol_of_stocks_edit_view(form):
     _id = db(db.Obsolescence_Stocks_Transaction.id == request.args(0)).select().first()
     _os = db(db.Obsolescence_Stocks.id == _id.obsolescence_stocks_no_id).select().first()
@@ -6257,7 +6283,7 @@ def obsolescence_stocks_transaction_temporary():
     grand_total = 0
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
     _query = db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Obsolescence_Stocks_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id)])
     for n in _query:
         ctr += 1      
@@ -6285,17 +6311,17 @@ def obsolescence_stocks_transaction_temporary():
             TD(n.Obsolescence_Stocks_Transaction_Temporary.quantity),
             TD(n.Obsolescence_Stocks_Transaction_Temporary.pieces),
             TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction_Temporary.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),             
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction_Temporary.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
+            # TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction_Temporary.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
             TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction_Temporary.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc+str('\n')+_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
+    foot = TFOOT(TR(TD(),TD(_div_tax_foc+str('\n')+_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
     # foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
-    table = TABLE(*[head, body, foot], _id = 'tblSOT', _class='table')
+    table = TABLE(*[head, body, foot], _id = 'tblSOT', _class='table table-bordered')
     return dict(form = form, table = table, grand = grand_total)    
 
 def del_obsol_stocks():    
-    db(db.Obsolescence_Stocks_Transaction_Temporary.id == request.args(0)).delete()
+    db(db.Obsolescence_Stocks_Transaction.id == request.args(0)).delete()
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblSOT').get(0).reload()"
     # response.js = "$('#tblot').get(0).reload()"
@@ -6416,49 +6442,13 @@ def obsol_grid_view():
     db.Obsolescence_Stocks.status_id.writable = False
     # db.Obsolescence_Stocks.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')    
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
-    session.location_code_id = _id.location_code_id
+    # session.location_code_id = _id.location_code_id
     form = SQLFORM(db.Obsolescence_Stocks, request.args(0))
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
     elif form.errors:
-        response.flash = 'FORM HAS ERROR'
-    ctr = 0
-    row = []                
-    grand_total = 0
-    _selective_tax = _selective_tax_foc = 0
-    _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Unit Price/Sel.Tax'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
-    _query = db((db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)) & (db.Obsolescence_Stocks_Transaction.delete == False)).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction.ALL, db.Item_Prices.ALL, orderby = ~db.Obsolescence_Stocks_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction.item_code_id)])
-    for n in _query:
-        ctr += 1      
-        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','obsol_of_stocks_edit_view', args = n.Obsolescence_Stocks_Transaction.id, extension = False))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', callback=URL(args = n.Obsolescence_Stocks_Transaction.id, extension = False), **{'_data-id':(n.Obsolescence_Stocks_Transaction.id)})
-        btn_lnk = DIV( edit_lnk, dele_lnk)
-        _selective_tax += n.Obsolescence_Stocks_Transaction.selective_tax
-        _selective_tax_foc += n.Obsolescence_Stocks_Transaction.selective_tax_foc
-        if _selective_tax > 0.0 or _selective_tax_foc > 0.0:            
-            _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
-            _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
-            response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
-        else:
-            _div_tax = DIV('')
-            _div_tax_foc = DIV('')
-        grand_total += n.Obsolescence_Stocks_Transaction.total_amount                
-        row.append(TR(
-            TD(ctr),
-            TD(n.Obsolescence_Stocks_Transaction.item_code_id.item_code),
-            TD(n.Item_Master.item_description.upper()),
-            TD(n.Obsolescence_Stocks_Transaction.category_id.mnemonic),
-            TD(n.Item_Master.uom_value),
-            TD(card(n.Obsolescence_Stocks_Transaction.item_code_id, n.Obsolescence_Stocks_Transaction.quantity, n.Obsolescence_Stocks_Transaction.uom)),
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.price_cost or 0, grouping = True), _align = 'right', _style="width:120px;"),             
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.net_price or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True), _align = 'right', _style="width:120px;"),  
-            TD(btn_lnk)))
-    body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(_div_tax_foc, _colspan= '2'),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right'),TD(H4(locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD()))    
-    table = TABLE(*[head, body, foot], _class='table', _id = 'tblsot')    
-    return dict(form = form, table = table, _id = _id)
+        response.flash = 'FORM HAS ERROR'  
+    return dict(form = form, _id = _id)
 
 def obsol_mngr_approved():
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
@@ -7234,6 +7224,15 @@ def stock_corrections_transaction_table_delete():
     _id.update_record(delete = True, updated_on = request.now, updated_by = auth.user_id)
     session.flash = 'RECORD DELETED'
     response.js = "$('#tblcor').get(0).reload()"
+
+def generate_correction_transaction_no():
+    _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SIV')).select().first()   
+    if not _trans_prfx:
+        return INPUT(_type = 'text', _class = 'form-control', _id = '_obsol_stk_no', _name = '_obsol_stk_no', _disabled = True) 
+    else:
+        _serial = _trans_prfx.current_year_serial_key + 1
+        _obsol_stk_no = str(_trans_prfx.prefix) + str(_serial)
+        return XML(INPUT(_type="text", _class="form-control", _id='_obsol_stk_no', _name='_obsol_stk_no', _value=_obsol_stk_no, _disabled = True))
 
 # -----------   STOCKS CORRECTIONS ENDS     -----------------
 

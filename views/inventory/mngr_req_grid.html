@@ -28,7 +28,7 @@
                 <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id == 19) & (db.Purchase_Request.dept_code_id == 3)).count()}}</span></a></li>
                 <li role="presentation"><a href="#obsolescence" aria-controls="obsolescence" role="tab" data-toggle="tab">Obsolescence of Stocks <span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.dept_code_id == 3)).count()}}</span></a></li>
                                 
-                {{ pass }}
+                {{ pass }} 
               </ul>
               <div class="tab-content">  
                 <div role="tabpanel" class="tab-pane active" id="stock_request">                        

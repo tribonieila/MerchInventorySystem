@@ -2,11 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-<!--             
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('obsolescence_of_stocks')}}";>BROWSE</a></li>
-            </ul> -->
             <span class="card-title">OBSOLESCENCE OF STOCKS</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -15,18 +10,34 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Issue No</label>
-                            <div class="col-sm-8">                                
-                                <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.obsolescence_stocks_no}}" readonly >                                
-                            </div>                           
+                            {{if (_id.transaction_prefix_id == None):}}
+                                <label class="col-sm-4 control-label">Transaction No</label>
+                                <div class="col-sm-8">                                
+                                    <input type="text" class="form-control" value="{{=_id.transaction_no}}" readonly >                                
+                                </div>                           
+                            {{else:}}
+                                <label class="col-sm-4 control-label">Stock Issue No</label>
+                                <div class="col-sm-8">                                
+                                    <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.obsolescence_stocks_no}}" readonly >                                
+                                </div>                           
+
+                            {{pass}}
                         </div>                        
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
+                            {{if (_id.transaction_prefix_id == None):}}
+                            <label class="col-sm-4 control-label">Transaction Date</label>
+                            <div class="col-sm-8"> 
+                                <input type="text" class="form-control" value="{{=_id.transaction_date}}" readonly >                                
+                            </div>
+                            {{else:}}
                             <label class="col-sm-4 control-label">Stock Issue Date</label>
                             <div class="col-sm-8"> 
                                 <input type="text" class="form-control" value="{{=_id.obsolescence_stocks_date}}" readonly >                                
                             </div>
+
+                            {{pass}}
                         </div>                                            
                     </div>
                     <div class="col-md-4">
@@ -101,21 +112,30 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                        
-                                {{ if _id.status_id == 24: }}        
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
-                                {{ else: }}
-                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
-                                {{ pass }}
-                                
+                            <div class="col-sm-8">                   
+                                {{if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS'):}}     
+                                    {{ if _id.status_id == 24: }}        
+                                        <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
+                                    {{ else: }}
+                                        <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                    {{ pass }}
+                                {{elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):}}
+                                    <input class="btn btn-primary" type="button" value="approved" id="btnSalesApproved">
+                                    <input class="btn btn-danger" type="button" value="reject" id="btnSalesReject">
+                                {{elif auth.has_membership(role = 'ACCOUNTS MANAGER'):}}
+                                    <input class="btn btn-primary" type="button" value="approved" id="btnAccountsApproved">
+                                    <input class="btn btn-danger" type="button" value="reject" id="btnAccountsReject">
+
+                                {{pass}}
                                 {{=form.custom.end}}
                             </div>        
                         </div>                        
                     </div>
                 </div>
+                <hr>
                 <div id = "order_panel">
-                    {{=table}}
-                    <!-- {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True)}} -->
+                    
+                    {{=LOAD('inventory','get_obsolescence_stocks_transaction.load', ajax = True, args = request.args(0), target="tblSOT")}}
                 </div>
             </div>          
         </div>
@@ -125,28 +145,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    $('.delete').click(function(){
-        var _id = $(this).attr('data-id');
-        bootbox.confirm({
-            size: "small",
-            message: "Would you like to delete this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    ajax("{{=URL('inventory','obsol_of_stocks_delete_view')}}" + '/'+ _id);
-                    location.reload();                           
-                }
-            }
-        })
-    });   
-})
+    $("#btnSalesApproved").click(function(){
+        console.log("btnSalesApproved");
+    });
+    $("#btnSalesReject").click(function(){
+        console.log("btnSalesReject");
+    });
+    $("#btnAccountsApproved").click(function(){
+        console.log("btnAccountsApproved");
+    });
+    $("#btnAccountsReject").click(function(){
+        console.log("btnAccountsReject");
+    });            
+});
 </script>
