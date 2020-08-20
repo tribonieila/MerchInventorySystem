@@ -3744,6 +3744,64 @@ def stk_req_details_add_form():
     # _stk_trn_no = db(db.Stock_Request_Transaction.stock_request_id == _stk_req_no.id).select().first()
     return dict(_stk_req_no = _stk_req_no, _stk_trn_no = '_stk_trn_no')
 
+def get_request_info(e = request.args(0)):
+    _id = db(db.Stock_Receipt.id == e).select().first()
+    if not _id.stock_request_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        if not _id.stock_request_date_approved:
+            _date = 'None'
+        else:
+            _date = _id.stock_request_date_approved.date()
+        if not _id.stock_request_approved_by:
+            _appr = 'None'
+        else:        
+            _appr = str(_id.stock_request_approved_by.first_name.upper()) + ' ' + str(_id.stock_request_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align = 'right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table = str(XML(i, sanitize = False))
+    return table
+def get_transfer_info(e = request.args(0)):
+    _id = db(db.Stock_Receipt.id == e).select().first()
+    if not _id.stock_transfer_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        if not _id.stock_transfer_date_approved:
+            _date = 'None'
+        else:
+            _date = _id.stock_transfer_date_approved.date()
+        if not _id.stock_request_approved_by:
+            _appr = 'None'
+        else:        
+            _appr = str(_id.stock_transfer_approved_by.first_name.upper()) + ' ' + str(_id.stock_transfer_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align = 'right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table = str(XML(i, sanitize = False))
+    return table
+def get_receipt_info(e = request.args(0)):
+    _id = db(db.Stock_Receipt.id == e).select().first()
+    if not _id.stock_request_no_id:
+        _date = 'None'
+        _appr = 'None'
+    else:
+        if not _id.stock_receipt_date_approved:
+            _date = 'None'
+        else:
+            _date = _id.stock_receipt_date_approved.date()
+        if not _id.stock_receipt_approved_by:
+            _appr = 'None'
+        else:        
+            _appr = str(_id.stock_receipt_approved_by.first_name.upper()) + ' ' + str(_id.stock_receipt_approved_by.last_name.upper())
+    i = TABLE(*[
+        TR(TD('Date Approved: '),TD(_date, _align = 'right')),
+        TR(TD('Approved by: '),TD(_appr))])
+    table = str(XML(i, sanitize = False))
+    return table
+
 def stock_request_info(e = request.args(0)):
     _id = db(db.Stock_Request.id == e).select().first()
     if not _id.stock_request_no_id:
@@ -7250,7 +7308,7 @@ def itm_price():
 def get_workflow_reports():
     _usr = db(db.User_Department.user_id == int(auth.user_id)).select().first()    
     if int(request.args(0)) == int(1):     # stock request   
-        _title = ''        
+        _title = 'Stock Request Workflow Reports'        
         row = []
         ctr = 0    
         if not _usr:            
@@ -7394,7 +7452,7 @@ def get_workflow_reports():
         
         _query = (db.Stock_Transfer.stock_transfer_dispatched_by == auth.user_id) & (db.Stock_Transfer.srn_status_id == 6)
 
-
+        print auth.user_id
         # _query = (db.Stock_Transfer.stock_receipt_approved_by == auth.user_id) | (db.Stock_Transfer.created_by == auth.user_id) & (db.Stock_Transfer.stock_destination_id != 1) & (db.Stock_Transfer.srn_status_id == 6)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Transfer No.'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
         # for n in db((db.Stock_Transfer.srn_status_id == 6) & (db.Stock_Transfer.stock_destination_id == 1)).select(orderby = ~db.Stock_Transfer.id):
@@ -7441,37 +7499,32 @@ def get_workflow_reports():
         body = TBODY(*row)
         table = TABLE(*[head, body],_class='table')    
     elif int(request.args(0)) == int(6): # stock receipt
-        _title = 'Stock Receipt'        
+        _title = 'Stock Receipt Workflow Reports'        
         row = []
         ctr = 0    
-        # if not _usr:            
-        #     _query = db(db.Stock_Request.dept_code_id != 3).select(orderby = db.Stock_Request.id)      
-        # else:                        
-        _query = db(db.Stock_Receipt.stock_receipt_approved_by == 3).select(orderby = db.Stock_Receipt.id)
-        # _query = (db.Stock_Receipt.stock_receipt_approved_by == auth.user_id) | (db.Stock_Receipt.created_by == auth.user_id) & (db.Stock_Receipt.stock_destination_id != 1) & (db.Stock_Receipt.srn_status_id == 6)
-        head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Receipt No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
+        _query = db(db.Stock_Receipt.stock_receipt_approved_by == auth.user_id).select(orderby = db.Stock_Receipt.id)
+        
+        head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Receipt No.'),TH('Stock Transfer No.'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
         # for n in db((db.Stock_Receipt.srn_status_id == 6) & (db.Stock_Receipt.stock_destination_id == 1)).select(orderby = ~db.Stock_Receipt.id):
         for n in _query:
             ctr += 1
-            _stock_request = n.stock_request_no_id.prefix,n.stock_request_no
-            _stock_request = A(_stock_request, _class='text-primary',_title='Stock Request', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_request_info(n.id)})   
+            if n.stock_request_no_id == None: 
+                _stock_request = 'None'    
+            else:
+                _stock_request = n.stock_request_no_id.prefix,n.stock_request_no                
+                _stock_request = A(_stock_request, _class='text-danger',_title='Stock Request', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':get_request_info(n.id)})   
             if n.stock_transfer_no_id == None: 
                 _stock_transfer = 'None'            
             else:
                 _stock_transfer = n.stock_transfer_no_id.prefix,n.stock_transfer_no
-                _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_transfer_info(n.id)})   
+                _stock_transfer = A(_stock_transfer, _class='text-primary',_title='Stock Transfer', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':get_transfer_info(n.id)})   
             if n.stock_receipt_no_id == None:
                 _stock_receipt = 'None'        
             else:    
                 _stock_receipt = n.stock_receipt_no_id.prefix,n.stock_receipt_no
-                _stock_receipt = A(_stock_receipt, _class='text-primary',_title='Stock Receipt', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':stock_receipt_info(n.id)})   
+                _stock_receipt = A(_stock_receipt, _class='text-success',_title='Stock Receipt', _type='button ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content':get_receipt_info(n.id)})   
             
-            # view_lnk = A(I(_class='fas fa-search'), _title='View Details Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('get_stock_request_id', args = n.id, extension = False))
-            # rec_lnk = A(I(_class='fas fa-user-plus'), _title='Generate Stock Receipt', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-            # arch_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')        
-            # repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')    
-
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_request_id', args = n.id, extension = False))
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_receipt_id', args = n.id, extension = False))
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle disabled',_target='blank',_href=URL('inventory','stock_receipt_report', args = n.id, extension = False))
@@ -7481,9 +7534,9 @@ def get_workflow_reports():
             row.append(TR(
                 TD(ctr),
                 TD(n.stock_request_date),
-                TD(_stock_request),
+                TD(_stock_receipt),                
                 TD(_stock_transfer),
-                TD(_stock_receipt),
+                TD(_stock_request),
                 TD(n.stock_source_id.location_name),
                 TD(n.stock_destination_id.location_name),
                 TD(n.created_by.first_name.upper() + ' ' + n.created_by.last_name.upper()),
@@ -7492,11 +7545,26 @@ def get_workflow_reports():
                 TD(n.srn_status_id.required_action),
                 TD(btn_lnk)))    
         body = TBODY(*row)
-        table = TABLE(*[head, body],_class='table')        
+        table = TABLE(*[head, body],_class='table table-striped')        
     else:
         _title = ''
         table = 0    
     return dict(_title = _title, table = table)
+
+def get_workflow_stock_id():
+    # print 'get_workflow_stock_id', request.args(0), request.args(1)
+    if int(request.args(1)) == 1:
+        print 'stock request', request.args(0), request.args(1)
+
+    elif int(request.args(1)) == 2:
+        print 'stock transfer', request.args(0), request.args(1)
+    elif int(request.args(1)) == 3:
+        print 'stock receipt', request.args(0), request.args(1)
+    return dict(form = form, title = title)
+
+def get_workflow_stock_transaction():
+    return dict(table = 'table')
+
 
 def get_transaction_reports():
     _title = table = ''    
@@ -7701,7 +7769,7 @@ def get_pos_stock_request_workflow_grid():
             TD(n.srn_status_id.required_action),
             TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table', _id='tblSR')
+    table = TABLE(*[head, body], _class='table stripe', _id='tblSR')
     return dict(table = table)
 
 def get_pos_stock_request_dispatch_id():
@@ -8279,7 +8347,7 @@ def get_stock_receipt_id():
     db.Stock_Receipt.stock_destination_id.writable = False
     db.Stock_Receipt.total_amount.writable = False
     db.Stock_Receipt.section_id.writable = False
-    title = '' #'Stock Receipt Workflow Reports'    
+    title = 'Stock Receipt Workflow Reports'    
     # db.Stock_Receipt.src_status.writable = False
     # db.Stock_Receipt.item_status_code_id.writable = False
     if auth.has_membership('ACCOUNTS'):
