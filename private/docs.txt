@@ -1,6 +1,7 @@
 Activities:
 
 2020-7-16 # price_cost_after_discount field added
+2020-8-20 # abraham add stock transactions in reports
 
 Todo's:
 HAKIM - sales_order_store_keeper_view # print redirect error
