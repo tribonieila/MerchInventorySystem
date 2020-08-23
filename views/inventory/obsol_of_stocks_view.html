@@ -20,7 +20,6 @@
                                 <div class="col-sm-8">                                
                                     <input type="text" class="form-control" value="{{=_id.transaction_prefix_id.prefix}}{{=_id.obsolescence_stocks_no}}" readonly >                                
                                 </div>                           
-
                             {{pass}}
                         </div>                        
                     </div>
@@ -88,7 +87,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{ if _id.status_id == 24: }}
+                                {{ if _id.status_id != 4: }}
                                     <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
                                 {{ else: }}
                                     {{=form.custom.widget.status_id}}
@@ -120,13 +119,26 @@
                                         <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                     {{ pass }}
                                 {{elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):}}
+                                    {{ if _id.status_id == 24:}}
+                                    <input class="btn btn-primary" type="button" value="approved" id="btnSalesApproved" disabled>
+                                    <input class="btn btn-danger" type="button" value="reject" id="btnSalesReject" disabled>
+                                    {{else:}}
                                     <input class="btn btn-primary" type="button" value="approved" id="btnSalesApproved">
                                     <input class="btn btn-danger" type="button" value="reject" id="btnSalesReject">
+
+                                    {{pass}}
                                 {{elif auth.has_membership(role = 'ACCOUNTS MANAGER'):}}
+                                    {{ if _id.status_id == 24: }}
+                                    <input class="btn btn-primary" type="button" value="approved" id="btnAccountsApproved" disabled>
+                                    <input class="btn btn-danger" type="button" value="reject" id="btnAccountsReject" disabled>
+                                    {{else:}}
                                     <input class="btn btn-primary" type="button" value="approved" id="btnAccountsApproved">
                                     <input class="btn btn-danger" type="button" value="reject" id="btnAccountsReject">
 
+                                    {{pass}}
+
                                 {{pass}}
+                                
                                 {{=form.custom.end}}
                             </div>        
                         </div>                        
@@ -146,16 +158,21 @@
 <script>
 $(document).ready(function(){
     $("#btnSalesApproved").click(function(){
-        console.log("btnSalesApproved");
+        ajax("{{=URL('inventory','obsol_mngr_approved', args=request.args(0))}}",['remarks'])        
+        location.href = "{{=URL('inventory','mngr_req_grid')}}"
     });
-    $("#btnSalesReject").click(function(){
-        console.log("btnSalesReject");
+    $("#btnSalesReject").click(function(){        
+        ajax("{{=URL('inventory','obsol_mngr_rejected', args=request.args(0))}}",['remarks'])
+        location.href = "{{=URL('inventory','mngr_req_grid')}}"
     });
     $("#btnAccountsApproved").click(function(){
-        console.log("btnAccountsApproved");
+        ajax("{{=URL('inventory','obsol_grid_view_approved', args=request.args(0))}}",['remarks'])
+        location.href = "{{=URL('inventory','account_manager_workflow')}}"
+        
     });
     $("#btnAccountsReject").click(function(){
-        console.log("btnAccountsReject");
+        ajax("{{=URL('inventory','obsol_grid_view_rejected', args=request.args(0))}}",['remarks'])
+        location.href = "{{=URL('inventory','account_manager_workflow')}}"
     });            
 });
 </script>

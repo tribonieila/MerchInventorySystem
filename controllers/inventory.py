@@ -5033,9 +5033,9 @@ def stock_adjustment_add_new():
         # _stk_no = str(x.strftime('%m%d%y%H%M'))
     
         # _trns_pfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'ADJ')).select().first()
-        response.flash = 'Stock adjustment no ' + str(form.vars.transaction_no) + str(' save.')
+        response.flash = 'Transaction no ' + str(form.vars.transaction_no) + str(' save.')
         _id = db(db.Stock_Adjustment.transaction_no == int(form.vars.transaction_no)).select().first()     
-        _total_cost = 0        
+        _total_cost = _selective_tax = 0        
         _tmp = db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL).first()
         
         for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL):         
@@ -5044,6 +5044,7 @@ def stock_adjustment_add_new():
             _qty = i.quantity * _itm_code.uom_value + i.pieces # converted to pcs.                     
             _price_cost = i.average_cost /_itm_code.uom_value # price_cost per pcs.
             _total_cost += i.total_amount
+            _selective_tax += i.selective_tax
             db.Stock_Adjustment_Transaction.insert(
                 stock_adjustment_no_id = _id.id, 
                 item_code_id = i.item_code_id, 
@@ -5054,10 +5055,11 @@ def stock_adjustment_add_new():
                 retail_price = _itm_price.retail_price,
                 vansale_price = _itm_price.vansale_price, 
                 selective_tax = _itm_price.selective_tax_price, 
-                average_cost = i.average_cost, 
+                average_cost = i.average_cost,                 
+                selective_tax_foc = i.selective_tax_foc,
                 # price_cost = i.price_cost, 
                 total_amount = i.total_amount)                  
-        _id.update_record(total_amount = _total_cost)       
+        _id.update_record(total_amount = _total_cost, total_selective_tax = _selective_tax)       
         db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == request.vars.ticket_no_id).delete()     
         # redirect(URL('stock_adjustment_browse'))
     elif form.errors:
@@ -5079,7 +5081,8 @@ def validate_adjustment_item_code(form):
         form.errors.item_code =  CENTER(DIV('Item code ',B(str(request.vars.item_code)), ' is zero in stock file.',_class='alert alert-danger',_role='alert'))
         # form.errors.item_code = 'Item code is zero in stock file.'
 
-    else:        
+    else:      
+        _selective_tax_foc = _selective_tax= 0
         _sf = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.location_code_id)).select().first()                
         _exist = db((db.Stock_Adjustment_Transaction_Temp.item_code == request.vars.item_code) & (db.Stock_Adjustment_Transaction_Temp.ticket_no_id == session.ticket_no_id) & (db.Stock_Adjustment_Transaction_Temp.category_id == request.vars.category_id)).select().first()    
         _adj = session.adjustment_type
@@ -5099,10 +5102,12 @@ def validate_adjustment_item_code(form):
         else:            
             form.errors.average_cost = CENTER(DIV('Zero price not accepted.',_class='alert alert-danger',_role='alert'))            
             _average_cost = 0
+        
+
         _pu = _average_cost / int(_id.uom_value) 
         
-        _tc = float(_pu) * int(_tq) + float(_ip.selective_tax_price or 0)
-        _price_cost = float(_ip.average_cost) + float(_ip.selective_tax_price or 0)
+        _tc = float(_pu) * int(_tq) #+ float(_ip.selective_tax_price or 0)
+        _price_cost = float(_ip.average_cost) #+ float(_ip.selective_tax_price or 0)
         _total_amount = _price_cost / int(_id.uom_value) * _tq
         if int(_adj) == int(2):                
             if _tq > _sf.closing_stock:
@@ -5118,6 +5123,8 @@ def validate_adjustment_item_code(form):
         form.vars.average_cost = _average_cost #float(request.vars.average_cost.replace(',',''))
         form.vars.price_cost = _price_cost
         form.vars.total_amount = _total_amount
+        form.vars.selective_tax = _ip.selective_tax_price or 0
+        
 
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjutment_transaction_temporary_table():        
@@ -5134,6 +5141,7 @@ def stock_adjutment_transaction_temporary_table():
         response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'        
         db.Stock_Adjustment_Transaction_Temp.insert(item_code_id = form.vars.item_code_id,item_code = form.vars.item_code,quantity = form.vars.quantity,pieces = form.vars.pieces,
         category_id = form.vars.category_id,ticket_no_id = session.ticket_no_id,average_cost = form.vars.average_cost,uom = form.vars.uom,total_quantity = form.vars.total_quantity,
+        selective_tax = form.vars.selective_tax, selective_tax_foc = form.vars.selective_tax_foc,
         price_cost = form.vars.price_cost, total_amount = form.vars.total_amount, total_cost = form.vars.total_cost)
         if db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == session.ticket_no_id).count() != 0:
             response.js = "$('#btnsubmit').removeAttr('disabled')"
@@ -5144,12 +5152,14 @@ def stock_adjutment_transaction_temporary_table():
         response.flash = 'FORM HAS ERROR'
                  
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Cost'),TH('Action')),_class='bg-primary')
-    for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == session.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL, db.Item_Master.ALL, left = db.Item_Master.on(db.Item_Master.item_code == db.Stock_Adjustment_Transaction_Temp.item_code)):         
+    for i in db(db.Stock_Adjustment_Transaction_Temp.ticket_no_id == session.ticket_no_id).select(db.Stock_Adjustment_Transaction_Temp.ALL, db.Item_Master.ALL, orderby = db.Stock_Adjustment_Transaction_Temp.id, left = db.Item_Master.on(db.Item_Master.item_code == db.Stock_Adjustment_Transaction_Temp.item_code)):         
         ctr += 1       
         _total_amount += i.Stock_Adjustment_Transaction_Temp.total_amount 
+
         save_lnk = A(I(_class='fas fa-save'), _title='Save Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback = URL('stock_adjustment_delete', args = i.Stock_Adjustment_Transaction_Temp.id))
         edit_lnk = A(I(_class='fas fa-user-edit'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback = URL('stock_adjustment_delete', args = i.Stock_Adjustment_Transaction_Temp.id))
-        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', delete = 'tr', _id='del', callback = URL('stock_adjustment_delete', args = i.Stock_Adjustment_Transaction_Temp.id, extension = False))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback = URL(args = i.Stock_Adjustment_Transaction_Temp.id, extension = False), **{'_data-id':i.Stock_Adjustment_Transaction_Temp.id})
+        # dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', delete = 'tr', _id='del', callback = URL('stock_adjustment_delete', args = i.Stock_Adjustment_Transaction_Temp.id, extension = False))
         btn_lnk = DIV(dele_lnk)
         row.append(TR(
             TD(ctr),
@@ -5547,6 +5557,7 @@ def stock_adjustment_browse_details():
     db.Stock_Adjustment.stock_adjustment_no_id.writable = False
     db.Stock_Adjustment.stock_adjustment_no.writable = False
     db.Stock_Adjustment.stock_adjustment_date.writable = False
+    db.Stock_Adjustment.transaction_date.writable = False    
     db.Stock_Adjustment.stock_adjustment_code.writable = False
     db.Stock_Adjustment.dept_code_id.writable = False
     db.Stock_Adjustment.location_code_id.writable = False
@@ -5948,7 +5959,7 @@ def get_obsolescence_of_stocks_workflow_grid():
         if auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','obsol_of_stocks_view', args = n.id, extension=False))
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle')
+                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href = URL('sales','obslo_stock_transaction_table_reports', args = n.id, extension = False)) 
                 btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
@@ -5975,13 +5986,13 @@ def get_obsolescence_of_stocks_workflow_grid():
 
         elif auth.has_membership(role = 'ACCOUNTS MANAGER'):
             if n.status_id == 24:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_grid_view', args = n.id, extension = False))
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_of_stocks_view', args = n.id, extension = False))
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','obslo_stock_transaction_table_reports', args = n.id, extension = False))
                 btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk)
             else:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_grid_view', args = n.id, extension = False))                                
+                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','obsol_of_stocks_view', args = n.id, extension = False))                                
                 appr_lnk = A(I(_class='fas fa-user-check'), _title='Post Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','obsol_grid_view_approved', args = n.id, extension = False))
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','obsol_grid_view_rejected', args = n.id, extension = False))
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -6008,8 +6019,11 @@ def obsol_of_stocks_view():
     db.Obsolescence_Stocks.total_selective_tax.writable = False
     db.Obsolescence_Stocks.total_selective_tax_foc.writable = False
     db.Obsolescence_Stocks.total_vat_amount.writable = False
-    db.Obsolescence_Stocks.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')    
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
+    # if _id.status_id == 4:
+    db.Obsolescence_Stocks.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')    
+    # elif _id.status_id == 23:
+
     form = SQLFORM(db.Obsolescence_Stocks, request.args(0))
     if form.process().accepted:
         response.flash = 'RECORD UPDATED'
@@ -6184,7 +6198,7 @@ def obsolescence_of_stocks_form():
             total_selective_tax_foc = _total_selective_tax_foc)        
         db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()                
             
-        response.flash = 'SAVING OBSOLESCENCE STOCKS NO ' + str(_transaction_no) + '.'        
+        response.flash = 'Transaction no. ' + str(_transaction_no) + 'save.'        
     elif form.errors:
         response.flash = 'ENTRY HAS ERROR'
     return dict(form = form, ticket_no_id = ticket_no_id)
@@ -6341,8 +6355,8 @@ def obsolescence_stocks_transaction_temporary():
     grand_total = 0
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
-    _query = db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = ~db.Obsolescence_Stocks_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id)])
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
+    _query = db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = db.Obsolescence_Stocks_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id)])
     for n in _query:
         ctr += 1      
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Obsolescence_Stocks_Transaction_Temporary.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Obsolescence_Stocks_Transaction_Temporary.id),'_data-qt':(n.Obsolescence_Stocks_Transaction_Temporary.quantity), '_data-pc':(n.Obsolescence_Stocks_Transaction_Temporary.pieces)})
@@ -6375,7 +6389,7 @@ def obsolescence_stocks_transaction_temporary():
     body = TBODY(*row)        
     foot = TFOOT(TR(TD(),TD(_div_tax_foc+str('\n')+_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'), _align = 'right',_colspan='2'),TD(H4(INPUT(_class='form-control', _name = 'grand_total', _id='grand_total', _disabled = True, _value = locale.format('%.2F',grand_total or 0, grouping = True))), _align = 'right'),TD()))
     # foot += TFOOT(TR(TD(),TD(_div_tax, _colspan= '2'),TD(),TD(),TD(),TD(),TD(),TD(H4('DISCOUNT %'), _align = 'right'),TD(H4(INPUT(_class='form-control',_type='number', _name = 'discount', _id='discount', _value = 0.0), _align = 'right')),TD(P(_id='error'))))
-    table = TABLE(*[head, body, foot], _id = 'tblSOT', _class='table table-bordered')
+    table = TABLE(*[head, body, foot], _id = 'tblSOT', _class='table')
     return dict(form = form, table = table, grand = grand_total)    
 
 def del_obsol_stocks():    
@@ -6511,22 +6525,22 @@ def obsol_grid_view():
 def obsol_mngr_approved():
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
     if int(_id.status_id) == 3 or int(_id.status_id) == 23:
-        _flash = 'Stock issue no. ' + str(_id.transaction_no) + ' already been ' + str(_id.status_id.description) + ' by ' + str(_id.obsolescence_stocks_approved_by.first_name)        
+        _flash = 'Transaction no. ' + str(_id.transaction_no) + ' already been ' + str(_id.status_id.description) + ' by ' + str(_id.obsolescence_stocks_approved_by.first_name)        
     else:
         db(db.Obsolescence_Stocks.id == request.args(0)).update(status_id = 23, obsolescence_stocks_approved_by = auth.user_id, obsolescence_stocks_date_approved = request.now, remarks = request.vars.remarks)
-        _flash = 'Stock issue no. ' + str(_id.transaction_no) + ' approved.'
+        _flash = 'Transaction no. ' + str(_id.transaction_no) + ' approved.'
     session.flash = _flash
-    response.js = "$('#tblOS').get(0).reload()"
+    # response.js = "$('#tblOS').get(0).reload()"
 
 def obsol_mngr_rejected():    
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
     if _id.status_id == 3 or _id.status_id == 23:
-        _flash = 'Stock issue no. ' + str(_id.transaction_no) + ' already been ' + str(_id.status_id.description) + ' by ' + str(_id.obsolescence_stocks_approved_by.first_name)        
+        _flash = 'Transaction no. ' + str(_id.transaction_no) + ' already been ' + str(_id.status_id.description) + ' by ' + str(_id.obsolescence_stocks_approved_by.first_name)        
     else:
         db(db.Obsolescence_Stocks.id == request.args(0)).update(status_id = 3, obsolescence_stocks_approved_by = auth.user_id, obsolescence_stocks_date_approved = request.now, remarks = request.vars.remarks)
-        _flash = 'Stock issue no. ' + str(_id.transaction_no) + ' rejected.'
+        _flash = 'Transaction no. ' + str(_id.transaction_no) + ' rejected.'
     session.flash = _flash
-    response.js = "$('#tblOS').get(0).reload()"
+    # response.js = "$('#tblOS').get(0).reload()"
 
 def obsol_grid_view_approved():
 
@@ -6753,15 +6767,15 @@ def get_stock_corrections_workflow_reports():
     return dict(table = table)    
 
 def get_stock_corrections_reports():    
-
-    _query = db(db.Stock_Corrections.status_id == 16).select(orderby = db.Stock_Corrections.id)
+    _query = db(db.Stock_Corrections.status_id == 16).select(orderby = ~db.Stock_Corrections.id)
     row = []
     head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('sales','stock_corrections_transaction_table_reports', args=n.id, extension=False))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, prin_lnk)
 
         row.append(TR(
             TD(n.stock_corrections_date),

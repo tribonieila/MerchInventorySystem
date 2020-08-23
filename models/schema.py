@@ -711,8 +711,9 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('average_cost','decimal(10,4)', default = 0),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
-    Field('vansale_price', 'decimal(10,2)',default =0),
+    Field('vansale_price', 'decimal(10,2)',default =0),    
     Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
+    # Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax FOC'), # outer
     Field('delete', 'boolean', default = False),
     Field('total_amount','decimal(10,4)', default = 0),    
     # Field('total_cost','decimal(10,4)', default = 0, compute = lambda p: (p['average_cost'] / p['uom']) * p['quantity']), # remove 
@@ -733,6 +734,8 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('average_cost','decimal(10,4)', default = 0),
     Field('total_cost','decimal(10,4)', default = 0),
     Field('total_amount','decimal(10,4)', default = 0),
+    Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
     Field('ticket_no_id', 'string', length = 10),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))

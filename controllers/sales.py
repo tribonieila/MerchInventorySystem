@@ -534,6 +534,10 @@ def sales_order_form():
             _query_dept = db.Department.id == 3
             _defa_dept = 3
             _default = 0
+    elif auth.has_membership('INVENTORY BACK OFFICE'):
+        _query_dept = db.Department.id ==3
+        _query_cstmr = db.Master_Account            
+        _default = 0
     elif auth.has_membership('ROOT') | auth.has_membership('ACCOUNTS'): # All in Master Accounts                
         _query_dept = db.Department.id > 0
         _query_cstmr = db.Master_Account            
@@ -5227,6 +5231,7 @@ def stock_corrections_header_footer_reports(canvas, doc):
             [],
             ['STOCK CORRECTIONS'],
             ['Stock Corrections No.',':',str(n.stock_corrections_id.prefix)+str(n.stock_corrections_no),'','Stock Corrections Date',':',n.date_approved.strftime('%d-%m-%Y, %H:%M %p')],
+            ['Transaction No.',':',n.transaction_no,'','Transaction Date',':',n.transaction_date.strftime('%d-%m-%Y')],
             ['Department',':',n.dept_code_id.dept_name,'','Stock Quantity From',':',n.stock_quantity_from_id.description],
             ['Location',':',n.location_code_id.location_name,'','Stock Quantity To',':',n.stock_quantity_to_id.description]
         ]
@@ -5343,6 +5348,7 @@ def obslo_stock_header_footer_reports(canvas, doc):
             [],
             ['STOCK ISSUE VOUCHER'],
             ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
+            ['Transaction No.',':',n.transaction_no,'','Transaction Date',':',n.transaction_date.strftime('%d-%m-%Y')],
             ['Department',':',n.dept_code_id.dept_name,'','Account Code',':',n.account_code_id.account_code],
             ['Location',':',n.location_code_id.location_name,'','Account Name',':',n.account_code_id.account_name],
             ['Stock Quantity From',':',n.stock_type_id.description,'','','','']
