@@ -450,17 +450,24 @@ def get_direct_purchase_transaction_id():
             _discount = 0        
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle edit', callback=URL(args = n.Direct_Purchase_Receipt_Transaction.id, extension = False), data = dict(w2p_disable_with="*"), **{'_data-id':(n.Direct_Purchase_Receipt_Transaction.id),'_data-qt':(n.Direct_Purchase_Receipt_Transaction.quantity), '_data-pc':(n.Direct_Purchase_Receipt_Transaction.pieces)})
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Direct_Purchase_Receipt_Transaction.id, extension = False), **{'_data-id':(n.Direct_Purchase_Receipt_Transaction.id)})
-        btn_lnk = DIV( dele_lnk)
         _qty = n.Direct_Purchase_Receipt_Transaction.quantity / n.Direct_Purchase_Receipt_Transaction.uom
         _pcs = n.Direct_Purchase_Receipt_Transaction.quantity - n.Direct_Purchase_Receipt_Transaction.quantity /n.Direct_Purchase_Receipt_Transaction.uom * n.Direct_Purchase_Receipt_Transaction.uom
+        _quantity = INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty)
+        _pieces = INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs)
+        if auth.has_membership(role = 'ACCOUNTS MANAGER'):
+            _quantity = INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty,_readonly='true')
+            _pieces = INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs,_readonly='true')
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success',_disabled = 'True')
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete disabled', callback=URL(args = n.Direct_Purchase_Receipt_Transaction.id, extension = False))
+        btn_lnk = DIV( dele_lnk)
         row.append(TR(
             TD(ctr,INPUT(_class='form-control ctr',_type='number',_name='ctr',_value=n.Direct_Purchase_Receipt_Transaction.id, _hidden='True')),
             TD(n.Direct_Purchase_Receipt_Transaction.item_code_id.item_code),
             TD(n.Item_Master.item_description.upper()),            
             TD(n.Item_Master.uom_value,INPUT(_class='form-control uom',_type='number',_name='uom',_value=n.Item_Master.uom_value, _hidden='True')),
             TD(n.Direct_Purchase_Receipt_Transaction.category_id.mnemonic),
-            TD(INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty),_style='width:100px;'),
-            TD(INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs),_style='width:100px;'),
+            TD(_quantity,_style='width:100px;'),
+            TD(_pieces,_style='width:100px;'),
             TD(INPUT(_class='form-control price_cost',_type='number',_name='price_cost',_value=locale.format('%.2F',n.Direct_Purchase_Receipt_Transaction.price_cost or 0, grouping = True),_readonly='True'), _align = 'right', _style="width:100px;"), 
             TD(INPUT(_class='form-control total_amount',_type='number',_name='total_amount',_value=locale.format('%.2F',n.Direct_Purchase_Receipt_Transaction.total_amount or 0, grouping = True),_readonly='True'), _align = 'right', _style="width:100px;"),  
             TD(btn_lnk)))
@@ -480,7 +487,7 @@ def get_direct_purchase_transaction_id():
                     row+=1
             else:                
                 _qty = int(request.vars.quantity) * int(request.vars.uom) + int(request.vars.pieces)
-                db(db.Direct_Purchase_Receipt_Transaction.id == request.args(0)).update(quantity = request.vars.quantity, total_pieces = _qty, total_amount = request.vars.total_amount)            
+                db(db.Direct_Purchase_Receipt_Transaction.id == request.args(0)).update(quantity = _qty, total_pieces = _qty, total_amount = request.vars.total_amount)            
             _id.update_record(total_amount = request.vars.grand_total, total_amount_after_discount = request.vars.net_amount, discount_percentage = request.vars.discount)
             response.js = "$('#DPtbl').get(0).reload()" 
     return dict(table = table)

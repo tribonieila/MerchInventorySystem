@@ -175,7 +175,18 @@
                     </div>                          
                     
                     <div class="col-md-4">   
-                        <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">
+                        {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
+                            {{if row.status_id == 18:}}
+                                <input class="btn btn-success" type="button" value="approved" id="btnApproved">
+                                <input class="btn btn-danger" type="button" value="reject" id="btnReject">    
+                            {{else:}}
+                                <input class="btn btn-success" type="button" value="approved" id="btnApproved" disabled>
+                                <input class="btn btn-danger" type="button" value="reject" id="btnReject" disabled>
+                            {{pass}}
+                        {{else:}}
+                            <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">
+                        {{pass}}
+                        
                         
                     </div>
                 </div>                          
@@ -210,7 +221,13 @@ $(document).ready(function(){
     $("#btnsubmit").click(function(){
         location.href = "{{=URL('inventory','account_grid')}}"
     })
-    
+    $("#btnApproved").click(function(){
+        console.log("approved");
+    });
+    $("#btnReject").click(function(){
+        console.log("reject");
+    });
+
 });
 </script>
 
