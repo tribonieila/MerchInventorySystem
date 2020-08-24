@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">OBSOLESCENCE OF STOCKS</span>
+            <span class="card-title">OBSOLESCENCE STOCK INVOICE</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -28,11 +28,11 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Sales Man</label>
+                            <label class="col-sm-4 control-label">Account Code</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} " readonly="">
+                                <div id="stock_adjustment_account"></div>                                
                             </div>
-                        </div>
+                        </div>  
                     </div>                      
                 </div>
                 <div class="row">
@@ -54,11 +54,9 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Account Code</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.account_code_id}}
-                            </div>
-                        </div>                    
+                            <label class="col-sm-4 control-label">Stock Type</label>
+                            <div class="col-sm-8">{{=form.custom.widget.stock_type_id}}</div>    
+                        </div>                  
                     </div>
                 </div>                
                 <div class="row">
@@ -66,9 +64,9 @@
 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock Type</label>
-                            <div class="col-sm-8">{{=form.custom.widget.stock_type_id}}</div>    
-                        </div>
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                        </div>   
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
@@ -76,22 +74,10 @@
                             <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>    
                         </div>                                               
                     </div>                    
-                </div>
-    
-                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
-                        </div>                                               
-                    </div>   
-                    <div class="col-md-4">
-                 
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                                
+                            <label class="col-sm-2 control-label"></label>
+                            <div class="col-sm-10">                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('obsolescence_of_stocks')}}">abort</a>
@@ -99,9 +85,10 @@
                                 {{=form.custom.end}}
                             </div>        
                         </div>                        
-                    </div>
+                    </div>                    
                 </div>
                 <div id = "order_panel">
+                    <hr>
                     {{=LOAD('inventory','obsolescence_stocks_transaction_temporary.load', ajax = True, target = 'tblSOT')}}
                 </div>
             </div>          
@@ -118,15 +105,16 @@ $(document).ready(function(){
     $('#selective_tax').hide();
     $('#order_panel').hide();
 
-    $('#no_table_dept_code_id, #no_table_location_code_id, #no_table_account_code_id, #no_table_stock_type_id, #no_table_status_id').change(function(){
-        if ($('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_account_code_id').val() && $('#no_table_stock_type_id').val() && $('#no_table_status_id').val()) {
+    $('#no_table_dept_code_id, #no_table_location_code_id, #no_table_stock_type_id, #no_table_status_id').change(function(){
+        if ($('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_stock_type_id').val() && $('#no_table_status_id').val()) {
             $('#btnproceed').removeAttr('disabled');
         } else {
             $('#btnproceed').attr('disabled','disabled');
         }        
     });
     $('#no_table_dept_code_id').change(function(){
-        ajax('{{=URL('put_transaction_no')}}', ['dept_code_id'], '_obsol_stocks_no');     
+        ajax('{{=URL('put_transaction_no')}}', ['dept_code_id'], '_obsol_stocks_no');
+        ajax('{{=URL('get_stock_adjustment_account_id')}}', ['dept_code_id'], 'stock_adjustment_account');
     });
 
     $('#btnproceed').click(function(){

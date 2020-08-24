@@ -459,7 +459,7 @@ def get_direct_purchase_transaction_id():
             _pieces = INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs,_readonly='true')
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success',_disabled = 'True')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete disabled', callback=URL(args = n.Direct_Purchase_Receipt_Transaction.id, extension = False))
-        btn_lnk = DIV( dele_lnk)
+        btn_lnk = DIV(dele_lnk)
         row.append(TR(
             TD(ctr,INPUT(_class='form-control ctr',_type='number',_name='ctr',_value=n.Direct_Purchase_Receipt_Transaction.id, _hidden='True')),
             TD(n.Direct_Purchase_Receipt_Transaction.item_code_id.item_code),
@@ -634,7 +634,7 @@ def get_purchase_return_id():
 def get_purchase_return_transaction():
     ctr = _total_amount = 0
     row = []
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Average Cost'),TH('Total Cost'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Cost'),TH('Action')))
     if auth.has_membership(role = 'ACCOUNTS'):
         _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
     else:
@@ -799,7 +799,7 @@ def push_purchase_return_transaction_temporary():
     elif form.errors:
         response.flash = 'Form has error.'
     _total_amount = ctr = 0
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Average Cost'),TH('Total Cost'),TH('Action')))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Cost'),TH('Action')),_class='bg-primary')
     for i in db(db.Purchase_Return_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Purchase_Return_Transaction_Temporary.ALL, db.Item_Master.ALL, orderby = db.Purchase_Return_Transaction_Temporary.id, left = db.Item_Master.on(db.Item_Master.item_code == db.Purchase_Return_Transaction_Temporary.item_code)):
         ctr += 1       
         _total_amount += i.Purchase_Return_Transaction_Temporary.total_amount 

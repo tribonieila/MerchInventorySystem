@@ -6040,10 +6040,11 @@ def get_obsolescence_stocks_transaction():
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
     _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled='true')       
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     _query = db((db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)) & (db.Obsolescence_Stocks_Transaction.delete == False)).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Obsolescence_Stocks_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction.item_code_id)])
     for n in _query:
         ctr += 1      
+
         if _id.status_id == 24:            
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         else:            
@@ -6059,8 +6060,8 @@ def get_obsolescence_stocks_transaction():
         _selective_tax += n.Obsolescence_Stocks_Transaction.selective_tax
         _selective_tax_foc += n.Obsolescence_Stocks_Transaction.selective_tax_foc
         if _selective_tax > 0.0 or _selective_tax_foc > 0.0:            
-            _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
-            _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
+            _div_tax = DIV('Total Selective Tax: ',locale.format('%.2F',_selective_tax or 0, grouping = True))
+            _div_tax_foc = DIV('Total Selective Tax FOC: ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True))
             response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
         else:
             _div_tax = DIV('')
@@ -6070,17 +6071,17 @@ def get_obsolescence_stocks_transaction():
         _pieces = n.Obsolescence_Stocks_Transaction.quantity - n.Obsolescence_Stocks_Transaction.quantity / n.Obsolescence_Stocks_Transaction.uom * n.Obsolescence_Stocks_Transaction.uom
         row.append(TR(
             TD(ctr,INPUT(_class='form-control ctr',_type='number',_name='ctr',_hidden='true',_value=n.Obsolescence_Stocks_Transaction.id)),
-            TD(n.Obsolescence_Stocks_Transaction.item_code_id.item_code),
-            TD(n.Item_Master.item_description.upper()),
-            TD(n.Obsolescence_Stocks_Transaction.category_id.mnemonic),
+            TD(n.Obsolescence_Stocks_Transaction.item_code_id.item_code,INPUT(_class='form-control selective_tax',_type='number',_name='selective_tax',_hidden='true',_value=n.Item_Prices.selective_tax_price)),
+            TD(n.Item_Master.item_description.upper(),INPUT(_class='form-control average_cost',_type='number',_name='average_cost',_hidden='true',_value=n.Item_Prices.average_cost)),
+            TD(n.Obsolescence_Stocks_Transaction.category_id.mnemonic,INPUT(_class='form-control total_selective_tax',_type='number',_name='total_selective_tax',_hidden='true',_value=0)),
             TD(n.Obsolescence_Stocks_Transaction.uom,INPUT(_class='form-control uom',_type='number',_name='uom',_hidden='true',_value=n.Obsolescence_Stocks_Transaction.uom)),
             TD(INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_quantity), _style="width:100px;"),
             TD(INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pieces), _style="width:100px;"),                        
-            TD(INPUT(_class='form-control average_cost',_type='number',_name='average_cost',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.average_cost or 0, grouping = True)),_style="width:100px;"),
-            TD(INPUT(_class='form-control total_amount',_type='number',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True)),_style="width:100px;"),            
+            TD(INPUT(_class='form-control price_cost',_type='number',_name='price_cost',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.price_cost or 0, grouping = True)),_style="width:100px;"),
+            TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True)),_style="width:100px;"),            
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'),_colspan='2', _align = 'right'),TD(INPUT(_class='form-control grand_total',_type='text',_name='grand_total',_readonly='true',_value=locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD(_btnUpdate)))    
+    foot = TFOOT(TR(TD(_div_tax_foc,_div_tax,_colspan='3'),TD(),TD(),TD(),TD(H4('TOTAL AMOUNT'),_colspan='2', _align = 'right'),TD(INPUT(_class='form-control grand_total',_type='text',_name='grand_total',_readonly='true',_value=locale.format('%.2F',grand_total or 0, grouping = True)), _align = 'right'),TD(_btnUpdate)))    
     table = FORM(TABLE(*[head, body, foot], _class='table', _id = 'tblSOT'))
     if table.accepts(request, session):
         if request.vars.btnUpdate:
@@ -6088,11 +6089,11 @@ def get_obsolescence_stocks_transaction():
                 row = 0
                 for x in request.vars.ctr:
                     _qty = (int(request.vars.quantity[row]) * int(request.vars.uom[row])) + int(request.vars.pieces[row])
-                    db(db.Obsolescence_Stocks_Transaction.id == x).update(quantity = _qty, total_amount = request.vars.total_amount[row])
+                    db(db.Obsolescence_Stocks_Transaction.id == x).update(quantity = _qty, price_cost=request.vars.price_cost[row],selective_tax = request.vars.total_selective_tax[row],total_amount = request.vars.total_amount[row])
                     row+=1
             else:
                 _qty = (int(request.vars.quantity) * int(request.vars.uom)) + int(request.vars.pieces)
-                db(db.Obsolescence_Stocks_Transaction.id == int(request.vars.ctr)).update(quantity = _qty, total_amount = request.vars.total_amount)
+                db(db.Obsolescence_Stocks_Transaction.id == int(request.vars.ctr)).update(quantity = _qty, price_cost=request.vars.price_cost, selective_tax = request.vars.total_selective_tax, total_amount = request.vars.total_amount)
             db(db.Obsolescence_Stocks.id == request.args(0)).update(total_amount = request.vars.grand_total)
             response.js = "$('#tblSOT').get(0).reload()"       
     return dict(table = table, _id = _id)
@@ -6141,6 +6142,14 @@ def obsol_of_stocks_delete_view():
     _os.update_record(total_amount = _total, updated_on = request.now, updated_by = auth.user_id)
     session.flash = 'RECORD DELETED'
 
+def get_stock_adjustment_account_id():
+    _id = db(db.Department.id == request.vars.dept_code_id).select().first()    
+    _ma = db(db.Master_Account.account_code == _id.stock_adjustment_account).select().first()    
+    if not _id:
+        return XML(INPUT(_class='integer form-control', _name='stock_adjustment_account',_disabled=True))
+    else:
+        _account_code = str(_ma.account_code) + ' - ' + str(_ma.account_name)
+        return XML(INPUT(_class='integer form-control', _name='stock_adjustment_account',_value=_account_code,_disabled=True))
 def obsolescence_of_stocks_form():
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id
@@ -6150,19 +6159,16 @@ def obsolescence_of_stocks_form():
         Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
         Field('location_code_id','reference Location', default = 1, ondelete = 'NO ACTION',label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
         Field('stock_type_id','reference Stock_Type', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Type.id,'%(description)s', zero = 'Choose Stock Type')),
-        Field('account_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Customer Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Account')),    
         Field('remarks', 'string'),
         Field('status_id','reference Stock_Status', default = 4, ondelete = 'NO ACTION', requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 4)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')))
     if form.process().accepted:
-        # ctr = db((db.Transaction_Prefix.prefix_key == 'SIV') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
-        # _skey = ctr.current_year_serial_key
-        # _skey += 1
-        # ctr.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)        
+        _id = db(db.Department.id == form.vars.dept_code_id).select().first() #stock_adjustment_account
+        _ma = db(db.Master_Account.account_code == _id.stock_adjustment_account).select().first()         
         _transaction_no = get_transaction_no_id()
         db.Obsolescence_Stocks.insert(
             transaction_no = _transaction_no,
             transaction_date = request.now,
-            account_code_id = form.vars.account_code_id,
+            account_code_id = _ma.id,
             dept_code_id = form.vars.dept_code_id,
             location_code_id = form.vars.location_code_id,
             stock_type_id =  form.vars.stock_type_id,                        
@@ -6198,9 +6204,9 @@ def obsolescence_of_stocks_form():
             total_selective_tax_foc = _total_selective_tax_foc)        
         db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()                
             
-        response.flash = 'Transaction no. ' + str(_transaction_no) + 'save.'        
+        response.flash = 'Transaction no. ' + str(_transaction_no) + ' save.'        
     elif form.errors:
-        response.flash = 'ENTRY HAS ERROR'
+        response.flash = 'ENTRY HAS ERROR'        
     return dict(form = form, ticket_no_id = ticket_no_id)
 
 def validate_obsolescence_stocks_transaction(form):
@@ -6220,65 +6226,46 @@ def validate_obsolescence_stocks_transaction(form):
         _exist = db((db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Obsolescence_Stocks_Transaction_Temporary.item_code == request.vars.item_code)).select(db.Obsolescence_Stocks_Transaction_Temporary.item_code).first()                                   
 
         if _id.uom_value == 1:
-            form.vars.pieces = 0
-            
-
-        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces or 0)
-        
+            form.vars.pieces = 0            
+        _total_pcs = int(request.vars.quantity) * int(_id.uom_value) + int(form.vars.pieces or 0)        
         if not _price:
-            form.errors.item_code = "Item code does'nt have price."
-        
+            form.errors.item_code = "Item code does'nt have price."        
         if (_price.retail_price == 0.0 or _price.wholesale_price == 0.0) and (_id.type_id.mnemonic == 'SAL' or _id.type_id.mnemonic == 'PRO'):
-            form.errors.item_code = 'Cannot request this item because retail price/wholesale price is zero.'
-                
+            form.errors.item_code = 'Cannot request this item because retail price/wholesale price is zero.'                
         # if _exist == request.vars.item_code and (request.vars.category_id != 3):
 
         if _exist:
             if int(request.vars.category_id) != 3:                
                 form.errors.item_code = 'Item code ' + str(_exist.item_code) + ' already exist.'                
-            else:
-                # _unit_price = _excise_tax_amount or 0                                
+            # else:                               
                 # computation for excise tax foc
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
-                _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
-                _unit_price = float(_price.wholesale_price) + _excise_tax_amount
-
-                # _stk_file.stock_in_transit += _total_pcs    
-                # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-                # _stk_file.update_record()                    
-
+                # _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
+                # _excise_tax_price_per_piece_foc = _excise_tax_amount / _id.uom_value
+                # _selective_tax_foc += _excise_tax_price_per_piece_foc * _total_pcs
+                # _unit_price = float(_price.wholesale_price) + _excise_tax_amount
             # form.errors.item_code = CENTER(DIV(B('DANGER! '),'Item code ' + str(_exist.item_code) + ' already exist.',_class='alert alert-danger',_role='alert'))                    
         else:
-            if int(request.vars.category_id) == 3:
-                
-                # computation for excise tax foc
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
-                _selective_tax_foc += _excise_tax_price_per_piece * _total_pcs
-                _unit_price = float(_price.average_cost) + _excise_tax_amount
-
-                # _stk_file.stock_in_transit += _total_pcs    
-                # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-                # _stk_file.update_record()    
-                
+            if int(request.vars.category_id) == 3: # computation for excise tax foc            
+                # _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
+                # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+                # _selective_tax_foc += _excise_tax_price_per_piece * _total_pcs
+                # _unit_price = float(_price.average_cost) + _excise_tax_amount  
+                _selective_tax_foc = (float(_price.selective_tax_price or 0) / int(_id.uom_value)) * int(_total_pcs)              
+                _unit_price = float(_price.average_cost) + _selective_tax_foc
             else:
                 _selective_tax_foc = 0
                 # computation for excise tax
-                _excise_tax_amount = float(_price.retail_price) * float(_id.selectivetax or 0) / 100
-                _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
-                _selective_tax += _excise_tax_price_per_piece * _total_pcs                
-                _unit_price = float(_price.average_cost) + _excise_tax_amount
+                # _excise_tax_amount = float(_price.retail_price) * float(_price.selective_tax_price or 0) / 100
+                _selective_tax = (float(_price.selective_tax_price or 0) / int(_id.uom_value)) * int(_total_pcs)
+                # _excise_tax_price_per_piece = _excise_tax_amount / _id.uom_value 
+                # _selective_tax += _excise_tax_price_per_piece * _total_pcs
+                _unit_price = float(_price.average_cost) + _selective_tax
                 
                 # computation for price per unit
                 _net_price = (_unit_price * ( 100 - int(form.vars.discount_percentage or 0))) / 100
                 _price_per_piece = _net_price / _id.uom_value
                 _total_amount = _total_pcs * _price_per_piece
-        
-                # _stk_file.stock_in_transit += _total_pcs    
-                # _stk_file.probational_balance = int(_stk_file.closing_stock) - int(_stk_file.stock_in_transit)
-                # _stk_file.update_record()                  
-                                                
+                                                        
         if _total_pcs == 0:
             form.errors.quantity = 'Zero quantity not accepted.'
 
@@ -6293,7 +6280,6 @@ def validate_obsolescence_stocks_transaction(form):
         if int(session.stock_type_id) == 3:
             if int(_total_pcs) > int(_stk_file.free_stock_qty):
                 form.errors.quantity = 'Items should not be more than ' + str(_stk_file.free_stock_qty) + str(' pieces.')
-
 
         if int(form.vars.pieces) >= int(_id.uom_value):
             form.errors.pieces = 'Pieces should not be more than UOM value.'
@@ -6355,7 +6341,7 @@ def obsolescence_stocks_transaction_temporary():
     grand_total = 0
     _selective_tax = _selective_tax_foc = 0
     _div_tax = _div_tax_foc = DIV('')
-    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price'),TH('Total Amount'),TH('Action'),_class='bg-danger'))
+    head = THEAD(TR(TH('#'),TH('Item Code'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('PCs'),TH('Unit Price/Sel.Tax'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     _query = db(db.Obsolescence_Stocks_Transaction_Temporary.ticket_no_id == session.ticket_no_id).select(db.Item_Master.ALL, db.Obsolescence_Stocks_Transaction_Temporary.ALL, db.Item_Prices.ALL, orderby = db.Obsolescence_Stocks_Transaction_Temporary.id, left = [db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Obsolescence_Stocks_Transaction_Temporary.item_code_id)])
     for n in _query:
         ctr += 1      
@@ -6364,9 +6350,9 @@ def obsolescence_stocks_transaction_temporary():
         btn_lnk = DIV( dele_lnk)
         _selective_tax += n.Obsolescence_Stocks_Transaction_Temporary.selective_tax
         _selective_tax_foc += n.Obsolescence_Stocks_Transaction_Temporary.selective_tax_foc
-        if _selective_tax > 0.0 or _selective_tax_foc > 0.0:            
-            _div_tax = DIV(H4('REMARKS: TOTAL SELECTIVE TAX = ',locale.format('%.2F',_selective_tax or 0, grouping = True)))
-            _div_tax_foc = DIV(H4('REMARKS: TOTAL SELECTIVE TAX FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True)))
+        if n.Obsolescence_Stocks_Transaction_Temporary.selective_tax > 0.0 or n.Obsolescence_Stocks_Transaction_Temporary.selective_tax_foc > 0.0:            
+            _div_tax = DIV('Total Selective Tax = ',locale.format('%.2F',_selective_tax or 0, grouping = True))
+            _div_tax_foc = DIV('Total Selective Tax FOC = ',locale.format('%.2F',_selective_tax_foc or 0, grouping = True))
             response.js = "jQuery('#discount').attr('disabled','disabled'), jQuery('#btnsubmit').removeAttr('disabled')"
         else:
             _div_tax = DIV('')
@@ -6397,7 +6383,12 @@ def del_obsol_stocks():
     response.flash = 'RECORD DELETED'
     response.js = "$('#tblSOT').get(0).reload()"
     # response.js = "$('#tblot').get(0).reload()"
-    
+
+def del_obsol_trans_temp_id():
+    db(db.Obsolescence_Stocks_Transaction_Temporary.id==request.args(0)).delete()
+    response.flash = 'Record deleted.'
+    response.js = "$('#tblSOT').get(0).reload()"
+
 def generate_obsol_stocks_no():
     _trans_prfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'SIV')).select().first()   
     if not _trans_prfx:
@@ -6456,7 +6447,7 @@ def obsol_item_description():
                 TD(_icode.group_line_id.group_line_name),
                 TD(_icode.brand_line_code_id.brand_line_name),
                 TD(_icode.uom_value),
-                TD(_icode.selectivetax),
+                TD(_iprice.selective_tax_price),
                 TD(_iprice.retail_price),
                 TD(locale.format('%.2F',_iprice.wholesale_price or 0, grouping = True)),
                 TD(_on_hand),

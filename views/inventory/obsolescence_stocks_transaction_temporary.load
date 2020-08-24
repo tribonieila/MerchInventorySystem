@@ -23,7 +23,7 @@
             <label class="col-sm-6 control-label">Pieces</label>
             <div class="col-sm-6">                                
                 {{=form.custom.widget.pieces}}
-            </div>                           
+            </div>                            
         </div>    
     </div>                  
     <div class="col-md-3">
@@ -85,7 +85,7 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('inventory','del_obsol_stocks')}}" + '/'+ _id);
+                    ajax("{{=URL('inventory','del_obsol_trans_temp_id')}}" + '/'+ _id);
                     parent.fadeOut('slow'); 
                 }   
 

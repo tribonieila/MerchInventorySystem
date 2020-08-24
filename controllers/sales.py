@@ -5346,7 +5346,7 @@ def obslo_stock_header_footer_reports(canvas, doc):
     for n in db(db.Obsolescence_Stocks.id == request.args(0)).select():
         _sh = [
             [],
-            ['STOCK ISSUE VOUCHER'],
+            ['Obsolescence Stock Invoice'],
             ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
             ['Transaction No.',':',n.transaction_no,'','Transaction Date',':',n.transaction_date.strftime('%d-%m-%Y')],
             ['Department',':',n.dept_code_id.dept_name,'','Account Code',':',n.account_code_id.account_code],
@@ -5438,18 +5438,18 @@ def obslo_stock_transaction_table_reports():
         ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
-    _prt_ctr = db(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0)).select().first()
-    if not _prt_ctr:
-        ctr = 1
-        db.Stock_Issue_Transaction_Report_Counter.insert(stock_issue_transaction_no_id = request.args(0), printer_counter = ctr)
-    else:
-        _prt_ctr.printer_counter += 1
-        ctr = _prt_ctr.printer_counter
-        db.Stock_Issue_Transaction_Report_Counter.update_or_insert(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
+    # _prt_ctr = db(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0)).select().first()
+    # if not _prt_ctr:
+    #     ctr = 1
+    #     db.Stock_Issue_Transaction_Report_Counter.insert(stock_issue_transaction_no_id = request.args(0), printer_counter = ctr)
+    # else:
+    #     _prt_ctr.printer_counter += 1
+    #     ctr = _prt_ctr.printer_counter
+    #     db.Stock_Issue_Transaction_Report_Counter.update_or_insert(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
 
 
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str()]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str()]]
 
     _a_tbl = Table(_accounts, colWidths='*')
     _p_tbl = Table(_pos, colWidths='*')
