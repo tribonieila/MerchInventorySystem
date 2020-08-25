@@ -1,3 +1,11 @@
+VERSION CONTROL MODULE
+Inventory:
+    - Ver.1.0.1 - 25/8/2020, Initial version control
+    - Ver.1.0.2 - 26/8/2020, Obsolescence of stocks final and approved.
+Sales:
+    - Ver.1.0.1 - 25/8/2020, Initial version control
+Procurement:
+    - Ver.1.0.1 - 25/8/2020, Initial version control
 Activities:
 
 2020-7-16 # price_cost_after_discount field added
@@ -51,6 +59,8 @@ if _ip.selective_tax_price:
         _selective_tax_foc = (float(_ip.selective_tax_price or 0) / int(_id.uom_value)) * int(_tq)
     else:                
         _selective_tax = (float(_ip.selective_tax_price or 0) / int(_id.uom_value)) * int(_tq)
+
+unit price = ((wholesale_price  / uom) * uom) + ((selective_tax / uom) * uom)
 
 API BASIC CRUD
 Operation	    =    SQL	    =   HTTP	        =       RESTful WS	=   DDS	        =   MongoDB

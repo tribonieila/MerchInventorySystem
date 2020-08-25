@@ -79,8 +79,12 @@
                             <label class="col-sm-2 control-label"></label>
                             <div class="col-sm-10">                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
-                                <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('obsolescence_of_stocks')}}">abort</a>
+                                <input class="btn btn-success" type="button" value="proceed" id="btnproceed">     
+                                {{if auth.has_membership(role = 'ACCOUNTS'):}}                           
+                                    <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','account_grid')}}">abort</a>
+                                {{elif auth.has_membership(role = 'INVENTORY STORE KEEPER'):}}
+                                    <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','str_kpr_grid')}}">abort</a>
+                                {{pass}}
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('inventory','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        

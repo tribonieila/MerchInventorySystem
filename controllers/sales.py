@@ -5342,12 +5342,12 @@ def obslo_stock_header_footer_reports(canvas, doc):
     canvas.saveState()
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
     
-    # Header 'Stock Corrections Report'
+    # Header 'Stock Corrections Report' 
     for n in db(db.Obsolescence_Stocks.id == request.args(0)).select():
         _sh = [
             [],
             ['Obsolescence Stock Invoice'],
-            ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date_approved.strftime('%d-%m-%Y, %H:%M %p')],
+            ['Stock Issue No.',':',str(n.transaction_prefix_id.prefix)+str(n.obsolescence_stocks_no),'','Stock Issue Date',':',n.obsolescence_stocks_date_approved.strftime('%d-%m-%Y')],
             ['Transaction No.',':',n.transaction_no,'','Transaction Date',':',n.transaction_date.strftime('%d-%m-%Y')],
             ['Department',':',n.dept_code_id.dept_name,'','Account Code',':',n.account_code_id.account_code],
             ['Location',':',n.location_code_id.location_name,'','Account Name',':',n.account_code_id.account_name],
@@ -5387,29 +5387,42 @@ def obslo_stock_header_footer_reports(canvas, doc):
 
 def obslo_stock_transaction_table_reports():
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
-    ctr = 0
-    _sc = [['#','Item Code','Description','UOM','Quantity']]
+    ctr = _sel_tax = _show_sel_tax =0
+    _sc = [['#','Item Code','Description','Cat','UOM','Qty','Unit Price','Amount']]
     for n in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)).select(orderby = db.Obsolescence_Stocks_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id)):
         ctr += 1
+        _sel_tax += n.Obsolescence_Stocks_Transaction.selective_tax
+        if _sel_tax:
+            _show_sel_tax = 'Total Selective Tax: ' + str(locale.format('%.2F',_sel_tax or 0, grouping = True))
         if n.Obsolescence_Stocks_Transaction.uom == 1:
             _qty = n.Obsolescence_Stocks_Transaction.quantity
         else:
             _qty = card(n.Obsolescence_Stocks_Transaction.item_code_id, n.Obsolescence_Stocks_Transaction.quantity, n.Obsolescence_Stocks_Transaction.uom)
-        _sc.append([ctr,n.Obsolescence_Stocks_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),n.Obsolescence_Stocks_Transaction.uom, _qty])
-    _sc.append(['','','----------  NOTHING TO FOLLOWS   ----------','',''])
-    _sc_tbl = Table(_sc, colWidths=[20,60,'*',50,50], repeatRows = 1)
+        _total_amount = n.Obsolescence_Stocks_Transaction.total_amount
+        _sc.append([ctr,
+        n.Obsolescence_Stocks_Transaction.item_code_id.item_code, 
+        str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),
+        n.Obsolescence_Stocks_Transaction.category_id.mnemonic, 
+        n.Obsolescence_Stocks_Transaction.uom, 
+        _qty,
+        locale.format('%.2F',n.Obsolescence_Stocks_Transaction.price_cost), 
+        locale.format('%.2F',n.Obsolescence_Stocks_Transaction.total_amount or 0, grouping = True), 
+        ])
+    _sc.append([_show_sel_tax,'','','','','','Total Amount: ', locale.format('%.2F',_total_amount or 0, grouping = True)])
+    _sc.append(['----------  NOTHING TO FOLLOWS   ----------'])
+    _sc_tbl = Table(_sc, colWidths=[20,60,'*',30,30,50,70,70], repeatRows = 1)
     _sc_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
         ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
-        ('TOPPADDING',(0,-1),(-1,-1),15),
-        
+        ('LINEBELOW', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
+        ('TOPPADDING',(0,-1),(-1,-1),15),        
         ('FONTNAME',(0,0),(-1,-1),'Courier'),
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,-1), (-1,-1), 'CENTER'),
-        ('VALIGN',(0,0),(4,-1),'TOP'),
-        # ('SPAN',(0,-1),(-1,-1)),
+        ('ALIGN', (6,1), (-1,-1), 'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('SPAN',(0,-1),(-1,-1)),
         ]))    
 
     _remarks = [['Remarks',':',_id.remarks]]
@@ -5446,10 +5459,10 @@ def obslo_stock_transaction_table_reports():
     #     _prt_ctr.printer_counter += 1
     #     ctr = _prt_ctr.printer_counter
     #     db.Stock_Issue_Transaction_Report_Counter.update_or_insert(db.Stock_Issue_Transaction_Report_Counter.stock_issue_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
+    _printed = request.now.strftime('%d/%m/%Y,%H:%M%p')
 
-
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str()]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str()]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","Printed On: " + str(_printed)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","Printed On: " + str(_printed)]]
 
     _a_tbl = Table(_accounts, colWidths='*')
     _p_tbl = Table(_pos, colWidths='*')

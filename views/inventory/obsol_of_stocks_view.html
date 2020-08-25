@@ -88,7 +88,11 @@
                                 {{ if _id.status_id != 4: }}
                                     <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
                                 {{ else: }}
-                                    {{=form.custom.widget.status_id}}
+                                    {{if auth.has_membership(role = 'ACCOUNTS MANAGER') or auth.has_membership(role = 'INVENTORY SALES MANAGER'):}}
+                                        <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>
+                                    {{else:}}
+                                        {{=form.custom.widget.status_id}}
+                                    {{pass}}
                                 {{ pass }}
                                 
                             </div>    
@@ -99,10 +103,10 @@
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                   
                                 {{if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS'):}}     
-                                    {{ if _id.status_id == 24: }}        
-                                        <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled="true">
+                                    {{ if _id.status_id != 4: }}        
+                                        <input class="btn btn-primary" type="button" value="submit" disabled>
                                     {{ else: }}
-                                        <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                        <input class="btn btn-primary" type="submit" value="submit">
                                     {{ pass }}
                                 {{elif auth.has_membership(role = 'INVENTORY SALES MANAGER'):}}
                                     {{ if _id.status_id == 24:}}
@@ -132,8 +136,7 @@
                 </div>
 
                 <hr>
-                <div id = "order_panel">
-                    
+                <div id = "order_panel">                    
                     {{=LOAD('inventory','get_obsolescence_stocks_transaction.load', ajax = True, args = request.args(0), target="tblSOT")}}
                 </div>
             </div>          
@@ -153,7 +156,8 @@ $(document).ready(function(){
         location.href = "{{=URL('inventory','mngr_req_grid')}}"
     });
     $("#btnAccountsApproved").click(function(){
-        ajax("{{=URL('inventory','obsol_grid_view_approved', args=request.args(0))}}",['remarks'])
+        ajax("{{=URL('inventory','obsol_grid_view_approved', args=request.args(0))}}",['remarks'])        
+        window.open("{{=URL('sales','obslo_stock_transaction_table_reports', args = request.args(0))}}");
         location.href = "{{=URL('inventory','account_manager_workflow')}}"
         
     });

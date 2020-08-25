@@ -154,12 +154,17 @@
 			<div class="menubar-scroll-panel">
 				<!-- BEGIN MAIN MENU -->
 				<!-- <i class="fas fa-[NAME]"></i> -->
-				
+			
+			{{
+				_inv = db(db.Version_Control.id == 1).select().first()
+				_sal = db(db.Version_Control.id == 2).select().first()
+				_pro = db(db.Version_Control.id == 3).select().first()
+			}}
+			
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ROOT')):}}
 			<ul id="main-menu" class="gui-controls">
-				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
-				
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>				
 					<ul>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
@@ -233,8 +238,10 @@
 							</ul>
 						</li>
 					</ul>
+
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT</span></a>
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_sal.version_no}}</span></span></a>				
 					<ul>
 						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
@@ -244,7 +251,9 @@
 						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">{{=_pro.version_no}}</span></span></a>
 					<ul>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
@@ -276,6 +285,7 @@
 					</ul>
 				</li>
 				
+
 				<li><a href="{{=URL('sili','labuyo')}}"><div class="gui-icon"><i class="md fas fa-user-shield"></i></div><span class="title">ADMINISTRATOR</span></a></li>
 
 			</ul>
@@ -300,8 +310,9 @@
 						<li><a href="{{=URL('inventory','obsolescence_of_stocks')}}" ><span class="title">Obsolescence of stocks</span></a></li> -->
 
 					</ul>
-				</li>					
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
+				</li>	
+											
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>
 					<ul>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
@@ -331,8 +342,10 @@
 							</ul>
 						</li>
 					</ul>
-				</li>				
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT</span></a>
+				</li>
+				
+
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_sal.version_no}}</span></span></a>
 					<ul>
 						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
@@ -340,8 +353,10 @@
 						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 					</ul>
-				</li>						
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
+				</li>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">{{=_pro.version_no}}</span></span></a>
 					<ul>
 						<li><a href="{{=URL('sales','customer_grid')}}"><span class="title">Customer Master</span></a></li>
 						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
@@ -350,6 +365,7 @@
 						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 					</ul>
 				</li>							
+
 		
 			</ul>
 			{{pass}}
@@ -369,8 +385,10 @@
 						<li><a href="{{=URL('inventory','get_workflow_reports',args=3)}}" ><span class="title">Stock Corrections</span></a></li>
 						<li><a href="{{=URL('inventory','get_workflow_reports',args=4)}}" ><span class="title">Obsolescence of stocks</span></a></li>					
 					</ul>
-				</li>					
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY</span></a>
+				</li>		
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>
+				
 					<ul>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
@@ -409,7 +427,10 @@
 						</li>
 					</ul>
 				</li>				
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT</span></a>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_sal.version_no}}</span></span></a>
+				
 					<ul>
 						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
@@ -418,7 +439,10 @@
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 					</ul>
 				</li>						
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES</span></a>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">{{=_pro.version_no}}</span></span></a>
+				
 					<ul>
 						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
 						<!-- <li><a href="#" ><span class="title">Delivery Note</span></a></li> -->
@@ -426,6 +450,7 @@
 						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 					</ul>
 				</li>		
+				
 			</ul>
 			{{pass}}			
 			

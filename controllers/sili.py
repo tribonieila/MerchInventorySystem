@@ -2,6 +2,11 @@ from datetime import datetime
 
 now = datetime.now() # current date and time
 
+def get_version_control():
+    grid = SQLFORM.grid(db.Version_Control)
+    # print db(db.Version_Control.id == 1).select(db.Version_Control.version_no)
+    return dict(grid = grid)
+
 def generate():    
     for n in db().select(db.Stock_File.ALL):
         n.update_record(pos_stock=0)
