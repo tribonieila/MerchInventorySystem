@@ -1,7 +1,7 @@
 
 {{=table}}
 {{=form.custom.begin}}
-<div class="row">    
+<div class="row">     
     <div class="col-md-2">
         <div class="form-group">
             <label class="col-sm-4 control-label">Item Code</label>

@@ -683,15 +683,26 @@ db.define_table('Merch_Stock_Transaction',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+db.define_table('Master_Account',
+    Field('account_code','string', length = 15),
+    Field('account_name','string', length = 50),    
+    Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier'),('SAC','SAC - Stock Adjustment Code'),('OOS','OOS - Obselensce Of Stock')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees    
+    Field('stock_adjustment_account', 'string', length = 10), # stock adjustment account
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
+
 db.define_table('Stock_Adjustment',
     Field('stock_adjustment_no_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),
     Field('stock_adjustment_no','integer'),
     Field('transaction_no', 'integer', default = 0, writable = False),
     Field('transaction_date', 'date', default=request.now),
     Field('stock_adjustment_date', 'date', default = request.now),
+    Field('stock_adjustment_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Account Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Account')),    # create normal    
     Field('stock_adjustment_code','string', length = 10),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')),    
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),    
     Field('adjustment_type', 'reference Adjustment_Type', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Adjustment_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('total_amount','decimal(10,4)', default = 0),    
     Field('srn_status_id','reference Stock_Status', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
@@ -704,6 +715,8 @@ db.define_table('Stock_Adjustment',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
+# Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)))
+
 db.define_table('Stock_Adjustment_Transaction',
     Field('stock_adjustment_no_id','reference Stock_Adjustment',ondelete = 'NO ACTION',writable = False, requires = IS_IN_DB(db, db.Stock_Adjustment.id, '%(stock_adjustment_no)s', zero = 'Choose Adjustment No')),
     Field('item_code_id', 'reference Item_Master', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Item_Master.id, '%(item_code)s', zero = 'Choose Item Code')),    
@@ -711,15 +724,15 @@ db.define_table('Stock_Adjustment_Transaction',
     Field('category_id','reference Transaction_Item_Category', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('quantity','integer', default = 0),
     Field('uom','integer', default = 0),    
-    # Field('price_cost', 'decimal(10,6)', default = 0),
+    Field('price_cost', 'decimal(10,6)', default = 0),
     Field('average_cost','decimal(10,4)', default = 0),
     Field('wholesale_price', 'decimal(10,2)', default = 0),
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),    
     Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
-    # Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax FOC'), # outer
+    Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax FOC'), # outer
     Field('delete', 'boolean', default = False),
-    Field('total_amount','decimal(10,4)', default = 0),    
+    Field('total_amount','decimal(20,6)', default = 0),    
     # Field('total_cost','decimal(10,4)', default = 0, compute = lambda p: (p['average_cost'] / p['uom']) * p['quantity']), # remove 
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
@@ -737,7 +750,7 @@ db.define_table('Stock_Adjustment_Transaction_Temp',
     Field('price_cost','decimal(10,4)',default=0),
     Field('average_cost','decimal(10,4)', default = 0),
     Field('total_cost','decimal(10,4)', default = 0),
-    Field('total_amount','decimal(10,4)', default = 0),
+    Field('total_amount','decimal(20,6)', default = 0),
     Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
     Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'), # outer
     Field('ticket_no_id', 'string', length = 10),
@@ -966,16 +979,6 @@ db.define_table('Employee_Master',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False), format = 'customer_account_no')
-
-db.define_table('Master_Account',
-    Field('account_code','string', length = 15),
-    Field('account_name','string', length = 50),    
-    Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier'),('SAC','SAC - Stock Adjustment Code'),('OOS','OOS - Obselensce Of Stock')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees    
-    Field('stock_adjustment_account', 'string', length = 10), # stock adjustment account
-    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
-    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
-    Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
-    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
 db.define_table('Sales_Man',
     Field('users_id', db.auth_user, ondelete = 'NO ACTION'),

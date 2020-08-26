@@ -1,18 +1,11 @@
 
     <hr>
     {{=table}}
-    {{if form.errors:}}    
-    <ul>
-        {{for fieldname in form.errors:}}
-            <li>{{=form.errors[fieldname]}}</li>
-        {{pass}}
-    </ul>
-    {{form.errors.clear()}}
-    {{pass}}
-    
+
     
 
     {{=form.custom.begin}}
+    <input type="text" class="form-control" id="ticket_no" name = "ticket_no" hidden>
     <div class="form-horizontal">   
     <div class="row">
         <div class="col-md-2">
@@ -58,13 +51,16 @@
             </div>   
         </div>        
         <div class="col-md-1">
-            <input class="btn btn-success" type="submit" value="ADD" >
-        </div>            
+            <input class="btn btn-success" type="submit" value="ADD" id="btnSubmit" >
+        </div>        
+            
     </div>
     </div>
     <hr>
     {{=form.custom.end}}
+    
     <div id ="_stk_adj_desc" ></div>
+    
     
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
@@ -72,7 +68,10 @@ $(document).ready(function(){
     $("#no_table_quantity, #no_table_pieces, #average_cost").on("keyup", function(event) {
         nospaces(this);
     });
-
+    $("#btnSubmit").click(function(){
+        var tick = $("#ticket_no_id").val();
+        $("#ticket_no").val(tick);        
+    });
     function nospaces(t){
         if(t.value.match(/\s/g)){
         alert('Sorry, you are not allowed to enter any spaces');
@@ -101,9 +100,7 @@ $(document).ready(function(){
 
     }
 
-    $('#del').click(function(){
-        $('#tmptbl').get(0).reload();
-    });
+
     $('.delete').click(function(){
         var _id = $(this).attr('data-id');
         var parent = $(this).parent("div").parent("td").parent("tr");
@@ -121,9 +118,10 @@ $(document).ready(function(){
                 }
             },
             callback: function (result) {
-                if (result) {
+                if (result) {                    
                     ajax("{{=URL('inventory','stock_adjustment_delete')}}" + '/' + _id);
-                    parent.fadeOut('slow');                        
+                    parent.fadeOut('slow');    
+                    
                 }
             }
         })

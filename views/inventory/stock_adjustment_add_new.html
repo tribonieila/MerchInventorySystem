@@ -2,10 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <!-- <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">+ ADD NEW</a></li>
-                <li><a href="#" onclick=window.location="{{=URL('stock_adjustment_browse')}}";>BROWSE</a></li>
-            </ul> -->
             <span class="card-title">STOCK ADJUSTMENT (+/-)</span>
         </div>
         <div class="card-body tab-content" >         
@@ -62,7 +58,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Adjustment Code</label>
                             <div class="col-sm-8">
-                                <div id="adjustment_code"></div>
+                                {{=form.custom.widget.stock_adjustment_code_id}}     
                             </div>
                         </div>                    
                     </div>        
@@ -82,7 +78,7 @@
                             <div class="col-sm-8">
                                 <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                 <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_adjustment_browse')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('account_grid')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
                                 
                             </div>                            
@@ -93,7 +89,7 @@
             {{=form.custom.end}} 
             
             <div id = "request_panel">
-                {{=LOAD('inventory','stock_adjutment_transaction_temporary_table.load', ajax = True, target = 'tmptbl')}}
+                {{=LOAD('inventory','stock_adjutment_transaction_temporary_table.load',  ajax = True, target = 'tblTemp')}}
             </div>                       
         </div>
     </div>
@@ -106,8 +102,8 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();   
-    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_location_code_id').change(function(){
-        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $('#Stock_Adjustment_location_code_id').val()) {
+    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_location_code_id, #Stock_Adjustment_stock_adjustment_code_id').change(function(){
+        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $('#Stock_Adjustment_location_code_id').val() && $().val("#Stock_Adjustment_stock_adjustment_code_id")) {
             $('#btnrequest').removeAttr('disabled');
         } else {
             $('#btnrequest').attr('disabled','disabled');
@@ -140,6 +136,7 @@ $(document).ready(function(){
         $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
         $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
         $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
+        $('#Stock_Adjustment_stock_adjustment_code_id').attr('disabled','disabled');
         $('#btnrequest').attr('disabled','disabled');
         $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');
         return false;

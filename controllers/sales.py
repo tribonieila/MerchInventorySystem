@@ -5387,7 +5387,7 @@ def obslo_stock_header_footer_reports(canvas, doc):
 
 def obslo_stock_transaction_table_reports():
     _id = db(db.Obsolescence_Stocks.id == request.args(0)).select().first()
-    ctr = _sel_tax = _show_sel_tax =0
+    ctr = _sel_tax = _show_sel_tax = _total_amount =0
     _sc = [['#','Item Code','Description','Cat','UOM','Qty','Unit Price','Amount']]
     for n in db(db.Obsolescence_Stocks_Transaction.obsolescence_stocks_no_id == request.args(0)).select(orderby = db.Obsolescence_Stocks_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Obsolescence_Stocks_Transaction.item_code_id)):
         ctr += 1
@@ -5398,7 +5398,7 @@ def obslo_stock_transaction_table_reports():
             _qty = n.Obsolescence_Stocks_Transaction.quantity
         else:
             _qty = card(n.Obsolescence_Stocks_Transaction.item_code_id, n.Obsolescence_Stocks_Transaction.quantity, n.Obsolescence_Stocks_Transaction.uom)
-        _total_amount = n.Obsolescence_Stocks_Transaction.total_amount
+        _total_amount += n.Obsolescence_Stocks_Transaction.total_amount
         _sc.append([ctr,
         n.Obsolescence_Stocks_Transaction.item_code_id.item_code, 
         str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),

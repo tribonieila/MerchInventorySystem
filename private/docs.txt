@@ -2,6 +2,19 @@ VERSION CONTROL MODULE
 Inventory:
     - Ver.1.0.1 - 25/8/2020, Initial version control
     - Ver.1.0.2 - 26/8/2020, Obsolescence of stocks final and approved.
+    - Ver.1.0.3 - 27/8/2020, Stock Adjustment final and approved.
+    There’s no back or close button when viewing the  workflow report of user – Jyothi and Manoj
+    Add the selective tax information on the printing and put a separate grand total without selective tax.
+    - Ver.1.0.4 - 27/8/2020, Stock Corrections final and approved.
+    Manoj:
+        When viewed by the requestor, put a GO BACK or ABORT button to enable him/her to leave the page.
+    MANOJ’s Workflow
+Rejected Stock Correction by Jyothi is not going back to requestor manoj.
+Manoj should have the option to request again or cancel it permanently
+    jyothi:
+    Add new column to display the Grand Total of the Stock Corrections
+    Total Amount of the first item is blank
+
 Sales:
     - Ver.1.0.1 - 25/8/2020, Initial version control
 Procurement:
@@ -120,6 +133,15 @@ sudo systemctl stop postgresql.service
 sudo systemctl start postgresql.service
 sudo systemctl enable postgresql.service
 sudo systemctl status postgresql.service
+    {{if form.errors:}}    
+    <ul>
+        {{for fieldname in form.errors:}}
+            <li>{{=form.errors[fieldname]}}</li>
+        {{pass}}
+    </ul>
+    {{form.errors.clear()}}
+    {{pass}}
+    
 
 HR MANAGEMENT
 Main Menu
