@@ -5026,7 +5026,7 @@ def stock_adjustment_add_new():
     ticket_no_id = id_generator()
     db.Stock_Adjustment.srn_status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')        
     db.Stock_Adjustment.srn_status_id.default = 4  
-    db.Stock_Adjustment.stock_adjustment_code_id.widget = SQLFORM.widgets.autocomplete(request, db.Master_Account.account_code, id_field = db.Master_Account.id, limitby = (0,10), min_length = 2)
+    db.Stock_Adjustment.stock_adjustment_code_id.widget = SQLFORM.widgets.autocomplete(request, db.Master_Account.stock_adjustment_account, id_field = db.Master_Account.id, limitby = (0,10), min_length = 2)
     # db.Stock_Adjustment.stock_adjustment_code_id.widget = lambda field, value: SQLFORM.widgets.options.widget(field, value, _class='form-control')
     form = SQLFORM(db.Stock_Adjustment)
     if form.process(onvalidation = stock_adjustment_form_validation).accepted:          
@@ -5049,7 +5049,7 @@ def stock_adjustment_add_new():
                 wholesale_price = _itm_price.wholesale_price, 
                 retail_price = _itm_price.retail_price,
                 vansale_price = _itm_price.vansale_price, 
-                selective_tax = _itm_price.selective_tax_price, 
+                selective_tax = i.selective_tax, 
                 average_cost = i.average_cost,                 
                 selective_tax_foc = i.selective_tax_foc,
                 price_cost = i.price_cost, 
@@ -5691,7 +5691,7 @@ def stock_adjustment_manager_grid():
     #     _query = (db.Stock_Adjustment.archive == False) | (db.Stock_Adjustment.srn_status_id == 4) | (db.Stock_Adjustment.srn_status_id == 2) & (db.Stock_Adjustment.dept_code_id == _usr.department_id)
     # else:
     _query = (db.Stock_Adjustment.srn_status_id == 15) 
-    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action')), _class='bg-primary')  
+    head = THEAD(TR(TH('Date'),TH('Stock Adjustment No'),TH('Transaction No.'),TH('Account Code'),TH('Department'),TH('Location'),TH('Amount'),TH('Adjustment Type'),TH('Requested By'),TH('Status'),TH('Action')), _class='bg-primary')  
     for i in db(_query).select(orderby = ~db.Stock_Adjustment.id):
         edit_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('stock_adjustment_browse_details', args = i.id, extension = False))
         appr_lnk = A(I(_class='fas fa-user-check'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')            
@@ -5701,6 +5701,8 @@ def stock_adjustment_manager_grid():
         row.append(TR(
             TD(i.stock_adjustment_date),
             TD(i.stock_adjustment_no_id.prefix,i.stock_adjustment_no),
+            TD(i.transaction_no),
+            TD(i.stock_adjustment_code_id.account_code,', ',i.stock_adjustment_code_id.account_name),
             TD(i.dept_code_id.dept_name),
             TD(i.location_code_id.location_name),
             TD(locale.format('%.2F', i.total_amount or 0, grouping = True), _align = 'right'),
@@ -6702,7 +6704,7 @@ def get_stock_corrections_workflow_reports():
 def get_stock_corrections_reports():    
     _query = db(db.Stock_Corrections.status_id == 16).select(orderby = ~db.Stock_Corrections.id)
     row = []
-    head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Total Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -6713,8 +6715,10 @@ def get_stock_corrections_reports():
         row.append(TR(
             TD(n.stock_corrections_date),
             TD(n.stock_corrections_id.prefix,n.stock_corrections_no),
-            TD(n.dept_code_id.dept_name),
-            TD(n.location_code_id.location_name),
+            TD(n.transaction_no),
+            TD(n.dept_code_id.dept_code,' - ', n.dept_code_id.dept_name),
+            TD(n.location_code_id.location_code,' - ',n.location_code_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
             TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),            
             TD(n.status_id.description),
             TD(n.status_id.required_action),            
@@ -6726,35 +6730,33 @@ def get_stock_corrections_reports():
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('ROOT'))
 def stock_corrections():
     if auth.has_membership(role = 'INVENTORY STORE KEEPER') | auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'): # MANOJ                
-        _query = db((db.Stock_Corrections.status_id == 4) & (db.Stock_Corrections.created_by == auth.user_id)).select(orderby = db.Stock_Corrections.id)
+        _query = db((db.Stock_Corrections.status_id != 16)  & (db.Stock_Corrections.created_by == auth.user_id)).select(orderby = db.Stock_Corrections.id)
     elif auth.has_membership(role = 'ACCOUNTS MANAGER'): # JYOTHI
         # _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select(orderby = ~db.Stock_Corrections.id)
         _query = db((db.Stock_Corrections.archive != True) & (db.Stock_Corrections.status_id == 4)).select()
     elif auth.has_membership(role = 'ROOT'): # ADMIN
         _query = db().select(orderby = ~db.Stock_Corrections.id)        
-    head = THEAD(TR(TH('Date'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
+    head = THEAD(TR(TH('Date'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Total Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
     for n in _query:
-        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'MANAGEMENT'):
-            if n.status_id == 4:
+        if auth.has_membership(role = 'ACCOUNTS')  | auth.has_membership(role = 'INVENTORY STORE KEEPER'):
+            if n.status_id != 16:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
                 edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('inventory','get_stock_corrections_id', args = n.id))
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-                # appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','stock_corrections_accounts_view_approved', args = n.id, extension = False))
-                # reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle btn', callback = URL('inventory','stock_corrections_accounts_view_rejected', args = n.id, extension = False))
                 clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
                 attc_lnk = A(I(_class='fas fa-paperclip'), _title='Upload File', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, clea_lnk,  attc_lnk)
-            elif n.status_id == 16:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
-                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
-                # appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                # reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
-                attc_lnk = A(I(_class='fas fa-paperclip'), _title='Upload File', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
-                btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, clea_lnk,  attc_lnk)
+                btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+            # elif n.status_id == 16:
+            #     view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
+            #     edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
+            #     dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+            #     # appr_lnk = A(I(_class='fas fa-user-check'), _title='Approved Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            #     # reje_lnk = A(I(_class='fas fa-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            #     clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
+            #     attc_lnk = A(I(_class='fas fa-paperclip'), _title='Upload File', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
+            #     btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, clea_lnk,  attc_lnk)
         elif auth.has_membership(role = 'ACCOUNTS MANAGER'):
             if n.status_id == 4:
                 view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
@@ -6774,11 +6776,11 @@ def stock_corrections():
             #     clea_lnk = A(I(_class='fas fa-archive'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
             #     prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href = URL('sales','stock_corrections_transaction_table_reports', args = n.id, extension = False))
             #     btn_lnk = DIV(view_lnk, prin_lnk, edit_lnk, dele_lnk, appr_lnk, reje_lnk, clea_lnk)
-        else:
-                view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-                btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        # else:
+        #         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
+        #         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        #         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        #         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
         # elif auth.has_membership(role = 'ROOT'):
         #     if n.status_id == 4:
         #         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
@@ -6801,9 +6803,10 @@ def stock_corrections():
         row.append(TR(
             TD(n.stock_corrections_date),
             TD(n.transaction_no),
-            TD(n.dept_code_id.dept_name),
-            TD(n.location_code_id.location_name),
-            TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),            
+            TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),
+            TD(n.location_code_id.location_code,' - ', n.location_code_id.location_name),
+            TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
+            TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),                        
             TD(n.status_id.description),
             TD(n.status_id.required_action),            
             TD(btn_lnk)))
@@ -6870,8 +6873,13 @@ def stock_corrections_accounts_view():
     db.Stock_Corrections.location_code_id.writable = False
     db.Stock_Corrections.stock_quantity_from_id.writable = False 
     db.Stock_Corrections.stock_quantity_to_id.writable = False 
-    db.Stock_Corrections.status_id.writable = False   
-    # db.Stock_Corrections.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 4) | (db.Stock_Status.id == 10)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
+    db.Stock_Corrections.total_amount.writable = False            
+    if auth.has_membership(role = 'ACCOUNTS MANAGER'):
+        db.Stock_Corrections.status_id.writable = False            
+        
+    elif auth.has_membership(role = 'ACCOUNTS'):
+        if _id.status_id != 16:
+            db.Stock_Corrections.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 10) | (db.Stock_Status.id == 4) | (db.Stock_Status.id == 3)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     form = SQLFORM(db.Stock_Corrections, request.args(0))
     if form.process().accepted:
         session.flash = 'RECORD UPDATED'
@@ -6884,6 +6892,7 @@ def stock_corrections_accounts_view():
 
     elif form.errors:
         session.flash = 'FORM HAS ERRORS'        
+        print form.errors
     return dict(form = form, _id = _id)
 
 def stock_corrections_submit():
@@ -6975,6 +6984,7 @@ def validate_stock_corrections(form):
 
 def stock_corrections_add_new():
     ticket_no_id = id_generator()
+    _total_amount = 0
     session.ticket_no_id = ticket_no_id    
     db.Stock_Corrections.stock_quantity_from_id.requires = IS_IN_DB(db, db.Stock_Type.id, '%(description)s', zero = 'Choose Stock Type')
     db.Stock_Corrections.stock_quantity_to_id.requires = IS_IN_DB(db, db.Stock_Type.id, '%(description)s', zero = 'Choose Stock Type')
@@ -6985,7 +6995,8 @@ def stock_corrections_add_new():
         _id = db(db.Stock_Corrections.transaction_no == form.vars.transaction_no).select().first()        
         _query = db(db.Stock_Corrections_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select()        
         for n in _query:
-            _p = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()            
+            _p = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()          
+            _total_amount += n.total_amount
             db.Stock_Corrections_Transaction.insert(
                 stock_corrections_no_id = _id.id,
                 item_code_id = n.item_code_id,                
@@ -7000,7 +7011,7 @@ def stock_corrections_add_new():
                 selective_tax = _p.selective_tax_price,                
                 vat_percentage = _p.vat_percentage)
             db(db.Stock_Corrections_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).delete()
-        _trns_pfx = db((db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'COR')).select().first()        
+        _id.update_record(total_amount = _total_amount)        
         response.flash = 'Transaction No. ' + str(form.vars.transaction_no) + ' generated.'
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'
@@ -7200,6 +7211,9 @@ def stock_corrections_transaction_table():
             else:
                 _qty = int(request.vars.quantity) * int(request.vars.uom) + int(request.vars.pieces)
                 db(db.Stock_Corrections_Transaction.id == request.vars.ctr).update(quantity = _qty, total_amount = request.vars.total_amount)
+            print _id.id, request.vars.grand_total
+            _id.update_record(total_amount = request.vars.grand_total)
+            
             response.js = "$('#tblcor').get(0).reload()"            
     return dict(table = table)    
 
@@ -7326,14 +7340,14 @@ def get_workflow_reports():
             _query = db(db.Stock_Adjustment.srn_status_id == 15).select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
         elif auth.has_membership(role = 'ROOT'): # ADMIN
             _query = db().select(db.Stock_Adjustment.ALL, orderby = ~db.Stock_Adjustment.id)
-        head = THEAD(TR(TH('Date'),TH('Adjustment No'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')))
+        head = THEAD(TR(TH('Date'),TH('Adjustment No'),TH('Transaction No.'),TH('Account Code'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Action')),_class='bg-primary')
         for n in db(db.Stock_Adjustment.srn_status_id == 15).select(orderby = ~db.Stock_Adjustment.id):
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','stock_adjustment_browse_details', args = n.id))
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('insurance_proposal_edit', args = n.id))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
             prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _target='blank', _href=URL('inventory','stock_adjustment_report', args=n.id, extension=False))
             btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk,prin_lnk)
-            row.append(TR(TD(n.stock_adjustment_date),TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
+            row.append(TR(TD(n.stock_adjustment_date),TD(n.stock_adjustment_no_id.prefix,n.stock_adjustment_no),TD(n.transaction_no),TD(n.stock_adjustment_code_id.account_code,', ', n.stock_adjustment_code_id.account_name),TD(n.dept_code_id.dept_name),TD(n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(n.srn_status_id.required_action),TD(btn_lnk)))
         body = TBODY(*row)
         table = TABLE(*[head, body], _class='table')#,**{'_data-search':'true','_data-classes':'table table-striped','_data-pagination':'true','_data-pagination-loop':'false'})
     elif int(request.args(0)) == int(3): # Stock Corrections
@@ -7343,7 +7357,7 @@ def get_workflow_reports():
             _query = db((db.Stock_Corrections.created_by == auth.user_id) & (db.Stock_Corrections.status_id == 16)).select(orderby = ~db.Stock_Corrections.id) 
         elif auth.has_membership('ACCOUNTS MANAGER'):
             _query = db(db.Stock_Corrections.status_id == 16).select(orderby = ~db.Stock_Corrections.id) 
-        head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Department'),TH('Location'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')))
+        head = THEAD(TR(TH('Date'),TH('Corrections No.'),TH('Transaction No.'),TH('Department'),TH('Location'),TH('Total Amount'),TH('Requested By'),TH('Status'),TH('Action Required'),TH('Action')))
         for n in _query:
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button ', _role='button', _class='btn btn-icon-toggle ', _href = URL('inventory','stock_corrections_accounts_view', args = n.id, extension = False))        
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
@@ -7353,8 +7367,10 @@ def get_workflow_reports():
             row.append(TR(
                 TD(n.stock_corrections_date),
                 TD(n.stock_corrections_id.prefix,n.stock_corrections_no),
-                TD(n.dept_code_id.dept_name),
-                TD(n.location_code_id.location_name),
+                TD(n.transaction_no),
+                TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),
+                TD(n.location_code_id.location_code,' - ',n.location_code_id.location_name),
+                TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),
                 TD(n.created_by.first_name.upper(),' ',n.created_by.last_name.upper()),            
                 TD(n.status_id.description),
                 TD(n.status_id.required_action),            
@@ -9462,10 +9478,10 @@ def stock_adjustment_report():
     for r in db(db.Stock_Adjustment.id == request.args(0)).select():
         stk_adj = [
             ['STOCK ADJUSTMENT'],
-            ['Stock Adjustment',':', str(r.stock_adjustment_no_id.prefix)+str(r.stock_adjustment_no),'','Stock Adjustment Date',':',r.date_approved.strftime('%d-%m-%Y, %H:%M %p')],
+            ['Stock Adjustment',':', str(r.stock_adjustment_no_id.prefix)+str(r.stock_adjustment_no),'','Stock Adjustment Date',':',r.date_approved.strftime('%d-%m-%Y')], #, %H:%M %p
             ['Transaction No.',':', str(r.transaction_no)+'/'+str(r.transaction_date.strftime('%d-%m-%Y')),'','Location',':',r.location_code_id.location_name],
-            ['Department',':', r.dept_code_id.dept_name,'','Stock Adjustment Code',':',r.stock_adjustment_code],
-            ['Adjustment Type',':', r.adjustment_type.description,'','Status',':', r.srn_status_id.description]]
+            ['Department',':', str(r.dept_code_id.dept_code) + '-' + str(r.dept_code_id.dept_name),'','Stock Adjustment Code',':',r.stock_adjustment_code_id.account_code],
+            ['Adjustment Type',':', r.adjustment_type.description,'','Stock Adjustment Name',':', r.stock_adjustment_code_id.account_name]]
     stk_adj_tbl = Table(stk_adj, colWidths=['*',15,'*',15,'*',15,'*'])
     stk_adj_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
@@ -9484,13 +9500,26 @@ def stock_adjustment_report():
     
 
     stk_adj_trnx = [['#','Item Code','Item Description','Cat.','UOM','Qty','Price','Total']]
+    _selective_tax_foc = _selective_tax = _no_tax = _tax = 0
     for r in db(db.Stock_Adjustment_Transaction.stock_adjustment_no_id == request.args(0)).select(orderby = db.Stock_Adjustment_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Adjustment_Transaction.item_code_id)):
         
         ctr += 1
         # _total = r.Stock_Adjustment_Transaction.quantity * r.Stock_Adjustment_Transaction.price_cost
         _grand_total += r.Stock_Adjustment_Transaction.total_amount
-        # _selective_tax += r.Stock_Adjustment_Transaction.selective_tax
-
+        _selective_tax += r.Stock_Adjustment_Transaction.selective_tax
+        _selective_tax_foc += r.Stock_Adjustment_Transaction.selective_tax_foc
+        _tax = _selective_tax + _selective_tax_foc
+        _no_tax = _grand_total - _tax
+        if _selective_tax:
+            _print_selective_tax = 'Selective Tax: ' + str(_selective_tax)
+        else:
+            _print_selective_tax = ''
+        if _selective_tax_foc:
+            _print_selective_tax_foc = 'Selective Tax FOC: ' + str(_selective_tax_foc)
+        else:
+            _print_selective_tax_foc = ''
+        _print_average_cost = 'Grand Total W/T: ' + str(locale.format('%.2F',_no_tax or 0, grouping = True))
+        _show_selective_tax = _print_selective_tax_foc + '\n' + _print_selective_tax + '\n' + _print_average_cost
         stk_adj_trnx.append([
             ctr,
             r.Stock_Adjustment_Transaction.item_code_id.item_code,
@@ -9499,12 +9528,12 @@ def stock_adjustment_report():
             r.Stock_Adjustment_Transaction.uom,
             # r.Stock_Adjustment_Transaction.quantity,
             card(r.Stock_Adjustment_Transaction.item_code_id, r.Stock_Adjustment_Transaction.quantity,r.Stock_Adjustment_Transaction.uom),
-            locale.format('%.2F',r.Stock_Adjustment_Transaction.average_cost or 0, grouping = True),
+            locale.format('%.2F',r.Stock_Adjustment_Transaction.price_cost or 0, grouping = True),
             locale.format('%.2F',r.Stock_Adjustment_Transaction.total_amount or 0, grouping = True)
         ])
-    stk_adj_trnx.append(['','','','','','','GRAND TOTAL:',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    stk_adj_trnx.append([_show_selective_tax,'','','','','','Grand Total:',locale.format('%.2F',_grand_total or 0, grouping = True)])
     stk_adj_trnx.append(['------- nothing to follows -------'])
-    stk_adj_trnx_tbl = Table(stk_adj_trnx, colWidths=[25,60,'*',40,40,50,50,50])
+    stk_adj_trnx_tbl = Table(stk_adj_trnx, colWidths=[25,60,'*',40,40,50,60,60])
     stk_adj_trnx_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),  
@@ -9527,7 +9556,8 @@ def stock_adjustment_report():
     else:
         _approved_by = ''
     _sign = [['',str(_id.created_by.first_name.upper()) + ' ' + str(_id.created_by.last_name.upper()),'',_approved_by,''],
-    ['','Requested by:','','Approved/Posted by:','']]
+    ['','Requested by:','','Approved/Posted by:',''],
+    ['','','','Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
     _sign_tbl = Table(_sign,colWidths=[50,'*',50,'*',50])
     _sign_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),

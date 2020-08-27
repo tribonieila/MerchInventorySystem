@@ -91,9 +91,9 @@
                                 <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                 <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                 {{ if auth.has_membership(role = 'INVENTORY STORE KEEPER'): }}    
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('str_kpr_grid')}}">abort</a>
+                                    <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','str_kpr_grid')}}">abort</a>
                                 {{else:}}
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_corrections')}}">abort</a>
+                                    <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','account_grid')}}">abort</a>
                                 {{pass}}
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>                                
                             </div>                            

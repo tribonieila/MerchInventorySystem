@@ -1,19 +1,52 @@
-VERSION CONTROL MODULE
+Version Control Definition
+Ver.1.0.1:  Initial Version
+    ' ' '-> Workflow version, requires auditing (developement)
+    ' '---> Module Version, requires auditing and approval (testing, development)
+    '-----> Module Version, requires memo (productions)
+
+'Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))
 Inventory:
-    - Ver.1.0.1 - 25/8/2020, Initial version control
-    - Ver.1.0.2 - 26/8/2020, Obsolescence of stocks final and approved.
-    - Ver.1.0.3 - 27/8/2020, Stock Adjustment final and approved.
-    There’s no back or close button when viewing the  workflow report of user – Jyothi and Manoj
-    Add the selective tax information on the printing and put a separate grand total without selective tax.
-    - Ver.1.0.4 - 27/8/2020, Stock Corrections final and approved.
-    Manoj:
-        When viewed by the requestor, put a GO BACK or ABORT button to enable him/her to leave the page.
-    MANOJ’s Workflow
-Rejected Stock Correction by Jyothi is not going back to requestor manoj.
-Manoj should have the option to request again or cancel it permanently
-    jyothi:
-    Add new column to display the Grand Total of the Stock Corrections
-    Total Amount of the first item is blank
+
+- Ver.1.0.4 - 27/8/2020, Stock Corrections.
+    Issues:
+    - Manoj:
+    -   When viewed by the requestor, put a GO BACK or ABORT button to enable him/her to leave the page. = Resolved.
+    - MANOJ’s Workflow
+    -   Rejected Stock Correction by Jyothi is not going back to requestor manoj. = Resolved
+    -   Manoj should have the option to request again or cancel it permanently = Resolved
+    - jyothi:
+    -   Add new column to display the Grand Total of the Stock Corrections = Resolved
+    -   Total Amount of the first item is blank = Resolved
+
+- Ver.1.0.3 - 27/8/2020, Stock Adjustment.
+    Issues:
+    - Add Account Code Column = Resolved.
+    - Change the caption Choose Location Code > Choose Location = Resolved.)
+    - Stock Adjustment Code need to be inputted and search from the master account file. Display both Adjustment Code and Name = Resolved
+    - For Stock Adjustment +, any item code  is not existing in the Stock File for the selected location should accept entry and during Saving Time it should automatically append a new record for the item with the selected location with zero values. The quantity will be added once the Stock Adjustment + is confirmed and completed. = Resolved. (After jyothi's approval the new item(not existing location) on selected location added as closing stock.)
+    - Unit Price is Average Cost+Selective Tax , same idea in Obsolescence Stock Invoice. = Resolved.
+    - When adding an item on the grid, the edited average cost is not reflecting on the grid. = Resolved.
+    - Selective Tax for Saleable and FOC should be displayed same idea in Obsolescence Stock Invoice = Resolved.
+    - When you click on ABORT button the above error comes. = Resolved. 
+    - There’s no back or close button when viewing the  workflow report of user – Jyothi and Manoj = Resolved    
+    - Add the selective tax information on the printing and put a separate grand total without selective tax. = Resolved
+    - Add the columns Transaction number, Account code on the workflow reports and master report grid = Resolved.
+    - Under Inventory > Transaction , change the caption Adjustmen +/- into Stock Adjustment = Resolved
+
+- Ver.1.0.2 - 26/8/2020, Obsolescence of stocks.
+    Issues:
+    - Workflow Reports – Should display all Obsolescence Stock that he approved regardless of status. = Resolved
+    - Should include the price and selective tax details same like the Invoice. = Resolved
+    - All Workflow Reports and Master Report of Obsolescence should be viewed on the grid in Descending Order for all the users. = Resolved
+    - Change the Print Counter > “Printed On” + <date/time> = Resolved
+    - When you click ABORT button, it’s going back to the Obsolescence Stock Master Report (see attached below) = Resolved
+    - The above error comes when you are inputting 2 or 3 digits on the Quantity of any item = Resolved, (Increase the decimal floating point "Price Cost, Total Amount")
+    - View and Approval not working again = Resolved, Caught during my modification
+    Updated:
+    - Jyothi's final approval, printing added.
+
+- Ver.1.0.1 - 25/8/2020, Initial version control    
+    
 
 Sales:
     - Ver.1.0.1 - 25/8/2020, Initial version control

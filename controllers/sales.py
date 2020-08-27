@@ -5269,28 +5269,35 @@ def stock_corrections_header_footer_reports(canvas, doc):
 
 def stock_corrections_transaction_table_reports():
     _id = db(db.Stock_Corrections.id == request.args(0)).select().first()
-    ctr = 0
-    _sc = [['#','Item Code','Description','UOM','Quantity']]
+    ctr = _grand_total = 0
+    _sc = [['#','Item Code','Description','UOM','Quantity','Unit Price','Total Amount']]
     for n in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == request.args(0)).select(orderby = db.Stock_Corrections_Transaction.id, left = db.Item_Master.on(db.Item_Master.id == db.Stock_Corrections_Transaction.item_code_id)):
         ctr += 1
         if n.Stock_Corrections_Transaction.uom == 1:
             _qty = n.Stock_Corrections_Transaction.quantity
         else:
             _qty = card(n.Stock_Corrections_Transaction.item_code_id, n.Stock_Corrections_Transaction.quantity, n.Stock_Corrections_Transaction.uom)
-        _sc.append([ctr,n.Stock_Corrections_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),n.Stock_Corrections_Transaction.uom, _qty])
-    _sc.append(['','','----------  nothing to follows   ----------','',''])
-    _sc_tbl = Table(_sc, colWidths=[20,60,'*',50,50], repeatRows = 1)
+        _grand_total += n.Stock_Corrections_Transaction.total_amount
+        _sc.append([ctr,n.Stock_Corrections_Transaction.item_code_id.item_code, str(n.Item_Master.brand_line_code_id.brand_line_name) + str('\n') + str(n.Item_Master.item_description),
+        n.Stock_Corrections_Transaction.uom, _qty,
+        locale.format('%.2F',n.Stock_Corrections_Transaction.average_cost or 0, grouping = True),
+        locale.format('%.2F',n.Stock_Corrections_Transaction.total_amount or 0, grouping = True)])
+    
+    _sc.append(['','','','','','Grand Total: ',locale.format('%.2F',_grand_total or 0, grouping = True)])
+    _sc.append(['----------  nothing to follows   ----------'])
+    _sc_tbl = Table(_sc, colWidths=[20,60,'*',40,60,70,70], repeatRows = 1)
     _sc_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
         ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
-        ('LINEBELOW', (0,-2), (-1,-2), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
         ('TOPPADDING',(0,-1),(-1,-1),15),        
         ('FONTNAME',(0,0),(-1,-1),'Courier'),
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,-1), (-1,-1), 'CENTER'),
-        ('VALIGN',(0,0),(4,-1),'TOP'),
-        # ('SPAN',(0,-1),(-1,-1)),
+        ('ALIGN', (5,1), (6,-1), 'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('SPAN',(0,-1),(-1,-1)),
         ]))    
 
     _remarks = [['Remarks',':',_id.remarks]]
@@ -5308,7 +5315,8 @@ def stock_corrections_transaction_table_reports():
         _approved_by = ''
     _signatory = [        
         ['',str(_id.created_by.first_name.upper()) + str(' ') + str(_id.created_by.last_name.upper()),'',_approved_by,''],
-        ['','Requested by:','','Approved by:','']]
+        ['','Requested by:','','Approved by:',''],
+        ['','','','Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
 
     _signatory_table = Table(_signatory, colWidths=[50,'*',50,'*',50])
     _signatory_table.setStyle(TableStyle([

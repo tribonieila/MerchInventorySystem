@@ -687,7 +687,7 @@ db.define_table('Master_Account',
     Field('account_code','string', length = 15),
     Field('account_name','string', length = 50),    
     Field('master_account_type_id','string',length=25,requires = IS_IN_SET([('A', 'A - Accounts'), ('C', 'C - Customer'), ('E', 'E - Employee'),('S','S - Supplier'),('SAC','SAC - Stock Adjustment Code'),('OOS','OOS - Obselensce Of Stock')],zero='Choose Account Type')), #Customer,Accounts,Supplier,Employees    
-    Field('stock_adjustment_account', 'string', length = 10), # stock adjustment account
+    Field('stock_adjustment_account', 'string'), # stock adjustment account
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = True),
@@ -803,6 +803,7 @@ db.define_table('Stock_Corrections',
     Field('archive','boolean', default = False),
     Field('transaction_no','integer', writable = False),
     Field('transaction_date', 'date', writable = False),    
+    Field('total_amount','decimal(20,6)', default = 0),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
