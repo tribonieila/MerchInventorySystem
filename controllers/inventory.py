@@ -7195,9 +7195,9 @@ def stock_corrections_transaction_table():
             TD(INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty, _style='width:80px;text-align:right')),
             TD(INPUT(_class='form-control pieces',_type='number',_name='pieces',_value=_pcs, _style='width:80px;text-align:right')),
             TD(INPUT(_class='form-control price_cost',_type='number',_name='price_cost',_value=locale.format('%.2F',i.Stock_Corrections_Transaction.average_cost or 0, grouping = True), _style='width:100px;text-align:right',_readonly=True),_align='right'),
-            TD(INPUT(_class='form-control total_amount',_type='number',_name='total_amount',_value=locale.format('%.2F',i.Stock_Corrections_Transaction.total_amount or 0, grouping = True), _style='width:100px;text-align:right',_readonly=True),_align='right'),            
+            TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=locale.format('%.2F',i.Stock_Corrections_Transaction.total_amount or 0, grouping = True), _style='width:100px;text-align:right',_readonly=True),_align='right'),            
             TD(btn_lnk)))
-    foot = TR(TD(),TD(),TD(),TD(),TD(),TD('Grand Total: ',_colspan='2',_align='right'),TD(INPUT(_class='form-control grand_total',_type='number',_name='grand_total',_value= _grand_total , _style='width:100px;text-align:right',_readonly=True),_align='right'),TD(_btnUpdate))
+    foot = TR(TD(),TD(),TD(),TD(),TD(),TD('Grand Total: ',_colspan='2',_align='right'),TD(INPUT(_class='form-control grand_total',_type='text',_name='grand_total',_value= locale.format('%.2F',_grand_total or 0, grouping = True) , _style='width:100px;text-align:right',_readonly=True),_align='right'),TD(_btnUpdate))
     body = TBODY(*row)
     table = FORM(TABLE(*[head, body, foot],  _class='table', _id = 'tblcor'))
     if table.accepts(request,session):
@@ -9511,14 +9511,14 @@ def stock_adjustment_report():
         _tax = _selective_tax + _selective_tax_foc
         _no_tax = _grand_total - _tax
         if _selective_tax:
-            _print_selective_tax = 'Selective Tax: ' + str(_selective_tax)
+            _print_selective_tax = 'Selective Tax: ' + str(locale.format('%.2F',_selective_tax or 0, grouping = True))
         else:
             _print_selective_tax = ''
         if _selective_tax_foc:
-            _print_selective_tax_foc = 'Selective Tax FOC: ' + str(_selective_tax_foc)
+            _print_selective_tax_foc = 'Selective Tax FOC: ' + str(locale.format('%.2F',_selective_tax_foc or 0, grouping = True))
         else:
             _print_selective_tax_foc = ''
-        _print_average_cost = 'Grand Total W/T: ' + str(locale.format('%.2F',_no_tax or 0, grouping = True))
+        _print_average_cost = 'Grand Total Without Selective Tax: ' + str(locale.format('%.2F',_no_tax or 0, grouping = True))
         _show_selective_tax = _print_selective_tax_foc + '\n' + _print_selective_tax + '\n' + _print_average_cost
         stk_adj_trnx.append([
             ctr,

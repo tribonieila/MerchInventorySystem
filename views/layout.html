@@ -59,7 +59,8 @@
 	
 	<link rel="stylesheet" href="{{=URL('static','css/styles.css')}}"/>	
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
-	
+    <script src="{{=URL('static','dist/pace-1.0.2/pace.min.js')}}"></script>
+    <link rel="stylesheet" href="{{=URL('static','dist/pace-1.0.2/themes/blue/pace-theme-flash.css')}}"/>	
 
     <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
@@ -350,6 +351,7 @@
 						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'direct_purchase_receipt_grid')}}" ><span class="title">Direct Purchase Receipt</span></a></li>	
 						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 					</ul>

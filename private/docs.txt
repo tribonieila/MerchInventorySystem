@@ -7,7 +7,7 @@ Ver.1.0.1:  Initial Version
 'Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))
 Inventory:
 
-- Ver.1.0.4 - 27/8/2020, Stock Corrections.
+- Ver.1.0.4 - 30/8/2020, Stock Corrections.
     Issues:
     - Manoj:
     -   When viewed by the requestor, put a GO BACK or ABORT button to enable him/her to leave the page. = Resolved.
@@ -18,8 +18,9 @@ Inventory:
     -   Add new column to display the Grand Total of the Stock Corrections = Resolved
     -   Total Amount of the first item is blank = Resolved
 
-- Ver.1.0.3 - 27/8/2020, Stock Adjustment.
+- Ver.1.0.3 - 30/8/2020, Stock Adjustment.
     Issues:
+    - Change the caption GRAND TOTAL W/T > Grand Total Without Selective Tax = Resolved.
     - Add Account Code Column = Resolved.
     - Change the caption Choose Location Code > Choose Location = Resolved.)
     - Stock Adjustment Code need to be inputted and search from the master account file. Display both Adjustment Code and Name = Resolved

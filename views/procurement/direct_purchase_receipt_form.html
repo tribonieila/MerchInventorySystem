@@ -183,7 +183,7 @@
                             
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('account_grid')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>                                    
                             
                         </div>
@@ -278,7 +278,7 @@ $(document).ready(function(){
 
     $('#Direct_Purchase_Receipt_dept_code_id').change(function(){
         ajax('{{=URL('generate_purchase_receipt_no')}}', ['dept_code_id'], '_purchase_receipt_no');          
-    });
+    }); 
 
     $('#Direct_Purchase_Receipt_supplier_code_id').change(function(){       
         ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
@@ -286,7 +286,7 @@ $(document).ready(function(){
     });
 
     $('#Direct_Purchase_Receipt_supplier_account_code').change(function(){
-        ajax('{{=URL('generate_direct_supplier_code_id', args = request.args(0))}}', ['supplier_account_code'], '_account_name');             
+        ajax('{{=URL('generate_direct_supplier_code_id', args = request.args(0))}}', ['supplier_account_code','supplier_code_id'], '_account_name');             
     })
 
     $('#btnproceed').click(function(){

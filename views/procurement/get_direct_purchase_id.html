@@ -13,7 +13,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Purchase Receipt No</label>
                             <div class="col-sm-8">   
-                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=row.purchase_receipt_no_prefix_id.prefix}}{{=row.purchase_receipt_no}}" >                                                                                             
+                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=row.purchase_receipt_no_prefix_id.prefix}}{{=row.purchase_receipt_no}}" readonly >
                             </div>                           
                         </div>                        
                     </div>
@@ -67,8 +67,8 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Account Name</label>
-                            <div class="col-sm-8">
-                                <div id="_account_name"></div>    
+                            <div class="col-sm-8">                         
+                                <input type="text" class="form-control" value="{{=row.supplier_account_code_description}}" readonly >                                                             
                             </div>
                             
                         </div>
@@ -222,10 +222,13 @@ $(document).ready(function(){
         location.href = "{{=URL('inventory','account_grid')}}"
     })
     $("#btnApproved").click(function(){
-        console.log("approved");
+        ajax("{{=URL('procurement','put_direct_purchase_receipt_approved_id', args = request.args(0))}}")
+        window.location.href="{{=URL('inventory','account_manager_workflow')}}"
     });
     $("#btnReject").click(function(){
-        console.log("reject");
+        ajax("{{=URL('procurement','put_direct_purchase_receipt_reject_id', args = request.args(0))}}")
+        window.location.href="{{=URL('inventory','account_manager_workflow')}}"
+
     });
 
 });

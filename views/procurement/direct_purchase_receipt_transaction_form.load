@@ -97,7 +97,7 @@ $(document).ready(function(){
         ex_rate = parseFloat(xrate) * parseFloat(netAmount)
         $(".net_amount").val(netAmount.toFixed(2));
         $(".local_net_amount").val(ex_rate.toFixed(2));
-
+        ajax("{{=URL('procurement','discount_session')}}", ['discount'])
 
     })
     $('#discount_').change(function(){
@@ -119,7 +119,7 @@ $(document).ready(function(){
         var withoutSpaces = $("#no_table_item_code").val();
         withoutSpaces = withoutSpaces.replace(/\s+/g, '');
         $("#no_table_item_code").val(withoutSpaces);
-            }, 1);
+            }, 1); 
     });
     
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
@@ -156,7 +156,7 @@ $('.delete').click(function(){
         callback: function (result) {
             if (result) {
                 
-                ajax("{{=URL('procurement','direct_purchase_transaction_delete')}}" + '/'+ _id);
+                ajax("{{=URL('procurement','delete_direct_purchase_transaction_temporary_id')}}" + '/'+ _id);
                 parent.fadeOut('slow');
             }
 

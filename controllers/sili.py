@@ -8,10 +8,7 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():    
-    for n in db(db.Master_Account).select():
-        _concat = str(n.account_code) + ', ' + str(n.account_name)
-        n.update_record(stock_adjustment_account = _concat)
-        print _concat
+
     return dict()
 
 def merch():

@@ -28,12 +28,12 @@ $(document).ready(function(){
                 $(".grand_total").val(grandTotal.toFixed(2))
                 netAmount = (parseFloat(grandTotal) * (100 - dis)) / 100
                 ex_rate = parseFloat(xrate) * parseFloat(netAmount)
-                $(".net_amount").val(netAmount.toFixed(2));
+                $(".net_amount").val(netAmount.toFixed(3));
                 $(".local_net_amount").val(ex_rate.toFixed(2)); 
                 
-            }
+            } 
         });
-    });
+    }); 
     $("#discount").change(function(){
         var xrate = $("#Direct_Purchase_Receipt_exchange_rate").val();
         
@@ -43,8 +43,8 @@ $(document).ready(function(){
         var netAmount = 0;
         netAmount = (TotalAmount * (100 - discount)) / 100
         ex_rate = parseFloat(xrate) * parseFloat(netAmount)
-        $(".net_amount").val(netAmount.toFixed(2));
-        $(".local_net_amount").val(ex_rate.toFixed(2));
+        $(".net_amount").val(netAmount.toFixed(3));
+        $(".local_net_amount").val(ex_rate.toFixed(3));
 
 
     })    
