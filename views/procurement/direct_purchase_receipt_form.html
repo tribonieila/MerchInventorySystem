@@ -144,29 +144,29 @@
                         </div>                        
                         <div class="col-sm-2">
                             <div class="form-group">
-                                <div><label class="control-label">Other Charges</label></div>
-                                <div class="col-sm-8">{{=form.custom.widget.other_charges}}</div>
-                            </div>
+                                <div><label class="control-label">Landed Cost (QR)</label></div>
+                                <div class="col-sm-8">{{=form.custom.widget.landed_cost}}</div>                                
+                            </div>                            
+
                         </div>
 
                         <div class="col-sm-2">
                             <div class="form-group">
-                                <div><label class="control-label">Custom Duty Charge</label></div>
+                                <div><label class="control-label">Custom Duty Charge (QR)</label></div>
                                 <div class="col-sm-8">{{=form.custom.widget.custom_duty_charges}}</div>                                
                             </div>
                         </div>
 
                         <div class="col-sm-2">
                             <div class="form-group">
-                                <div><label class="control-label">Selective Tax</label></div>
+                                <div><label class="control-label">Selective Tax (QR)</label></div>
                                 <div class="col-sm-8">{{=form.custom.widget.selective_tax}}</div>                                
                             </div>
                         </div>
                         <div class="col-sm-2">
                             <div class="form-group">
-                                <div><label class="control-label">Landed Cost</label></div>
-                                <div class="col-sm-8">{{=form.custom.widget.landed_cost}}</div>
-                                
+                                <div><label class="control-label">Other Charges (FC)</label></div>
+                                <div class="col-sm-8">{{=form.custom.widget.other_charges}}</div>
                             </div>
                         </div>
 
@@ -183,7 +183,7 @@
                             
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('account_grid')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','account_grid')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>                                    
                             
                         </div>
@@ -258,9 +258,9 @@ $(document).ready(function(){
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
-    $("#order_panel").hide();
-    $("#Direct_Purchase_Receipt_supplier_code_id, #Direct_Purchase_Receipt_mode_of_shipment, #Direct_Purchase_Receipt_location_code_id, #Direct_Purchase_Receipt_trade_terms_id, #Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_currency_id, #Direct_Purchase_Receipt_status_id").change(function(){
-        if ($("#Direct_Purchase_Receipt_supplier_code_id").val() && $("#Direct_Purchase_Receipt_mode_of_shipment").val() && $("#Direct_Purchase_Receipt_location_code_id").val() &&
+    // $("#order_panel").hide();
+    $("#Direct_Purchase_Receipt_supplier_code_id, #Direct_Purchase_Receipt_mode_of_shipment, #Direct_Purchase_Receipt_location_code_id, #Direct_Purchase_Receipt_trade_terms_id, #Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_currency_id, #Direct_Purchase_Receipt_status_id, #Direct_Purchase_Receipt_landed_cost").change(function(){
+        if ( ($("#Direct_Purchase_Receipt_landed_cost").val() > 0) && $("#Direct_Purchase_Receipt_supplier_code_id").val() && $("#Direct_Purchase_Receipt_mode_of_shipment").val() && $("#Direct_Purchase_Receipt_location_code_id").val() &&
         $("#Direct_Purchase_Receipt_trade_terms_id").val() && $("#Direct_Purchase_Receipt_supplier_account_code").val() && $("#Direct_Purchase_Receipt_currency_id").val() &&
         $("#Direct_Purchase_Receipt_status_id").val()) {
             $("#btnproceed").removeAttr('disabled');

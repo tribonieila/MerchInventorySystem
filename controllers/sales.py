@@ -1992,10 +1992,10 @@ def sales_order_transaction_table():
             TD(n.Item_Master.item_description),
             TD(n.Sales_Order_Transaction.category_id.mnemonic, _style = 'width:120px'),
             TD(n.Sales_Order_Transaction.uom, INPUT(_class='form-control uom',_type='number',_name='uom',_value=n.Sales_Order_Transaction.uom,_hidden='true'),_style = 'width:120px'),
-            TD(INPUT(_class='form-control quantity', _type='number',_name='quantity',_value=_qty), _style = 'width:80px'),
-            TD(INPUT(_class='form-control pieces', _type='number',_name='pieces',_value=_pcs), _style = 'width:80px'),            
+            TD(INPUT(_class='form-control quantity', _type='number',_style='text-align:right;font-size:14px',_name='quantity',_value=_qty), _style = 'width:80px'),
+            TD(INPUT(_class='form-control pieces', _type='number',_style='text-align:right;font-size:14px',_name='pieces',_value=_pcs), _style = 'width:80px'),            
             TD(INPUT(_class='form-control price_cost',_type='text',_style='text-align:right;font-size:14px',_name='price_cost',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.price_cost or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
-            TD(INPUT(_class='form-control discount_percentage',_type='number',_name='discount_percentage',_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
+            TD(INPUT(_class='form-control discount_percentage',_type='number',_style='text-align:right;font-size:14px',_name='discount_percentage',_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
             TD(INPUT(_class='form-control net_price',_type='text',_style='text-align:right;font-size:14px',_name='net_price',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.net_price or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
             TD(INPUT(_class='form-control total_amount',_type='text',_style='text-align:right;font-size:14px',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0,grouping = True)), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
@@ -3648,7 +3648,7 @@ def validate_store_keeper(form):
 def sales_order_store_keeper_view():
     get_sales_order_header_writable_false()
     db.Sales_Order.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 1) | (db.Stock_Status.id == 3)| (db.Stock_Status.id == 9)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
-    db.Sales_Order.status_id.default = 9
+    db.Sales_Order.status_id.default = 4
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     if int(_id.status_id) == 9 or (int(_id.status_id) == 8) or (int(_id.status_id) == 1): 
         form = SQLFORM(db.Sales_Order, request.args(0))
@@ -4619,21 +4619,25 @@ def sales_order_delivery_note_report_store_keeper():
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('TOPPADDING',(0,1),(1,1),30),
-        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
+        ('LINEBELOW', (1,1), (1,1),0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (3,1), (3,1),0.25, colors.black,None, (2,2)),
+        # ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
 
-    _prt_ctr = db(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0)).select().first()
-    if not _prt_ctr:
-        ctr = 1
-        db.Sales_Order_Transaction_Report_Counter.insert(sales_order_transaction_no_id = request.args(0), printer_counter = ctr)
-    else:
-        _prt_ctr.printer_counter += 1
-        ctr = _prt_ctr.printer_counter
-        db.Sales_Order_Transaction_Report_Counter.update_or_insert(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
-    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+    # _prt_ctr = db(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0)).select().first()
+    # if not _prt_ctr:
+    #     ctr = 1
+    #     db.Sales_Order_Transaction_Report_Counter.insert(sales_order_transaction_no_id = request.args(0), printer_counter = ctr)
+    # else:
+    #     _prt_ctr.printer_counter += 1
+    #     ctr = _prt_ctr.printer_counter
+    
+    # db.Sales_Order_Transaction_Report_Counter.update_or_insert(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
+    _printed = str(request.now.strftime('%d/%m/%Y,%H:%M'))
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","Printed On:  " + str(_printed)]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","Printed On:  " + str(_printed)]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","Printed On:  " + str(_printed)]]
 
     _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
@@ -5242,12 +5246,12 @@ def delivery_note_transaction_table_reports():
         else:
             _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
             _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
-    _st.append(['','','-------------     NOTHING TO FOLLOWS     -------------','','',''])
+    _st.append(['','','-------------     nothing to follows     -------------','','',''])
     _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,70], repeatRows = 1)
     _st_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),                
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)), 
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),          
+        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)),        
         ('LINEBELOW', (0,1), (-1,-2), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-1),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),

@@ -2,12 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            
-            
-
-    
-            
-
             <span class="card-title">STOCK REQUEST FORM</span>
         </div>
         <div class="card-body tab-content">            
@@ -102,7 +96,7 @@
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_pos_workflow_grid')}}">abort</a>
                                 {{ elif auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_back_off_workflow_grid')}}">abort</a>
-                                {{ elif auth.has_membership(role = 'FMCG'): }}
+                                {{ elif auth.has_membership(role = 'SALES'): }}
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_fmcg_workflow_grid')}}">abort</a>
                                 {{ else: }}
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>

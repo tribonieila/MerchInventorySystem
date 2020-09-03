@@ -2,45 +2,39 @@
 {{=table}}
 {{=form.custom.begin}}
 <div class="row">    
-    <div class="col-md-2">
+    <div class="col-md-4">
         <div class="form-group">
-            <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">                                
-                {{=form.custom.widget.item_code}}
-            </div>                           
+            <label class="control-label">Item Code</label>                               
+            {{=form.custom.widget.item_code}}            
         </div>                        
     </div>
-    <div class="col-md-2">
+    <div class="col-md-1">
         <div class="form-group">
-            <label class="col-sm-6 control-label">Quantity</label>
-            <div class="col-sm-6"> 
-                {{=form.custom.widget.quantity}}
-            </div>
+            <label class="control-label">Quantity</label>            
+            {{=form.custom.widget.quantity}}            
         </div>                    
     </div>
-    <div class="col-md-2">
+    <div class="col-md-1">
         <div class="form-group">
-            <label class="col-sm-6 control-label">Pieces</label>
-            <div class="col-sm-6">                                
-                {{=form.custom.widget.pieces}}
-            </div>                           
+            <label class="control-label">Pieces</label>{{=form.custom.widget.pieces}}            
         </div>    
     </div>
-    <div class="col-md-3">
+    <div class="col-md-1">
         <div class="form-group">
-            <label class="col-sm-6 control-label">Most Recent Cost</label>
-            <div class="col-sm-4"> 
-                <div id = "_most_recent_cost"></div>
-            </div>
+            <label class="control-label">Discount %</label>{{=form.custom.widget.added_discount}}
+        </div>    
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Most Recent Cost(FC)</label>
+                <div id = "_most_recent_cost"></div>            
         </div>                    
     </div>                   
     <div class="col-md-2">
         <div class="form-group">
-            <label class="col-sm-4 control-label">Category</label>
-            <div class="col-sm-8"> 
+            <label class="control-label">Category</label>            
                 {{=form.custom.widget.category_id}}
-                
-            </div>
         </div>                    
     </div>
     <div class="col-md-1">                        
@@ -57,18 +51,23 @@ $(document).ready(function(){
 
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        $tblrow.find(".quantity, .pieces").on("change", function(){
+        $tblrow.find(".quantity, .pieces, .added_discount").on("change", function(){
 
             var ctr = $tblrow.find("[name=ctr]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
+            var itd = $tblrow.find("[name=added_discount]").val();
+            var net = $tblrow.find("[name=net_amount]").val();
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var tot = parseInt(itm, 10) * parseFloat(ppp);
+            var npr = parseFloat(pri) - ((parseFloat(pri) * parseFloat(itd)) / 100)
+            var tot = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
+            //var tot = parseInt(itm, 10) * parseFloat(ppp);
             var dis = $("#discount").val();
             var xrate = $("#Direct_Purchase_Receipt_exchange_rate").val();
+            console.log(pri, itd, npr, tot);
             if (!isNaN(tot)){
                 $tblrow.find(".total_amount").val(tot.toFixed(2));
                 var grandTotal = 0;

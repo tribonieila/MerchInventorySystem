@@ -62,6 +62,7 @@
     <script src="{{=URL('static','dist/pace-1.0.2/pace.min.js')}}"></script>
     <link rel="stylesheet" href="{{=URL('static','dist/pace-1.0.2/themes/blue/pace-theme-flash.css')}}"/>	
 
+	
     <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
     <!-- Favicons -->
@@ -127,8 +128,10 @@
 
 		<!-- BEGIN CONTENT-->
 		<div id="content">				
+			
 			<section>
 				<div class="section-body">		
+					
 					{{block center}}
 					{{include}}
 					{{end}}

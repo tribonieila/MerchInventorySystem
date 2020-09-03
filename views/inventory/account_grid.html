@@ -46,7 +46,7 @@
                     <div role="tabpanel" class="tab-pane" id="purchase_receipt">
                         {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target = 'PRtbl')}}
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="purchase_return">
+                    <div role="tabpanel" class="tab-pane" id="purchase_return"> 
                         {{=LOAD('procurement','get_purchase_return_workflow_grid.load', ajax = True, target = 'tblPRn')}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','push_purchase_return')}}">+ create purchase return</a>
                     </div>                     

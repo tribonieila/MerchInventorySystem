@@ -2037,7 +2037,7 @@ db.define_table('Direct_Purchase_Receipt',
     Field('supplier_reference_order','string', length = 25),    
     Field('supplier_code_id', 'reference Supplier_Master',ondelete = 'NO ACTION', label = 'Supplier Code', requires = IS_IN_DB(db, db.Supplier_Master.id,'%(supp_code)s - %(supp_name)s', zero = 'Choose Supplier Code')),    
     Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),        
-    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db(db.Stock_Status.id == 18), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
+    Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', default = 4, requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),       
     Field('mode_of_shipment','string',length = 25, requires = IS_IN_SET(['BY AIR','BY SEA','BY LAND'], zero = 'Choose Type')),
     Field('supplier_account_code', 'string',length = 25, requires = IS_IN_SET(['Supplier Account','IB Account'], zero = 'Choose Supplier')),
     Field('total_amount','decimal(20,4)', default = 0, writable = False),    # total net amount
@@ -2069,6 +2069,8 @@ db.define_table('Direct_Purchase_Receipt_Transaction',
     Field('uom','integer', default = 0),
     Field('total_pieces','integer', default = 0),
     Field('price_cost', 'decimal(15,6)', default = 0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('added_discount', 'decimal(20,2)',default =0),
     Field('total_amount','decimal(15,6)', default = 0),
     Field('average_cost','decimal(15,4)', default = 0),
     Field('sale_cost', 'decimal(15,2)', default = 0),
@@ -2097,6 +2099,8 @@ db.define_table('Direct_Purchase_Receipt_Transaction_Temporary',
     Field('uom','integer', default = 0),
     Field('total_pieces','integer', default = 0),
     Field('price_cost', 'decimal(15,6)', default = 0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('added_discount', 'decimal(20,2)',default =0),
     Field('total_amount','decimal(15,6)', default = 0),
     Field('average_cost','decimal(15,4)', default = 0),
     Field('sale_cost', 'decimal(15,2)', default = 0),
@@ -2408,7 +2412,7 @@ db.define_table('Version_Control',
 # Due_Date
 # Amount Paid
 # Status
-# FlgPost
+# FlgPost 
 # Person 
 # Entry_Date
 # AccsRef
@@ -2453,7 +2457,18 @@ def amt2words(amount, currency='riyals', change='dirhams', precision=2):
     )
     return words
 
+genSched.queue_task(
+    'get_consolidation', 
+    prevent_drift = True, 
+    start_time=request.now,
+    repeats = 1, 
+    period = 120)
 
+# scheduler.queue_task('reporting_percentages', prevent_drift = True, repeats = 1, period = 120)
+
+# python web2py.py -a admin -K mtc_inv -X
+
+# 86400 seconds/24 hours
 # i.number_to_words(49)
 
 # from num2words import num2words

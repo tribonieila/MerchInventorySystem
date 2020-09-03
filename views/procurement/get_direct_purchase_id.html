@@ -139,34 +139,34 @@
                     </div>                        
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <div><label class="control-label">Other Charges</label></div>
-                            <div class="col-sm-8">{{=form.custom.widget.other_charges}}</div>
-                        </div>
+                            <div><label class="control-label">Landed Cost (QR)</label></div>
+                            <div class="col-sm-8">{{=form.custom.widget.landed_cost}}</div>                                
+                        </div>                            
+
                     </div>
 
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <div><label class="control-label">Custom Duty Charge</label></div>
+                            <div><label class="control-label">Custom Duty Charge (QR)</label></div>
                             <div class="col-sm-8">{{=form.custom.widget.custom_duty_charges}}</div>                                
                         </div>
                     </div>
 
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <div><label class="control-label">Selective Tax</label></div>
+                            <div><label class="control-label">Selective Tax (QR)</label></div>
                             <div class="col-sm-8">{{=form.custom.widget.selective_tax}}</div>                                
                         </div>
                     </div>
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <div><label class="control-label">Landed Cost</label></div>
-                            <div class="col-sm-8">{{=form.custom.widget.landed_cost}}</div>
-                            
+                            <div><label class="control-label">Other Charges (FC)</label></div>
+                            <div class="col-sm-8">{{=form.custom.widget.other_charges}}</div>
                         </div>
                     </div>
 
 
-                </div>                        
+                </div>                    
                 <hr>
                 <div class="row">
 
@@ -176,7 +176,7 @@
                     
                     <div class="col-md-4">   
                         {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
-                            {{if row.status_id == 18:}}
+                            {{if row.status_id == 4:}}
                                 <input class="btn btn-success" type="button" value="approved" id="btnApproved">
                                 <input class="btn btn-danger" type="button" value="reject" id="btnReject">    
                             {{else:}}
@@ -206,7 +206,7 @@ $(document).ready(function(){
     $("#Direct_Purchase_Receipt_supplier_reference_order").attr('disabled','disabled');        
     $("#Direct_Purchase_Receipt_mode_of_shipment").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_supplier_code_id").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_status_id").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_status_id").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_remarks").attr('disabled','disabled');        
     $("#Direct_Purchase_Receipt_trade_terms_id").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_purchase_order_no").attr('disabled','disabled');
@@ -219,6 +219,7 @@ $(document).ready(function(){
     $("#Direct_Purchase_Receipt_currency_id").attr('disabled','disabled');   
     $("#Direct_Purchase_Receipt_supplier_invoice").attr('disabled','disabled');   
     $("#btnsubmit").click(function(){
+        ajax("{{=URL('procurement','put_direct_purchase_id', args=request.args(0))}}",['status_id'])
         location.href = "{{=URL('inventory','account_grid')}}"
     })
     $("#btnApproved").click(function(){

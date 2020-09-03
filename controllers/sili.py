@@ -1,14 +1,15 @@
 from datetime import datetime
 
 now = datetime.now() # current date and time
+def get_schedule():
+    genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 120)
 
 def get_version_control():
     grid = SQLFORM.grid(db.Version_Control)
     # print db(db.Version_Control.id == 1).select(db.Version_Control.version_no)
     return dict(grid = grid)
 
-def generate():    
-
+def generate():
     return dict()
 
 def merch():
@@ -206,9 +207,6 @@ def put_stock_transfer_consolidation():
 
                     price_cost_after_discount = x.total_amount or 0)               
   
-def queue_task():
-    genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 5)
-
 @auth.requires_login()
 def admin():
     return dict()
@@ -231,58 +229,6 @@ def sales_return():
 def sales_invoice():
     return dict()
 
-def get_sync_note():
-    # print 'get_sync_note'
-    for n in db(db.Sales_Order.status_id == 8).select(orderby = db.Sales_Order.id):        
-        db.Delivery_Note.insert(
-            transaction_prefix_id = n.transaction_prefix_id,
-            sales_order_no = n.sales_order_no,
-            sales_order_date = n.sales_order_date,
-            dept_code_id = n.dept_code_id,
-            stock_source_id = n.stock_source_id,
-            customer_code_id = n.customer_code_id,
-            customer_order_reference = n.customer_order_reference,
-            delivery_due_date = n.delivery_due_date,
-            total_amount = n.total_amount,
-            total_amount_after_discount = n.total_amount_after_discount,
-            total_selective_tax = n.total_selective_tax,
-            total_selective_tax_foc = n.total_selective_tax_foc,
-            discount_percentage = n.discount_percentage,
-            total_vat_amount = n.total_vat_amount,
-            sales_order_date_approved = n.sales_order_date_approved,
-            sales_order_approved_by = n.sales_order_approved_by,
-            remarks = n.remarks,
-            delivery_note_no_prefix_id = n.delivery_note_no_prefix_id,
-            delivery_note_no = n.delivery_note_no,
-            delivery_note_approved_by = n.delivery_note_approved_by,
-            delivery_note_date_approved = n.delivery_note_date_approved,
-            section_id = n.section_id,
-            sales_man_id = n.sales_man_id,
-            status_id = n.status_id)        
-        _dn = db(db.Delivery_Note.sales_order_no == n.sales_order_no).select().first()
-        for x in db((db.Sales_Order_Transaction.sales_order_no_id == n.id) & (db.Sales_Order_Transaction.delete == False)).select():
-            db.Delivery_Note_Transaction.insert(
-                delivery_note_id = int(_dn.id),
-                item_code_id = x.item_code_id,
-                category_id = x.category_id,
-                quantity = x.quantity,
-                uom = x.uom,
-                price_cost  = x.price_cost,
-                packet_price_cost = x.packet_price_cost,
-                total_amount = x.total_amount,
-                average_cost = x.average_cost,
-                sale_cost = x.sale_cost,
-                wholesale_price = x.wholesale_price,
-                retail_price = x.retail_price,
-                vansale_price = x.vansale_price,
-                discount_percentage = x.discount_percentage,
-                net_price = x.net_price,
-                selective_tax = x.selective_tax,
-                selective_tax_foc = x.selective_tax_foc,
-                packet_selective_tax = x.packet_selective_tax,
-                packet_selective_tax_foc = x.packet_selective_tax_foc,
-                vat_percentage = x.vat_percentage)                
-                # print '        ', x.id, x.sales_order_no_id
 
 def put_obsolescence_of_stock_consolidation(): # validated
     # print 'put_obsolescence_of_stock_consolidation'
@@ -397,6 +343,59 @@ def put_stock_correction_consolidation(): # validated
                 # sales_man_code,price_cost_pcs,average_cost_pcs,wholesale_price_pcs,retail_price_pcs,selective_tax_price,supplier_code,
                 # dept_code,stock_destination
             )
+
+def get_sync_note():
+    # print 'get_sync_note'
+    for n in db(db.Sales_Order.status_id == 8).select(orderby = db.Sales_Order.id):        
+        db.Delivery_Note.insert(
+            transaction_prefix_id = n.transaction_prefix_id,
+            sales_order_no = n.sales_order_no,
+            sales_order_date = n.sales_order_date,
+            dept_code_id = n.dept_code_id,
+            stock_source_id = n.stock_source_id,
+            customer_code_id = n.customer_code_id,
+            customer_order_reference = n.customer_order_reference,
+            delivery_due_date = n.delivery_due_date,
+            total_amount = n.total_amount,
+            total_amount_after_discount = n.total_amount_after_discount,
+            total_selective_tax = n.total_selective_tax,
+            total_selective_tax_foc = n.total_selective_tax_foc,
+            discount_percentage = n.discount_percentage,
+            total_vat_amount = n.total_vat_amount,
+            sales_order_date_approved = n.sales_order_date_approved,
+            sales_order_approved_by = n.sales_order_approved_by,
+            remarks = n.remarks,
+            delivery_note_no_prefix_id = n.delivery_note_no_prefix_id,
+            delivery_note_no = n.delivery_note_no,
+            delivery_note_approved_by = n.delivery_note_approved_by,
+            delivery_note_date_approved = n.delivery_note_date_approved,
+            section_id = n.section_id,
+            sales_man_id = n.sales_man_id,
+            status_id = n.status_id)        
+        _dn = db(db.Delivery_Note.sales_order_no == n.sales_order_no).select().first()
+        for x in db((db.Sales_Order_Transaction.sales_order_no_id == n.id) & (db.Sales_Order_Transaction.delete == False)).select():
+            db.Delivery_Note_Transaction.insert(
+                delivery_note_id = int(_dn.id),
+                item_code_id = x.item_code_id,
+                category_id = x.category_id,
+                quantity = x.quantity,
+                uom = x.uom,
+                price_cost  = x.price_cost,
+                packet_price_cost = x.packet_price_cost,
+                total_amount = x.total_amount,
+                average_cost = x.average_cost,
+                sale_cost = x.sale_cost,
+                wholesale_price = x.wholesale_price,
+                retail_price = x.retail_price,
+                vansale_price = x.vansale_price,
+                discount_percentage = x.discount_percentage,
+                net_price = x.net_price,
+                selective_tax = x.selective_tax,
+                selective_tax_foc = x.selective_tax_foc,
+                packet_selective_tax = x.packet_selective_tax,
+                packet_selective_tax_foc = x.packet_selective_tax_foc,
+                vat_percentage = x.vat_percentage)                
+                # print '        ', x.id, x.sales_order_no_id
 
 def get_sync_all():    
     for n in db(db.Sales_Order.status_id == 7).select(orderby = db.Sales_Order.id):#, left = db.Sales_Order.on(db.Sales_Order.id == db.Sales_Order_Transaction.sales_order_no_id)):

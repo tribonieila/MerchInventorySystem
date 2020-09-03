@@ -1,5 +1,56 @@
 <hr>
 {{=table}}
+<hr>
+{{=form.custom.begin}}
+<div class="row">    
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="control-label">Item Code</label>
+            {{=form.custom.widget.item_code}}
+        </div>                                   
+    </div>
+    <div class="col-md-1">
+        <div class="form-group">
+            <label class="control-label">Quantity</label>
+            {{=form.custom.widget.quantity}}
+        </div>
+    </div>
+    <div class="col-md-1">
+        <div class="form-group">
+            <label class="control-label">Pieces</label>
+            {{=form.custom.widget.pieces}}            
+        </div>    
+    </div>
+    <div class="col-md-1">
+        <div class="form-group">
+            <label class="control-label">Discount %</label>
+            {{=form.custom.widget.added_discount}}
+        </div>    
+    </div>    
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Most Recent Cost(FC)</label>            
+            <div id = "_most_recent_cost"></div>            
+        </div>                    
+    </div>                   
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Category</label>
+            {{=form.custom.widget.category_id}}
+        </div>                    
+    </div>
+    <div class="col-md-1">                 
+        {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}       
+            <input class="btn btn-primary" type="submit" value="add" id="btnadd" disabled="true">        
+        {{else:}}
+            <input class="btn btn-primary" type="submit" value="add" id="btnadd">        
+        {{pass}}
+    </div>                                              
+</div>
+{{=form.custom.end}}
+<div id = "_item_code_description"></div>      
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
@@ -48,6 +99,11 @@ $(document).ready(function(){
 
 
     })    
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
+        ajax('{{=URL('purchase_request_item_code_description_id', args=request.args(0))}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
+    });
+
 $('.delete').click(function(){
     var _id = $(this).attr('data-id');
     var parent = $(this).parent("div").parent("td").parent("tr");
