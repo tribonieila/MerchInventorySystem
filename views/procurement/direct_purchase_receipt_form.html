@@ -15,16 +15,16 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Purchase Receipt No</label>
+                                <label class="col-sm-4 control-label">Transaction No</label>
                                 <div class="col-sm-8">   
-                                    <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>                                                             
+                                    <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
                                     <div id="_purchase_receipt_no"></div>
                                 </div>                           
                             </div>                        
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Purchase Receipt Date</label>
+                                <label class="col-sm-4 control-label">Transaction Date</label>
                                 <div class="col-sm-8"> {{import datetime}}
                                     <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >                                                      
                                 </div>
@@ -180,7 +180,7 @@
                         </div>                          
                         
                         <div class="col-md-4">   
-                            
+
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','account_grid')}}">abort</a>
@@ -188,8 +188,10 @@
                             
                         </div>
                     </div>                          
+                    <input type="text" class="form-control" id="_added_discount_amount" name = "_added_discount_amount" hidden>
                     {{=form.custom.end}}            
             </div>
+            
             <div id = "order_panel">
                 {{=LOAD('procurement','direct_purchase_receipt_transaction_form.load', ajax = True, target = "DPtbl")}}
             </div>             
@@ -258,9 +260,9 @@ $(document).ready(function(){
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
-    // $("#order_panel").hide();
-    $("#Direct_Purchase_Receipt_supplier_code_id, #Direct_Purchase_Receipt_mode_of_shipment, #Direct_Purchase_Receipt_location_code_id, #Direct_Purchase_Receipt_trade_terms_id, #Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_currency_id, #Direct_Purchase_Receipt_status_id, #Direct_Purchase_Receipt_landed_cost").change(function(){
-        if ( ($("#Direct_Purchase_Receipt_landed_cost").val() > 0) && $("#Direct_Purchase_Receipt_supplier_code_id").val() && $("#Direct_Purchase_Receipt_mode_of_shipment").val() && $("#Direct_Purchase_Receipt_location_code_id").val() &&
+    $("#order_panel").hide();
+    $("#Direct_Purchase_Receipt_supplier_code_id, #Direct_Purchase_Receipt_mode_of_shipment, #Direct_Purchase_Receipt_location_code_id, #Direct_Purchase_Receipt_trade_terms_id, #Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_currency_id, #Direct_Purchase_Receipt_status_id, #Direct_Purchase_Receipt_landed_cost,#Direct_Purchase_Receipt_purchase_order_no").change(function(){
+        if (($("#Direct_Purchase_Receipt_purchase_order_no").val() != "") && ($("#Direct_Purchase_Receipt_landed_cost").val() > 0) && $("#Direct_Purchase_Receipt_supplier_code_id").val() && $("#Direct_Purchase_Receipt_mode_of_shipment").val() && $("#Direct_Purchase_Receipt_location_code_id").val() &&
         $("#Direct_Purchase_Receipt_trade_terms_id").val() && $("#Direct_Purchase_Receipt_supplier_account_code").val() && $("#Direct_Purchase_Receipt_currency_id").val() &&
         $("#Direct_Purchase_Receipt_status_id").val()) {
             $("#btnproceed").removeAttr('disabled');
@@ -276,8 +278,8 @@ $(document).ready(function(){
         ajax('{{=URL('discount_session')}}',['discount'])
     });
 
-    $('#Direct_Purchase_Receipt_dept_code_id').change(function(){
-        ajax('{{=URL('generate_purchase_receipt_no')}}', ['dept_code_id'], '_purchase_receipt_no');          
+    $('#Direct_Purchase_Receipt_dept_code_id').change(function(){         
+        ajax('{{=URL('put_transaction_no')}}',['dept_code_id'], '_purchase_receipt_no');        
     }); 
 
     $('#Direct_Purchase_Receipt_supplier_code_id').change(function(){       
@@ -291,7 +293,7 @@ $(document).ready(function(){
 
     $('#btnproceed').click(function(){
         $('#order_panel').slideDown('slow');
-        ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id']);
+        ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id','exchange_rate']);
         $('#btnhelp').removeAttr('disabled');
         $("#item_code").focus();
         $("#btnproceed").attr('disabled','disabled');

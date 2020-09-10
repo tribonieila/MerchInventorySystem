@@ -1994,10 +1994,10 @@ def sales_order_transaction_table():
             TD(n.Sales_Order_Transaction.uom, INPUT(_class='form-control uom',_type='number',_name='uom',_value=n.Sales_Order_Transaction.uom,_hidden='true'),_style = 'width:120px'),
             TD(INPUT(_class='form-control quantity', _type='number',_style='text-align:right;font-size:14px',_name='quantity',_value=_qty), _style = 'width:80px'),
             TD(INPUT(_class='form-control pieces', _type='number',_style='text-align:right;font-size:14px',_name='pieces',_value=_pcs), _style = 'width:80px'),            
-            TD(INPUT(_class='form-control price_cost',_type='text',_style='text-align:right;font-size:14px',_name='price_cost',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.price_cost or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
+            TD(INPUT(_class='form-control price_cost',_type='number',_style='text-align:right;font-size:14px',_name='price_cost',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.price_cost or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
             TD(INPUT(_class='form-control discount_percentage',_type='number',_style='text-align:right;font-size:14px',_name='discount_percentage',_value=locale.format('%d',n.Sales_Order_Transaction.discount_percentage)), _align = 'right', _style = 'width:80px'),
-            TD(INPUT(_class='form-control net_price',_type='text',_style='text-align:right;font-size:14px',_name='net_price',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.net_price or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
-            TD(INPUT(_class='form-control total_amount',_type='text',_style='text-align:right;font-size:14px',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0,grouping = True)), _align = 'right', _style = 'width:100px'),
+            TD(INPUT(_class='form-control net_price',_type='number',_style='text-align:right;font-size:14px',_name='net_price',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.net_price or 0, grouping = True)), _align = 'right', _style = 'width:100px'),
+            TD(INPUT(_class='form-control total_amount',_type='number',_style='text-align:right;font-size:14px',_name='total_amount',_readonly='true',_value=locale.format('%.2F',n.Sales_Order_Transaction.total_amount or 0,grouping = True)), _align = 'right', _style = 'width:100px'),
             TD(btn_lnk)))
         
         _total_amount += n.Sales_Order_Transaction.total_amount
@@ -2018,7 +2018,7 @@ def sales_order_transaction_table():
                     if int(_id.category_id) == 3: # FOC
                         _tax_foc = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty    
                     else:
-                        _tax = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty                        
+                        _tax = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty                                 
                     db(db.Sales_Order_Transaction.id == x).update(
                         quantity = _qty, 
                         discount_percentage=request.vars.discount_percentage[row], 
@@ -2046,7 +2046,7 @@ def sales_order_transaction_table():
                 total_amount = request.vars.grand_total.replace(',',''),
                 total_amount_after_discount=request.vars.net_amount.replace(',',''),
                 discount_added=request.vars.added_discount)            
-            response.js = "$('#tbltrnx').get(0).reload()"
+            response.js = "$('#tbltrnx').get(0).reload(), transaction_update()"
     return dict(table = table, _total_amount = _total_amount, _total_amount_after_discount = _total_amount_after_discount)        
 
 def update_sales_transaction(): # audited

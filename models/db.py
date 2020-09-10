@@ -152,6 +152,7 @@ if configuration.get('scheduler.enabled'):
 # after defining tables, uncomment below to enable auditing
 # -------------------------------------------------------------------------
 # auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
+
 auth.enable_record_versioning(db)
 db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv') #,fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
 d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,fake_migrate_all=True,do_connect=True)

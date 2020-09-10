@@ -12,32 +12,40 @@ $(document).ready(function(){
     $tblrows.each(function(index){
         var $tblrow = $(this);
         var add = $("#added_discount").val();
-        $tblrow.find(".quantity, .pieces, .discount_percentage, .pass").on("change", function(){            
-            
-            
+        $tblrow.find(".quantity, .pieces, .discount_percentage, .pass").on("change", function(){                                    
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
             var dis = $tblrow.find("[name=discount_percentage]").val();
+            var net = $tblrow.find("[name=net_price]").val();
             var tax = $tblrow.find("[name=selective_tax]").val();
             var who = $tblrow.find("[name=wholesale_price]").val();
             
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
             var pri = (parseFloat(who) * (100 - parseFloat(dis)) / 100) + parseFloat(tax)
-            var sub = parseFloat(pri) / parseInt(uom) * parseInt(itm, 10) 
-            // var sub = parseInt(itm, 10) * parseFloat(ppp);
+            var npr = parseFloat(pri) * (100 - parseFloat(dis)) / 100            
+            var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10) 
             
-            console.log("save button", _id)
-            
-            if(!isNaN(pri)){
-                $tblrow.find(".net_price").val(pri.toFixed(2));
-            }
+            if(parseInt(qty) < parseInt(0)){
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseFloat(dis) < parseFloat(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else {
+                $("#btnUpdate").removeAttr('disabled');
+            }                                              
             
             if(!isNaN(sub)){                
+                $tblrow.find(".net_price").val(pri.toFixed(2));
                 $tblrow.find(".total_amount").val(sub.toFixed(2));
+
                 
                 _discount = 0
                 var grandTotal = 0;
@@ -77,7 +85,10 @@ $(document).ready(function(){
 </script>
 
 <script>
-
+function transaction_update(){
+    toastr.options={"positionClass": "toast-bottom-right"}
+    toastr["success"]("Transaction updated...")
+}
 $('.delete').click(function(){
     var _id = $(this).attr('data-id');
     var parent = $(this).parent("div").parent("td").parent("tr");

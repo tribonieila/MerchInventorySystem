@@ -4,7 +4,7 @@
         <div class="card-head">
             {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}
             {{ else: }}
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+            <ul class="nav nav-tabs pull-right" data-toggle="tabs"> 
                 <li class="active"><a href="#">+ ADD NEW</a></li>
                 <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request')}}";>BROWSE</a></li>
             </ul>
@@ -72,20 +72,15 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Currency</label>
-                            <div class="col-sm-3" id="_supplier_code_currency">{{=form.custom.widget.currency_id}}</div>
-                            <label class="col-sm-2 control-label">Trade Terms</label>
-                            <div class="col-sm-3">
-                                {{=form.custom.widget.trade_terms_id}}
-                            </div>
-
+                            <div class="col-sm-3">{{=form.custom.widget.currency_id}}</div>
+                            <label class="col-sm-2 control-label">Exchange Rate</label>
+                            <div class="col-sm-3">{{=form.custom.widget.exchange_rate}}</div>
                         </div>                   
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.proforma_file}}                                
-                            </div>
+                            <label class="col-sm-4 control-label">Trade Terms</label>
+                            <div class="col-sm-8">{{=form.custom.widget.trade_terms_id}}</div>
 
                         </div>                   
                     </div>    
@@ -114,12 +109,20 @@
                         </div>             
                     </div>                    
                 </div>
-                <hr>
+                
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <div class="col-sm-9"></div>
-                            <div class="col-sm-3">                                                                
+                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.proforma_file}}                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <div class="col-sm-7"></div>
+                            <div class="col-sm-5">                                                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
@@ -193,10 +196,10 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
     $('#selective_tax').hide();
-    $('#order_panel').hide();
+    // $('#order_panel').hide();
 
-    $('#no_table_dept_code_id, #no_table_location_code_id, #no_table_supplier_code_id, #no_table_trade_terms_id, #no_table_status_id, #no_table_mode_of_shipment').change(function(){
-        if ($('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_supplier_code_id').val() && $('#no_table_trade_terms_id').val() && $('#no_table_status_id').val() && $('#no_table_mode_of_shipment').val()) {
+    $('#no_table_dept_code_id, #no_table_location_code_id, #no_table_supplier_code_id, #no_table_trade_terms_id, #no_table_status_id, #no_table_mode_of_shipment, #no_table_currency_id').change(function(){
+        if ( $('#no_table_currency_id').val() && $('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_supplier_code_id').val() && $('#no_table_trade_terms_id').val() && $('#no_table_status_id').val() && $('#no_table_mode_of_shipment').val()) {
             $('#btnproceed').removeAttr('disabled');
         } else {
             $('#btnproceed').attr('disabled','disabled');
@@ -208,8 +211,12 @@ $(document).ready(function(){
     });
 
     $('#no_table_supplier_code_id').change(function(){       
-        ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
+        // ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
         ajax('{{=URL('generate_supplier_trade_terms')}}', ['supplier_code_id'], '_supplier_trade_terms');        
+    });
+
+    $("#no_table_currency_id").change(function(){
+        ajax('{{=URL('procurement','get_currency_id')}}', ['currency_id']); 
     });
 
     $('#btnproceed').click(function(){

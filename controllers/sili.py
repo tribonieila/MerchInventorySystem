@@ -1,6 +1,7 @@
 from datetime import datetime
 
 now = datetime.now() # current date and time
+
 def get_schedule():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 120)
 
@@ -10,7 +11,8 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():
-    return dict()
+    session.counter = (session.counter or 0) + 1
+    return dict(counter=session.counter, now=request.now)
 
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)

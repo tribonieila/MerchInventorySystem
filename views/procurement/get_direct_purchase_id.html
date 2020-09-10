@@ -11,18 +11,33 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Purchase Receipt No</label>
-                            <div class="col-sm-8">   
-                                <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=row.purchase_receipt_no_prefix_id.prefix}}{{=row.purchase_receipt_no}}" readonly >
-                            </div>                           
+                            {{if row.status_id != 21:}}
+                                <label class="col-sm-4 control-label">Transaction No</label>
+                                <div class="col-sm-8">   
+                                    <input type="text" class="form-control" id="transaction_no" name = "transaction_no" value="{{=row.transaction_no}}" readonly >
+                                </div>                   
+                            {{else:}}        
+                                <label class="col-sm-4 control-label">Purchase Receipt No</label>
+                                <div class="col-sm-8">   
+                                    <input type="text" class="form-control" value="{{=row.purchase_receipt_no_prefix_id.prefix}}{{=row.purchase_receipt_no}}" readonly >
+                                </div>                   
+
+                            {{pass}}
                         </div>                        
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Purchase Receipt Date</label>
-                            <div class="col-sm-8"> {{import datetime}}
-                                <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >                                                      
-                            </div>
+                            {{if row.status_id != 21:}}
+                                <label class="col-sm-4 control-label">Transaction Date</label>
+                                <div class="col-sm-8"> {{import datetime}}
+                                    <input type="text" class="form-control" value="{{=row.transaction_date}}" readonly >                                                      
+                                </div>
+                            {{else:}}                            
+                                <label class="col-sm-4 control-label">Purchase Receipt Date</label>
+                                <div class="col-sm-8"> {{import datetime}}
+                                    <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >                                                      
+                                </div>
+                            {{pass}}        
                         </div>                    
                     </div>
 
@@ -68,7 +83,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Account Name</label>
                             <div class="col-sm-8">                         
-                                <input type="text" class="form-control" value="{{=row.supplier_account_code_description}}" readonly >                                                             
+                                {{=form.custom.widget.supplier_account_code_description}}                                
                             </div>
                             
                         </div>
@@ -169,22 +184,23 @@
                 </div>                    
                 <hr>
                 <div class="row">
-
                     <div class="col-md-8">
-
-                    </div>                          
-                    
+                    </div>                                             
                     <div class="col-md-4">   
                         {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
                             {{if row.status_id == 4:}}
-                                <input class="btn btn-success" type="button" value="approved" id="btnApproved">
+                                <input class="btn btn-success" type="button" value="approved and post" id="btnApproved">
                                 <input class="btn btn-danger" type="button" value="reject" id="btnReject">    
                             {{else:}}
-                                <input class="btn btn-success" type="button" value="approved" id="btnApproved" disabled>
+                                <input class="btn btn-success" type="button" value="approved and post" id="btnApproved" disabled>
                                 <input class="btn btn-danger" type="button" value="reject" id="btnReject" disabled>
                             {{pass}}
                         {{else:}}
-                            <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">
+                            {{if row.status_id != 21:}}
+                                <input class="btn btn-primary" type="button" value="submit" id="btnsubmit">
+                            {{else:}}
+                                <input class="btn btn-primary" type="button" value="submit" id="btnsubmit" disabled>
+                            {{pass}}
                         {{pass}}
                         
                         
@@ -193,7 +209,7 @@
                 {{=form.custom.end}}            
             </div>
             <div id = "order_panel">
-                {{=LOAD('procurement','get_direct_purchase_transaction_id.load', args = request.args(0), ajax = True, target = "DPtbl")}}
+                {{=LOAD('procurement','get_direct_purchase_transaction_id.load', args = request.args(0), ajax = True, target = "DPtbl",extension=False)}}
             </div>             
         </div>
     </div>
@@ -201,37 +217,46 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+
+
+    
+
     $("#Direct_Purchase_Receipt_dept_code_id").attr('disabled','disabled');                
     $("#Direct_Purchase_Receipt_location_code_id").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_supplier_reference_order").attr('disabled','disabled');        
-    $("#Direct_Purchase_Receipt_mode_of_shipment").attr('disabled','disabled');
+    
+    $("#Direct_Purchase_Receipt_supplier_account_code_description").attr('disabled','disabled');        
+    // $("#Direct_Purchase_Receipt_supplier_reference_order").attr('disabled','disabled');        
+    // $("#Direct_Purchase_Receipt_mode_of_shipment").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_supplier_code_id").attr('disabled','disabled');
     // $("#Direct_Purchase_Receipt_status_id").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_remarks").attr('disabled','disabled');        
-    $("#Direct_Purchase_Receipt_trade_terms_id").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_remarks").attr('disabled','disabled');        
+    // $("#Direct_Purchase_Receipt_trade_terms_id").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_purchase_order_no").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_other_charges").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_custom_duty_charges").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_selective_tax").attr('disabled','disabled');        
-    $("#Direct_Purchase_Receipt_landed_cost").attr('disabled','disabled');
-    $("#Direct_Purchase_Receipt_exchange_rate").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_other_charges").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_custom_duty_charges").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_selective_tax").attr('disabled','disabled');        
+    // $("#Direct_Purchase_Receipt_landed_cost").attr('disabled','disabled');
+    // $("#Direct_Purchase_Receipt_exchange_rate").attr('disabled','disabled');
     $("#Direct_Purchase_Receipt_supplier_account_code").attr('disabled','disabled');   
-    $("#Direct_Purchase_Receipt_currency_id").attr('disabled','disabled');   
-    $("#Direct_Purchase_Receipt_supplier_invoice").attr('disabled','disabled');   
+    // $("#Direct_Purchase_Receipt_currency_id").attr('disabled','disabled');   
+    // $("#Direct_Purchase_Receipt_supplier_invoice").attr('disabled','disabled');   
+    $("#Direct_Purchase_Receipt_currency_id").change(function(){
+        ajax('{{=URL('procurement','generate_exchange_rate')}}',['currency_id'])
+    });
     $("#btnsubmit").click(function(){
-        ajax("{{=URL('procurement','put_direct_purchase_id', args=request.args(0))}}",['status_id'])
+        ajax("{{=URL('procurement','put_direct_purchase_id', args=request.args(0))}}",['trade_terms_id','mode_of_shipment','supplier_reference_order','supplier_invoice','status_id',
+    'exchange_rate','landed_cost','custom_duty_charges','selective_tax','other_charges','remarks'])
         location.href = "{{=URL('inventory','account_grid')}}"
     })
     $("#btnApproved").click(function(){
-        ajax("{{=URL('procurement','put_direct_purchase_receipt_approved_id', args = request.args(0))}}")
+        ajax("{{=URL('procurement','put_direct_purchase_receipt_approved_id', args = request.args(0))}}")        
+        window.open("{{=URL('procurement','direct_purchase_receipt_reports', args = request.args(0))}}")
         window.location.href="{{=URL('inventory','account_manager_workflow')}}"
     });
     $("#btnReject").click(function(){
         ajax("{{=URL('procurement','put_direct_purchase_receipt_reject_id', args = request.args(0))}}")
         window.location.href="{{=URL('inventory','account_manager_workflow')}}"
-
     });
-
 });
 </script>
 

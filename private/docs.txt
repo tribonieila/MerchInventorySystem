@@ -53,6 +53,45 @@ Sales:
     - Ver.1.0.1 - 25/8/2020, Initial version control
 Procurement:
     - Ver.1.0.1 - 25/8/2020, Initial version control
+- Ver.1.0.5 - 9/9/2020, Direct Purchase Receipt
+    Issues:
+    - Added field landed_cost, price_cost_pcs, average_cost_pcs, wholesale_price_pcs,
+    retail_price_pcs, location_code_id, transaction_type,transaction_date and purchase_receipt_no. Resolved.
+    - Purchase Order No field validation not empty. Resolved.
+
+- Ver.1.0.4 - 7/9/2020, Direct Purchase Receipt
+    Issues:
+    - Printing after approval. Resolved
+    - Supplier Price in grid editable. Resolved.
+    - Rejected transaction in workflow report. Resolved.
+    - Exchange rate, Landed cost decimal to 4. Resolved.
+    - Global discount to amount. Resolved.
+    - Item's in stock file added if location not existed yet in stock file. Resolved. 
+
+- Ver.1.0.3 - 6/9/2020, Direct Purchase Receipt
+    Issues:
+    - Status default to onhold and for approval. = Resolved
+    - Most recent cost label change to supplier price. = Resolved.
+    - changing field order arrangent. = Resolved
+    - validation of landed cost != 0 and exchange rate. = Resolved
+    - discount by items = Resolved.
+    - category items excess removed. = Resolved.
+    - label for other changes, selective tax, custom duty charge and landed cost ammendment. =  Resolved.
+    - no negative entry for quantity and pieces. = Resolved.
+
+- Ver.1.0.2 - 6/9/2020, Direct Purchase Receipt
+    Issues:
+    - Status default to onhold and for approval. = Resolved
+    - Most recent cost label change to supplier price. = Resolved.
+    - changing field order arrangent. = Resolved
+    - validation of landed cost != 0 and exchange rate. = Resolved
+    - discount by items = Resolved.
+    - category items excess removed. = Resolved.
+    - label for other changes, selective tax, custom duty charge and landed cost ammendment. =  Resolved.
+    - no negative entry for quantity and pieces. = Resolved.
+
+
+
 Activities:
 
 2020-7-16 # price_cost_after_discount field added

@@ -1941,6 +1941,11 @@ def wiki():
 
 # ---- Action for login/register/etc (required for auth) -----
 def user():
+   
+    # auth.login(next=redirect('http://10.128.4.21:3010/Merch_HR/'))
+    
+    
+
     """
     exposes:
     http://..../[app]/default/user/login
@@ -1957,6 +1962,7 @@ def user():
     also notice there is http://..../[app]/appadmin/manage/auth to allow administrator to manage users
     """
     return dict(form=auth())
+    
 
 # ---- action to server uploaded static content (required) ---
 @cache.action()

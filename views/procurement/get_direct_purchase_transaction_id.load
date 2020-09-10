@@ -1,7 +1,9 @@
 <hr>
 {{=table}}
+
 <hr>
 {{=form.custom.begin}}
+
 <div class="row">    
     <div class="col-md-4">
         <div class="form-group">
@@ -24,13 +26,13 @@
     <div class="col-md-1">
         <div class="form-group">
             <label class="control-label">Discount %</label>
-            {{=form.custom.widget.added_discount}}
+            {{=form.custom.widget.discount_percentage}}
         </div>    
     </div>    
     <div class="col-md-2">
         <div class="form-group">
             <label class="control-label">Most Recent Cost(FC)</label>            
-            <div id = "_most_recent_cost"></div>            
+            {{=form.custom.widget.most_recent_cost}}                      
         </div>                    
     </div>                   
     <div class="col-md-2">
@@ -47,6 +49,7 @@
         {{pass}}
     </div>                                              
 </div>
+
 {{=form.custom.end}}
 <div id = "_item_code_description"></div>      
 
@@ -54,54 +57,83 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
+    var _landed_cost = $("#Direct_Purchase_Receipt_landed_cost").val();
+    $("#Landed_Cost").val(_landed_cost)
+
+    $("#Direct_Purchase_Receipt_landed_cost").change(function(){
+        var _landed_cost = $("#Direct_Purchase_Receipt_landed_cost").val();
+        $("#Landed_Cost").val(_landed_cost)
+    });
+
     var $tblrows = $("#DPtbl tbody tr");
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        $tblrow.find(".quantity, .pieces").on("change", function(){
+        $tblrow.find(".quantity, .pieces, .discount_percentage, .price_cost").on("change", function(){            
             var ctr = $tblrow.find("[name=ctr]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
+            var itd = $tblrow.find("[name=discount_percentage]").val();
+            var net = $tblrow.find("[name=net_price]").val();
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var tot = parseInt(itm, 10) * parseFloat(ppp);
-            var dis = $("#discount").val();
-            if (!isNaN(tot)) {
-                $tblrow.find(".total_amount").val(tot.toFixed(2));
+            var npr = parseFloat(pri) * (100 - parseFloat(itd)) / 100
+            var tot = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)                        
+            var dis = $("#added_discount_amount").val();
+            if(parseInt(qty) < parseInt(0)){
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseFloat(itd) < parseFloat(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else {
+                $("#btnUpdate").removeAttr('disabled');
+            }
+            
+            if (!isNaN(tot)) {                                
+                $tblrow.find(".net_price").val(npr.toFixed(3));
+                $tblrow.find(".total_amount").val(tot.toLocaleString());
                 var grandTotal = 0;
                 var netAmount = 0;
                 var xrate = $("#Direct_Purchase_Receipt_exchange_rate").val();
-                $(".total_amount").each(function(){
-                    var stval = parseFloat($(this).val());
-                    grandTotal += isNaN(stval) ? 0 : stval;
+                
+                $(".total_amount").each(function(){                         
+                    var stval = parseFloat($(this).val().replace(/,/g, ""));
+                    grandTotal += isNaN(stval) ? 0 : stval;                    
                 });
-                $(".grand_total").val(grandTotal.toFixed(2))
-                netAmount = (parseFloat(grandTotal) * (100 - dis)) / 100
-                ex_rate = parseFloat(xrate) * parseFloat(netAmount)
-                $(".net_amount").val(netAmount.toFixed(3));
-                $(".local_net_amount").val(ex_rate.toFixed(2)); 
+                $(".grand_total").val(grandTotal.toLocaleString());
+                netAmount = parseFloat(grandTotal) - parseFloat(dis)
+                ex_rate = parseFloat(xrate) * parseFloat(netAmount)                
+                $(".net_amount").val(netAmount.toLocaleString());
+                $(".local_net_amount").val(ex_rate.toLocaleString()); 
                 
             } 
         });
     }); 
-    $("#discount").change(function(){
-        var xrate = $("#Direct_Purchase_Receipt_exchange_rate").val();
-        
+
+
+    $("#added_discount_amount").change(function(){
+        var xrate = $("#Direct_Purchase_Receipt_exchange_rate").val();        
         var TotalAmount = $(".grand_total").val();
-        var discount = $("#discount").val();
-        var localNetAmount = 0;
-        var netAmount = 0;
-        netAmount = (TotalAmount * (100 - discount)) / 100
+        var added_discount_amount = $("#added_discount_amount").val();
+        var localNetAmount = 0;        
+        TotalAmount=TotalAmount.replace(/,/g, ""); 
+        
+        netAmount = parseFloat(TotalAmount) - parseFloat(added_discount_amount)
+        console.log(xrate,TotalAmount,added_discount_amount,netAmount.toLocaleString());
         ex_rate = parseFloat(xrate) * parseFloat(netAmount)
-        $(".net_amount").val(netAmount.toFixed(3));
-        $(".local_net_amount").val(ex_rate.toFixed(3));
+        $(".net_amount").val(netAmount.toLocaleString());
+        $(".local_net_amount").val(ex_rate.toLocaleString());
 
 
     })    
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
         ajax('{{=URL('purchase_request_item_code_description_id', args=request.args(0))}}', ['item_code'], '_item_code_description');     
-        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code']);    
     });
 
 $('.delete').click(function(){
@@ -132,4 +164,9 @@ $('.delete').click(function(){
 });    
 
 });
+    function formatNumber (num) {
+        console.log("formatNumber",num);
+        return num.toString().replace(/,/g, ""); 
+        //return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+    }
 </script>
