@@ -5683,7 +5683,7 @@ def stock_adjustment_browse_details_delete():
 def account_manager_workflow():
     return dict()
 
-@auth.requires(lambda: auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('ROOT') | auth.has_membership('INVENTORY'))
+@auth.requires(lambda: auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('ROOT') | auth.has_membership('INVENTORY') | auth.has_membership('MANAGEMENT'))
 def stock_adjustment_manager_grid():
     row = []     
     _usr = db(db.User_Department.user_id == auth.user_id).select().first()

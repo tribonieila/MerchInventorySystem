@@ -136,9 +136,9 @@ $(document).ready(function(){
         }
     }
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
-        ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
-        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code']);    
-        ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
+        ajax('{{=URL('procurement','purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('procurement','generate_item_code_recent_cost')}}', ['item_code']);
+        ajax('{{=URL('procurement','generate_category_id')}}',['item_code'], '_category_id'); 
         return false;
     });    
 });

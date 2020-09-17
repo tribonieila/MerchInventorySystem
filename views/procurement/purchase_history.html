@@ -10,9 +10,9 @@
             <span class="card-title">PURCHASE HISTORY</span>
         </div>
         <div class="card-body tab-content">   
-            <table class="table"> 
-                <thead class="bg-success">
-                    <tr>
+            <table class="table table-bordered"> 
+                <thead>
+                    <tr class="active">
                         <th>Department</th>
                         <th>Supplier Code</th>
                         <th>Purchase Budget</th>
@@ -21,7 +21,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class='active'>
+                    <tr>
                         <td>{{=_sm.dept_code_id.dept_code}} - {{=_sm.dept_code_id.dept_name}}</td>
                         <td>{{=_sm.supp_code}} - {{=_sm.supp_name}}</td>
                         <td>{{import locale}}{{=_sm.currency_id.mnemonic}} {{=locale.format('%.2F',_sm.purchase_budget or 0, grouping = True)}}</td>
@@ -32,7 +32,7 @@
             </table>      
             Purchase Receipt as of {{=request.now.strftime("%B %d, %Y")}}      
             {{=table}}
-            <br>
+            
             Order in Transit as of {{=request.now.strftime("%B %d, %Y")}}      
             {{=ttable}}
         </div>

@@ -155,6 +155,12 @@ Read (Retrieve)	-    SELECT	    -   GET	            -       GET	        -   read
 Update (Modify)	-    UPDATE	    -   PUT/POST/PATCH	-       PUT	        -   write	    -   Update
 Delete (Destroy)-	 DELETE	    -   DELETE	        -       DELETE	    -   dispose	    -   Delete
 
+$('input[type="number"]').prop('readonly', true);
+$(':text').prop('readonly', true);
+$('yourFormSelector input[type="text"]').prop('readonly', true);
+$('.classname').attr('readonly', 'readonly');
+$('.classname').prop('readonly', true);
+$('.form-control').prop('readonly', true);
 
 total = quantity * wholesale price
 

@@ -2318,7 +2318,7 @@ def update_sales_return_transaction():
 @auth.requires_login()   
 def sales_return_browse_load():
     row = []
-    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Salesman'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-warning'))
+    head = THEAD(TR(TH('Date'),TH('Sales Return No.'),TH('Department'),TH('Customer'),TH('Location'),TH('Amount'),TH('Salesman'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))
     for n in db(db.Sales_Return.archives == False).select(orderby = ~db.Sales_Return.id):  
         if n.status_id == 13:            
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle clear', callback = URL(args = n.id, extension = False), **{'_data-id':(n.id)})            
@@ -2340,7 +2340,7 @@ def sales_return_browse_load():
             TD(n.status_id.required_action),
             TD(btn_lnk)))
     body = TBODY(*row)
-    table = TABLE(*[head, body], _class='table')
+    table = TABLE(*[head, body], _class='table',_id='tblsrm')
     return dict(table = table)
 
 @auth.requires_login()

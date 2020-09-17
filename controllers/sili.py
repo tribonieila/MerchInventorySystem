@@ -11,8 +11,12 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():
-    session.counter = (session.counter or 0) + 1
-    return dict(counter=session.counter, now=request.now)
+    _sfile = db(db.Item_Master.id == int(1)).select().first()
+    if _sfile:
+        print 'true:'
+    else:
+        print 'false'
+    return dict()
 
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)

@@ -841,7 +841,6 @@ db.define_table('Stock_Corrections_Transaction_Temporary',
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False))
 
-
 #---------- S   A   L   E   S   S c h e m a ----------
 
 db.define_table('Customer_Category', # hypermarket, restaurant
@@ -1669,12 +1668,12 @@ db.define_table('Purchase_Request',
     Field('total_amount','decimal(15,4)', default = 0),    
     Field('total_amount_after_discount','decimal(15,4)', default = 0),    
     Field('insured', 'boolean', default = False),
-    Field('foreign_currency_value','decimal(10,2)', default = 0),
-    Field('local_currency_value','decimal(10,2)', default = 0),
+    Field('foreign_currency_value','decimal(10,3)', default = 0),
+    Field('local_currency_value','decimal(10,3)', default = 0),
     Field('exchange_rate','decimal(10,4)', default = 0),
     Field('trade_terms_id', 'reference Supplier_Trade_Terms', ondelete = 'NO ACTION',label = 'Trade Terms', requires = IS_IN_DB(db, db.Supplier_Trade_Terms.id, '%(trade_terms)s', zero = 'Choose Terms')),  #'string', length = 25, requires = IS_IN_SET(['EX-WORKS','FOB','C&F','CIF','LANDED COST'], zero = 'Choose Terms')),    
     Field('discount_percentage', 'decimal(10,2)',default =0), # on hold structure    
-    Field('added_discount_amount', 'decimal(10,2)',default =0), # on hold structure    
+    Field('added_discount_amount', 'decimal(10,3)',default =0), # on hold structure    
     Field('currency_id','reference Currency', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Currency.id,'%(mnemonic)s - %(description)s', zero = 'Choose Currency')),
     Field('remarks', 'string'),
     Field('remarks_created_by',db.auth_user,ondelete='NO ACTION',writable=False,readable=False),
@@ -1745,7 +1744,7 @@ db.define_table('Purchase_Request_Transaction',
     Field('retail_price', 'decimal(10,2)',default = 0),
     Field('vansale_price', 'decimal(10,2)',default =0),
     Field('discount_percentage', 'decimal(10,2)',default =0),
-    Field('net_price', 'decimal(10,2)',default =0),
+    Field('net_price', 'decimal(10,3)',default =0),
     Field('selective_tax','decimal(10,2)', default = 0, label = 'Selective Tax'),
     Field('selective_tax_foc','decimal(10,2)', default = 0, label = 'Selective Tax'),
     Field('vat_percentage','decimal(10,2)', default = 0, label = 'Vat Percentage'), 

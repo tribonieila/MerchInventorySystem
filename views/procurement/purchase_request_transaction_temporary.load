@@ -17,7 +17,7 @@
     </table>
                                          
 </div>
-<input type="text" class="form-control" id="ExchangeRate" name = "ExchangeRate" value=0>
+<input type="text" class="form-control" id="ExchangeRate" name = "ExchangeRate" value=0 hidden>
 {{=form.custom.end}}
 <div id = "_item_code_description"></div>      
 
@@ -82,15 +82,15 @@ $(document).ready(function(){
     });
 
     $('#added_discount_amount').change(function(){
-        var _exchange_rate = $("#exchange_rate").val();
+        var _exchange_rate = $("#no_table_exchange_rate").val();
         var var_discount = $("#added_discount_amount").val();
         var GrandTotal = $(".grand_total").val();
-        var foreign = parseFloat(GrandTotal.replace(/,/g, "")) - parseFloat(var_discount);        
+        var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);        
         $("#foreign_amount").val(foreign.toLocaleString());
         var_local = parseFloat(foreign) * parseFloat(_exchange_rate);
         $("#local_amount").val(var_local.toLocaleString());
         ajax("{{=URL('procurement','put_added_discount_amount')}}", ['added_discount_amount']);
-        console.log(foreign, var_discount.replace(/,/g, ""), _exchange_rate.replace(/,/g, ""), var_local)
+        console.log(foreign, var_discount, _exchange_rate, var_local)
 
     });
     $(document).on('paste', '#no_table_item_code', function(e) {
@@ -114,7 +114,7 @@ $(document).ready(function(){
 
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
-        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code']);    
         ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
         return false;
     });

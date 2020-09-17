@@ -76,27 +76,22 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Currency</label>
                                 <div class="col-sm-3">
-                                    {{ if not _id.currency_id: }}
-                                        <input type="text" class="form-control" value="None" readonly>
-                                    {{ else: }}
-                                        <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>
-                                        <p class='help-block'>{{=_id.currency_id.mnemonic}}</p>
-                                    {{ pass }}
+                                    <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
                                 </div>
                                 <div>
-                                    <label class="col-sm-2 control-label">Trade Terms</label>
+                                    <label class="col-sm-2 control-label">Exchange Rate</label>
                                     <div class="col-sm-3">
-                                        <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>                                        
+                                        <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>
                                     </div>
                                 </div>
                             </div>                   
                         </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.proforma_file}}                       
-                            </div>
+                            <label class="col-sm-4 control-label">Trade Terms</label>
+                            <div class="col-sm-8">              
+                                <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>
+                            </div>    
                         </div>                   
                     </div>    
                 </div>         

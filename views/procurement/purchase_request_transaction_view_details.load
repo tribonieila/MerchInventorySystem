@@ -1,113 +1,93 @@
 {{=table}}
+<div id="form_entry">
 {{=form.custom.begin}}
 <div class="row">    
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Item Code</label>
-            <div class="col-sm-8">                                
-                {{=form.custom.widget.item_code}}
-            </div>                           
-        </div>                        
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Quantity</label>
-            <div class="col-sm-6"> 
-                {{=form.custom.widget.quantity}}
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Pieces</label>
-            <div class="col-sm-6">                                
-                {{=form.custom.widget.pieces}}
-            </div>                           
-        </div>    
-    </div>
-    <div class="col-md-3">
-        <div class="form-group">
-            <label class="col-sm-6 control-label">Supplier Cost</label>
-            <div class="col-sm-4"> 
-                <div id = "_most_recent_cost"></div>
-            </div>
-        </div>                    
-    </div>                   
-    <div class="col-md-2">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Category</label>
-            <div class="col-sm-8"> 
-                <div id="_category_id"></div>                
-                
-            </div>
-        </div>                    
-    </div>
-    <div class="col-md-1">                        
-        <input class="btn btn-primary" type="submit" value="add" id="btnadd">
-        
-    </div>                                              
+    <table class="table">
+        <tr><td>Item Code</td><td>Quantity</td><td>Pieces</td><td>Discount %</td><td>Most Recent Cost(FC)</td><td>Category</td><td></td></tr>
+        <tr>
+            <td>{{=form.custom.widget.item_code}}</td>
+            <td>{{=form.custom.widget.quantity}}</td>
+            <td>{{=form.custom.widget.pieces}}</td>
+            <td>{{=form.custom.widget.discount_percentage}}</td>
+            <td>{{=form.custom.widget.most_recent_cost}}</td>
+            <td>{{=form.custom.widget.category_id}}</td>
+            <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"></td>
+        </tr>
+
+    </table>
+                                         
 </div>
 {{=form.custom.end}}
 <div id = "_item_code_description"></div>   
-
+</div>
 <script>
 $(document).ready(function(){
-    $(".price_cost, .total_amount, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
+        
+    $(".total_amount, .net_price, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
     var $tblrows = $("#tblPRT tbody tr");
-    
+    var _exchange_rate = $("#no_table_exchange_rate").val()
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        $tblrow.find(".quantity, .pieces").on("change", function(){
+        $tblrow.find(".quantity,.pieces,.price_cost,.discount_percentage").on("change", function(){
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var pri = $tblrow.find("[name=price_cost]").val();
-            
-            
+            var itd = $tblrow.find("[name=discount_percentage]").val();
+            var net = $tblrow.find("[name=net_price]").val();            
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var sub = parseInt(itm, 10) * parseFloat(ppp);
-                        
-            var xch = {{=_foc.exchange_rate_value}}
+            var npr = parseFloat(pri) * (100 - parseFloat(itd)) / 100
+            var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
+            var ada = $("#added_discount_amount").val();            
             var foc = $("#net_amount_foreign").val();
             var loc = $("#net_amount_local").val();            
             
-
+            if(parseInt(qty) < parseInt(0)){
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseInt(pcs) < parseInt(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else if (parseFloat(itd) < parseFloat(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                return alert("Please enter positive integer.");
+            } else {
+                $("#btnUpdate").removeAttr('disabled');
+            }            
+            
             if (!isNaN(sub)){            
                 var grandTotal = 0;
                 var discount = 0;
                 var local = 0;
                 var foa = 0;
+                var netAmount = 0;
+                $tblrow.find(".net_price").val(npr.toLocaleString());
+                $tblrow.find(".total_amount").val(sub.toFixed(3));
                 
-                $tblrow.find(".total_amount").val(sub.toFixed(3));                               
-                                
                 $(".total_amount").each(function(){
                     var stval = parseFloat($(this).val());
                     grandTotal += isNaN(stval) ? 0 : stval;
                 });
-
-                //discount = (parseFloat(grandTotal) * (100 - parseInt(dis))) / 100;
-                local = parseFloat(xch) * parseFloat(grandTotal);
-
+                netAmount = parseFloat(grandTotal) - parseFloat(ada)
+                local = parseFloat(_exchange_rate) * parseFloat(netAmount);
+                
                 $(".grand_total").val(grandTotal.toFixed(3));
-                $(".net_amount_foreign").val(grandTotal.toFixed(3));
-                $(".net_amount_local").val(local.toFixed(3));
+                $(".net_amount_foreign").val(netAmount.toFixed(3));
+                $(".net_amount_local").val(local.toLocaleString());
             }                        
         });
     });
-    $("#discount").change(function(){
-        var xch = {{=_foc.exchange_rate_value}}
-        var grd = $(".grand_total").val();
-        var fox = $(".net_amount_foreign").val();
-        var loc = $(".net_amount_local").val();
-        var dis = $(".discount").val();
-        var discount = 0
-        discount = (parseFloat(grd) * (100 - parseInt(dis))) / 100;
-        local = parseFloat(xch) * parseFloat(discount);
-        $(".net_amount_foreign").val(discount.toFixed(3))
-        $(".net_amount_local").val(local.toFixed(3))
-        console.log('discount change', fox, loc, dis);
+    $("#added_discount_amount").change(function(){        
+        var _exchange_rate = $("#no_table_exchange_rate").val();
+        var var_discount = $("#added_discount_amount").val();
+        var GrandTotal = $(".grand_total").val();
+        var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);
+        $("#net_amount_foreign").val(foreign.toLocaleString());
+        var_local = parseFloat(foreign) * parseFloat(_exchange_rate);
+        $("#net_amount_local").val(var_local.toLocaleString());
+        console.log(_exchange_rate);
     });
 
     $(document).on('paste', '#no_table_item_code', function(e) {

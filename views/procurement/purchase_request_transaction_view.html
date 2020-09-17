@@ -38,7 +38,7 @@
                                 <input type="text" class="form-control" value="{{=_id.estimated_time_of_arrival}}" readonly>
                             </div>
                         </div>
-                    </div>
+                    </div> 
                 </div>
                 <div class="row">
                     <div class="col-md-4">
@@ -79,30 +79,21 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Currency</label>
                             <div class="col-sm-3">
-                                {{ if not _id.currency_id: }}
-                                    <input type="text" class="form-control" value="None" readonly>
-                                {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.currency_id.mnemonic}} {{=_ex.exchange_rate_value}}" readonly>
-                                {{ pass }}
+                                <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
                             </div>
                             <div>
-                                <label class="col-sm-2 control-label">Trade Terms</label>
+                                <label class="col-sm-2 control-label">Exchange Rate</label>
                                 <div class="col-sm-3">
-                                    {{=form.custom.widget.trade_terms_id}}
+                                    <input type="text" class="form-control" id="no_table_exchange_rate" name="no_table_exchange_rate" value="{{=_ex.exchange_rate_value}}" readonly>
                                 </div>
                             </div>
                         </div>                   
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <label class="col-sm-4 control-label">Trade Terms</label>
                             <div class="col-sm-8">              
-                                {{ if _id.proforma_file == None:}}                                        
-                                    {{=form.custom.widget.proforma_file}}
-                                {{else:}}
-                                    
-                                    <a class="btn btn-default btn-flat"><i class="fa fa-user-md"></i> With Proforma Invoice</a>
-                                {{pass}}
+                                <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>
                             </div>                            
                         </div>                   
                     </div>    
@@ -145,7 +136,6 @@
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
                                 {{ pass }}
-
                                 {{=form.custom.end}}
                             </div>        
                         </div>  
