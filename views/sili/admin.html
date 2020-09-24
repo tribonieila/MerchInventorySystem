@@ -16,6 +16,7 @@
                     <li role="presentation"><a href="#stock_corrections" aria-controls="stock_corrections" role="tab" data-toggle="tab">Stock Corrections</a></li>
                     <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment</a></li>
                     <li role="presentation"><a href="#obsolescence_of_stock" aria-controls="obsolescence_of_stock" role="tab" data-toggle="tab">Obsolescence of Stock</a></li>
+                    <li role="presentation"><a href="#direct_purchase" aria-controls="direct_purchase" role="tab" data-toggle="tab">Direct Purchase</a></li>
                 </ul>
                 <div class="tab-content"> 
                     <div role="tabpanel" class="tab-pane active" id="stock_file">{{=SQLFORM.grid(db.Stock_File)}}</div>
@@ -27,6 +28,7 @@
                     <div role="tabpanel" class="tab-pane" id="stock_corrections">{{=LOAD('sili','stock_corrections.load')}}</div>
                     <div role="tabpanel" class="tab-pane" id="stock_adjustment">{{=LOAD('sili','stock_adjustment.load')}}</div>
                     <div role="tabpanel" class="tab-pane" id="obsolescence_of_stock">{{=LOAD('sili','obsolescence_of_stock.load')}}</div>
+                    <div role="tabpanel" class="tab-pane" id="direct_purchase">{{=LOAD('sili','direct_purchase.load')}}</div>
                 </div>
             </div>
         </div>

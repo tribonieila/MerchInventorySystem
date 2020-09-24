@@ -74,7 +74,7 @@ $(document).ready(function(){
                 local = parseFloat(_exchange_rate) * parseFloat(netAmount);
                 
                 $(".grand_total").val(grandTotal.toFixed(3));
-                $(".net_amount_foreign").val(netAmount.toFixed(3));
+                $(".net_amount_foreign").val(netAmount.toLocaleString());
                 $(".net_amount_local").val(local.toLocaleString());
             }                        
         });

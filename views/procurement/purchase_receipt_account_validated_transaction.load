@@ -202,31 +202,31 @@ $(document).ready(function(){
 
                 var xch = $("#Purchase_Request_exchange_rate").val();
                 var lnd = $("#Purchase_Request_landed_cost").val();
-                var foc = $("#foreign_total_amount").val();
-                var loc = $("#local_total_amount").val();
+                var foc = $("#grand_total").val();
+                var loc = $("#net_amount_qr").val();
                 var pur = $("#purchase_value").val();
                 var dis = $("#discount").val();                
                 
                 if (!isNaN(sub)){
-                    var total_net_amount = 0;
-                    var foa = 0;
+                    var _grand_total = 0;
+                    var _net_amount = 0;
                     var local = 0;
 
                     $tblrow.find(".total_amount").val(sub.toFixed(3));
                     $(".total_amount").each(function(){
                         var stval = parseFloat($(this).val());
-                        total_net_amount += isNaN(stval) ? 0 : stval;
+                        _grand_total += isNaN(stval.toFixed(3)) ? 0 : stval;
                     });
 
-                    $(".total_net_amount").val(total_net_amount.toFixed(3));
-
-                    foa = (parseFloat(total_net_amount) * (100 - parseInt(dis))) / 100;
-                    local = parseFloat(xch) * parseFloat(foa);
-                    landed_cost = parseFloat(lnd) * parseFloat(foa);
+                    $(".grand_total").val(_grand_total.toLocaleString());
+                    _net_amount = parseFloat(_grand_total) - parseFloat(dis)
+                    local = parseFloat(xch) * parseFloat(_net_amount);
+                    landed_cost = parseFloat(lnd) * parseFloat(_net_amount);
                     purch = parseFloat()
-                    $(".foreign_total_amount").val(foa.toFixed(3));
-                    $(".local_total_amount").val(local.toFixed(3));
-                    $("#purchase_value").val(landed_cost.toFixed(3));
+                    console.log(_grand_total,dis, _net_amount);
+                    $(".net_amount").val(_net_amount.toLocaleString());                    
+                    $(".net_amount_qr").val(local.toLocaleString());
+                    $("#purchase_value").val(landed_cost.toLocaleString());
 
                 }
             });
@@ -242,18 +242,18 @@ $(document).ready(function(){
         var _exc = $('#Purchase_Request_exchange_rate').val();
         var _ton = $('#total_net_amount').val();
         var _dis = $('#discount').val();            
-        var _loc = $('#local_total_amount').val();
-        var _fta = $('#foreign_total_amount').val();
+        var _loc = $('#net_amount_qr').val();
+        var _fta = $('#grand_total').val();
         
 
-        _for = ((parseFloat(_ton.replace(/,/g, '')) * (100 - parseFloat(_dis))) / 100) + parseFloat(_oth)
+        _for = parseFloat(_ton.replace(/,/g, '')) - parseFloat(_dis)
         _loc = parseFloat(_for) * parseFloat(_exc)      
         _pur = parseFloat(_for) * parseFloat(_lan)
         
         console.log(_ton.replace(/,/g, ''), _dis, _for);
         
-        $('#foreign_total_amount').val(_for.toFixed(3));                  
-        $('#local_total_amount').val(_loc.toFixed(3));   
+        $('#grand_total').val(_for.toFixed(3));                  
+        $('#net_amount_qr').val(_loc.toFixed(3));   
         $('#purchase_value').val(_pur.toFixed(3));                   
         //$('#purchase_value').val(_pur.format());                   
     };
@@ -264,7 +264,7 @@ $(document).ready(function(){
     var xch = $("#Purchase_Request_exchange_rate").val();
     var lnd = $("#Purchase_Request_landed_cost").val();
     var foc = $("#foreign_total_amount").val();
-    var loc = $("#local_total_amount").val();
+    var loc = $("#net_amount_qr").val();
     var pur = $("#purchase_value").val();
     var dis = $("#discount").val();
     var total = parseFloat(loc.replace(/,/g, ''));
@@ -275,7 +275,7 @@ $(document).ready(function(){
             var _for = $('#foreign_total_amount').val();
             var _exc = $('#Purchase_Request_exchange_rate').val();
             var _res = parseFloat(_for.replace(/,/g, '')) * parseFloat(_exc.replace(/,/g, ''))
-            $('.local_total_amount').val(_res.toFixed(3));              }
+            $('.net_amount_qr').val(_res.toFixed(3));              }
         
     });
 

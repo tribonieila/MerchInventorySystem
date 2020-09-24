@@ -38,7 +38,7 @@
         <input class="btn btn-primary" type="submit" value="add" id="btnadd">        
     </div>                                              
 </div>
-{{=form.custom.end}}
+{{=form.custom.end}} 
 <div id = "_item_code_description"></div>
 
 <script>

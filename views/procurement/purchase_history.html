@@ -11,7 +11,7 @@
         </div>
         <div class="card-body tab-content">   
             <table class="table table-bordered"> 
-                <thead>
+                <thead> 
                     <tr class="active">
                         <th>Department</th>
                         <th>Supplier Code</th>
@@ -23,10 +23,10 @@
                 <tbody>
                     <tr>
                         <td>{{=_sm.dept_code_id.dept_code}} - {{=_sm.dept_code_id.dept_name}}</td>
-                        <td>{{=_sm.supp_code}} - {{=_sm.supp_name}}</td>
-                        <td>{{import locale}}{{=_sm.currency_id.mnemonic}} {{=locale.format('%.2F',_sm.purchase_budget or 0, grouping = True)}}</td>
-                        <td>{{=_sm.currency_id.mnemonic}}  {{=locale.format('%.2F',_grand_total or 0, grouping = True)}}</td>
-                        <td>{{=_sm.currency_id.mnemonic}}  {{=locale.format('%.2F',_on_balanced or 0, grouping = True)}}</td>
+                        <td>{{=_sm.supp_sub_code}} - {{=_sm.supp_name}}</td>
+                        <td>{{import locale}}{{=_sm.currency_id.mnemonic}} {{=locale.format('%.3F',_sm.purchase_budget or 0, grouping = True)}}</td>
+                        <td>{{=_sm.currency_id.mnemonic}}  {{=locale.format('%.3F',_grand_total or 0, grouping = True)}}</td>
+                        <td>{{=_sm.currency_id.mnemonic}}  {{=locale.format('%.3F',_on_balanced or 0, grouping = True)}}</td>
                     </tr>
                 </tbody>
             </table>      

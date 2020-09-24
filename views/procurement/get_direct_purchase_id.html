@@ -189,10 +189,10 @@
                     <div class="col-md-4">   
                         {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
                             {{if row.status_id == 4:}}
-                                <input class="btn btn-success" type="button" value="approved and post" id="btnApproved">
+                                <input class="btn btn-success" type="button" value="approve and post" id="btnApproved">
                                 <input class="btn btn-danger" type="button" value="reject" id="btnReject">    
                             {{else:}}
-                                <input class="btn btn-success" type="button" value="approved and post" id="btnApproved" disabled>
+                                <input class="btn btn-success" type="button" value="approve and post" id="btnApproved" disabled>
                                 <input class="btn btn-danger" type="button" value="reject" id="btnReject" disabled>
                             {{pass}}
                         {{else:}}
@@ -241,7 +241,7 @@ $(document).ready(function(){
     // $("#Direct_Purchase_Receipt_currency_id").attr('disabled','disabled');   
     // $("#Direct_Purchase_Receipt_supplier_invoice").attr('disabled','disabled');   
     $("#Direct_Purchase_Receipt_currency_id").change(function(){
-        ajax('{{=URL('procurement','generate_exchange_rate')}}',['currency_id'])
+        ajax('{{=URL('procurement','generate_exchange_rate')}}',['currency_id']);
     });
     $("#btnsubmit").click(function(){
         ajax("{{=URL('procurement','put_direct_purchase_id', args=request.args(0))}}",['trade_terms_id','mode_of_shipment','supplier_reference_order','supplier_invoice','status_id',

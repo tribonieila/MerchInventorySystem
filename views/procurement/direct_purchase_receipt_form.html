@@ -195,7 +195,7 @@
             <div id = "order_panel">
                 {{=LOAD('procurement','direct_purchase_receipt_transaction_form.load', ajax = True, target = "DPtbl")}}
             </div>             
-        </div>
+        </div> 
     </div>
 </div>
 
@@ -242,7 +242,7 @@ jQuery(document).ready(function($){
         // { text: 'Choose Department', value = 0 },
         { text: '{{=d.dept_code}} - {{=d.dept_name}}', value:'{{=d.id}}',
             children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL, orderby = db.Supplier_Master.id):}}
-                { text: '{{=p.supp_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
+                { text: '{{=p.supp_sub_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
             ],
         }, {{pass}}
     ];

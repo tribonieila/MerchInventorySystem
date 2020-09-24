@@ -113,16 +113,24 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <label class="col-sm-4 control-label">Proforma Upload (.pdf)</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.proforma_file}}                                
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <div class="col-sm-7"></div>
-                            <div class="col-sm-5">                                                                
+                            <label class="col-sm-4 control-label">Section</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.section_id}}                                
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <div class="col-sm-2"></div>
+                            <div class="col-sm-10">                                                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
@@ -179,8 +187,8 @@ jQuery(document).ready(function($){
     var data = [ {{for d in db(db.Department.status_id == 1).select(db.Department.ALL, orderby = db.Department.id):}}
         // { text: 'Choose Department', value = 0 },
         { text: '{{=d.dept_code}} - {{=d.dept_name}}', value:'{{=d.id}}',
-            children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL, orderby = db.Supplier_Master.id):}}
-                { text: '{{=p.supp_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
+            children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(orderby = db.Supplier_Master.id):}}
+                { text: '{{=p.supp_sub_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
             ],
         }, {{pass}}
     ];
@@ -196,10 +204,10 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');
     $('#selective_tax').hide();
-    // $('#order_panel').hide();
+    $('#order_panel').hide();
 
-    $('#no_table_dept_code_id, #no_table_location_code_id, #no_table_supplier_code_id, #no_table_trade_terms_id, #no_table_status_id, #no_table_mode_of_shipment, #no_table_currency_id').change(function(){
-        if ( $('#no_table_currency_id').val() && $('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_supplier_code_id').val() && $('#no_table_trade_terms_id').val() && $('#no_table_status_id').val() && $('#no_table_mode_of_shipment').val()) {
+    $('#no_table_section_id, #no_table_dept_code_id, #no_table_location_code_id, #no_table_supplier_code_id, #no_table_trade_terms_id, #no_table_status_id, #no_table_mode_of_shipment, #no_table_currency_id').change(function(){
+        if ( $('#no_table_section_id').val() && $('#no_table_currency_id').val() && $('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_supplier_code_id').val() && $('#no_table_trade_terms_id').val() && $('#no_table_status_id').val() && $('#no_table_mode_of_shipment').val()) {
             $('#btnproceed').removeAttr('disabled');
         } else {
             $('#btnproceed').attr('disabled','disabled');
@@ -221,7 +229,7 @@ $(document).ready(function(){
 
     $('#btnproceed').click(function(){
         $('#order_panel').slideDown('slow');
-        ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id']);
+        ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id','exchange_rate']);
         $('#btnhelp').removeAttr('disabled');
         $("#item_code").focus();
         $("#no_table_dept_code_id").attr('disabled','disabled');                
@@ -233,6 +241,7 @@ $(document).ready(function(){
         $("#no_table_status_id").attr('disabled','disabled');
         $("#no_table_remarks").attr('disabled','disabled');
         $("#btnproceed").attr('disabled','disabled');
+
         return false;
     });
 

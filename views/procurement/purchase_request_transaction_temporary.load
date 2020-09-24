@@ -17,14 +17,12 @@
     </table>
                                          
 </div>
-<input type="text" class="form-control" id="ExchangeRate" name = "ExchangeRate" value=0 hidden>
+
 {{=form.custom.end}}
 <div id = "_item_code_description"></div>      
 
 <script>
 $(document).ready(function(){
-    var _exchange_rate = $("#no_table_exchange_rate").val()
-    $("#ExchangeRate").val(_exchange_rate)
     $(".net_price, .total_amount").prop("readonly", true);    
     var $tblrows = $("#tblPRT tbody tr");
 
@@ -46,7 +44,7 @@ $(document).ready(function(){
             var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
                         
             var ada = $("#added_discount_amount").val();
-            //var _exchange_rate = $("#exchange_rate").val();
+            var _exchange_rate = $("#no_table_exchange_rate").val();
 
             if(parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
@@ -82,15 +80,20 @@ $(document).ready(function(){
     });
 
     $('#added_discount_amount').change(function(){
+        
         var _exchange_rate = $("#no_table_exchange_rate").val();
         var var_discount = $("#added_discount_amount").val();
-        var GrandTotal = $(".grand_total").val();
-        var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);        
-        $("#foreign_amount").val(foreign.toLocaleString());
-        var_local = parseFloat(foreign) * parseFloat(_exchange_rate);
-        $("#local_amount").val(var_local.toLocaleString());
-        ajax("{{=URL('procurement','put_added_discount_amount')}}", ['added_discount_amount']);
-        console.log(foreign, var_discount, _exchange_rate, var_local)
+        if(parseFloat(var_discount) < parseFloat(0)){
+            return alert("Please enter positive integer.");
+        } else {
+            var GrandTotal = $(".grand_total").val();
+            var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);        
+            $("#foreign_amount").val(foreign.toLocaleString());
+            var_local = parseFloat(foreign) * parseFloat(_exchange_rate);
+            $("#local_amount").val(var_local.toLocaleString());
+            ajax("{{=URL('procurement','put_added_discount_amount')}}", ['added_discount_amount']);
+            console.log(foreign, var_discount, _exchange_rate, var_local)
+        }
 
     });
     $(document).on('paste', '#no_table_item_code', function(e) {

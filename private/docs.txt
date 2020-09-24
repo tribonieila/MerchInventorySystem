@@ -51,8 +51,16 @@ Inventory:
 
 Sales:
     - Ver.1.0.1 - 25/8/2020, Initial version control
-Procurement:
-    - Ver.1.0.1 - 25/8/2020, Initial version control
+
+Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
+
+- Ver.1.0.6 - 23/9/2020, Purchase Request
+    Issues:
+    - Category should be “Normal and FOC” only. Resolved
+    - Calculations for Net Amount is not correct when inputting Added Discount. Resolved
+    - After the 1st entry of Item – Net Amount is “0” NOTE: It will come only after the second entry of item. Resolved
+    - The above error comes if you are adding an item with the Category “P” or FOC. Resolved
+
 - Ver.1.0.5 - 9/9/2020, Direct Purchase Receipt
     Issues:
     - Added field landed_cost, price_cost_pcs, average_cost_pcs, wholesale_price_pcs,
@@ -100,6 +108,20 @@ Activities:
 Todo's:
 HAKIM - sales_order_store_keeper_view # print redirect error
 MANOJ - stock_adjustment_add_new # transaction date only must show
+
+SALES TRANSACTION PRICE/COST DESCRIPTION		
+DETAILS	                PRICE LEVEL	DESCRIPTION
+PRICE COST	            PER PIECE	WHOLESALE PRICE / UOM VALUE
+SALE COST	            PER PIECE	WHOLESALE PRICE / UOM VALUE LESS (DISCOUNT % per item) 
+AVERAGE COST	        PER PIECE	AVERAGE COST / UOM VALUE
+WHOLESALE COST	        PER PIECE	WHOSALE PRICE / UOM VALUE
+RETAIL COST	            PER PIECE	RETAIL PRICE / UOM VALUE
+SELECTIVE TAX AMOUNT	OUTER	    TAKE IT FROM ITEM PRICE TABLE AS IT IS
+* Note: Decimal Discount (DISCOUNT ADDED) from Header should be deducted on the first item only		
+		
+PRICE COST IF FOC	    PER PIECE	AVERAGE COST / UOM VALUE
+
+
 
 Procurement         WH      ACCOUNTS
 PR = 1,3,19,20,11   17      18-25
@@ -275,3 +297,31 @@ Main Menu
 FINANCE MANAGEMENT
 Main Menu
     - Dashboard
+
+Using location.replace() will redirect you, but without saving the history of the previous page. This is better to use when a form is submitted.
+
+But when you want to keep your history you have to use location.href=//path.
+
+Examples:
+
+// Form with steps
+document.getElementById('#next').onclick = function() {
+   window.location.href='/step2' // Iteration of steps;
+}
+
+// Go to next step
+document.getElementById('#back').onclick = function() {
+   window.history.back();
+}
+
+// Finish
+document.getElementById('#finish').onclick = function() {
+   window.location.href = '/success';
+}
+
+// On success page
+window.onload = function() {
+    setTimeout(function() {
+       window.location.replace('/home'); // I can't go back to success page by pressing the back button
+    },3000);
+}

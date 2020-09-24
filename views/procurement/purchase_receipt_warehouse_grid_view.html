@@ -76,30 +76,21 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Currency</label>
                             <div class="col-sm-3">
-                                {{ if not _id.currency_id: }}
-                                    <input type="text" class="form-control" value="None" readonly>
-                                {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
-                                {{ pass }}
+                                <input type="text" class="form-control" value="{{=_id.currency_id.description}}" readonly>
                             </div>
                             <div>
-                                <label class="col-sm-2 control-label">Trade Terms</label>
+                                <label class="col-sm-2 control-label">Exchange Rate</label>
                                 <div class="col-sm-3">
-                                    <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>                                        
+                                    <input type="text" class="form-control" value="{{=_id.exchange_rate}}" readonly>                                        
                                 </div>
                             </div>                                    
                         </div>                   
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Status</label>
+                            <label class="col-sm-4 control-label">Trade Terms</label>
                             <div class="col-sm-8">
-                                {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}
-                                    {{=form.custom.widget.status_id}}                                    
-                                {{ else: }}
-                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>    
-                                {{ pass }}
-                                
+                                <input type="text" class="form-control" value="{{=_id.trade_terms_id.trade_terms}}" readonly>   
                             </div>
                         </div>                   
                     </div>    

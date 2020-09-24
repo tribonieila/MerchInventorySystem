@@ -18,9 +18,9 @@
         <tr>
             <td>{{=form2.custom.widget.new_item_code}}</td>            
             <td>{{=form2.custom.widget.item_description}} </td>
-            <td>{{=form2.custom.widget.uom}}</td>
-            <td>{{=form2.custom.widget.production_date}}</td>
-            <td>{{=form2.custom.widget.expiration_date}}</td>
+            <td>{{=form2.custom.widget.uom}}</td>            
+            <td><input class="form-control" id="no_table_production_date" name="production_date" type="date"></td>
+            <td><input class="form-control" id="no_table_expiration_date" name="expiration_date" type="date"></td>
             <td>{{=form2.custom.widget.quantity}}</td>
             <td>{{=form2.custom.widget.pieces}}</td>
             <td>{{=form2.custom.widget.category_id}}</td>

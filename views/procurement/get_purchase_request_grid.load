@@ -1,5 +1,8 @@
 {{=table}}
 <script>
 $(document).ready(function(){
+    $(".generate").click(function(){
+        window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
+    });
 });
 </script>

@@ -7,6 +7,7 @@
                 <li class=""><a href="#" onclick=window.location="{{=URL('inventory','mngr_req_grid')}}";>BROWSE</a></li>
             </ul> -->
             <span class="card-title">PURCHASE REQUEST FORM</span>
+            {{=form}}
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -68,7 +69,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Supplier Code</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.supplier_code_id.supp_code}} - {{=_id.supplier_code_id.supp_name}}" readonly>                                
+                                <input type="text" class="form-control" value="{{=_id.supplier_code_id.supp_sub_code}} - {{=_id.supplier_code_id.supp_name}}" readonly>                                
                             </div>                  
                         </div>      
                     </div>
@@ -121,6 +122,17 @@
                         </div>             
                     </div>                        
                 </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <div class="col-sm-8">
+                                {{=form.custom.widget.proforma_file}}
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+                {{=form.custom.end}}
                 <hr>
                 <div class="row">
                     <div class="col-md-12">                        
@@ -128,20 +140,20 @@
                             <div class="col-sm-9"></div>
                             <div class="col-sm-3">                         
                                 {{ if _id.status_id == 19 or _id.status_id == 3: }}
-                                    <input class="btn btn-success" type="button" value="approved" onclick="ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])">    
-                                    <input class="btn btn-warning" type="button" value="reject" onclick="ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}', ['remarks'])">    
+                                    <input class="btn btn-success" type="button" value="approved" onclick=onApprove()>
+                                    <input class="btn btn-warning" type="button" value="reject" onclick=onReject()>    
                                 {{ else: }}
                                     <input class="btn btn-success" type="button" value="approved" disabled>
                                     <input class="btn btn-warning" type="button" value="reject" disabled>                                                                      
                                 {{ pass }}                                            
-                                {{=form.custom.end}}
+                                
                             </div>        
                         </div>  
                         
                     </div>
                 </div>
     
-                
+               
                 <div id = "order_panel">
                     {{=LOAD('procurement','purchase_request_transaction_view_details.load', ajax = True, target='tblPRT',args = request.args(0))}}
                     
@@ -152,8 +164,36 @@
 </div>
 
 <script>
-    $('.btn').click(function(){          
-        onclick=document.location="{{=URL('inventory','mngr_req_grid')}}";
-        return false;
-    });
+    // $('.btn').click(function(){          
+    //     onclick=document.location="{{=URL('inventory','mngr_req_grid')}}";
+    //     return false;
+    // });
+    function onApprove(){
+        ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])
+    }
+    function onReject(){
+        
+        
+        bootbox.confirm({
+        size: "small",
+        message: "Would you like to delete this record?",
+        buttons: {
+            confirm: {
+                label: "Yes",
+                className: "btn-success"
+            },
+            cancel: {
+                label: "No",
+                className: "btn-danger"
+            }
+        },
+        callback: function (result) {
+            if (result) {                
+                "ajax('{{=URL('procurement','purchase_request_rejected', args = request.args(0))}}', ['remarks'])"       
+                window.location.replace("{{=URL('inventory','mngr_req_grid')}}")         
+            }
+        }   
+        })        
+    }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

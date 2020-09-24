@@ -76,7 +76,7 @@
             <div class="col-md-4">
 
                 {{ if auth.has_membership(role='ACCOUNTS MANAGER'):}}
-                    {{if _pr.status_id == 15:}}
+                    {{if _pr.status_id == 25:}}
                         <input class="btn btn-success" type="button" value="approved" id="btnApproved">
                         <input class="btn btn-danger" type="button" value="reject" id="btnReject">
                     {{else:}}
