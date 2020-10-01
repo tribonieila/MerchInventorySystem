@@ -5980,8 +5980,9 @@ def document_register_grid_process():
         # Field('courier','string', length = 25),     
         Field('due_date','date',default = request.now.date()))
     if form.process().accepted:
-        response.flash = 'RECORD SAVE'                
-        response.js = "console.log('submit')"
+        response.flash = 'RECORD SAVE'         
+        print 'save', request.now
+        # response.js = "jQuery(console.log('submit'))"
         # db.Document_Register.insert(
         #     document_register_no = _doc_reg_no,
         #     document_register_date = request.now.date(),
@@ -6014,6 +6015,8 @@ def document_register_grid_process():
     # redirect(URL('inventory','get_back_off_workflow_grid'))
     return dict(form = form, table = table, _doc_reg_no = _doc_reg_no, _id = _id)
 
+def post_document_register_id():
+    print 'post_document_register_id: ', request.vars.doc_reg_no
 def marked_po():
     # print 'marked: ', request.args(0)
     if request.args(0): 

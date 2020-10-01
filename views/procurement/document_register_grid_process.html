@@ -112,7 +112,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
                                 <div class="col-sm-8">                                    
-                                    <input class="btn btn-primary" type="submit" value="submit" id='btnSubmit'>
+                                    <input class="btn btn-primary" type="button" value="submit" id='btnSubmit'/>
                                 </div>
                             </div>
                         </div>                        
@@ -125,13 +125,21 @@
 
 <script>
     $(document).ready(function(){
-        $('#btnSubmit').click(function(){
-            
-        });
+        $('#btnSubmit').click(function() {
+            ajax("{{=URL('procurement','post_document_register_id')}}", ['doc_reg_no','estimated_time_of_arrival','invoice_no',
+        'invoice_date','due_date','forwarder_supplier_id','invoice_amount','location_code_id','supplier_code_id','mode_of_shipment'])
+            // console.log("clicked...waiting...");
 
-    });
+            // setTimeout(
+            //     function() {
+            //         {{print 'button: ', request.now}}
+            //         // window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
+            //         // alert("Called after delay.");
+            //     },
+            //     3000);
+        });
     // function onSubmit(){
     //     window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
     // }
-    
+    });
 </script>
