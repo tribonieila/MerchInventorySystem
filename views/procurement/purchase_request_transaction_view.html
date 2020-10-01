@@ -2,13 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            {{ if auth.has_membership(role = 'INVENTORY BACK OFFICE'): }}
-            {{ else: }}            
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('procurement','purchase_request')}}";>BROWSE</a></li>
-            </ul>
-            {{ pass }}
             <span class="card-title">PURCHASE REQUEST FORM</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -117,9 +110,11 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>    
-
-                                
+                                {{if (_id.status_id == 3) or (_id.status_id == 10) or (_id.status_id == 19):}}
+                                    {{=form.custom.widget.status_id}}           
+                                {{else:}}
+                                    <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>                                    
+                                {{pass}}
                             </div>
 
                         </div>                             
@@ -128,22 +123,36 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload</label>
+                            <label class="col-sm-4 control-label">Proforma Upload (.pdf)</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.proforma_file}}                                
+                                {{if _id.proforma_file == "":}}
+                                    {{=form.custom.widget.proforma_file}}                                    
+                                {{else:}}
+                                    <a class="btn btn-info btn-flat" onclick='window.open("{{=URL("default", "download", args=row.proforma_file)}}", ""); return false;' href="javascript:void(0);"><i class="fa fa-paperclip"></i> View File</a>
+                                    
+                                {{pass}}
                             </div>
                         </div>
-                    </div>                    
-                    <div class="col-md-8">
+                    </div>         
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <div class="col-sm-9">    </div>
-                            <div class="col-sm-3">    
+                            <label class="col-sm-4 control-label">Section</label>
+                            <div class="col-sm-8">                                  
+                                <input type="text" class="form-control" value="{{=section_id}}" readonly>
+                            </div>
+                        </div>
+                    </div>                                
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">    </div>
+                            <div class="col-sm-8">    
                                 {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}                                    
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
                                 {{ pass }}
                                 {{=form.custom.end}}
+                                <input class="btn btn-danger" type="button" value="abort" id="btnAbort">
                             </div>        
                         </div>  
                     </div>
@@ -156,31 +165,19 @@
             </div>      
         </div>
     </div>
-</div>
+</div> 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-
-var _id = $(this).attr('data-id');        
-var _qt = $(this).attr('data-qt');
-var _pc = $(this).attr('data-pc');
-var form = $('<div id="form_edit" style="display:none:"><div class="form-group"><label for="quantity">Quantity</label><input type="text" class="form-control" id="quantity" name="quantity" value="0"></div><div class="form-group"><label for="pieces">Pieces</label><input type="text" class="form-control" id="pieces" name="pieces" value="0"></div></div>');    
-$(document).on("click",".edit", function(){
-    $("a[target!='_blank'][href$='{{=URL("default", "download", args= row.proforma_file)}}']").attr("target", "_blank");
-    var _id = $(this).attr('data-id');
-    var _qt = $(this).attr('data-qt');
-    var _pc = $(this).attr('data-pc');
-    var parent = $(this).parent("div").parent("td").parent("tr");
-    bootbox.alert({        
-        message: form,
-        callback: function() {
-            var qty = form.find(_qt);
-            var pcs = form.find(_pc);
-            var qty = form.find('input[name=quantity]').val();
-            var pcs = form.find('input[name=pieces]').val();
-            ajax("{{=URL('procurement','sales_order_transaction_temporary_edit')}}" + '/'+ _id+ '/' + qty + '/' + pcs);
-            
-        }
-    })
-});   
+$(document).ready(function(){
+    {{if (int(_id.status_id) == 3) and (_id.created_by != auth.user_id): }}
+        $("#btnsubmit").attr("disabled", "disabled");                
+        console.log('if')
+    {{else:}}
+        console.log('else:')
+    {{pass}}
+    $("#btnAbort").click(function(){
+        window.location.replace("{{=URL('inventory','get_back_off_workflow_grid')}}")
+    });
+});
 </script>

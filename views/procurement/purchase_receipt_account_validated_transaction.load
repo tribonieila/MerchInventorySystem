@@ -1,53 +1,29 @@
     {{=form}}
     <hr>
     {{=form2.custom.begin}}
-    <div class="row">    
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Item Code</label>
-                <div class="col-sm-8">         
-                        {{=form2.custom.widget.item_code}}
+    <table class="table">
+        <thead>
+            <tr class="bg-primary">
+                <th>Item Code</th>
+                <th>Quantity</th>
+                <th>Pieces</th>
+                <th>Most Recent Cost</th>
+                <th>Category</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{=form2.custom.widget.item_code}}</td>
+                <td>{{=form2.custom.widget.quantity}}</td>
+                <td>{{=form2.custom.widget.pieces}}</td>
+                <td>{{=form2.custom.widget.most_recent_cost}}</td>
+                <td>{{=form2.custom.widget.category_id}}</td>
+                <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"> </td>
+            </tr>
+        <tbody>
+    </table>
 
-                    
-                </div>                           
-            </div>                        
-        </div> 
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-6 control-label">Quantity</label>
-                <div class="col-sm-6"> 
-                    {{=form2.custom.widget.quantity}}
-                </div>
-            </div>                    
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-6 control-label">Pieces</label>
-                <div class="col-sm-6">                                
-                    {{=form2.custom.widget.pieces}}
-                </div>                           
-            </div>    
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label class="col-sm-6 control-label">Most Recent Cost</label>
-                <div class="col-sm-4"> 
-                    <div id = "_most_recent_cost"></div>
-                </div>
-            </div>                    
-        </div>                   
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Category</label>
-                <div class="col-sm-8"> 
-                    {{=form2.custom.widget.category_id}}
-                </div>
-            </div>                    
-        </div>
-        <div class="col-md-1">          
-                <input class="btn btn-primary" type="submit" value="add" id="btnadd">            
-        </div>                                              
-    </div>
     {{=form2.custom.end}}
     <div id = "_item_code_description"></div>      
 

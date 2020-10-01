@@ -3,7 +3,7 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <span class="card-title">STOCK TRANSACTIONS FOR CONFIRMATION</span>
+                <span class="card-title">{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}} Workflow</span>
             </div>
             <div class="card-body tab-content">          
                 <div>
@@ -27,16 +27,13 @@
                       <div role="tabpanel" class="tab-pane" id="purchase_order">
                         {{=LOAD('procurement','purchase_order_grid.load', ajax = True, target = 'POtbl')}}
                       </div>
-
                       <div role="tabpanel" class="tab-pane" id="purchase_receipt">
-                        {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True)}}
-                            <!-- <br>
-                            <div class="alert alert-success" role="alert">purchase receipt on progress...</div> -->
+                        {{=LOAD('procurement','puchase_receipt_account_grid.load', ajax = True, target='PRcptbl')}}
                       </div>
-                      <div role="tabpanel" class="tab-pane" id="purchase_return">
+                      <!-- <div role="tabpanel" class="tab-pane" id="purchase_return">
                             <br>
                             <div class="alert alert-success" role="alert">purchase return on progress...</div>
-                      </div>
+                      </div> -->
                       <div role="tabpanel" class="tab-pane" id="stock_adjustment">
                           {{=LOAD('inventory','stock_adjustment_manager_grid.load', ajax = True, target = 'tbladj')}}
                         </div>
@@ -62,8 +59,7 @@ $(document).ready(function(){
         e.preventDefault()
         $(this).tab('show')
     })
-
-    $('.table').DataTable();
+    
 
 })
 </script>

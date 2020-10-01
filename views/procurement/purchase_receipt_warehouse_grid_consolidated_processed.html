@@ -8,7 +8,7 @@
             </ul>
             <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
         </div>
-        <div class="card-body tab-content">                                            
+        <div class="card-body tab-content">                                             
             {{=table}}
             <br>            
             {{=LOAD('procurement','put_purchase_receipt_transaction.load', ajax = True, args = request.args(0), target = 'PTtbl')}}

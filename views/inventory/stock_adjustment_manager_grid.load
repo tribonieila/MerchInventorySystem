@@ -1,6 +1,6 @@
 {{=table}}
 <script>
-     $('.btn').click(function(){
-        location.reload();
-     });
+$(document).ready(function(){
+   $(".table").DataTable();
+});
 </script>

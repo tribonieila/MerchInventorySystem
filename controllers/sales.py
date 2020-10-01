@@ -2309,12 +2309,11 @@ def sales_return_view():
         response.flash = 'FORM HAS ERROR'    
     return dict(form = form, _id = _id) 
 
-   
+ 
 def update_sales_return_transaction():
     _id = db(db.Sales_Return.id == request.args(0)).select().first()
     _id.update_record(remarks = request.vars.remarks, discount_added = request.vars.vdiscount, total_amount_after_discount = request.vars.vnet_amount)
     
-
 @auth.requires_login()   
 def sales_return_browse_load():
     row = []
@@ -2327,7 +2326,6 @@ def sales_return_browse_load():
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('sales','sales_return_browse_load_view', args = n.id, extension = False))        
             clea_lnk = A(I(_class='fas fa-archive'), _title='Clear Row', _type='button ', _role='button', _class='btn btn-icon-toggle', _disabled = True)                                
         btn_lnk = DIV(view_lnk, clea_lnk)
-
         row.append(TR(
             TD(n.sales_return_date),
             TD(n.transaction_prefix_id.prefix,n.sales_return_no),

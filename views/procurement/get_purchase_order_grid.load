@@ -1,1 +1,29 @@
 {{=table}}
+<script>
+    $(document).ready(function(){
+        $(".register").click(function(){
+            var _id = $(this).attr('data-id');
+            bootbox.confirm({
+                size: "small",
+                message: "Register D1",
+                buttons: {
+                    confirm: {
+                        label: "Yes",
+                        className: "btn-success"
+                    },
+                    cancel: {
+                        label: "No",
+                        className: "btn-danger"
+                    }
+                },
+                callback: function(result){
+                    if (result){
+                        window.open("{{=URL('procurement','document_register_grid_process',extension = False)}}" + '/' + _id)                        
+                    }
+                }
+ 
+            })
+        });
+    })
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>

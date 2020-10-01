@@ -22,8 +22,11 @@
 </div>
 <script>
 $(document).ready(function(){
-        
+    {{if (int(_id.status_id) == 3) and (_id.created_by != auth.user_id): }}
+        $("#btnRemarks").attr("disabled", "disabled");                        
+    {{pass}}        
     $(".total_amount, .net_price, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
+    $(".item_remarks").prop("readonly", false);
     var $tblrows = $("#tblPRT tbody tr");
     var _exchange_rate = $("#no_table_exchange_rate").val()
     $tblrows.each(function(index){
@@ -127,7 +130,7 @@ $(document).ready(function(){
             message: "Would you like to delete this record?",
             buttons: {
                 confirm: {
-                    label: "Yes",
+                    label: "Yes", 
                     className: "btn-success"
                 },
                 cancel: {

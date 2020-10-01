@@ -133,7 +133,7 @@
                             <div class="col-sm-10">                                                                
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('purchase_request')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','get_back_off_workflow_grid')}}">abort</a>
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('procurement','help_request')}}">help?</a>
                                 {{=form.custom.end}}
                             </div>        
@@ -150,6 +150,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function() {
+    $('#Purchase_Request_proforma_file').change(function(){
+        if(Purchase_Request_proforma_file.files[0].type === 'application/pdf') {
+            console.log('validated')
+        } else {
+            $("#Purchase_Request_proforma_file").val('');
+            alert("Requires pdf file upload.")
+            
+        }
+    })
+      
    $('#btnDetails').on('click', function(){
       var container = $('#example-container').clone();
     //   container.find('table').attr('id', 'example');
@@ -192,8 +202,8 @@ jQuery(document).ready(function($){
             ],
         }, {{pass}}
     ];
-    $('#no_table_dept_code_id').cascadingSelect({
-        subSelects: ['#no_table_supplier_code_id'],
+    $('#Purchase_Request_dept_code_id').cascadingSelect({
+        subSelects: ['#Purchase_Request_supplier_code_id'],
         data: data 
     });
 });
@@ -206,24 +216,24 @@ $(document).ready(function(){
     $('#selective_tax').hide();
     $('#order_panel').hide();
 
-    $('#no_table_section_id, #no_table_dept_code_id, #no_table_location_code_id, #no_table_supplier_code_id, #no_table_trade_terms_id, #no_table_status_id, #no_table_mode_of_shipment, #no_table_currency_id').change(function(){
-        if ( $('#no_table_section_id').val() && $('#no_table_currency_id').val() && $('#no_table_dept_code_id').val() && $('#no_table_location_code_id').val() && $('#no_table_supplier_code_id').val() && $('#no_table_trade_terms_id').val() && $('#no_table_status_id').val() && $('#no_table_mode_of_shipment').val()) {
+    $('#Purchase_Request_section_id, #Purchase_Request_dept_code_id, #Purchase_Request_location_code_id, #Purchase_Request_supplier_code_id, #Purchase_Request_trade_terms_id, #Purchase_Request_status_id, #Purchase_Request_mode_of_shipment, #Purchase_Request_currency_id').change(function(){
+        if ( $('#Purchase_Request_section_id').val() && $('#Purchase_Request_currency_id').val() && $('#Purchase_Request_dept_code_id').val() && $('#Purchase_Request_location_code_id').val() && $('#Purchase_Request_supplier_code_id').val() && $('#Purchase_Request_trade_terms_id').val() && $('#Purchase_Request_status_id').val() && $('#Purchase_Request_mode_of_shipment').val()) {
             $('#btnproceed').removeAttr('disabled');
         } else {
             $('#btnproceed').attr('disabled','disabled');
         }
     });
 
-    $('#no_table_dept_code_id').change(function(){
+    $('#Purchase_Request_dept_code_id').change(function(){
         ajax('{{=URL('generate_purchase_request_no')}}', ['dept_code_id'], '_purchase_order_no');          
     });
 
-    $('#no_table_supplier_code_id').change(function(){       
+    $('#Purchase_Request_supplier_code_id').change(function(){       
         // ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
         ajax('{{=URL('generate_supplier_trade_terms')}}', ['supplier_code_id'], '_supplier_trade_terms');        
     });
 
-    $("#no_table_currency_id").change(function(){
+    $("#Purchase_Request_currency_id").change(function(){
         ajax('{{=URL('procurement','get_currency_id')}}', ['currency_id']); 
     });
 
@@ -232,29 +242,29 @@ $(document).ready(function(){
         ajax('{{=URL('procurement','procurement_session')}}', ['dept_code_id', 'location_code_id','supplier_code_id','exchange_rate']);
         $('#btnhelp').removeAttr('disabled');
         $("#item_code").focus();
-        $("#no_table_dept_code_id").attr('disabled','disabled');                
-        $("#no_table_location_code_id").attr('disabled','disabled');
-        $("#no_table_supplier_reference_order").attr('disabled','disabled');
-        $("#no_table_estimated_time_of_arrival").attr('disabled','disabled');        
-        $("#no_table_mode_of_shipment").attr('disabled','disabled');
-        $("#no_table_supplier_code_id").attr('disabled','disabled');
-        $("#no_table_status_id").attr('disabled','disabled');
-        $("#no_table_remarks").attr('disabled','disabled');
+        $("#Purchase_Request_dept_code_id").attr('disabled','disabled');                
+        $("#Purchase_Request_location_code_id").attr('disabled','disabled');
+        $("#Purchase_Request_supplier_reference_order").attr('disabled','disabled');
+        $("#Purchase_Request_estimated_time_of_arrival").attr('disabled','disabled');        
+        $("#Purchase_Request_mode_of_shipment").attr('disabled','disabled');
+        $("#Purchase_Request_supplier_code_id").attr('disabled','disabled');
+        $("#Purchase_Request_status_id").attr('disabled','disabled');
+        $("#Purchase_Request_remarks").attr('disabled','disabled');
         $("#btnproceed").attr('disabled','disabled');
 
         return false;
     });
 
     $('#btnsubmit').click(function(){
-        $("#no_table_dept_code_id").removeAttr('disabled');
-        $("#no_table_location_code_id").removeAttr('disabled');
-        $("#no_table_customer_code_id").removeAttr('disabled');        
-        $("#no_table_supplier_reference_order").removeAttr('disabled');
-        $("#no_table_mode_of_shipment").removeAttr('disabled');
-        $("#no_table_estimated_time_of_arrival").removeAttr('disabled');
-        $("#no_table_supplier_code_id").removeAttr('disabled');
-        $("#no_table_status_id").removeAttr('disabled');
-        $("#no_table_remarks").removeAttr('disabled');
+        $("#Purchase_Request_dept_code_id").removeAttr('disabled');
+        $("#Purchase_Request_location_code_id").removeAttr('disabled');
+        $("#Purchase_Request_customer_code_id").removeAttr('disabled');        
+        $("#Purchase_Request_supplier_reference_order").removeAttr('disabled');
+        $("#Purchase_Request_mode_of_shipment").removeAttr('disabled');
+        $("#Purchase_Request_estimated_time_of_arrival").removeAttr('disabled');
+        $("#Purchase_Request_supplier_code_id").removeAttr('disabled');
+        $("#Purchase_Request_status_id").removeAttr('disabled');
+        $("#Purchase_Request_remarks").removeAttr('disabled');
     });
 
     $('#btnAbort').click(function(){

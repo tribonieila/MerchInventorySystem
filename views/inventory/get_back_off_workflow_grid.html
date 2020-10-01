@@ -23,7 +23,7 @@
                       <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db((db.Sales_Order.status_id != 7) & (db.Sales_Order.status_id != 10) & (db.Sales_Order.created_by == auth.user_id)).count()}}</span></a></li>
                       <!-- <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id==4) & (db.Sales_Return.created_by == auth.user_id)).count()}}</span></a></li> -->
                       <li role="presentation"><a href="#purchase_request" aria-controls="purchase_request" role="tab" data-toggle="tab">Purchase Request <span class="badge">{{=db((db.Purchase_Request.status_id==19) & (db.Purchase_Request.dept_code_id == 3) & (db.Purchase_Request.created_by==auth.user_id)).count()}}</span></a></li>
-                      <li role="presentation"><a href="#purchase_order" aria-controls="purchase_order" role="tab" data-toggle="tab">Purchase Order <span class="badge">{{=db(((db.Purchase_Order.status_id==22) | (db.Purchase_Order.status_id==17) | (db.Purchase_Order.status_id==18) | (db.Purchase_Order.status_id==25)| (db.Purchase_Order.status_id==21)) & (db.Purchase_Order.created_by==auth.user_id)).count()}}</span></a></li>                                            
+                      <li role="presentation"><a href="#purchase_order" aria-controls="purchase_order" role="tab" data-toggle="tab">Purchase Order <span class="badge">{{=db(((db.Purchase_Request.status_id==22) | (db.Purchase_Request.status_id==17) | (db.Purchase_Request.status_id==18) | (db.Purchase_Request.status_id==25)) & (db.Purchase_Request.created_by==auth.user_id)).count()}}</span></a></li>                                            
                       
                       {{ pass }} 
                     </ul>            
@@ -43,7 +43,7 @@
                         <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('sales','sales_return_form', extension = False)}}">+ create sales return</a>
                       </div> 
                       <div role="tabpanel" class="tab-pane" id="purchase_request">                        
-                        {{=LOAD('procurement','get_purchase_request_grid.load',ajax=True, target='PRtbl')}}
+                        {{=LOAD('procurement','get_purchase_request_grid.load', ajax=True, extension = False, target='PRtbl')}}
                         <a class="btn btn-primary" id="btnAdd" role="button" href="{{=URL('procurement','purchase_request_form', extension = False)}}">+ create purchase request</a>
                       </div>
                       <div role="tabpanel" class="tab-pane" id="purchase_order">                        

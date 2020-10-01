@@ -49,7 +49,7 @@ def generate():
     return dict()
 
 def get_users_group():
-    grid = SQLFORM.grid(db.auth_group)
+    grid = SQLFORM.grid(db.auth_group)                                          
     return dict(grid = grid)
  
 def get_users_group_member():

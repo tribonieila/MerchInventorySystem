@@ -99,7 +99,7 @@
                                 {{ elif auth.has_membership(role = 'SALES'): }}
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('get_fmcg_workflow_grid')}}">abort</a>
                                 {{ else: }}
-                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stk_req_form')}}">abort</a>
+                                <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','get_back_off_workflow_grid')}}">abort</a>
                                 {{ pass }}
                                 <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('help_request')}}">help?</a>
                             </div>                            

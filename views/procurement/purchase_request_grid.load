@@ -1,17 +1,8 @@
 {{=table}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
 <script>
 $(document).ready(function(){
     $(".table").DataTable();
 });
-    function errApproved(x){
-        console.log(x);
-        bootbox.alert({
-            size: "small",
-            message: x,
-            callback: function(){                 
-                location.reload();
-            }
-        });        
-    }    
+
 </script>

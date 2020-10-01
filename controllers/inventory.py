@@ -800,6 +800,44 @@ def forw_supp_edit_form():
         response.flash = 'ENTRY HAS ERRORS'
     return dict(form = form, _fld = _fld)
 
+@auth.requires_login()
+def get_insurance_master_grid():
+    form = SQLFORM(db.Insurance_Master)
+    if form.process().accepted:
+        response.flash = 'FORM SAVE'
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    row = []
+    ctr = 0
+    head = THEAD(TR(TH('#'),TH('Insurance Name'),TH('Contact Person'),TH('Address'),TH('City'),TH('Country'),TH('Action'),_class='bg-primary'))
+    for n in db().select(db.Insurance_Master.ALL):
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled   ', _href=URL('#', args = n.id))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('inventory','put_insurance_master_id', args = n.id))
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.id))
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        ctr += 1
+        row.append(TR(
+            TD(ctr),
+            TD(n.insurance_name),
+            TD(n.contact_person),
+            TD(n.address),
+            TD(n.city),
+            TD(n.country_id.description),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head,body], _class='table table-hover')
+    return dict(form = form, table = table)
+
+@auth.requires_login()
+def put_insurance_master_id():
+    form = SQLFORM(db.Insurance_Master, request.args(0))
+    if form.process().accepted:
+        session.flash = 'FORM UPDATED'
+        redirect(URL('inventory','get_insurance_master_grid'))
+    elif form.errors:
+        response.flash = 'FORM HAS ERROR'
+    return dict(form = form)
+
 # ---- GroupLine Master  -----
 @auth.requires_login()
 def groupline_mas():
@@ -5838,7 +5876,7 @@ def stock_request_tool_redo():
 
 # -----------   OBSOLESCENCE STOCKS     -----------------
 
-@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'INVENTORY SALES MANAGER')| auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('ROOT'))
+@auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership(role = 'INVENTORY SALES MANAGER')| auth.has_membership('ACCOUNTS') | auth.has_membership('ACCOUNTS MANAGER')| auth.has_membership('MANAGEMENT')| auth.has_membership('ROOT'))
 def obsolescence_of_stocks():
     row = []
     head = THEAD(TR(TH('Date'),TH('Obsol. Stocks No.'),TH('Department'),TH('Account Code'),TH('Location Source'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action')),_class='bg-primary')
@@ -7545,7 +7583,7 @@ def get_transaction_reports():
         head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
         for n in db().select(orderby = ~db.Stock_Request.id):
             ctr += 1
-            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_transfer_id', args = n.id, extension = False))
+            view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle',_href=URL('inventory','get_stock_request_id', args = n.id, extension = False))
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             repo_lnk = A(I(_class='fas fa-print'),  _type='button  ', _role='button', _class='btn btn-icon-toggle',_target='blank',_href=URL('inventory','str_kpr_rpt', args = n.id, extension = False))
@@ -8885,10 +8923,14 @@ def str_kpr_rpt():
         _total = i.Stock_Request_Transaction.total_amount
         _grand_total += _total            
         # _stock_on_hand = card(i.Stock_Request_Transaction.item_code_id, i.Stock_File.closing_stock, i.Stock_Request_Transaction.uom)
+        if i.Item_Master.uom_id == None:
+            _uom = 'None'
+        else:
+            _uom = i.Item_Master.uom_id.description
         stk_trn.append([ctr,
         i.Stock_Request_Transaction.item_code_id.item_code,        
         str(i.Item_Master.brand_line_code_id.brand_line_name)+str('\n')+str(i.Item_Master.item_description.upper())+str('\n')+str('Remarks: ')+str(i.Stock_Request_Transaction.remarks),        
-        i.Item_Master.uom_id.description,
+        str(_uom),
         i.Stock_Request_Transaction.category_id.mnemonic,
         i.Stock_Request_Transaction.uom,
         card(i.Stock_Request_Transaction.item_code_id, i.Stock_Request_Transaction.quantity, i.Stock_Request_Transaction.uom),        

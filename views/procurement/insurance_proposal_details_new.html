@@ -22,7 +22,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4"> 
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Subject</label>
                             <div class="col-sm-8">
@@ -83,7 +83,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
-                                <input class="btn btn-primary" type="submit" value="submit and print" onclick>
+                                <input class="btn btn-primary" type="submit" value="submit and print" onclick=onSubmit()>
                             </div>
                         </div>
                     </div>                                     
@@ -92,4 +92,10 @@
             </div>            
         </div>
     </div>
-</div>
+</div> 
+
+<script>
+    function onSubmit(){    
+        window.open("{{=URL('procurement','insurance_proposal_reports', args = request.args(0))}}")        
+    }
+</script>

@@ -98,7 +98,8 @@
 <script>
     $(document).ready(function(){
         $('#btnApproved').click(function(){
-            ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0),extension=False)}}");
+            ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0))}}");
+            window.location.replace("{{=URL('inventory','account_manager_workflow', extension=False)}}")
         });
     
         $("#btnReject").click(function(){

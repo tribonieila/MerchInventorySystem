@@ -109,30 +109,48 @@
                                 <label class="col-sm-4 control-label">Remarks</label>
                                 <div class="col-sm-8">
                                     {{=form.custom.widget.remarks}}
-                                    
-                                        <!-- purchase_request_browse_view
-                                    {{=form.custom.widget.remarks}} -->
                                 </div>
                             </div>             
-                        </div>
-
-                        <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label"></label>
-                                    <div class="col-sm-8">                         
-                                        {{ if _id.status_id == 18:}}
-                                        <input class="btn btn-success" type="submit" value="submit" disabled>
-                                        <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt" disabled>
-                                        {{else:}}
-                                        <input class="btn btn-success" type="submit" value="submit" >                                        
-                                        <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt">
-
-                                        {{pass}}
-
-                                        {{=form.custom.end}}
-                                    </div>        
-                                </div>  
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>                                    
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Proforma Upload (.pdf)</label>
+                            <div class="col-sm-8">
+                                {{if _id.proforma_file == "":}}
+                                    {{=form.custom.widget.proforma_file}}                                    
+                                {{else:}}
+                                    <a class="btn btn-info btn-flat" onclick='window.open("{{=URL("default", "download", args=_id.proforma_file)}}", ""); return false;' href="javascript:void(0);"><i class="fa fa-paperclip"></i> View File</a>
+                                    
+                                {{pass}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8">                         
+                                {{ if _id.status_id == 18:}}
+                                <input class="btn btn-success" type="submit" value="submit" disabled>
+                                <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt" disabled>
+                                {{else:}}
+                                <input class="btn btn-success" type="submit" value="submit" >                                        
+                                <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt">
+                                {{pass}}
+                                {{=form.custom.end}}
+                            </div>        
+                        </div>  
+                    </div>
                 </div>
     
                 <hr> 

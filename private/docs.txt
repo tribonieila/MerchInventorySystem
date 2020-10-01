@@ -325,3 +325,7 @@ window.onload = function() {
        window.location.replace('/home'); // I can't go back to success page by pressing the back button
     },3000);
 }
+
+if ( fup.files[0].type === 'application/pdf' ) {
+    console.log( 'It is validated!' )
+}

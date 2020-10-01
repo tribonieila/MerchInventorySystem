@@ -1,32 +1,77 @@
 {{extend 'layout.html'}}
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react-dom.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.24.0/babel.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/5.0.0-canary.b5eb51e94.0/material-components-web.min.js"></script>
+<button type="button" class="btn btn-primary" onclick=toast()>Toast</button>
+<button type="button" class="btn btn-primary" onclick=init_PNotify()>pnotify</button>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.js"></script> -->
 
 
+<script type="text/javascript">
+  function init_PNotify() {
+  if( typeof (PNotify) === 'undefined'){ return; }
+  new PNotify({
+    title: "PNotify",
+    type: "info",
+    text: "Welcome. Try hovering over me. You can click things behind me, because I'm non-blocking.",
+    nonblock: {
+        nonblock: true
+    },
+    addclass: 'dark',
+    styling: 'bootstrap3',
+    hide: false,
+    before_close: function(PNotify) {
+      PNotify.update({
+        title: PNotify.options.title + " - Enjoy your Stay",
+        before_close: null
+      });
 
+      PNotify.queueRemove();
 
-<div id='root'></div>
+      return false;
+    }
+  });
 
-<script type='text/babel'>
-
-function formatName(u) {
-  return u.firstName + ' ' + u.lastName;
-}
-
-const user = {
-  firstName: 'Harper',
-  lastName: 'Perez'
-};
-
-const element = (
-  <h1>
-    Hello, {formatName(user)}!
-  </h1>
-);
-ReactDOM.render(element,document.getElementById('root'));
+  };
+  init_PNotify();
 </script>
+<script>
+
+  function pnotify(){
+    PNotify.info({
+      title: 'New Thing',
+      text: 'Just to let you know, something happened.'
+    });
+    // [data-pnotify].pnotify.stack-bar-top {
+    //   width: 100%;
+    //   border-radius: 0;
+    // }    
+  }
+  function toast(){
+    toastr["info"]("{{=table}}")
+    toastr.options = {
+      "closeButton": false,      
+      "debug": false,
+      "newestOnTop": false,
+      "progressBar": false,
+      "positionClass": "toast-top-full-width",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": 0,
+      "extendedTimeOut": 0,
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut",
+      "tapToDismiss": false
+    }
+  }
+
+</script>
+
+
+
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.desktop.js.map"></script> -->
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.0.0/pnotify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>

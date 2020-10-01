@@ -39,7 +39,7 @@
                         {{=LOAD('inventory','get_obsolescence_of_stocks_workflow_grid.load', ajax = True)}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','obsolescence_of_stocks_form')}}">+ create Obsolescence of Stocks</a>
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="corrections">
+                    <div role="tabpanel" class="tab-pane" id="corrections"> 
                         {{=LOAD('inventory','stock_corrections.load', ajax = True, target = 'tblcor')}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','stock_corrections_add_new')}}">+ create stock corrections</a>
                     </div>
