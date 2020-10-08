@@ -2,15 +2,11 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">VIEW</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
-            </ul>
             <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
         </div>
         <div class="card-body tab-content">                                             
             {{=table}}
-            <br>            
+            <br>   
             {{=LOAD('procurement','put_purchase_receipt_transaction.load', ajax = True, args = request.args(0), target = 'PTtbl')}}
 
             {{=LOAD('procurement','purchase_receipt_warehouse_grid_consolidate_add_new_item.load', ajax = True, args = request.args(0))}}
@@ -20,7 +16,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-
 $(".deleteNew").click(function(){
         var _id = $(this).attr('data-id');
         bootbox.confirm({

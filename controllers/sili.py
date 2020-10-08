@@ -1,6 +1,41 @@
-from datetime import datetime
+if request.env.http_origin:
+     response.headers['Access-Control-Allow-Origin'] = request.env.http_origin;
+     response.headers['Access-Control-Allow-Methods'] = "POST,GET,OPTIONS";
+     response.headers['Access-Control-Allow-Credentials'] = "true";
+     response.headers['Access-Control-Allow-Headers'] = "Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Accept-Encoding";
 
-now = datetime.now() # current date and time
+# from datetime import datetime
+
+# now = datetime.now() # current date and time
+import json
+def api():
+    from gluon.serializers import json
+    response.view = 'generic.'+request.extension
+    def GET(*args,**vars):
+        patterns = 'auto'
+        parser = db.parse_as_rest(patterns,args,vars)
+        if parser.status == 200:
+            return dict(content=parser.response)
+        else:
+            raise HTTP(parser.status,parser.error)
+    def POST(table_name,**vars):
+        #return db[table_name].validate_and_insert(**vars)
+        #data = gluon.contrib.simplejson.loads(request.body.read())
+        return json(db[table_name].validate_and_insert(**vars))
+        return dict()
+    def PUT(table_name,record_id,**vars):
+        return db(db[table_name]._id==record_id).update(**vars)
+    def DELETE(table_name,record_id):
+        return db(db[table_name]._id==record_id).delete()
+    def OPTIONS(*args,**vars):
+        print "OPTION called"
+        return True
+    return dict(GET=GET,POST=POST,PUT=PUT,DELETE=DELETE,OPTIONS=OPTIONS)
+
+def get_json():
+    _data = db().select(db.Item_Master.ALL, orderby = db.Item_Master.id)
+    return XML(response.json(_data))
+    
 
 def get_schedule():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 120)
@@ -28,6 +63,38 @@ def generate():
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)
     return dict(form = form)
+
+def put_purchase_receipt_consolidation():
+    for n in db(db.Purchase_Receipt.status_id == 21).select(orderby = db.Purchase_Receipt.id):
+        _chk = db((db.Merch_Stock_Header.voucher_no == int(n.purchase_receipt_no)) & (db.Merch_Stock_Header.transaction_type == 1)).select().first()
+        if not _chk:            
+            print 'insert: ', n.id 
+            db.Merch_Stock_Header.insert(
+                voucher_no = n.purchase_receipt_no,
+                location = n.location_code_id,
+                transaction_type = 1, # credit
+                transaction_date = n.purchase_receipt_date,
+                account = n.supplier_code_id.supp_sub_code,
+                dept_code = n.dept_code_id,
+                total_amount = n.total_amount,           
+                total_amount_after_discount = n.total_amount_after_discount,
+                discount_percentage = 0,
+                discount_added = n.added_discount_amount or 0,                
+                supplier_reference_order = n.supplier_reference_order,
+                supplier_invoice = n.supplier_invoice,
+                exchange_rate = n.exchange_rate,
+                landed_cost = n.landed_cost,
+                trade_terms_id = n.trade_terms_id,
+                other_charges = n.other_charges,
+                custom_duty_charges = n.custom_duty_charges,
+                stock_destination = n.location_code_id,
+                total_selective_tax = n.selective_tax or 0,
+                total_selective_tax_foc = 0),                
+                # sales_man_code = _em.account_code,
+                # batch_code_id = _batch_id.id)           
+        else:
+            print 'updated: ', n.id
+        
 
 def put_direct_purchase_receipt_consolidation():
     # print 'put_direct_purchase_receipt_consolidation'

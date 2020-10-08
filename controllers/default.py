@@ -10,7 +10,6 @@ def testing():
 @auth.requires_login()
 # @auth.requires_membership('ROOT')
 def index():    
-
     return dict(message=T('Welcome to MERCH - ERP'))
 
 def login_status():

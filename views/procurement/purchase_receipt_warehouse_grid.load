@@ -1,9 +1,10 @@
 {{=table}}
 
-<a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">consolidate </a>
+<a class="btn btn-success" id="btnPro" href="{{=URL('procurement','purchase_receipt_warehouse_grid_process', extension = False)}}" role="button">Proceed </a>
 <script>    
     $(document).ready(function(){
         $('#btnCon').attr('disabled','disabled');        
+        ajax("{{=URL('procurement','unmarked_items_po')}}");
         $(".checkbox").click(function(e){     
             var value = $(this).closest('tr').find('input:checkbox').val();
             if (this.checked) {                

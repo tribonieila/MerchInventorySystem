@@ -42,7 +42,7 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {                
-                    ajax("{{=URL('procurement','cut_purchase_order_transaction')}}" + '/'+ _id+ '/' + _pr );
+                    ajax("{{=URL('procurement','cut_purchase_order_transaction')}}" + '/'+ _id);
                     location.reload();
                         
                 }

@@ -151,9 +151,12 @@ if configuration.get('scheduler.enabled'):
 # -------------------------------------------------------------------------
 # after defining tables, uncomment below to enable auditing
 # -------------------------------------------------------------------------
-# auth = Auth(db,cas_provider = 'http://127.0.0.1:3000/merch_erp/default/user/cas')
 
-auth.enable_record_versioning(db)
+# auth = Auth(db,cas_provider = 'http://127.0.0.1:4000/provider/default/user/cas')
+# auth.enable_record_versioning(db)
+# auth_db = DAL('postgres://postgres:admin@localhost:5432/m3rch_root_db', pool_size=0, migrate=False)
+# auth = Auth(auth_db, cas_provider = 'http://localhost:4000/Merch_ERP/default/user/cas')
+
 db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv') #,fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
 d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,fake_migrate_all=True,do_connect=True)
 # db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
@@ -164,6 +167,7 @@ d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,f
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Test?driver={ODBC Driver 17 for SQL Server}") # testing
 # db = DAL("mssql4://SA:M3rch2018@localhost:1433/M3rchDB_Deve?driver={ODBC Driver 17 for SQL Server}") # development
 # db = DAL("mssql4://SA:M3rch2018@MERCHERP:1433/M3rchDB?driver={SQL Server}") # production
+
 auth = Auth(globals(),db)
 
 db.define_table(

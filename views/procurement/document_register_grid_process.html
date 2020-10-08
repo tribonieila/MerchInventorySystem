@@ -16,7 +16,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Register No.</label>
+                                <label class="col-sm-4 control-label">D1 Register</label>
                                 <div class="col-sm-8">
                                     <input type="text" class="form-control" name="doc_reg_no" value="{{=_doc_reg_no}}" readonly>                                                             
                                 </div>
@@ -24,9 +24,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label">Register Date.</label>
+                                <label class="col-sm-4 control-label">D1 Transaction Date</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" value="{{=request.now.strftime('%Y-%m-%d')}}" readonly>
+                                    <input type="text" class="form-control" value="{{=request.now.strftime('%m/%d/%Y')}}" readonly>
                                 </div>
                             </div>
                         </div>                        
@@ -34,7 +34,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">ETA</label>
                                 <div class="col-sm-8">
-                                    {{=form.custom.widget.estimated_time_of_arrival}}
+                                    <input type="date" class="form-control" name='estimated_time_of_arrival' value="{{=request.now.strftime('%Y-%m-%d')}}">
                                 </div>
                             </div>
                         </div>                        
@@ -52,7 +52,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Invoice Date.</label>
                                 <div class="col-sm-8">
-                                        {{=form.custom.widget.invoice_date}}
+                                    <input type="date" class="form-control" name='invoice_date' value="{{=request.now.strftime('%Y-%m-%d')}}">
                                 </div>
                             </div>
                         </div>                        
@@ -60,7 +60,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Due Date</label>
                                 <div class="col-sm-8">
-                                    {{=form.custom.widget.due_date}}
+                                    <input type="date" class="form-control" name='due_date' value="{{=request.now.strftime('%Y-%m-%d')}}">                                
                                 </div>
                             </div>
                         </div>                        
@@ -76,12 +76,23 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
+                                <label class="col-sm-4 control-label">Currency</label>
+                                <div class="col-sm-8">
+                                        {{=form.custom.widget.currency_id}}                                                             
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
                                 <label class="col-sm-4 control-label">Total Amount</label>
                                 <div class="col-sm-8">
                                         {{=form.custom.widget.invoice_amount}}
                                 </div>
                             </div>
                         </div>  
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Location</label>
@@ -89,9 +100,7 @@
                                         {{=form.custom.widget.location_code_id}}
                                 </div>
                             </div>
-                        </div>                                              
-                    </div>
-                    <div class="row">
+                        </div>                                                                                      
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Supplier</label>
@@ -107,7 +116,10 @@
                                         {{=form.custom.widget.mode_of_shipment}}
                                 </div>
                             </div>
-                        </div>                           
+                        </div>      
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8"></div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label"></label>
@@ -126,20 +138,13 @@
 <script>
     $(document).ready(function(){
         $('#btnSubmit').click(function() {
-            ajax("{{=URL('procurement','post_document_register_id')}}", ['doc_reg_no','estimated_time_of_arrival','invoice_no',
-        'invoice_date','due_date','forwarder_supplier_id','invoice_amount','location_code_id','supplier_code_id','mode_of_shipment'])
-            // console.log("clicked...waiting...");
-
-            // setTimeout(
-            //     function() {
-            //         {{print 'button: ', request.now}}
-            //         // window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
-            //         // alert("Called after delay.");
-            //     },
-            //     3000);
+            ajax("{{=URL('procurement','post_document_register_id', args = request.args(0))}}", ['doc_reg_no','estimated_time_of_arrival','invoice_no',
+        'invoice_date','due_date','forwarder_supplier_id','invoice_amount','location_code_id','supplier_code_id','mode_of_shipment'])        
+        
         });
-    // function onSubmit(){
-    //     window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
-    // }
     });
+    function PrintDoc(x){
+        window.open('{{=URL('procurement','document_register_report')}}' + '/' + x);
+        window.location.replace('{{=URL('inventory','get_back_off_workflow_grid')}}')
+    }
 </script>

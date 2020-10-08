@@ -1,11 +1,11 @@
-<input class="btn btn-default" type="button" value="Sync Direct Purchase" onclick="sync_direct_purchase()">
+<input class="btn btn-default" type="button" value="Sync Purchase Receipt" onclick="sync_purchase_receipt()">
 
 
 
 <script>
-    function sync_direct_purchase(){
+    function sync_purchase_receipt(){
         
-        ajax("{{=URL('sili','put_direct_purchase_receipt_consolidation')}}");
+        ajax("{{=URL('sili','put_purchase_receipt_consolidation')}}");
     }
 
 </script>

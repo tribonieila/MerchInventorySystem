@@ -18,7 +18,7 @@
                 },
                 callback: function(result){
                     if (result){
-                        window.open("{{=URL('procurement','document_register_grid_process',extension = False)}}" + '/' + _id)                        
+                        window.location.replace("{{=URL('procurement','document_register_grid_process',extension = False)}}" + '/' + _id)                        
                     }
                 }
  

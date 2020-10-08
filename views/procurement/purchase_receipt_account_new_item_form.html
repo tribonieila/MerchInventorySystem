@@ -45,6 +45,9 @@
                 <div class="form-group">
                     <label class="col-sm-1 control-label">Item Type</label>
                     <div class="col-sm-2">{{=form.custom.widget.type_id}}</div>
+                    <label class="col-sm-1 control-label">Division</label>
+                    <div class="col-sm-2">{{=form.custom.widget.division_id}}</div>
+
                     <label class="col-sm-1 control-label">Department</label>
                     <div class="col-sm-2">{{=form.custom.widget.dept_code_id}}</div>
                     <label class="col-sm-1 control-label">Supplier</label>
@@ -144,7 +147,7 @@ $(document).ready(function(){
                         children: [ { text: 'Choose Department', value: null}, {{for d in db((db.Department.status_id == 1) & (db.Department.div_code_id == v.id)).select(db.Department.ALL):}}
                                     { text: '{{=d.dept_code}} - {{=d.dept_name}}', value: '{{=d.id}}', 
                             children: [ { text: 'Choose Supplier', value: null}, {{for s in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL):}}
-                                        { text: '{{=s.supp_code}} - {{=s.supp_name}}', value: '{{=s.id}}',
+                                        { text: '{{=s.supp_sub_code}} - {{=s.supp_name}}', value: '{{=s.id}}',
                                 children: [ { text: 'Choose Group Line', value: null}, {{for g in db((db.GroupLine.status_id == 1) & (db.GroupLine.supplier_id == s.id)).select(db.GroupLine.ALL):}}
                                             { text: '{{=g.group_line_code}} - {{=g.group_line_name}}', value: '{{=g.id}}',
                                     children: [ { text: 'Choose Brand Line', value: null}, {{for b in db((db.Brand_Line.status_id == 1) & (db.Brand_Line.group_line_id == g.id)).select(db.Brand_Line.ALL):}}

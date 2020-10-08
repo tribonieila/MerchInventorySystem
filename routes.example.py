@@ -35,12 +35,6 @@ routers = {
     )
 }
 
-routers = dict( 
-    BASE = dict( 
-        default_application='mtc_inv', 
-    ) 
-) 
-
 # routes_onerror = [
 #   ('mtc_inv/400', '/mtc_inv/default/user/login'),
 #   ('mtc_inv/*', '/mtc_inv/static/fail.html'),

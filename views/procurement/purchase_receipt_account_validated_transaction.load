@@ -47,11 +47,11 @@
         ajax('{{=URL('procurement','save_as_draft', args=request.args(0))}}',['landed_cost','other_charges','custom_duty_charges','supplier_account_code','supplier_account_code_description','supplier_invoice','selective_tax','remarks','discount']);
         
     });
-    $('#btnValidate').click(function(){        
-        ajax('{{=URL('procurement','validate', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
+    //$('#btnValidate').click(function(){        
+        //ajax('{{=URL('procurement','validate', args=request.args(0))}}', ['landed_cost', 'other_charges','custom_duty_charges','trade_terms_id','exchange_rate','selective_tax','supplier_invoice','supplier_account_code','location_code_id', 'discount']);        
         //$( "#POTtbl" ).load(window.location.href + " #POTtbl" );
         
-    });   
+    //});   
 
     $('#btnadd').click(function(){
         $( "#POTtbl" ).load(window.location.href + " #POTtbl" );
@@ -263,7 +263,7 @@ $(document).ready(function(){
         if ($('#Purchase_Request_landed_cost').val() < $('#Purchase_Request_exchange_rate').val()) {
             lanAlert();
         } else {
-            var _for = $('#foreign_total_amount').val();
+            var _for = $('#net_amount').val();
             var _pur = $('#Purchase_Request_landed_cost').val();
             var _res = parseFloat(_for.replace(/,/g, '')) * parseFloat(_pur.replace(/,/g, ''))
             $('#purchase_value').val(_res.toFixed(3));                  

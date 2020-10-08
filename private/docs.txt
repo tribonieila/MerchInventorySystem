@@ -54,6 +54,48 @@ Sales:
 
 Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
 
+- Ver.1.0.10 - 29/10/2020, Purchase Request
+    Issues:
+    - Under D1 Register – change “Register No.” > D1 Reference “Register Date” > D1 Txn Date. Resolved.
+    - Add the currency field <editable>. Resolved.
+    - Choose forwarderer > forwarder. Resolved.
+    - Add Refresh button under the Action Required Column to refresh the view of the page after creating D1. Resolved.
+    - Keep backup of the code of this page. Resolved.
+    - Change the “Generate Purchase Receipt > Proceed. Resolved.
+    - Put the transaction date of Purchase Request, Purchase Order and Warehouse Purchase Receipt. Resolved.
+    - Put the supplier code plus supplier name. Resolved.
+    - Qty should be 0 by default. Resolved. 
+    - Add Abort button. Resolved
+    - Remove the View and Browse Option from top right corner of the page. Resolved.
+
+- Ver.1.0.9 - 29/9/2020, Purchase Request
+    Issues:
+    - Change the Caption STOCK TRANSACTION FOR CONFIRMATION > “<USER NAME> Workflow”. Resolved.
+    - Issues on the grid (duplicate messages,etc). Resolved.
+    - John should have the Workflow Report Option. Resolved.
+    - John should have access all the Modules like Manoj (Inventory, Sales, Procurement). Resolved.
+    - Purchase History Screen – Better to change the “Browse “ option “CLOSE” to close the tab window of Purchase History. Resolved.
+    - Change the text Generage into Generate. Resolved
+    - The above error comes when generating Purchase Order. Resolved
+- Ver.1.0.8 - 28/9/2020, Purchase Request
+    Issues:
+    - Rejected Purchase Request for AMIN, should have the option to re-submit REQUEST or CANCEL. Resolved.
+    - Add ABORT button to go back to the grid. Resolved.
+    - Validation of the data type for File Upload should be done on PROCEED button and not on SUBMIT Button. Resolved. (during file upload validating, otherwise validate on server side.)
+    - The above error is coming when viewing the REJECTED and PRE-APPROVED PR. It was working earlier. Resolved. (perhaps during updating)
+    - Rejected Purchase Request should not show on Wael Workflow Grid – it should go under his Workflow Reports. Resolved.
+    - On the Proforma Upload – change the caption “file” > “View File”. Resolved.
+    - Opening the Proforma Invoice file is not working. Resolved (download file)
+
+- Ver.1.0.7 - 24/9/2020, Purchase Request
+    Issues:
+    - Please check and activate the uploading of Proforma Invoice Soft copies. Resolved
+    - Proforma Invoice Number Field is missing. Resolved.
+    - Put “ABORT” Button then go back to the Workflow Grid. Resolved.
+    - Put Provision to open the uploaded “Proforma Invoice”. Resolved.
+    - Open the Manager Remarks field. Resolved.
+    - Put a confirmation “YES or NO” if he want to Reject the PR. Resolved.
+
 - Ver.1.0.6 - 23/9/2020, Purchase Request
     Issues:
     - Category should be “Normal and FOC” only. Resolved
@@ -97,8 +139,6 @@ Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
     - category items excess removed. = Resolved.
     - label for other changes, selective tax, custom duty charge and landed cost ammendment. =  Resolved.
     - no negative entry for quantity and pieces. = Resolved.
-
-
 
 Activities:
 

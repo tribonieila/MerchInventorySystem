@@ -75,7 +75,9 @@ $(document).ready(function(){
             }            
         }) 
     });    
-
+    $("#btnAbort").click(function(){
+        location.replace("{{=URL('inventory','str_kpr_grid', extension=False)}}")
+    });
 });
 </script>  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
