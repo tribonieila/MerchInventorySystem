@@ -2,7 +2,9 @@
 <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-      
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">                    
+                    <li class=""><a href="#" onclick=window.location="{{=URL('inventory','groupline_mas')}}";>BROWSE</a></li> 
+                </ul>                
                 <span class="card-title">{{=ctr_val.group_line_name}} GROUP LINE SUPPLIER(S)</span>
             </div>
             <div class="card-body tab-content">
@@ -36,6 +38,9 @@
     $(document).ready( function () {
         $('table').DataTable();
     } );
+    function onExit(){     
+        window.history.back();
+    }        
 </script>
 
 

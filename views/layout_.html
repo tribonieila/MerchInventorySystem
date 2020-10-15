@@ -5,7 +5,7 @@
     <!-- www.phpied.com/conditional-comments-block-downloads/ -->
     <!-- Always force latest IE rendering engine
          (even in intranet) & Chrome Frame
-         Remove this if you use the .htaccess -->
+         Remove this if you use the .htaccess --> 
     <meta http-equiv="X-UA-Compatible" content="IE=edge{{=not request.is_local and ',chrome=1' or ''}}">
     <!--  Mobile Viewport Fix
           j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag
@@ -13,101 +13,660 @@
           initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
           user-scalable = yes allows the user to zoom in -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{=T("Merch | Inventory System")}}</title>
+    <title>{{=T("Merch ERP")}}</title>
     <!-- http://dev.w3.org/html5/markup/meta.name.html -->
     <meta name="application-name" content="{{=request.application}}">
     <!-- Speaking of Google, don't forget to set your site up:
          http://google.com/webmasters -->
     <meta name="google-site-verification" content="">
-    <!-- include stylesheets -->
-    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{=URL('static','css/bootstrap.min.css')}}"/>
-    <link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap4.css')}}"/>
-    <link rel="shortcut icon" href="{{=URL('static','images/merch_logo_9VV_icon.ico')}}" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{=URL('static','images/merch_logo.png')}}">
-    <!-- All JavaScript at the bottom, except for Modernizr which enables
-         HTML5 elements & feature detects -->
+	<!-- include stylesheets -->
+	
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/> -->
+	<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	 -->
+	<link rel="stylesheet" href="{{=URL('static','css/bootstrap.min.css')}}"/>
+	<link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap4.css')}}"/>	
+	<link rel="shortcut icon" href="{{=URL('static','images/merch_logo_9VV_icon.ico')}}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{=URL('static','images/merch_logo.png')}}">		
+
+	<!-- BEGIN STYLESHEETS -->
+	<link href='http://fonts.googleapis.com/css?family=Roboto:300italic,400italic,300,400,500,700,900' rel='stylesheet' type='text/css'/>
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/bootstrap.css?1422823238" /> -->
+	<!-- Latest compiled and minified CSS -->
+	
+	<link rel="stylesheet" href="{{=URL('static','css/bootstrap-admin.css')}}"/>
+	<link rel="stylesheet" href="{{=URL('static','css/material-admin.css')}}"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
+	
+<!-- //cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css -->
+	<link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/materialadmin.css?1422823243" />
+	
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/font-awesome.min.css?1422823239" /> -->
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/material-design-iconic-font.min.css?1422823240" /> -->
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/libs/rickshaw/rickshaw.css?1422823372" /> -->
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/libs/morris/morris.core.css?1422823370" /> -->
+	<!-- END STYLESHEETS -->	
+	
+	
+	<!-- <link rel="stylesheet" href="{{=URL('static','css/font-awesome-admin.css')}}"/> -->
+	<!-- <link rel="stylesheet" href="{{=URL('static','fontawesome/css/fontawesome.css')}}"/> -->
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>	
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css"/>  -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css"/> 
+
+	<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css"/>  -->
+	
+	<link rel="stylesheet" href="{{=URL('static','css/styles.css')}}"/>	
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
+    <script src="{{=URL('static','dist/pace-1.0.2/pace.min.js')}}"></script>
+    <link rel="stylesheet" href="{{=URL('static','dist/pace-1.0.2/themes/blue/pace-theme-flash.css')}}"/>	
+
+	
+    <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
     <!-- Favicons -->
     {{include 'web2py_ajax.html'}} <!-- this includes jquery.js, calendar.js/.css and web2py.js -->
     {{block head}}{{end}}
-  </head>
-  <body>
+	
 
+ </head>
+ <body class="menubar-hoverable header-fixed ">
+	
+	<div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
 
-    <!-- Navbar ======================================= -->
-    <div id="app">
-      <v-app id="inspire">
-        <v-toolbar>
-          <v-toolbar-side-icon></v-toolbar-side-icon>
-          <v-toolbar-title>Title</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items class="hidden-sm-and-down">
-            <v-btn flat>Link One</v-btn>
-            <v-btn flat>Link Two</v-btn>
-            <v-btn flat>Link Three</v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-navigation-drawer permanent>
-            <v-toolbar flat>
-              <v-list>
-                <v-list-tile>
-                  <v-list-tile-title class="title">
-                    Application
-                  </v-list-tile-title>
-                </v-list-tile>
-              </v-list>
-            </v-toolbar>
-        
-            <v-divider></v-divider>
-        
-            <v-list dense class="pt-0">
-              <v-list-tile
-                v-for="item in items"
-                :key="item.title"
-                @click=""
-              >
-                <v-list-tile-action>
-                  <v-icon>{% item.icon %}</v-icon>
-                </v-list-tile-action>
-        
-                <v-list-tile-content>
-                  <v-list-tile-title>{% item.title %}</v-list-tile-title>
-                </v-list-tile-content>
-              </v-list-tile>
-            </v-list>
-          </v-navigation-drawer>        
-      </v-app>
-    </div>
+	 <!-- <div class="flash">{{=response.flash or ''}}</div>	 -->
+	 
+	 <!-- BEGIN HEADER-->
+	 {{if (auth.user_id):}}
+	<header id="header" >
+		<div class="headerbar">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="headerbar-left">
+				<ul class="header-nav header-nav-options">
+					<li class="header-nav-brand" >
+						<div class="brand-holder">						
+							<!-- <a href="http://localhost:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a> -->
+							<a href="http://128.1.2.13:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
+						</div>
+					</li>
+					<li>
+						<a class="btn btn-icon-toggle" data-toggle="menubar" href="#">
+							<span class="fas fa-bars"></span>
+						</a>
+					</li>
+				</ul>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->			
+			<div class="headerbar-right">
+				<ul class="header-nav header-nav header-nav-toggle">
+					<li class="dropdown">
+						<a href="" class="dropdown-toggle ink-reaction" data-toggle="dropdown">				
+							<span class="profile-info">		
+								{{=auth.user.first_name.upper()}} {{=auth.user.last_name.upper()}}								
+								<!-- <small>{{=auth.user_groups.values()}}</small> -->
+							</span>
+						</a>
+						<ul class="dropdown-menu animation-dock">							
+							<li><a href="{{=URL('default','user/logout')}}"><i class="fa fa-fw fa-power-off text-danger"></i> Logout</a></li>
+						</ul><!--end .dropdown-menu -->
+					</li><!--end .dropdown -->
+				</ul><!--end .header-nav-profile -->
+			</div><!--end #header-navbar-collapse -->			
+		</div>
+	</header>
+	{{pass}}
+	<!-- END HEADER-->
 
+	<!-- BEGIN BASE-->
+	
+	<div id="base">
+		<!-- BEGIN OFFCANVAS LEFT -->
+		<div class="offcanvas">
+		</div><!--end .offcanvas-->
+		<!-- END OFFCANVAS LEFT -->
 
-    <!-- Main ========================================= -->
-    <!-- Begin page content -->
-    <div class="container-fluid main-container">
-      <div class="col-md-12"> 
-        {{block center}}
-        {{include}}
-        {{end}}
-        {{=response.toolbar() if configuration.get('app.toolbar') else ''}}
-      </div>
-    </div>
+		<!-- BEGIN CONTENT-->
+		<div id="content">				
+			
+			<section>
+				<div class="section-body">		
+					
+					{{block center}}
+					{{include}}
+					{{end}}
+				</div>
+			</section>
+		</div><!--end #content-->		
+		<!-- END CONTENT -->
+		
+		<!-- BEGIN MENUBAR-->
+		{{if (auth.user_id):}}
+		<div id="menubar" class="menubar-inverse ">
+			<div class="menubar-fixed-panel">
+				<div>
+					<a class="btn btn-icon-toggle btn-default menubar-toggle" data-toggle="menubar" href="javascript:void(0);">
+						<i class="fa fa-bars"></i>
+					</a>
+				</div>
+				<div class="expanded">
+					<a href="#">
+						<span class="text-lg text-bold text-primary ">MERCH&nbsp;ADMIN</span>
+					</a>
+				</div>
+			</div>
+			<div class="menubar-scroll-panel">
+				<!-- BEGIN MAIN MENU -->
+				<!-- <i class="fas fa-[NAME]"></i> -->
+			
+			
+			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ROOT')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">"_inv.version_no"</span></span></a>				
+					<ul>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory','itm_mas')}}"	 ><span class="title">Item Master</span></a></li>
+								<li><a href="{{=URL('inventory','item_prices_grid')}}"	 ><span class="title">Item Prices</span></a></li>
+								<li><a href="{{=URL('inventory','master_account')}}"	 ><span class="title">Master Account</span></a></li>								
+								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Supply/Services Master</span></a></li>
+								<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Supplier</span></a></li>
+								<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Product</span></a></li>
+								<li><a href="{{=URL('inventory','subprod_mas')}}" ><span class="title">Sub-Product</span></a></li>								
+								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Group Line</span></a></li>
+								<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
+								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
+								
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'stk_req_form')}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'stk_tns_form')}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'stk_rcpt_form')}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'stock_adjustment_browse')}}" ><span class="title">Stock Adjustment</span></a></li>	
+								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
+								<li><a href="{{=URL('inventory', 'stock_corrections')}}" ><span class="title">Stock Corrections</span></a></li>			
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
+								<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+								<li><a href="{{=URL('inventory', 'price_list_report')}}" ><span class="title">Price List Report</span></a></li>
+								<li><a href="{{=URL('inventory', 'stock_value_report')}}" ><span class="title">Stock Value Report</span></a></li>
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="#" ><span class="title">Settings</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory','pre_mas')}}" ><span class="title">Master Prefix Data</span></a></li>
+								<li><a href="{{=URL('inventory','trns_pre_mas')}}" ><span class="title">Transaction Prefix Data</span></a></li>
+								<li><a href="{{=URL('inventory','adjustment_type')}}" ><span class="title">Adjustment Type</span></a></li>
+								<li><a href="{{=URL('inventory','stock_type')}}" ><span class="title">Stock Type</span></a></li>
+								<li><a href="{{=URL('inventory','div_mas')}}" ><span class="title">Division</span></a></li>
+								<li><a href="{{=URL('inventory','dept_mas')}}" ><span class="title">Department</span></a></li>
+								<li><a href="{{=URL('inventory','sec_mas')}}" ><span class="title">Section</span></a></li>
+								<li><a href="{{=URL('inventory','stat_mas')}}" ><span class="title">Item Status</span></a></li>
+								<li><a href="{{=URL('inventory','recst_mas')}}" ><span class="title">Record Status</span></a></li>
+								<li><a href="{{=URL('inventory','stock_n_sale_status')}}" ><span class="title">Workflow Status</span></a></li>
+								<li><a href="{{=URL('inventory','itmcoll_mas')}}" ><span class="title">Item Collection</span></a></li>
+								<li><a href="{{=URL('inventory','itm_typ_mas')}}" ><span class="title">Item Type</span></a></li>
+								<li><a href="{{=URL('inventory','itmsze_mas')}}" ><span class="title">Item Size</span></a></li>								
+								<li><a href="{{=URL('inventory','gndr_mas')}}" ><span class="title">Gender</span></a></li>
+								<li><a href="{{=URL('inventory','uom_mas')}}" ><span class="title">UOM</span></a></li>
+								<li><a href="{{=URL('inventory','trans_itm_cat_mas')}}" ><span class="title">Trans Item Category</span></a></li>
+								<li><a href="{{=URL('inventory','itm_weight')}}" ><span class="title">Weight</span></a></li>
+								<li><a href="{{=URL('inventory','col_mas')}}" ><span class="title">Color</span></a></li>
+								<li><a href="{{=URL('inventory','curr_mas')}}" ><span class="title">Currrency</span></a></li>
+								<li><a href="{{=URL('inventory','currency_exchange')}}" ><span class="title">Currrency Exchange</span></a></li>
+								<li><a href="{{=URL('inventory','mdein_mas')}}" ><span class="title">Made In</span></a></li>
+								<li><a href="{{=URL('inventory','locgrp_mas')}}" ><span class="title">Location Group</span></a></li>							
+								<li><a href="{{=URL('inventory','loc_mas')}}" ><span class="title">Location</span></a></li>				
+								<li><a href="{{=URL('inventory','locsubgrp_mas')}}" ><span class="title">Location Sub-Group</span></a></li>				
+								<li><a href="{{=URL('inventory','frgtype_mas')}}" ><span class="title">Fragrance Type</span></a></li>
+								<li><a href="{{=URL('inventory','supp_trd_trms')}}" ><span class="title">Supplier Trade Terms</span></a></li>
+								<li><a href="{{=URL('inventory','supp_pay_mode')}}" ><span class="title">Supplier Payment Mode</span></a></li>
+								<li><a href="{{=URL('inventory','supp_pay_term')}}" ><span class="title">Supplier Payment Terms</span></a></li>
+								<li><a href="{{=URL('inventory','forw_supp')}}" ><span class="title">Freight Forwarder</span></a></li>
+								<li><a href="{{=URL('inventory','get_insurance_master_grid')}}" ><span class="title">Insurance Master</span></a></li>
+								
 
-    {{block footer}} <!-- this is default footer -->      
-    <footer class="footer">
-      <div class="container-fluid">
-        <div id="poweredBy" class="pull-right">{{=T('MERCH & PARTNERS CO. WLL')}}</div>        
-        <div class="copyright pull-left">{{=T('Copyright')}} &#169; {{=request.now.year}}</div>
-      </div>
-    </footer>
-    {{end}} 
-    
-    <!-- The javascript =============================== -->
-    <script src="{{=URL('static','js/bootstrap.min.js')}}"></script>
-    <script src="{{=URL('static','js/web2py-bootstrap4.js')}}"></script>
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="#" ><span class="title">Communication</span></a>
+							<ul>
+								<li><a href="{{=URL('communication','communication_tranx_prefix')}}" ><span class="title">Communication Tranx</span></a></li>
+							</ul>
+						</li>						
+					</ul>
+
+				</li>
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">"_sal.version_no"</span></span></a>				
+					<ul>
+						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
+						<li><a href="#" ><span class="title">Reports</span></a></li>												
+						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
+					</ul>
+				</li>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">"_pro.version_no"</span></span></a>
+					<ul>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'customer_grid')}}" ><span class="title">Customer Master</span></a></li>
+								<li><a href="{{=URL('sales', 'get_area_name_grid')}}" ><span class="title">Area Name</span></a></li>
+								<li><a href="{{=URL('sales', 'get_sales_man_grid')}}" ><span class="title">Sales Man</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">Sales Man Location</span></a></li>
+								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>								
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
+								<li><a href="#" ><span class="title">Delivery Note</span></a></li>
+								<li><a href="#" ><span class="title">Sales Invoice</span></a></li>
+								<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
+							</ul>
+						</li>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Settings</span></a>
+							<ul>
+								<li><a href="{{=URL('sales', 'customer_category_grid')}}" ><span class="title">Customer Category</span></a></li>
+								<li><a href="{{=URL('sales', 'customer_account_type_grid')}}" ><span class="title">Customer Account Type</span></a></li>
+								<li><a href="{{=URL('sales', 'customer_group_code_grid')}}" ><span class="title">Customer Group Code</span></a></li>											
+							</ul>
+						</li>
+					</ul>
+				</li>
+				
+
+				<li><a href="{{=URL('sili','labuyo')}}"><div class="gui-icon"><i class="md fas fa-user-shield"></i></div><span class="title">ADMINISTRATOR</span></a></li>
+
+			</ul>
+			{{pass}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')):}}			
+			<ul id="main-menu" class="gui-controls">
+				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
+				<li ><a href="{{=URL('inventory','account_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a>
+				</li>	
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 6)}}" ><span class="title">Purchase Return</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 4)}}" ><span class="title">Direct Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports',args = 2)}}" ><span class="title">Stock Adjustment</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports',args=3)}}" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports',args=4)}}" ><span class="title">Obsolescence of stocks</span></a></li>
+						<!-- <li><a href="{{=URL('inventory','get_stock_corrections_workflow_reports')}}" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="{{=URL('inventory','obsolescence_of_stocks')}}" ><span class="title">Obsolescence of stocks</span></a></li> -->
+
+					</ul>
+				</li>	
+													
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">"_inv.version_no"</span></span></a>
+					<ul>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory','itm_mas')}}"><span class="title">Item Master</span></a></li>
+								<li><a href="{{=URL('inventory','item_prices_grid')}}" ><span class="title">Item Prices</span></a></li>
+								<li><a href="{{=URL('inventory','master_account')}}"><span class="title">Master Account</span></a></li>								
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 2)}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'stock_adjustment_browse')}}" ><span class="title">Stock Adjustment</span></a></li>	
+								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
+								<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>			
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
+								<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+								<li><a href="{{=URL('inventory', 'price_list_report')}}" ><span class="title">Price List Report</span></a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+				
+
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">"_sal.version_no"</span></span></a>
+					<ul>
+						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'direct_purchase_receipt_grid')}}" ><span class="title">Direct Purchase Receipt</span></a></li>	
+						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
+						<li><a href="#" ><span class="title">Reports</span></a></li>
+					</ul>
+				</li>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">"_pro.version_no"</span></span></a>
+					<ul>
+						<li><a href="{{=URL('sales','customer_grid')}}"><span class="title">Customer Master</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales', 'delivery_note_browse')}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_invoice_browse')}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
+					</ul>
+				</li>							
+				
+		
+			</ul>
+			{{pass}}
+
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS MANAGER')):}}
+			<ul id="main-menu" class="gui-controls"> 
+				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>				
+				<li><a href="{{=URL('inventory', 'account_manager_workflow')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('sales','get_sales_invoice_grid')}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 6)}}" ><span class="title">Purchase Return</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports', args = 4)}}" ><span class="title">Direct Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports', args = 2)}}" ><span class="title">Stock Adjustment</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports',args=3)}}" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="{{=URL('inventory','get_workflow_reports',args=4)}}" ><span class="title">Obsolescence of stocks</span></a></li>					
+					</ul>
+				</li>		
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">"_inv.version_no"</span></span></a>
+				
+					<ul>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory','itm_mas')}}"	 ><span class="title">Item Master</span></a></li>
+								<li><a href="{{=URL('inventory','item_prices_grid')}}"	 ><span class="title">Item Prices</span></a></li>
+								<li><a href="{{=URL('inventory','master_account')}}"	 ><span class="title">Master Account</span></a></li>								
+								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Supply/Services Master</span></a></li>
+								<li><a href="{{=URL('inventory','suplr_mas')}}" ><span class="title">Supplier</span></a></li>
+								<li><a href="{{=URL('inventory','prod_mas')}}" ><span class="title">Product</span></a></li>
+								<li><a href="{{=URL('inventory','subprod_mas')}}" ><span class="title">Sub-Product</span></a></li>								
+								<li><a href="{{=URL('inventory','groupline_mas')}}" ><span class="title">Group Line</span></a></li>
+								<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
+								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
+								
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'get_stock_request_grid.html')}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_stock_transaction_grid')}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_stock_receipt_grid')}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'stock_adjustment_manager_grid')}}" ><span class="title">Stock Adjustment</span></a></li>	
+								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
+								<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>			
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
+								<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+								<li><a href="{{=URL('inventory', 'price_list_report')}}" ><span class="title">Price List Report</span></a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>				
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">"_sal.version_no"</span></span></a>
+				
+					<ul>
+						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_transaction_reports_grid',args = 1)}}" ><span class="title">Purchase Return</span></a></li>						
+						<li><a href="#" ><span class="title">Reports</span></a></li>
+					</ul>
+				</li>						
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">"_pro.version_no"</span></span></a>
+				
+					<ul>
+						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
+						<!-- <li><a href="#" ><span class="title">Delivery Note</span></a></li> -->
+						<!-- <li><a href="#" ><span class="title">Sales Invoice</span></a></li> -->
+						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
+					</ul>
+				</li>		
+				
+			</ul>
+			{{pass}}			
+			
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'MANAGEMENT')):}}  
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
+				<li><a href="{{=URL('inventory', 'inventory_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW mngt</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="#" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="#" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="#" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="#" ><span class="title">Stock Adjustment</span></a></li>
+						<li><a href="#" ><span class="title">Stock Request</span></a></li>
+						<li><a href="#" ><span class="title">Sales Order</span></a></li>
+						<li><a href="#" ><span class="title">Sales Return</span></a></li>						
+					</ul>
+				</li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">_inv.version_no</span></span></a>
+					<ul>
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Master Data</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory','itm_mas')}}"><span class="title">Item Master</span></a></li>
+								<li><a href="{{=URL('inventory','item_prices_grid')}}" ><span class="title">Item Prices</span></a></li>
+								<li><a href="{{=URL('inventory','master_account')}}"><span class="title">Master Account</span></a></li>								
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 2)}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'stock_adjustment_browse')}}" ><span class="title">Stock Adjustment</span></a></li>	
+								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
+								<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>			
+							</ul>
+						</li>						
+						<li class="gui-folder expanded">
+							<a href="{{=URL('inventory', 'stk_rpt')}}" ><span class="title">Reports</span></a>
+							<ul>
+								<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
+								<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+								<li><a href="{{=URL('inventory', 'price_list_report')}}" ><span class="title">Price List Report</span></a></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+				
+
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">_sal.version_no</span></span></a>
+					<ul>
+						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="#" ><span class="title">Direct Purchase Receipt</span></a></li>	
+						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
+						<li><a href="#" ><span class="title">Reports</span></a></li>
+					</ul>
+				</li>
+				
+				
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-chart-line"></i></div><span class="title">SALES<span class="badge style-warning">"_pro.version_no"</span></span></a>
+					<ul>
+						<li><a href="{{=URL('sales','customer_grid')}}"><span class="title">Customer Master</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales', 'delivery_note_browse')}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_invoice_browse')}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
+					</ul>
+				</li>							
+
+			</ul>
+			{{pass}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY BACK OFFICE')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
+				<li><a href="{{=URL('inventory', 'get_back_off_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+						<!-- <li><a href="{{=URL('sales','get_sales_invoice_workflow_reports')}}" ><span class="title">Sales Invoice</span></a></li> -->
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>						
+						<!-- <li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>						 -->
+						<li><a href="{{=URL('procurement','get_workflow_reports',args=1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports',args=2)}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports',args=3)}}" ><span class="title">Purchase Receipt</span></a></li>
+					</ul>
+				</li>
+			</ul>			
+			{{pass}}		
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY SALES MANAGER')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
+				<li><a href="{{=URL('inventory','mngr_req_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>	
+				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+						<!-- <li><a href="{{=URL('inventory','get_stv_sales_mngr_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li> -->
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
+						<li><a href="{{=URL('procurement','get_workflow_reports',args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<!-- <li><a href="{{=URL('procurement','get_workflow_reports',args = 2)}}" ><span class="title">Purchase Order</span></a></li> -->
+						<li><a href="{{=URL('inventory','get_workflow_reports', args = 4)}}" ><span class="title">Obsolescence of Stocks</span></a></li>						
+					</ul>
+				</li>
+			</ul>
+			{{pass}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
+			<ul id="main-menu" class="gui-controls">				
+				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
+				<li><a href="{{=URL('inventory','str_kpr_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>			
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 5)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 6)}}" ><span class="title">Stock Receipt</span></a></li>
+						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 3)}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>						
+						<li><a href="{{=URL('procurement', 'get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_workflow_reports', args = 5)}}" ><span class="title">Warehouse Receipt</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 3)}}" ><span class="title">Stock Corrections</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 4)}}" ><span class="title">Obsolescence of Stocks</span></a></li>
+						<!-- <li><a href="{{=URL('procurement', 'get_purchase_order_warehouse_grid')}}" ><span class="title">Purchase Receipt</span></a></li> -->
+					</ul>
+				</li>				
+				<!-- # viewing only -->
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">REPORTS</span></a> 					
+					<ul>
+						<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 2)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>						
+						<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>	
+						<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>		
+						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 4)}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
+						
+					</ul>
+				</li>
+			</ul>
+			{{pass}}
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY POS')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
+				<li><a href="{{=URL('inventory', 'get_pos_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 5)}}" ><span class="title">Stock Transfer Voucher</span></a></li>
+						<li><a href="{{=URL('inventory', 'get_workflow_reports', args = 6)}}" ><span class="title">Stock Receipt</span></a></li>						
+						<!-- <li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li> -->
+					</ul>
+				</li>
+			</ul>
+			{{pass}}	
+			{{if (auth.user_id != None) &  (auth.has_membership(role = 'SALES')):}}
+			<ul id="main-menu" class="gui-controls">
+				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
+				<li><a href="{{=URL('inventory', 'get_fmcg_workflow_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+					<ul>
+						<!-- <li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Transfer Voucher</span></a></li> -->
+						<li><a href="{{=URL('inventory','get_stock_transfer_vouchers_grid')}}" ><span class="title">Stock Request</span></a></li>						
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 5)}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>					
+					</ul>
+				</li>
+			</ul>
+			{{pass}}										
+		<!--end .main-menu -->
+				<!-- END MAIN MENU -->
+
+				<div class="menubar-foot-panel">
+					<small class="no-linebreak hidden-folded">
+						<span class="opacity-75">Copyright &copy; {{=request.now.year}}</span> <strong>M&P CO. WLL.</strong>
+					</small>
+				</div>
+			</div><!--end .menubar-scroll-panel-->
+		</div>
+		{{pass}}
+		
+		<!--end #menubar-->
+		<!-- END MENUBAR -->
+
+		
+	</div><!--end #base-->	
+	<!-- END BASE -->
+	
+	<!-- The javascript =============================== -->
+	<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+	<script src="{{=URL('static','js/bootstrap.bundle.min.js')}}"></script>
+	<script src="{{=URL('static','js/web2py-bootstrap4.js')}}"></script>
+	<script src="{{=URL('static','dist/js/jquery.min.js')}}"></script>
+
+	<script src="{{=URL('static','js/jquery.nanoscroller.min.js')}}"></script>
+	<script src="{{=URL('static','js/admin.js')}}"></script>	
+	<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+
+	<!-- Latest compiled and minified JavaScript for bootbox.min.js-->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+	
     {{block page_js}}{{end page_js}}
     {{if response.google_analytics_id:}}
     <!-- Analytics ==================================== -->
@@ -117,27 +676,16 @@
       'Google Analytics':{trackingId:'{{=response.google_analytics_id}}'}
       });
     </script>
-
+	<script>$(".dropdown-trigger").dropdown();</script>
+	
     {{pass}}
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-    <script>
-    new Vue({
-      el: '#app',
-      delimeters: ['{%', '%}'],
-  data () {
-    return {
-      items: [
-        { title: 'Home', icon: 'dashboard' },
-        { title: 'About', icon: 'question_answer' }
-      ],
-      right: null
-    }
-  }
-  
-})
-    </script>
-    <!-- Share ============================y============ -->
-    <!-- <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
+    <!-- Share ======================================== -->
+	<!-- <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
+	<!-- The external javascript ===================== -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>	 -->
+	<!-- <script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/jquery/jquery-1.11.2.min.js"></script>
+	<script src="//www.codecovers.eu/assets/js/modules/materialadmin/libs/bootstrap/bootstrap.min.js"></script>  -->
+
   </body>
 </html>

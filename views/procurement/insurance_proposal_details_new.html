@@ -95,7 +95,21 @@
 </div> 
 
 <script>
-    function onSubmit(){    
-        window.open("{{=URL('procurement','insurance_proposal_reports', args = request.args(0))}}")        
-    }
+$(document).ready(function(){
+    function afterSubmit(){
+        console.log("after submit");
+    }    
+});
+
+function onSubmit(){        
+    // var today = new Date();
+    // setTimeout(function(){
+    //     alert(today);
+    //     console.log("setTimeOut", today);
+    // }, 5000)
+    // return true;
+    // ajax("{{=URL('procurement','sync_purchase_order', args = request.args(0))}}")
+    // window.open("{{=URL('inventory','insurance_proposal_reports', args = request.args(0))}}")  
+    window.open("{{=URL('inventory','get_back_off_workflow_grid')}}")        
+}
 </script>

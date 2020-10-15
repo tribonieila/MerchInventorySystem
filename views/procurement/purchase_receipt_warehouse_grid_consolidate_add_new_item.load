@@ -2,7 +2,7 @@
 {{=form2.custom.begin}}
 <table class="table">
     <thead>
-        <tr>
+        <tr class="active">
             <th>Item Code</th>            
             <th>Description</th>
             <th>UOM</th>

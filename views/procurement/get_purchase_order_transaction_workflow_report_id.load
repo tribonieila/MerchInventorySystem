@@ -1,0 +1,21 @@
+{{=table}}
+<div class="col-xs-12">    
+    <button type="button" class="btn btn-danger pull-right" onclick="onExit()"><i class="fa fa-arrow-left"></i> Return</button>
+    <button type="button" class="btn btn-default pull-right" onclick="onPrint()" style="margin-right: 5px;"><i class="fa fa-print"></i> Print</button>
+</div>
+ 
+<script>
+    function onExit(){
+        window.history.back();
+    }
+
+    function onPrint(){       
+        {{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')) or (auth.has_membership(role = 'ACCOUNTS MANAGER')) or (auth.has_membership(role = 'MANAGEMENT')):}}			
+            window.open("{{=URL('procurement','purchase_receipt_reports', args = request.args(0), extension = False)}}")
+        {{elif (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY BACK OFFICE')): }}
+            window.open("{{=URL('procurement','get_purchase_request_workflow_reports_id', args = request.args(0), extension = False)}}")            
+        {{else:}}
+            window.open("{{=URL('procurement','warehouse_receipt_reports', args = request.args(0), extension = False)}}")
+        {{pass }}
+    }
+</script>

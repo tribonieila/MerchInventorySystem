@@ -54,7 +54,34 @@ Sales:
 
 Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
 
-- Ver.1.0.10 - 29/10/2020, Purchase Request
+- Ver.1.0.12 - 14/10/2020, Purchase Request
+    Issues:
+    - Make sure only the Purchase Receipt “Submit” by Hakim will be visible to Accounts User for posting. Resolved.
+    - Put a “CLOSE” button when viewing the Purchase Receipt. Resolved
+    - Change the “SAVE” button to SAVE AS DRAFT. Resolved.
+    - Mode of Shipment , Trade Terms and Supplier Invoice should be Editable. Resolved.
+    - Unit Price should be editbale. Resolved.
+    - When opening the Purchase Receipt for editing, make an automatic validation of New Items, if new item(s) is found, 
+    put a message and DO NOT proceed for submission for user Jyothi. Resolved.
+
+- Ver.1.0.11 - 14/10/2020, Purchase Request
+    Issues:
+    - The above error comes when SAVE AS DRAFT was click after editing the date. Resolved
+    - The same error comes also when Viewing the Warehouse Purchase Receipt for the first time or when no entry was yet. Resolved    
+    - Remove the Edit and Browse button on the top right on the View Option of the Warehouse Purchase Receipt. Resolved
+    - Add CLOSE button to go back to the Workflow grid. Resolved
+    - Once submit button is click, block the editing from Hakim right away. Resolved
+    - Once the D1 was prepared and PO was received in the warehouse Action Required should show as 
+        “For Stock Checking” – hakim is still checking and preparing the Warehouse Purchase Receipt that time. 
+        This warehouse purchase receipt should not be visible to Accounts that time. Resolved
+
+- Ver.1.0.11 - 11/10/2020, Purchase Request
+    Issues:
+    - Give access to edit the Section field. Resolved.
+    - The above Purchase request was rejected then edited by Amin and requested again – but the items are not displayed on Wael Screen druing Approval process. You can view it correctly on Amin user. Resolved.
+    - Same problem above, items were not displayed during approval. This time, no editing was done on the purchase request. Is it maybe because of the section? Resolved. (issues with filtering user's group)
+
+- Ver.1.0.10 - 5/10/2020, Purchase Request
     Issues:
     - Under D1 Register – change “Register No.” > D1 Reference “Register Date” > D1 Txn Date. Resolved.
     - Add the currency field <editable>. Resolved.
@@ -209,7 +236,7 @@ if _ip.selective_tax_price:
         _selective_tax = (float(_ip.selective_tax_price or 0) / int(_id.uom_value)) * int(_tq)
 
 unit price = ((wholesale_price  / uom) * uom) + ((selective_tax / uom) * uom)
-
+@auth.requires_login()
 API BASIC CRUD
 Operation	    =    SQL	    =   HTTP	        =       RESTful WS	=   DDS	        =   MongoDB
 Create	        -    INSERT	    -   PUT/POST	    -       POST	    -   write	    -   Insert
@@ -369,3 +396,5 @@ window.onload = function() {
 if ( fup.files[0].type === 'application/pdf' ) {
     console.log( 'It is validated!' )
 }
+
+window.open("https://www.w3schools.com");

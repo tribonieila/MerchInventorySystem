@@ -7,6 +7,7 @@
                 <th>Item Code</th>
                 <th>Quantity</th>
                 <th>Pieces</th>
+                <th>Discount</th>
                 <th>Most Recent Cost</th>
                 <th>Category</th>
                 <th></th>
@@ -17,6 +18,7 @@
                 <td>{{=form2.custom.widget.item_code}}</td>
                 <td>{{=form2.custom.widget.quantity}}</td>
                 <td>{{=form2.custom.widget.pieces}}</td>
+                <td>{{=form2.custom.widget.discount_percentage}}</td>
                 <td>{{=form2.custom.widget.most_recent_cost}}</td>
                 <td>{{=form2.custom.widget.category_id}}</td>
                 <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"> </td>
@@ -38,7 +40,7 @@
             }, 1);
     });
     $('#no_table_item_code').change(function(){
-        ajax('{{=URL('purchase_request_item_code_description',args = request.args(0))}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('get_item_code_id',args = request.args(0))}}', ['item_code'], '_item_code_description');     
         ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');     
         return false;
     });    
@@ -82,31 +84,6 @@ $(document).ready(function(){
         window.location.href = '{{=URL('inventory','account_grid', extension = False)}}';
     });    
 
-    $('.delete').click(function(){
-        var _id = $(this).attr('data-ct');
-        bootbox.confirm({
-            size: "small",
-            message: "Delete this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete')}}" + '/'+ _id);
-                    location.reload();
-                }
-
-            }
-        })
-    });    
-
     $('.del').click(function(){
         var _idd = $(this).attr('data-id');
         bootbox.confirm({
@@ -114,7 +91,7 @@ $(document).ready(function(){
             message: "Delete this record?",
             buttons: {
                 confirm: {
-                    label: "Yes",
+                    label: "Yes", 
                     className: "btn-success"
                 },
                 cancel: {
@@ -130,52 +107,45 @@ $(document).ready(function(){
             }
         })
     });    
-
-    $('.dele').click(function(){
-        var _in = $(this).attr('data-nt');
-        bootbox.confirm({
-            size: "small",
-            message: "Delete this record?",
-            buttons: {
-                confirm: {
-                    label: "Yes",
-                    className: "btn-success"
-                },
-                cancel: {
-                    label: "No",
-                    className: "btn-danger"
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    ajax("{{=URL('procurement','purchase_receipt_transaction_delete_new')}}" + '/'+ _in);
-                    //location.reload();
-                }
-
-            }
-        })
-    });  
     Calculate();
 });
-
+    function onError(){
+        toastr["warning"]("Form has error.")
+    }
 
     function Calculate(){
         var $tblrows = $("#POTtbl tbody tr");
 
         $tblrows.each(function(index){
             var $tblrow = $(this);
-            $tblrow.find(".quantity, .pieces, .price_cost").on("change", function(){            
+            $tblrow.find(".quantity, .pieces, .discount, .price_cost").on("change", function(){            
                 var ctr = $tblrow.find("[name=ctr]").val();
                 var uom = $tblrow.find("[name=uom]").val();
                 var qty = $tblrow.find("[name=quantity]").val();
                 var pcs = $tblrow.find("[name=pieces]").val();
                 var pri = $tblrow.find("[name=price_cost]").val();
-
+                var itd = $tblrow.find("[name=discount]").val();
+                var net = $tblrow.find("[name=net_price]").val();
                 var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
                 var ppp = parseFloat(pri) / parseInt(uom);
-                var sub = parseInt(itm, 10) * parseFloat(ppp);
+                var npr = parseFloat(pri) * (100 - parseFloat(itd)) / 100
+                var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
                 
-
+                if(parseInt(qty) < parseInt(0)){
+                    $("#btnDraft").attr("disabled","disabled");
+                    onNegZero()
+                    //return alert("Please enter positive integer.");
+                } else if (parseInt(pcs) < parseInt(0)) {
+                    $("#btnDraft").attr("disabled","disabled");
+                    onNegZero()
+                    //return alert("Please enter positive integer.");
+                } else if (parseFloat(itd) < parseFloat(0)) {
+                    $("#btnDraft").attr("disabled","disabled");
+                    onNegZero()
+                    //return alert("Please enter positive integer.");
+                } else {
+                    $("#btnDraft").removeAttr("disabled");
+                }
                 var xch = $("#Purchase_Request_exchange_rate").val();
                 var lnd = $("#Purchase_Request_landed_cost").val();
                 var foc = $("#grand_total").val();
@@ -187,7 +157,7 @@ $(document).ready(function(){
                     var _grand_total = 0;
                     var _net_amount = 0;
                     var local = 0;
-
+                    $tblrow.find(".net_price").val(npr.toLocaleString());
                     $tblrow.find(".total_amount").val(sub.toFixed(3));
                     $(".total_amount").each(function(){
                         var stval = parseFloat($(this).val());
@@ -195,7 +165,7 @@ $(document).ready(function(){
                     });
 
                     $(".grand_total").val(_grand_total.toLocaleString());
-                    _net_amount = parseFloat(_grand_total) - parseFloat(dis)
+                    _net_amount = parseFloat(_grand_total) 
                     local = parseFloat(xch) * parseFloat(_net_amount);
                     landed_cost = parseFloat(lnd) * parseFloat(_net_amount);
                     purch = parseFloat()
@@ -208,30 +178,27 @@ $(document).ready(function(){
             });
         });
     }
-    $("#discount").change(function(){        
-        ReCalculate();
+    $("#added_discount").change(function(){        
+        onAddedDiscount();
     });
-    function ReCalculate(){
+
+    function onAddedDiscount(){
         var _lan = $('#Purchase_Request_landed_cost').val();
         var _cus = $('#no_table_custom_duty_charges').val();
         var _oth = $('#Purchase_Request_other_charges').val();
         var _exc = $('#Purchase_Request_exchange_rate').val();
-        var _ton = $('#total_net_amount').val();
-        var _dis = $('#discount').val();            
+        var grand_total = $('#grand_total').val();
+        var _dis = $('#added_discount').val();            
         var _loc = $('#net_amount_qr').val();
         var _fta = $('#grand_total').val();
         
-
-        _for = parseFloat(_ton.replace(/,/g, '')) - parseFloat(_dis)
-        _loc = parseFloat(_for) * parseFloat(_exc)      
-        _pur = parseFloat(_for) * parseFloat(_lan)
-        
-        console.log(_ton.replace(/,/g, ''), _dis, _for);
-        
-        $('#grand_total').val(_for.toFixed(3));                  
-        $('#net_amount_qr').val(_loc.toFixed(3));   
-        $('#purchase_value').val(_pur.toFixed(3));                   
-        //$('#purchase_value').val(_pur.format());                   
+        _net_amount = parseFloat(grand_total.replace(/,/g, '')) - parseFloat(_dis)
+        _net_amount_qr = parseFloat(_net_amount) * parseFloat(_exc)      
+        _pur = parseFloat(_net_amount) * parseFloat(_lan)                
+        $('#net_amount').val(_net_amount.toLocaleString());   
+        $('#net_amount_qr').val(_net_amount_qr.toLocaleString());   
+        $('#purchase_value').val(_pur.toLocaleString());                   
+                   
     };
 
 </script>
@@ -273,7 +240,13 @@ $(document).ready(function(){
 
 
 
+    function onNegZero(){
+        toastr["warning"]("Negative value not allowed.")
+    }
 
+    function onUpdate(){
+        toastr["success"]("Transaction save.")
+    }
 
     function errAlert(){
         bootbox.alert({

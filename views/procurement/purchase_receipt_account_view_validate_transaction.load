@@ -85,7 +85,7 @@
 
                     {{ pass }}
                 {{pass}}
-
+                <button class="btn btn-danger" type="button" onclick=onReturn()>Return</button>
             </div>
         </div>                 
     
@@ -106,4 +106,7 @@
             ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0),extension=False)}}");            
         })
     })
+    function onReturn(){
+        window.history.back();
+    }
 </script>

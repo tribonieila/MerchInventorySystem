@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Purchase Receipt Workflow Report</span>
+            <div class="tools">
+                <a class="btn btn-icon-toggle" alt="refresh", title="Print" onclick=onPrint()><i class="fas fa-print"></i></a>
+            </div>
+            <!-- <button type="button" class="btn btn-default pull-right" onclick="onPrint()"><i class="fa fa-print"></i> Print</button>             -->
+        </div>
+        <div class="card-body tab-content">                                                                 
+            {{=table}}
+            {{=table2}}
+            {{=table3}}                           
+            {{=LOAD('procurement','get_purchase_receipt_transaction_id.load', args = request.args(0), ajax = True)}}
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    $("#btnApproved").click(function(){        
+        ajax("{{=URL('procurement','purchase_receipt_approved', args = request.args(0))}}")      
+        window.location.replace("{{=URL('inventory','account_manager_workflow')}}");
+    });
+    $("#btnReject").click(function(){        
+        ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0))}}")
+        window.location.replace("{{=URL('inventory','account_manager_workflow')}}");
+    });
+});
+    
+</script>

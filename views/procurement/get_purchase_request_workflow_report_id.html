@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Purchase Request Workflow Report</span>
+            <div class="tools">
+                <a class="btn btn-icon-toggle" alt="refresh", title="Print" onclick=onPrint()><i class="fas fa-print"></i></a>
+            </div>
+
+        </div>
+        <div class="card-body tab-content">                                            
+            {{=table1}}
+            {{=table2}}
+            {{=LOAD('procurement','get_purchase_request_transaction_workflow_report_id.load', args = request.args(0))}}
+                
+        </div>      
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+
+    $("#btnAbort").click(function(){
+        window.location.replace("{{=URL('inventory','get_back_off_workflow_grid')}}")
+    });
+});
+</script>

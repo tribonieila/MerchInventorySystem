@@ -135,7 +135,15 @@
                                 {{pass}}
                             </div>
                         </div>
-                    </div>                    
+                    </div>         
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Section</label>
+                            <div class="col-sm-8">                                  
+                                {{=form.custom.widget.section_id}}
+                            </div>
+                        </div>
+                    </div>                                   
                 </div>
                 {{=form.custom.end}}
                 <hr>
@@ -166,6 +174,9 @@
 </div>
 
 <script>
+    $(document).ready(function(){
+        $('#Purchase_Request_section_id').attr("disabled", true); 
+    });
     // $('.btn').click(function(){          
     //     onclick=document.location="{{=URL('inventory','mngr_req_grid')}}";
     //     return false;

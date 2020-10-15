@@ -2,10 +2,6 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                <li class="active"><a href="#">EDIT</a></li>
-                <li class=""><a href="#" onclick=window.location="{{=URL('inventory','str_kpr_grid')}}";>BROWSE</a></li>
-            </ul>
             <span class="card-title">GENERATE PURCHASE RECEIPT</span>
         </div>
         <div class="card-body tab-content">                                            
@@ -23,7 +19,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
-    
+    $("#btnReturn").click(function(){        
+        window.location.replace("{{=URL('inventory','str_kpr_grid')}}") 
+    });
     $('.cut').click(function(){
         var _id = $(this).attr('data-id');
         var _pr = $(this).attr('data-pr');

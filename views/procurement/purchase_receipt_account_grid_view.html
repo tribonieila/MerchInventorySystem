@@ -8,9 +8,18 @@
             <div class="form-horizontal">    
                 
                 {{=table}}
+                
                 <hr>
                 {{=LOAD('procurement','purchase_receipt_account_view_validate_transaction.load', ajax = True, args = request.args(0), target = 'PRTCNItbl' )}}                                   
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+
+    });
+
+    
+</script>

@@ -138,7 +138,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Section</label>
                             <div class="col-sm-8">                                  
-                                <input type="text" class="form-control" value="{{=section_id}}" readonly>
+                                {{=form.custom.widget.section_id}}                                
                             </div>
                         </div>
                     </div>                                
@@ -170,6 +170,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
+    {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}
+        $('#Purchase_Request_section_id').attr("disabled", false); 
+    {{else:}}
+        $('#Purchase_Request_section_id').attr("disabled", true); 
+    {{pass}}
     {{if (int(_id.status_id) == 3) and (_id.created_by != auth.user_id): }}
         $("#btnsubmit").attr("disabled", "disabled");                
         console.log('if')

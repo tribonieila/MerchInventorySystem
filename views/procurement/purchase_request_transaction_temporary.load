@@ -44,18 +44,18 @@ $(document).ready(function(){
             var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
                         
             var ada = $("#added_discount_amount").val();
-            var _exchange_rate = $("#no_table_exchange_rate").val();
+            var _exchange_rate = $("#Purchase_Request_exchange_rate").val();
 
             if(parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
-                return alert("Please enter positive integer.");
+                onNegativeVal()
             } else if (parseInt(pcs) < parseInt(0)) {
                 $("#btnUpdate").attr('disabled','disabled');
-                return alert("Please enter positive integer.");
+                onNegativeVal()
             } else if (parseFloat(itd) < parseFloat(0)) {
                 $("#btnUpdate").attr('disabled','disabled');
-                return alert("Please enter positive integer.");
-            } else {
+                onNegativeVal()
+            } else { 
                 $("#btnUpdate").removeAttr('disabled');
             }
               
@@ -79,13 +79,14 @@ $(document).ready(function(){
         });
     });
 
-    $('#added_discount_amount').change(function(){
-        
-        var _exchange_rate = $("#no_table_exchange_rate").val();
+    $('#added_discount_amount').change(function(){        
+        var _exchange_rate = $("#Purchase_Request_exchange_rate").val();
         var var_discount = $("#added_discount_amount").val();
         if(parseFloat(var_discount) < parseFloat(0)){
-            return alert("Please enter positive integer.");
+            onNegativeVal()
+            $("#btnUpdate").attr('disabled','disabled');
         } else {
+            $("#btnUpdate").removeAttr('disabled');
             var GrandTotal = $(".grand_total").val();
             var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);        
             $("#foreign_amount").val(foreign.toLocaleString());
@@ -114,6 +115,10 @@ $(document).ready(function(){
         t.value=t.value.replace(/\s/g,'0');
         }
     }    
+
+    function onNegativeVal(){
+        toastr["error"]("Nagative value not allowed!")
+    }
 
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
         ajax('{{=URL('purchase_request_item_code_description')}}', ['item_code'], '_item_code_description');     
@@ -153,9 +158,8 @@ $('.delete').click(function(){
                 ajax("{{=URL('procurement','purchase_request_transaction_temporary_delete')}}" + '/'+ _id);
                 
             }
-
         }
     })
-});    
+});   
  
 </script>

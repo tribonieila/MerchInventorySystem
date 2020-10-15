@@ -46,19 +46,28 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():
-    table = TABLE(
-        THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Closing Stock'),TH('Order In Transit'))),
-        TBODY(TR(
-                TD('_icode.item_code'),
-                TD('_icode.item_description.upper()'),
-                TD('_icode.group_line_id.group_line_name'),
-                TD('_icode.brand_line_code_id.brand_line_name'),
-                TD('_icode.uom_value'),                
-                TD('_iprice.retail_price'),
-                # TD(locale.format('%.3F',_whole_sale or 0, grouping = True)),
-                TD(0),
-                TD(0))))
-    return dict(table = table)
+    pre = db(db.Prefix_Data.prefix_key == 'SUP').select().first()
+    _skey = pre.serial_key
+ 
+    # _ckey = str(_skey)    
+    for n in db().select(orderby = db.Supplier_Master.id):
+        # print n.supp_code
+        _skey += 1            
+        n.update_record(supp_code = _skey)
+        pre.update_record(serial_key = _skey)
+    # table = TABLE(
+    #     THEAD(TR(TH('Item Code'),TH('Description'),TH('Group Line'),TH('Brand Line'),TH('UOM'),TH('Retail Price'),TH('Closing Stock'),TH('Order In Transit'))),
+    #     TBODY(TR(
+    #             TD('_icode.item_code'),
+    #             TD('_icode.item_description.upper()'),
+    #             TD('_icode.group_line_id.group_line_name'),
+    #             TD('_icode.brand_line_code_id.brand_line_name'),
+    #             TD('_icode.uom_value'),                
+    #             TD('_iprice.retail_price'),
+    #             # TD(locale.format('%.3F',_whole_sale or 0, grouping = True)),
+    #             TD(0),
+    #             TD(0))))
+    return dict(table = 'table')
 
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)

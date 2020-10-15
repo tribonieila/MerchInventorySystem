@@ -277,7 +277,7 @@ def suplr_add_form():
                 email_adddress = form.vars.email_address,
                 status_id = form.vars.status_id)
             
-                      
+            pre.update_record(serial_key = _skey)
             response.flash = 'RECORD SAVE'
         elif form.errors:
             response.flash = 'ENTRY HAS ERROR'
@@ -850,9 +850,19 @@ def groupline_mas():
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#'))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('groupline_edit_form', args = n.GroupLine.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#'))
-        supp_lnk = A(I(_class='fas fa-paper-plane'), _title='Go To Associates', _type='button  ', _role='button', _class='btn btn-icon-toggle', _target='#', _href=URL('sbgplne_lnk', args = n.GroupLine.id))
+        supp_lnk = A(I(_class='fas fa-paper-plane'), _title='Go To Associates', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sbgplne_lnk', args = n.GroupLine.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk, supp_lnk)
-        row.append(TR(TD(n.GroupLine.id),TD(n.GroupLine.prefix_id.prefix,n.GroupLine.group_line_code),TD(n.GroupLine.group_line_name),TD(n.Supplier_Master.supp_code),TD(n.Supplier_Master.supp_name),TD(n.GroupLine.status_id.status),TD(btn_lnk)))
+        if n.Supplier_Master.supp_name == None:
+            _splr_name = 'None'
+            _splr_code = 'None'
+        else:
+            _splr_name = n.Supplier_Master.supp_name,', ',n.Supplier_Master.supp_sub_code
+            _splr_code = n.Supplier_Master.prefix_id.prefix,n.Supplier_Master.supp_code
+        
+        row.append(TR(
+            TD(n.GroupLine.id),
+            TD(n.GroupLine.prefix_id.prefix,n.GroupLine.group_line_code),
+            TD(n.GroupLine.group_line_name),TD(_splr_code),TD(_splr_name),TD(n.GroupLine.status_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped')    
     return dict(table = table)
@@ -867,12 +877,14 @@ def groupline_add_form():
         ctr_val = pre.prefix + _ckey
         form = SQLFORM.factory(        
             Field('group_line_name', 'string', length=50, requires=[IS_UPPER(), IS_NOT_IN_DB(db, 'GroupLine.group_line_name')]),
-            Field('supplier_id', 'reference Supplier_Master', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero =  'Choose Supplier')),
+            Field('supplier_id', 'reference Supplier_Master', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s, %(supp_sub_code)s', zero =  'Choose Supplier')),
             Field('status_id', 'reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
             response.flash = 'RECORD SAVE'
             db.GroupLine.insert(prefix_id = pre.id, supplier_id = form.vars.supplier_id,group_line_code = _ckey, group_line_name = form.vars.group_line_name,status_id = form.vars.status_id)
             pre.update_record(serial_key = _skey)
+            _grp_lne = db(db.GroupLine.group_line_code == int(_ckey)).select().first()
+            db.Sub_Group_Line.insert(group_line_code_id = _grp_lne.id,supplier_code_id = _grp_lne.supplier_id, status_id = 1)
         elif form.errors:
             response.flash = 'ENTRY HAS ERRORS'
         else:
@@ -888,6 +900,8 @@ def groupline_edit_form():
     form = SQLFORM(db.GroupLine, request.args(0), deletable = True)
     if form.process().accepted:
         response.flash = 'RECORD SAVE'
+        _id = db(db.GroupLine.id == request.args(0)).select().first()
+        db.Sub_Group_Line.insert(group_line_code_id = _id.id,supplier_code_id = _id.supplier_id,status_id = 1)
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
     else:
@@ -897,7 +911,7 @@ def groupline_edit_form():
     ctr = 0
     for n in db(db.Supplier_Master.id == ctr_val.supplier_id).select(orderby = db.Supplier_Master.id):   
         ctr+=1     
-        row.append(TR(TD(ctr),TD(n.dept_code_id.dept_name),TD(n.supp_code, ' - ' ,n.supp_name),TD(n.status_id.status)))
+        row.append(TR(TD(ctr),TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),TD(n.supp_code, ' - ' ,n.supp_name,', ', n.supp_sub_code),TD(n.status_id.status)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class= 'table')
     return dict(form = form, ctr_val = ctr_val.prefix_id.prefix+ctr_val.group_line_code, table = table)
@@ -908,15 +922,13 @@ def sbgplne_lnk():
     _id = db(db.GroupLine.id == request.args(0)).select().first()
     session.id = _id
     form = SQLFORM.factory(
-        Field('supplier_code_id', 'reference Supplier_Master', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s', zero =  'Choose Supplier')),
+        Field('supplier_code_id', 'reference Supplier_Master', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s, %(supp_sub_code)s', zero =  'Choose Supplier')),
         Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
     if form.process().accepted:
         response.flash = 'RECORD SAVE'
         db.Sub_Group_Line.insert(group_line_code_id = ctr_val,supplier_code_id = form.vars.supplier_code_id,status_id = form.vars.status_id)
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
-    else:
-        response.flash = 'PLEASE FILL OUT THE FORM'
 
     row = []
     thead = THEAD(TR(TH('#'),TH('Supplier Code'),TH('Supplier Name'), TH('Status'),TH('Action')))
@@ -926,7 +938,7 @@ def sbgplne_lnk():
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('sbgplne_lnk_edit_form', args = n.Sub_Group_Line.id))
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', callback=URL('sbgplne_lnk_delete_form', args = n.Sub_Group_Line.id))
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
-        row.append(TR(TD(n.Sub_Group_Line.id),TD(n.Sub_Group_Line.supplier_code_id.supp_code),TD(n.Supplier_Master.supp_name),TD(n.Sub_Group_Line.status_id.status),TD(btn_lnk)))
+        row.append(TR(TD(n.Sub_Group_Line.id),TD(n.Sub_Group_Line.supplier_code_id.supp_code),TD(n.Supplier_Master.supp_name,', ', n.Supplier_Master.supp_sub_code),TD(n.Sub_Group_Line.status_id.status),TD(btn_lnk)))
     tbody = TBODY(*row)
     table = TABLE(*[thead,tbody],_class='table table-striped', _id='tblSG')    
     return dict(form = form, table=table, ctr_val = ctr_val)
