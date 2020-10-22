@@ -11,7 +11,7 @@ $(document).ready(function(){
     var $tblrows = $("#tbltrnx tbody tr");
     $tblrows.each(function(index){
         var $tblrow = $(this);
-        var add = $("#added_discount").val();
+        
         $tblrow.find(".quantity, .pieces, .discount_percentage, .pass").on("change", function(){                                    
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
@@ -25,10 +25,10 @@ $(document).ready(function(){
             
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var pri = (parseFloat(who) * (100 - parseFloat(dis)) / 100) + parseFloat(tax)
-            var npr = parseFloat(pri) * (100 - parseFloat(dis)) / 100            
+            var npr = parseFloat(pri) * (100 - parseFloat(dis)) / 100
             var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10) 
-            
+            console.log(qty, pcs, pri, dis, net, sub );
+            var add = $("#added_discount").val();
             if(parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
                 return alert("Please enter positive integer.");
@@ -43,41 +43,37 @@ $(document).ready(function(){
             }                                              
             
             if(!isNaN(sub)){                
-                $tblrow.find(".net_price").val(pri.toFixed(2));
-                $tblrow.find(".total_amount").val(sub.toFixed(2));
-
-                
                 _discount = 0
                 var grandTotal = 0;
+                var NetAmount = 0;
+                $tblrow.find(".net_price").val(npr.toLocaleString());
+                $tblrow.find(".total_amount").val(sub.toLocaleString());  
                 $(".total_amount").each(function(){
-                    var stval = parseFloat($(this).val());
+                    var stval = parseFloat($(this).val().replace(/,/g,""));
                     grandTotal += isNaN(stval) ? 0 : stval;
-                });
-                
-                $(".grand_total").val(grandTotal.toFixed(2));                
-            }
-            var add = $("#added_discount").val();
-            _discount = parseFloat(grandTotal) - parseFloat(add)
-            $(".net_amount").val(_discount.toFixed(2));                           
-
+                });                
+                $(".grand_total").val(grandTotal.toLocaleString());
+                NetAmount = parseFloat(grandTotal) - parseFloat(add);      
+                // console.log(grandTotal, add, NetAmount);                          
+                $(".net_amount").val(NetAmount.toLocaleString());
+            }                         
         });
-    });
-    $(".table").DataTable();
+    });    
     $('.pass').click(function(){
         console.log("save click");
     });    
     $("#added_discount").change(function(){
-        var _grand_total = $(".grand_total").val();
-        var _discount = $("#added_discount").val();                
-        var _net_amount = 0;
+        
+        var _discount = $("#added_discount").val();                        
         if (isNaN(_discount) || _discount < 0 || _discount > 1) {
             text = "Discount not valid"
             $("#added_discount").val(0);
         } else {
-            text = "Discount Added"                       
-            _net_amount = parseFloat(_grand_total) - parseFloat(_discount);
-            $(".net_amount").val(_net_amount.toFixed(2));       
-            console.log(_grand_total, _discount, _net_amount);
+            text = "Discount Added"                 
+            var _grand_total = $(".grand_total").val().replace(/,/g,"");
+            var _net_amount = parseFloat(_grand_total) - parseFloat(_discount);
+            $("#net_amount").val(_net_amount.toLocaleString());                 
+            console.log(_net_amount, _grand_total, _discount)  
         }
         document.getElementById("error").innerHTML = text;
     });

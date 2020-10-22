@@ -1,8 +1,34 @@
+<style>
+    #toast-container > div {
+    /* width: 400px; */
+    /* height: 90px; */
+    opacity:1;
+    }
+    </style>
+    
 {{=table}}
 
+{{=form.custom.begin}}
+<table class="table" id="FormTable">
+    <tr class="active">            
+        <td>Item Code</td>
+        <td>Quantity</td>
+        <td>Pieces</td>
+        <td width=20%>Category</td>
+        <td></td>            
+    </tr>
+    <tr>
+        <td>{{=form.custom.widget.item_code}} </td>
+        <td>{{=form.custom.widget.quantity}}</td>
+        <td>{{=form.custom.widget.pieces}}</td>
+        <td><div id="cat_id"></div></td>
+        <td><input class="btn btn-success" type="submit" value="+ ADD" id="add" ></td>
+    </tr>        
+</table>
+{{=form.custom.end}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
-$(document).ready(function(){
+$(document).ready(function(){     
     $(".unit_price, .total_amount, .grand_total").prop("readonly", true);
     var $tblrows = $("#tblSRT tbody tr");
 
@@ -58,7 +84,7 @@ $(document).ready(function(){
         var _id = $(this).attr('data-id');
         bootbox.confirm({
             size: "small",
-            message: "Would you like to delete this record?",
+            message: "Are you sure you want to delete the selected record?",
             buttons: {
                 confirm: {
                     label: "Yes",
@@ -71,8 +97,7 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('inventory','stk_req_del')}}" + '/'+ _id);                                
-                    location.reload();   
+                    ajax("{{=URL('inventory','stk_req_del')}}" + '/'+ _id);                                                    
                 }
 
             }
@@ -82,7 +107,7 @@ $(document).ready(function(){
     
     // $('#newReqPanel').hide();
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        
-        ajax('{{=URL('itm_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
+        ajax('{{=URL('item_description')}}', ['item_code','dept_code_id','stock_source_id'], '_item_code_description');
         ajax('{{=URL('category_option')}}',['item_code', 'stock_destination_id'],'cat_id');
     });
     $('#btnrewReq').click(function(){

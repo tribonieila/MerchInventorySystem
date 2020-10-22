@@ -141,12 +141,12 @@ $(document).ready(function(){
     });
 
     $('#btnSubmit').click(function(){
-        ajax('{{=URL('procurement','put_purchase_request_submit_id', args = request.args(0))}}',['currency_id','exchange_rate','landed_cost','custom_duty_charges','selective_tax','other_charges','remarks']);
+        ajax('{{=URL('procurement','put_purchase_request_submit_id', args = request.args(0))}}',['mode_of_shipment','trade_terms_id','supplier_reference_order','currency_id','exchange_rate','landed_cost','custom_duty_charges','selective_tax','other_charges','remarks']);
         window.location.replace("{{=URL('inventory','account_grid')}}")
     });
 
     $('#btnSave').click(function(){
-        ajax('{{=URL('procurement','put_purchase_request_save_id', args = request.args(0))}}',['currency_id','exchange_rate','landed_cost','custom_duty_charges','selective_tax','other_charges','remarks']);
+        ajax('{{=URL('procurement','put_purchase_request_save_id', args = request.args(0))}}',['mode_of_shipment','trade_terms_id','supplier_reference_order','currency_id','exchange_rate','landed_cost','custom_duty_charges','selective_tax','other_charges','remarks']);
         
         toastr["success"]("Purchase receipt save...")      
     });

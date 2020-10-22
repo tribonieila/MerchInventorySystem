@@ -10,7 +10,7 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Supplier/Acct Code</label>
-                    <div class="col-sm-8">{{=_pr.supplier_code_id.supp_name}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_code_id.supp_sub_code}}</div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -36,7 +36,7 @@
             <div class="col-md-4">
                 <div class="form-group">                    
                     <label class="col-sm-4 control-label">Supplier Invoice</label>
-                    <div class="col-sm-8">{{=_pr.supplier_invoice}}</div>
+                    <div class="col-sm-8">{{=_pr.supplier_reference_order}}</div>
                 </div>
             </div>
         </div>   
@@ -85,7 +85,7 @@
 
                     {{ pass }}
                 {{pass}}
-                <button class="btn btn-danger" type="button" onclick=onReturn()>Return</button>
+                <button class="btn btn-danger" type="button" onclick=onReturn()>Close</button>
             </div>
         </div>                 
     
@@ -104,6 +104,7 @@
     
         $("#btnReject").click(function(){
             ajax("{{=URL('procurement','purchase_receipt_rejected', args = request.args(0),extension=False)}}");            
+            window.location.replace("{{=URL('inventory','account_manager_workflow', extension=False)}}")
         })
     })
     function onReturn(){

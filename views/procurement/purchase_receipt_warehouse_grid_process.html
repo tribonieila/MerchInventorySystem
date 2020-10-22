@@ -20,7 +20,7 @@
 <script>
 $(document).ready(function(){
     $("#btnReturn").click(function(){        
-        window.location.replace("{{=URL('inventory','str_kpr_grid')}}") 
+        window.history.back();
     });
     $('.cut').click(function(){
         var _id = $(this).attr('data-id');

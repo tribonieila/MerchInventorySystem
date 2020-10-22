@@ -24,8 +24,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Stock Request No</label>
-                                <div class="col-sm-8">                                                  
-                                    <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <div class="col-sm-8">                                                                                      
                                     <input type="text" class="form-control" value="{{=form.custom.widget.stock_request_no_id}}{{=form.custom.widget.stock_request_no}}" readonly >
                                     <p class="help-block">autogenerate</p>
                                 </div>                           
@@ -132,6 +131,7 @@
                                     {{ else: }}
                                         <input class="btn btn-success" type="submit" id="btnSubmit" value="submit">                                         
                                     {{ pass }}
+                                    <button class="btn btn-warning" type="button" onclick="onExit()">Exit</button>
                                 </div>                            
                             </div>                    
                         </div>
@@ -146,3 +146,10 @@
         </div>
     </div>
 </div>
+
+<script>
+
+    function onExit(){
+        window.history.back();
+    }
+</script>

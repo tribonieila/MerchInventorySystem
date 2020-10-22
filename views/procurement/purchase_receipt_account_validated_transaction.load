@@ -227,9 +227,12 @@ $(document).ready(function(){
     });
 
     $('#Purchase_Request_landed_cost').change(function(){
-        if ($('#Purchase_Request_landed_cost').val() < $('#Purchase_Request_exchange_rate').val()) {
+        var _landed_cost = $('#Purchase_Request_landed_cost').val()
+        var _exchan_rate = $('#Purchase_Request_exchange_rate').val()
+        if (parseFloat(_landed_cost) < parseFloat(_exchan_rate)) {
             lanAlert();
         } else {
+            $(':button').prop('disabled', false); // Disable all the buttons
             var _for = $('#net_amount').val();
             var _pur = $('#Purchase_Request_landed_cost').val();
             var _res = parseFloat(_for.replace(/,/g, '')) * parseFloat(_pur.replace(/,/g, ''))
@@ -270,12 +273,13 @@ $(document).ready(function(){
     }
 
     
-    function lanAlert(){
+    function lanAlert(){        
         bootbox.alert({
             size: "small",
             message: "Landed Cost Value must not less than Exchange Rate Value.",
             callback: function(){ 
-                $('#Purchase_Request_exchange_rate').val(3.64);
+                //$('#Purchase_Request_exchange_rate').val(3.64);
+                $(':button').prop('disabled', true); // Disable all the buttons
             }
         });        
     }

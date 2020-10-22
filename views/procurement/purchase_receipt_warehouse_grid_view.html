@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">PURCHASE ORDER FORM</span>
+            <span class="card-title">WAREHOUSE PURCHASE RECEIPT</span>
         </div>
         <div class="card-body tab-content">                                            
             <div class="form-horizontal">   
@@ -136,15 +136,9 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">                         
-                                {{ if _id.status_id == 18:}}
-                                <input class="btn btn-success" type="submit" value="submit" disabled>
-                                <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt" disabled>
-                                {{else:}}
-                                <input class="btn btn-success" type="submit" value="submit" >                                        
-                                <input class="btn btn-warning" type="button" value="receipt" id="btnReceipt">
-                                {{pass}}
+ 
                                 {{=form.custom.end}}
-                                <button class="btn btn-danger" type="button" onclick=onReturn()>Return</button>
+                                <button class="btn btn-danger" type="button" onclick=onReturn()>Abort</button>
                             </div>        
                         </div>  
                     </div>
@@ -169,6 +163,6 @@
     });
     
     function onReturn(){
-        window.location.assign("{{=URL('inventory','str_kpr_grid')}}")
+        window.history.back();
     }
 </script>

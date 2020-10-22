@@ -360,9 +360,9 @@
 
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_pro.version_no}}</span></span></a>
 					<ul>
-						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
 						<li><a href="{{=URL('procurement', 'direct_purchase_receipt_grid')}}" ><span class="title">Direct Purchase Receipt</span></a></li>	
 						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>
@@ -446,9 +446,9 @@
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_pro.version_no}}</span></span></a>
 				
 					<ul>
-						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
 						<li><a href="{{=URL('procurement', 'get_transaction_reports_grid',args = 1)}}" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 					</ul>
@@ -472,15 +472,15 @@
 			<ul id="main-menu" class="gui-controls">
 				<li><a class="active"><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">Dashboard</span></a></li>
 				<li><a href="{{=URL('inventory', 'inventory_manager')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW mngt</span></a></li>
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-print"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
-						<li><a href="#" ><span class="title">Purchase Request</span></a></li>
-						<li><a href="#" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement','get_workflow_reports', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>
-						<li><a href="#" ><span class="title">Stock Adjustment</span></a></li>
-						<li><a href="#" ><span class="title">Stock Request</span></a></li>
-						<li><a href="#" ><span class="title">Sales Order</span></a></li>
-						<li><a href="#" ><span class="title">Sales Return</span></a></li>						
+						<li><a href="{{=URL('inventory', 'stock_adjustment_manager_grid')}}" ><span class="title">Stock Adjustment</span></a></li>	
+						<li><a href="{{=URL('inventory', 'get_stock_request_grid.html')}}" ><span class="title">Stock Request</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 					</ul>
 				</li>
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>
@@ -518,9 +518,9 @@
 
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_pro.version_no}}</span></span></a>
 					<ul>
-						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
 						<li><a href="#" ><span class="title">Direct Purchase Receipt</span></a></li>	
 						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>

@@ -1,46 +1,33 @@
-    {{=table}}
-    {{=form.custom.begin}}
-    <div class="form-horizontal">   
-    <div class="row">
-        <div class="col-md-3">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Item Code</label>
-                <div id="_dept_code_id"></div>
-                <div class="col-sm-8">
-                    {{=form.custom.widget.item_code}}
-                </div>
-            </div>   
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Quantity</label>
-                <div class="col-sm-8">{{=form.custom.widget.quantity}}</div>
-            </div>   
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Pieces</label>
-                <div class="col-sm-8">{{=form.custom.widget.pieces}}</div>
-            </div>   
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Category</label>
-                <div class="col-sm-8">
-                    <div id="cat_id"></div>
-                     
-                </div>
-            </div>   
-        </div>        
-        <div class="col-md-2">
-            <input class="btn btn-success" type="submit" value="ADD" id="add" >            
-        </div>            
-    </div>
-    </div>
-    <hr>
-    {{=form.custom.end}}
+<style>
+#toast-container > div {
+/* width: 400px; */
+/* height: 90px; */
+opacity:1;
+}
+</style>
+<hr>
+{{=table}}    
+{{=form.custom.begin}}
+<table class="table">
+    <tr class="active">            
+        <td>Item Code</td>
+        <td>Quantity</td>
+        <td>Pieces</td>
+        <td width=20%>Category</td>
+        <td></td>            
+    </tr>
+    <tr>
+        <td>{{=form.custom.widget.item_code}} </td>
+        <td>{{=form.custom.widget.quantity}}</td>
+        <td>{{=form.custom.widget.pieces}}</td>
+        <td><div id="cat_id"></div></td>
+        <td><input class="btn btn-success" type="submit" value="+ ADD" id="add" ></td>
+    </tr>        
+</table>
+{{=form.custom.end}}
     <div id ="desc" ></div>
-       
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
@@ -57,23 +44,28 @@ $(document).ready(function(){
             var pri = $tblrow.find("[name=unit_price]").val();
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var sub = parseInt(itm, 10) * parseFloat(ppp);                        
-            console.log(itm, ppp, sub);
-            if (parseInt(qty) < parseInt(0)){ 
-                $("#btnUpdate").attr('disabled','disabled');
-                return alert("Please enter a positive integer.");
-            } else if (parseInt(pcs) < parseInt(0)){   
-                $("#btnUpdate").attr('disabled','disabled');                          
-                return alert("Please enter a positive integer.");
+            var sub = parseInt(itm, 10) * parseFloat(ppp);         
+                     
+            // console.log(itm, ppp, sub);
+            if (parseInt(qty) < parseInt(0)){                 
+                onError()
+            } else if (parseInt(pcs) < parseInt(0)){                   
+                onError()
+            } else if (parseInt(pcs) >= parseInt(uom)) {
+                $("#btnsubmit").attr('disabled','disabled');
+                $("#btnUpdate").attr('disabled','disabled');    
+                toastr['error']('Pieces value should not be more than or equal to UOM value')                                          
             } else {
+                $("#btnsubmit").removeAttr('disabled');
                 $("#btnUpdate").removeAttr('disabled');
             }         
-            if (parseInt(pcs) >= parseInt(uom)){
-                $("#btnUpdate").attr('disabled','disabled');                          
-                return alert("Pieces value should not be more than or equal to UOM value");
-            } else {
-                $("#btnUpdate").removeAttr('disabled');
-            }
+            // if (parseInt(pcs) >= parseInt(uom)){
+            //     $("#btnUpdate").attr('disabled','disabled');                          
+            //     return alert("Pieces value should not be more than or equal to UOM value");
+            // } else {
+            //     $("#btnUpdate").removeAttr('disabled');
+            // }
+              
             if(!isNaN(sub)){                
                 $tblrow.find(".total_amount").val(sub.toFixed(2));                
                 var grandTotal = 0;
@@ -81,7 +73,7 @@ $(document).ready(function(){
                     var stval = parseFloat($(this).val());
                     grandTotal += isNaN(stval) ? 0 : stval;                    
                 });
-                $(".grand_total").val(grandTotal.toFixed(2));     
+                $(".grand_total").val(grandTotal.toLocaleString());     
                                  
             }                 
         });
@@ -89,6 +81,11 @@ $(document).ready(function(){
 });
 </script>
 <script>
+    function onError(){
+        $("#btnUpdate").attr('disabled','disabled');
+        $("#btnsubmit").attr('disabled','disabled');
+        toastr['error']('Negative value not allowed.')      
+    }
 
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);
@@ -129,7 +126,7 @@ $(document).ready(function(){
         console.log('delete',_id);
         bootbox.confirm({
             size: "small",
-            message: "Would you like to delete this record?",
+            message: "Are you sure you want to delete the selected record?",
             buttons: {
                 confirm: {
                     label: "Yes",
@@ -142,7 +139,8 @@ $(document).ready(function(){
             },
             callback: function (result) {
                 if (result) {
-                    ajax("{{=URL('inventory','del_item')}}" + '/'+ _id);                                        
+                    ajax("{{=URL('inventory','del_item')}}" + '/'+ _id);           
+                    toastr['success']('Item code deleted.')                             
                 }
             }
         })

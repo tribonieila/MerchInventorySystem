@@ -3,9 +3,9 @@
 {{=form.custom.begin}}
 <div class="row">    
     <table class="table">
-        <tr><td>Item Code</td><td>Quantity</td><td>Pieces</td><td>Discount %</td><td>Most Recent Cost(FC)</td><td>Category</td><td></td></tr>
+        <tr class="active"><td>Item Code</td><td>Quantity</td><td>Pieces</td><td>Discount %</td><td>Most Recent Cost(FC)</td><td>Category</td><td></td></tr>
         <tr>
-            <td>{{=form.custom.widget.item_code}}</td>
+            <td>{{=form.custom.widget.item_code}}</td> 
             <td>{{=form.custom.widget.quantity}}</td>
             <td>{{=form.custom.widget.pieces}}</td>
             <td>{{=form.custom.widget.discount_percentage}}</td>
@@ -96,7 +96,7 @@ $(document).ready(function(){
             console.log(foreign, var_discount, _exchange_rate, var_local)
         }
 
-    });
+    }); 
     $(document).on('paste', '#no_table_item_code', function(e) {
         window.setTimeout(function() {
         var withoutSpaces = $("#no_table_item_code").val();
@@ -117,7 +117,7 @@ $(document).ready(function(){
     }    
 
     function onNegativeVal(){
-        toastr["error"]("Nagative value not allowed!")
+        toastr["error"]("Negative value not allowed!")
     }
 
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){        

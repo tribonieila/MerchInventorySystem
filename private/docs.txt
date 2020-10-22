@@ -54,6 +54,22 @@ Sales:
 
 Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
 
+- Ver.1.0.14 - 21/10/2020, Purchase Request
+    Issues:
+    - Supplier /Acct Code – display the code not the name. Resolved.
+    - Invoice Number is empty – empty Invoice Number is not allowed (Check on Manoj Data entry and validate from there. Resolved.
+    - Reject Button is not working (should go back to Manoj user and reverse back the Workflow Status for Manoj). Resolved.
+    - The above error comes when I click on the Generate Purchase Order action button. NOTE: I change the trade terms from CIF into EX-WORKS when I prepared the Purchase Request so no need for Insurance Proposal. Resolved.
+    - Rename Exit button to Close button. Resolved.
+- Ver.1.0.13 - 18/10/2020, Purchase Request
+    Issues:
+    - Amend  PROCEED > Generate WPR. Resolved.
+    - Amend RETURN > Abort. Resolved.
+    - Under View Warehouse Purchase Receipt – change the caption into PURCHASE ORDER FORM > WAREHOUSE PURCHASE RECEIPT. Resolved.
+    - Remove SUBMIT,RECEIPT and RETURN OPTION, instead put only CLOSE button. Resolved.
+    - User Manoj View Purchase Receipt Action – add CLOSE Button to go back to the Workflow grid. Resolved.
+    - Manoj Editing when inputting the Landed Cost Rate – validation is not working as per the message. (Internet Browser Version Issues)
+
 - Ver.1.0.12 - 14/10/2020, Purchase Request
     Issues:
     - Make sure only the Purchase Receipt “Submit” by Hakim will be visible to Accounts User for posting. Resolved.

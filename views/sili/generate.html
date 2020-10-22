@@ -1,5 +1,9 @@
 {{extend 'layout.html'}}
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/notie@4.3.1/dist/notie.min.css">
+
+<script src="https://unpkg.com/notie"></script>
 <button type="button" class="btn btn-primary" onclick=toast()>Toast</button>
+<button type="button" class="btn btn-warning" onclick=Notie()>Notie</button>
 <button type="button" class="btn btn-primary" onclick=init_PNotify()>pnotify</button>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.js"></script> -->
 
@@ -33,7 +37,13 @@
   init_PNotify();
 </script>
 <script>
-
+  
+  
+  
+  
+  function Notie(){
+    notie.alert({ text: '<table class="table table-bordered"><tr><td>Heading<td></tr><tr><td>Row 1</td><tr/></table>' , position:'bottom'})
+  }
   function pnotify(){
     PNotify.info({
       title: 'New Thing',
@@ -45,13 +55,12 @@
     // }    
   }
   function toast(){
-    toastr["info"]("{{=table}}")
     toastr.options = {
       "closeButton": false,      
       "debug": false,
       "newestOnTop": false,
       "progressBar": false,
-      "positionClass": "toast-top-full-width",
+      "positionClass": "toast-bottom-full-width",
       "preventDuplicates": false,
       "onclick": null,
       "showDuration": "300",
@@ -64,6 +73,8 @@
       "hideMethod": "fadeOut",
       "tapToDismiss": false
     }
+    toastr["info"]("{{=table}}")
+
   }
 
 </script>
@@ -75,3 +86,4 @@
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.0.0/pnotify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
