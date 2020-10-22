@@ -18,9 +18,9 @@ def get_procurement_grid_query_id(_query):
     elif int(_query) == 3: # purchase receipt        
         return db(db.Purchase_Receipt.status_id == 21).select(orderby = db.Purchase_Receipt.id)
     elif int(_query) == 4: # direct purchase receipt        
-        return db(db.Purchase_Request.status_id == 21).select(orderby = db.Purchase_Request.id)
+        return db().select(orderby = db.Direct_Purchase_Receipt.id)
     elif int(_query) == 5: # purchase return
-        return db(db.Purchase_Request.status_id == 21).select(orderby = db.Purchase_Request.id)
+        return db().select(orderby = db.Purchase_Return.id)
     else:
         return None
 
@@ -5717,7 +5717,7 @@ def get_transaction_reports_grid():
     if int(request.args(0)) == 1:
         title = 'Purchase Return Reports'
         row = []
-        head = THEAD(TR(TH('Date'),TH('Purchase Return No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-primary'))    
+        head = THEAD(TR(TH('Date'),TH('Purchase Return No.'),TH('Department'),TH('Location'),TH('Adjustment Type'),TH('Amount'),TH('Status'),TH('Action Required'),TH('Action'),_class='bg-info'))    
         _query = db(db.Purchase_Return.status_id == 15).select(orderby = db.Purchase_Return.id)
         for n in _query:
             view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('procurement','get_purchase_return_id', args = n.id, extension = False))
