@@ -2,16 +2,7 @@
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
     <div class="col-md-12">
         <div class="card card-underline">
-            <div class="card-head">
-                
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                {{if auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):}}
-                {{else:}}
-                    <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_form')}}";>+ ADD NEW</a></li>
-                    <li class="active"><a href="#">BROWSE</a></li>
-                {{pass}}
-                </ul>
-                
+            <div class="card-head">                
                 <span class="card-title">Sales Invoice Master Report Grid</span>
             </div>
             <div class="card-body tab-content">            

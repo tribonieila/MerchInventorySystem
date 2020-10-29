@@ -149,7 +149,8 @@
 
 <script>
 
-    function onExit(){
-        window.history.back();
+    function onExit(){        
+        window.location.replace('{{=URL('inventory','get_fmcg_workflow_grid')}}')
+        
     }
 </script>

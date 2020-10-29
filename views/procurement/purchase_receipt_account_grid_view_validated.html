@@ -121,8 +121,10 @@
 <script>
 $(document).ready(function(){
     if ($("#Purchase_Request_landed_cost").val() > 0){
+        console.log('ok na')
         $('#btnSave').removeAttr('disabled');                         
     } else {        
+        console.log('dae ok na')
         $("#btnSubmit, #btnSave, #btnDraft").attr('disabled','disabled')
     }   
 
@@ -133,7 +135,6 @@ $(document).ready(function(){
             
             $('#btnSave').attr('disabled','disabled');
             
-            // $('#TrnxDetails').slideUp('slow');            
         }        
     });
     $("#btnValidate").click(function(){        

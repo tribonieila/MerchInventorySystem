@@ -397,6 +397,24 @@ db.define_table('User_Location',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
 
+db.define_table('Back_Office_User',
+    Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),        
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section'),('A','Food/Non-Food Section')],zero ='Choose Section')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
+db.define_table('Sales_Manager_User',
+    Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),        
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section'),('A','Food/Non-Food Section')],zero ='Choose Section')),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
 db.define_table('User_Department',
     Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
     Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
@@ -1159,7 +1177,8 @@ db.define_table('Sales_Return',
     Field('accounts_id', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False),#approve/reject
     Field('accounts_date','datetime',update=request.now, writable = False, readable = True),
 
-    Field('remarks', 'string'),    
+    Field('remarks', 'string'),   
+    Field('section_id','string',length=25,requires = IS_EMPTY_OR(IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section'))),
     Field('sales_man_id', 'reference Sales_Man', ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Sales_Man.id, '%(name)s', zero = 'Choose Salesman')),   
     Field('status_id','reference Stock_Status',ondelete = 'NO ACTION', requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
     Field('archives', 'boolean', default = False),    
@@ -1717,6 +1736,7 @@ db.define_table('Purchase_Request',
     Field('selected','boolean', default = False), 
 
     Field('consolidated','boolean', default = False),
+    Field('save_as_draft','boolean', default = False), # manoj save as draft
     Field('partial','boolean', default = False), 
     Field('received','boolean', default = False),
     Field('archives', 'boolean', default = False),   
@@ -2114,7 +2134,9 @@ db.define_table('Direct_Purchase_Receipt',
     Field('purchase_receipt_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('purchase_receipt_no', 'integer', writable = False),    
     Field('purchase_receipt_date', 'date', writable = False),    
+    Field('purchase_order_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('purchase_order_no', 'string', length = 25, requires=IS_NOT_EMPTY() ),    
+    Field('purchase_receipt_date_approved','date', writable = False),
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
     Field('location_code_id','reference Location', ondelete = 'NO ACTION', label = 'Stock Source', requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),
     Field('supplier_reference_order','string', length = 25),    
@@ -2476,7 +2498,11 @@ db.define_table('Version_Control',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False))
 
-
+db.define_table('Daily_Activity',
+    Field('transaction','string',length=50),
+    Field('activities','string'),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),    
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
 #---------------------------------------------------------
 # db.define_table('General_Ledger',
 

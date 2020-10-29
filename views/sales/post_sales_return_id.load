@@ -1,0 +1,55 @@
+<hr>
+{{=form.custom.begin}}
+<table class="table">
+    <tr class="active table-bordered">
+        <td>Item Code</td>
+        <td>Quantity</td>
+        <td>Pieces</td>
+        <td>Discount %</td>
+        <td colspan="2">Category</td>
+        
+    </tr>
+    <tr>
+        <td>{{=form.custom.widget.item_code}}</td>
+        <td>{{=form.custom.widget.quantity}}</td>
+        <td>{{=form.custom.widget.pieces}}</td>
+        <td>{{=form.custom.widget.discount_percentage}}</td>
+        <td>{{=form.custom.widget.category_id}}</td>
+        <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"></td>
+    </tr>
+
+</table>
+
+{{=form.custom.end}}
+<div id = "_item_code_description"></div>      
+
+<script>
+$(document).ready(function(){
+
+    $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+        
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+     
+    $('#no_table_item_code').change(function(){
+        ajax('{{=URL('sales_return_item_code_description')}}', ['item_code'], '_item_code_description');        
+        return false;
+    });
+      
+
+});
+</script>

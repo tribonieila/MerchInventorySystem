@@ -187,10 +187,11 @@ $(document).ready(function(){
 
     function report(){                
         window.open('{{=URL('sales','sales_order_delivery_note_report_store_keeper', args = request.args(0))}}');
+        window.location.replace("{{=URL('inventory','str_kpr_grid')}}")
     }
 
     function redirect(){
-        window.location.replace("{{=URL('inventory','str_kpr_grid')}}")
+        
     }
     function Cancel(){
         // console.log("Cancelled transaction...");

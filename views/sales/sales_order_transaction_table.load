@@ -1,4 +1,27 @@
 {{=table}}
+{{=form.custom.begin}}
+<table class="table">
+    <tr class="active table-bordered">
+        <td>Item Code</td>
+        <td>Quantity</td>
+        <td>Pieces</td>
+        <td>Discount %</td>
+        <td colspan="2">Category</td>
+        
+    </tr>
+    <tr>
+        <td>{{=form.custom.widget.item_code}}</td>
+        <td>{{=form.custom.widget.quantity}}</td>
+        <td>{{=form.custom.widget.pieces}}</td>
+        <td>{{=form.custom.widget.discount_percentage}}</td>
+        <td>{{=form.custom.widget.category_id}}</td>
+        <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"></td>
+    </tr>
+
+</table>
+
+{{=form.custom.end}}
+<div id = "_item_code_description"></div>    
 <input type="text" class="form-control" id="var_total_amount" name="var_total_amount" value={{=_total_amount}} hidden>
 <input type="text" class="form-control" id="var_discount_added" name="var_discount_added" hidden>
 <input type="text" class="form-control" id="var_net_amount" name="var_net_amount" value={{=_total_amount_after_discount}} hidden>
@@ -77,10 +100,18 @@ $(document).ready(function(){
         }
         document.getElementById("error").innerHTML = text;
     });
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces, #no_table_discount_percentage').change(function(){
+        ajax('{{=URL('item_code_description')}}', ['item_code'], '_item_code_description');        
+       return false; 
+    });    
 });
 </script>
 
 <script>
+    function onReadOnly(){        
+        $('input[type="number"]').prop('readonly', true);                
+        document.getElementById("btnUpdate").disabled = true;
+    }
 function transaction_update(){
     toastr.options={"positionClass": "toast-bottom-right"}
     toastr["success"]("Transaction updated...")

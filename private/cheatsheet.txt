@@ -1,0 +1,44 @@
+$('input[type="number"]').prop('readonly', true);
+$(':text').prop('readonly', true);
+$(':input').attr('readonly','readonly');
+$('#myFormID :input').attr('readonly','readonly');
+$('yourFormSelector input[type="text"]').prop('readonly', true);
+$('.classname').attr('readonly', 'readonly');
+$('.classname').prop('readonly', true);
+$('.form-control').prop('readonly', true);
+$('select.readonly option:not(:selected)').attr('disabled',true);
+$('select:not([readonly]) option').removeAttr('disabled');
+
+Using location.replace() will redirect you, but without saving the history of the previous page. This is better to use when a form is submitted.
+
+But when you want to keep your history you have to use location.href=//path.
+
+Examples:
+
+// Form with steps
+document.getElementById('#next').onclick = function() {
+   window.location.href='/step2' // Iteration of steps;
+}
+
+// Go to next step
+document.getElementById('#back').onclick = function() {
+   window.history.back();
+}
+
+// Finish
+document.getElementById('#finish').onclick = function() {
+   window.location.href = '/success';
+}
+
+// On success page
+window.onload = function() {
+    setTimeout(function() {
+       window.location.replace('/home'); // I can't go back to success page by pressing the back button
+    },3000);
+}
+
+if ( fup.files[0].type === 'application/pdf' ) {
+    console.log( 'It is validated!' )
+}
+
+window.open("https://www.w3schools.com");

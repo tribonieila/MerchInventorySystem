@@ -1,44 +1,45 @@
 {{=table}} 
+{{=LOAD('sales','post_sales_return_id.load', ajax = True, args = request.args(0))}}
 <input type="text" class="form-control" id="var_total_amount" name="var_total_amount" value="0" hidden>
 <input type="text" class="form-control" id="var_discount_added" name="0" hidden>
 <input type="text" class="form-control" id="var_net_amount" name="var_net_amount" value="0" hidden>
 
 <script>
 $(document).ready(function(){
-    $(".price_cost, .net_price, .total_amount, .net_total,.quantity, .pieces, .discount_percentage").prop("readonly", true);
+    $(".price_cost, .net_price, .total_amount, .net_total, .grand_total").prop("readonly", true);
     var $tblrows = $("#tblSR tbody tr");
     $tblrows.each(function(index){
         var $tblrow = $(this); 
-        $tblrow.find(".quantity, .pieces").on("change", function(){
+        $tblrow.find(".quantity, .pieces, .discount_percentage").on("change", function(){
             var ctr = $tblrow.find("[name=ctr]").val();
             var uom = $tblrow.find("[name=uom]").val();
             var qty = $tblrow.find("[name=quantity]").val();
             var pcs = $tblrow.find("[name=pieces]").val();
             var pri = $tblrow.find("[name=net_price]").val();
+            var itd = $tblrow.find("[name=discount_percentage]").val();
             var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
             var ppp = parseFloat(pri) / parseInt(uom);
-            var sub = parseInt(itm, 10) * parseFloat(ppp);     
-            if(!isNaN(sub)){                
-                $tblrow.find(".total_amount").val(sub.toFixed(2));                
+            var npr = parseFloat(pri) * (100 - parseFloat(itd)) / 100
+            var tot = parseFloat(npr) / parseInt(uom) * parseFloat(itm, 10)
+            var dis = $("#discount_added").val();
+            if(!isNaN(tot)){                
+                $tblrow.find(".total_amount").val(tot.toFixed(2));                
                 var grandTotal = 0;
                 $(".total_amount").each(function(){
-                    var stval = parseFloat($(this).val());
+                    var stval = parseFloat($(this).val().replace(/,/g, ""));
                     grandTotal += isNaN(stval) ? 0 : stval;                    
                 });
-                $(".grand_total").val(grandTotal.toFixed(2));            
+                $(".grand_total").val(grandTotal.toLocaleString());
+                netAmount = parseFloat(grandTotal) - parseFloat(dis)
+                $(".net_total").val(netAmount.toLocaleString());
             }                     
         });        
     });
-    $("#discount").change(function(){
-        var _total_amount = $("#total_amount").val();
-        var _discount = $("#discount").val();
-        _discounted = _total_amount - _discount
-        
-        $("#var_discount_added").val(_discount);
-        $("#net_amount").val(_discounted);
-        $("#net_amount_var").val(_discounted);
-        $("#var_net_amount").val(Number(_discounted.toFixed(2)))
-    
+    $("#discount_added").change(function(){
+        var _grand_total = $("#grand_total").val().replace(/,/g, "");
+        var _discount = $("#discount_added").val();
+        netAmount = parseFloat(_grand_total) - parseFloat(_discount)
+        $(".net_total").val(netAmount.toLocaleString());        
     })    
 });
 </script>
@@ -64,7 +65,7 @@ $(document).ready(function(){
                 if (result) {
                     ajax("{{=URL('sales','sales_return_delete_view')}}" + '/' + _id);
                     parent.fadeOut('slow');
-                    //location.reload();   
+                    //
                 }
             }
         })

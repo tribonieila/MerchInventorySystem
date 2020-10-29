@@ -1,0 +1,35 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Back Office User's Form</span>
+        </div>
+        <div class="card-body tab-content">   
+            {{=form}}
+            {{=table}}
+
+
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        // $("#tblCustomer").show();
+        // if ($("#Sales_Man_van_sales").prop("checked")){        
+        //     $("#tblCustomer").hide();            
+        // } else {        
+        //     $("#tblCustomer").show();
+        // }
+        // $("#Sales_Man_van_sales").click(function(){        
+        //     if ($("#Sales_Man_van_sales").is(":checked")){            
+        //         $("#tblCustomer").slideUp();                
+        //         console.log('check')
+        //     } else {            
+        //         console.log('uncheck')
+        //         $("#tblCustomer").slideDown();
+        //         ajax("{{=URL('sales','get_user_id')}}", ['users_id'])
+
+        //     }
+        // });
+    });
+    </script>

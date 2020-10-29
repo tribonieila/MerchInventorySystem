@@ -85,7 +85,7 @@
 
                     {{ pass }}
                 {{pass}}
-                <button class="btn btn-danger" type="button" onclick=onReturn()>Close</button>
+                <button class="btn btn-warning" type="button" onclick=onReturn()>Close</button>
             </div>
         </div>                 
     

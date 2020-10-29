@@ -106,7 +106,7 @@ $(document).ready(function(){
         $("#no_table_item_code").val(withoutSpaces);
             }, 1);
     });
-
+ 
     $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
         $('#no_table_dept_code_id').removeAttr('disabled');
         $('#no_table_stock_source_id').removeAttr('disabled');    
@@ -140,7 +140,7 @@ $(document).ready(function(){
             callback: function (result) {
                 if (result) {
                     ajax("{{=URL('inventory','del_item')}}" + '/'+ _id);           
-                    toastr['success']('Item code deleted.')                             
+                    
                 }
             }
         })

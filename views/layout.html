@@ -190,12 +190,16 @@
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
-								<li><a href="{{=URL('inventory', 'stk_req_form')}}" ><span class="title">Stock Request</span></a></li>
-								<li><a href="{{=URL('inventory', 'stk_tns_form')}}" ><span class="title">Stock Transfer</span></a></li>
-								<li><a href="{{=URL('inventory', 'stk_rcpt_form')}}" ><span class="title">Stock Receipt</span></a></li>																
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 2)}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>																
 								<li><a href="{{=URL('inventory', 'stock_adjustment_browse')}}" ><span class="title">Stock Adjustment</span></a></li>	
+								<!-- <li><a href="{{=URL('inventory', 'get_stock_request_grid.html')}}" ><span class="title">Stock Request</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_stock_transaction_grid')}}" ><span class="title">Stock Transfer</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_stock_receipt_grid')}}" ><span class="title">Stock Receipt</span></a></li>																 -->
+								<!-- <li><a href="{{=URL('inventory', 'stock_adjustment_manager_grid')}}" ><span class="title">Stock Adjustment</span></a></li>	 -->
 								<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>			
-								<li><a href="{{=URL('inventory', 'stock_corrections')}}" ><span class="title">Stock Corrections</span></a></li>			
+								<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>			
 							</ul>
 						</li>						
 						<li class="gui-folder expanded">
@@ -256,12 +260,12 @@
 				
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-people-carry"></i></div><span class="title">PROCUREMENT<span class="badge style-primary">{{=_pro.version_no}}</span></span></a>				
 					<ul>
-						<li><a href="{{=URL('procurement', 'purchase_request')}}" ><span class="title">Purchase Request</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_order')}}" ><span class="title">Purchase Order</span></a></li>
-						<li><a href="{{=URL('procurement', 'purchase_receipt_grid')}}" ><span class="title">Purchase Receipt</span></a></li>	
-						<li><a href="#" ><span class="title">Purchase Return</span></a></li>						
-						<li><a href="#" ><span class="title">Reports</span></a></li>												
-						<li><a href="{{=URL('procurement', 'document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_transaction_reports_grid',args = 1)}}" ><span class="title">Purchase Return</span></a></li>
+						<li><a href="#" ><span class="title">Reports</span></a></li>										
+						<li><a href="{{=URL('procurement', 'get_document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
 				
@@ -273,17 +277,19 @@
 							<ul>
 								<li><a href="{{=URL('sales', 'customer_grid')}}" ><span class="title">Customer Master</span></a></li>
 								<li><a href="{{=URL('sales', 'get_area_name_grid')}}" ><span class="title">Area Name</span></a></li>
-								<li><a href="{{=URL('sales', 'get_sales_man_grid')}}" ><span class="title">Sales Man</span></a></li>
-								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">Sales Man Location</span></a></li>
-								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>								
+								<li><a href="{{=URL('sales', 'get_sales_man_grid')}}" ><span class="title">Sales Man</span></a></li>								
+								<li><a href="{{=URL('sales', 'get_sales_man_customer_grid')}}" ><span class="title">Sales Man Customer</span></a></li>	
+								<li><a href="{{=URL('sales', 'get_back_office_users_grid')}}" ><span class="title">Back Office User's</span></a></li>
+								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">POS Location</span></a></li>
+								<li><a href="{{=URL('sales', 'get_sales_manager_grid')}}" ><span class="title">Sales Manager</span></a></li>
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
 							<ul>
 								<li><a href="{{=URL('sales', 'sales_order_browse')}}" ><span class="title">Sales Order</span></a></li>
-								<li><a href="#" ><span class="title">Delivery Note</span></a></li>
-								<li><a href="#" ><span class="title">Sales Invoice</span></a></li>
+								<li><a href="{{=URL('sales', 'delivery_note_browse')}}" ><span class="title">Delivery Note</span></a></li>
+								<li><a href="{{=URL('sales', 'sales_invoice_browse')}}" ><span class="title">Sales Invoice</span></a></li>
 								<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 							</ul>
 						</li>
@@ -366,6 +372,7 @@
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 4)}}" ><span class="title">Direct Purchase Receipt</span></a></li>	
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 5)}}" ><span class="title">Purchase Return</span></a></li>						
 						<li><a href="#" ><span class="title">Reports</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
 				
@@ -418,7 +425,7 @@
 								<li><a href="{{=URL('inventory','brndlne_mas')}}" ><span class="title">Brand Line</span></a></li>
 								<li><a href="{{=URL('inventory','brndclss_mas')}}" ><span class="title">Brand Classification</span></a></li>
 								
-							</ul>
+							</ul> 
 						</li>						
 						<li class="gui-folder expanded">
 							<a href="javascript:void(0);" ><span class="title">Transaction</span></a>
@@ -451,6 +458,7 @@
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
 						<li><a href="{{=URL('procurement', 'get_transaction_reports_grid',args = 1)}}" ><span class="title">Purchase Return</span></a></li>
 						<li><a href="#" ><span class="title">Reports</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>						
 				
@@ -553,6 +561,7 @@
 						<li><a href="{{=URL('procurement','get_workflow_reports',args=1)}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement','get_workflow_reports',args=2)}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement','get_workflow_reports',args=3)}}" ><span class="title">Purchase Receipt</span></a></li>
+						<li><a href="{{=URL('procurement', 'get_document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
 					</ul>
 				</li>
 			</ul>			
@@ -566,7 +575,7 @@
 					<ul>
 						<li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
 						<!-- <li><a href="{{=URL('inventory','get_stv_sales_mngr_grid')}}" ><span class="title">Stock Transfer Voucher</span></a></li> -->
-						<li><a href="{{=URL('sales','get_workflow_reports', args = 1)}}" ><span class="title">Sales Order</span></a></li>
+						<li><a href="{{=URL('sales','get_workflow_reports', args = 6)}}" ><span class="title">Sales Order</span></a></li>
 						<li><a href="{{=URL('sales','get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
 						<li><a href="{{=URL('procurement','get_workflow_reports',args = 1)}}" ><span class="title">Purchase Request</span></a></li>
 						<!-- <li><a href="{{=URL('procurement','get_workflow_reports',args = 2)}}" ><span class="title">Purchase Order</span></a></li> -->

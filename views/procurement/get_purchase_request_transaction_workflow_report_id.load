@@ -10,8 +10,8 @@
     }
 
     function onPrint(){       
-        {{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')) or (auth.has_membership(role = 'ACCOUNTS MANAGER')) or (auth.has_membership(role = 'MANAGEMENT')):}}			
-            window.open("{{=URL('procurement','purchase_receipt_reports', args = request.args(0), extension = False)}}")
+        {{if (auth.user_id != None) &  (auth.has_membership(role = 'ACCOUNTS')) or (auth.has_membership(role = 'ACCOUNTS MANAGER')) or (auth.has_membership(role = 'ROOT')) or (auth.has_membership(role = 'MANAGEMENT')):}}			
+            window.open("{{=URL('procurement','get_purchase_request_workflow_reports_id', args = request.args(0), extension = False)}}")
         {{elif (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY BACK OFFICE')): }}
             window.open("{{=URL('procurement','get_purchase_request_workflow_reports_id', args = request.args(0), extension = False)}}")            
         {{else:}}

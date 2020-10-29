@@ -54,6 +54,18 @@ Sales:
 
 Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
 
+- Ver.1.0.15 - 25/10/2020, Purchase Request
+    Issues: Amin
+    - Under Purchase Order tab, when you click “View Row” on the Action Button, the following Screen is displayed. Resolved
+    - The caption of the form should be “Purchase Order” and all the detailed of the Purchase Request and Purchase Order should be displayed. Resolved.
+    - Under D1 Register, why ETA is same as D1 Transaction date. ETA was inputted during Purchase Request Transaction. (It was inputed during purchase request transaction)
+    - Put an action button to re-print D1. Resolved. (Append in Workflow Report/D1 Register Menu)
+    Issues: Hakim
+    - The above error comes after login of Hakim. Resolved.
+    - Error under Warehouse Receipt Tab Workflow. Resolved.
+    - Under Purchase Order Tab, Action “View Row” will display the following page – caption should be Purchase Order not Warehouse Receipt. We did not yet generate the Warehouse Purchase Receipt this time. Resolved.
+    - Check  - after generating the Warehouse Purchase Receipt from the Purchase Order Tab, Warehouse Purchase Receipt is not appearing in the Warehouse Purchase Receipt. Resolved.
+
 - Ver.1.0.14 - 21/10/2020, Purchase Request
     Issues:
     - Supplier /Acct Code – display the code not the name. Resolved.
@@ -260,12 +272,7 @@ Read (Retrieve)	-    SELECT	    -   GET	            -       GET	        -   read
 Update (Modify)	-    UPDATE	    -   PUT/POST/PATCH	-       PUT	        -   write	    -   Update
 Delete (Destroy)-	 DELETE	    -   DELETE	        -       DELETE	    -   dispose	    -   Delete
 
-$('input[type="number"]').prop('readonly', true);
-$(':text').prop('readonly', true);
-$('yourFormSelector input[type="text"]').prop('readonly', true);
-$('.classname').attr('readonly', 'readonly');
-$('.classname').prop('readonly', true);
-$('.form-control').prop('readonly', true);
+
 
 total = quantity * wholesale price
 
@@ -380,37 +387,3 @@ Main Menu
 FINANCE MANAGEMENT
 Main Menu
     - Dashboard
-
-Using location.replace() will redirect you, but without saving the history of the previous page. This is better to use when a form is submitted.
-
-But when you want to keep your history you have to use location.href=//path.
-
-Examples:
-
-// Form with steps
-document.getElementById('#next').onclick = function() {
-   window.location.href='/step2' // Iteration of steps;
-}
-
-// Go to next step
-document.getElementById('#back').onclick = function() {
-   window.history.back();
-}
-
-// Finish
-document.getElementById('#finish').onclick = function() {
-   window.location.href = '/success';
-}
-
-// On success page
-window.onload = function() {
-    setTimeout(function() {
-       window.location.replace('/home'); // I can't go back to success page by pressing the back button
-    },3000);
-}
-
-if ( fup.files[0].type === 'application/pdf' ) {
-    console.log( 'It is validated!' )
-}
-
-window.open("https://www.w3schools.com");

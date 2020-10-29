@@ -1,0 +1,48 @@
+{{extend 'layout.html'}}
+
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">                
+                <span class="card-title">Sales Invoice Master Report Grid</span>
+            </div>
+            <div class="card-body tab-content">            
+                <table id="example" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>First name</th>
+                            <th>Last name</th>
+                            <th>Position</th>
+                            <th>Office</th>
+                            <th>Start date</th>
+                            <th>Salary</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>First name</th>
+                            <th>Last name</th>
+                            <th>Position</th>
+                            <th>Office</th>
+                            <th>Start date</th>
+                            <th>Salary</th>
+                        </tr>
+                    </tfoot>
+                </table>                
+          
+            </div>
+        </div>
+    </div>
+
+<script>
+$(document).ready( function () {        
+    $('#table').DataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "http://localhost:4000/mtc_inv/api/get_json",
+            "dataType": "jsonp"
+        }
+    } );
+    
+});
+</script>

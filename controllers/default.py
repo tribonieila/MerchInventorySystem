@@ -837,9 +837,9 @@ def sales_return_report_account_user():
         db.Sales_Return_Transaction_Report_Counter.update_or_insert(db.Sales_Return_Transaction_Report_Counter.sales_return_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
 
 
-    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
 
     _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
@@ -1291,9 +1291,9 @@ def sales_order_report_account_user(): # print direct to printer
         db.Sales_Order_Transaction_Report_Counter.update_or_insert(db.Sales_Order_Transaction_Report_Counter.sales_order_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
 
 
-    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","Printed On: " + str(request.now.strftime('%d/%m/%Y,%H:%M'))]]
 
     _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
