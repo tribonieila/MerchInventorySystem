@@ -726,10 +726,10 @@ db.define_table('Stock_Adjustment',
     Field('transaction_no', 'integer', default = 0, writable = False),
     Field('transaction_date', 'date', default=request.now),
     Field('stock_adjustment_date', 'date', default = request.now),
-    Field('stock_adjustment_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Account Code', requires = IS_IN_DB(db, db.Master_Account.id, '%(account_code)s - %(account_name)s', zero = 'Choose Account')),    # create normal    
-    Field('stock_adjustment_code','string', length = 10),
+    # Field('stock_adjustment_code_id','reference Master_Account', ondelete = 'NO ACTION',label = 'Account Code', requires = IS_EMPTY_OR(IS_IN_DB(db(db.Master_Account.master_account_type_id == 'SAC'), db.Master_Account.id, '%(account_name)s', zero = 'Choose Account')),    # create normal location code field    
+    Field('stock_adjustment_code','string', length = 50),   
     Field('dept_code_id','reference Department', ondelete = 'NO ACTION',label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
-    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),    
+    Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db(db.Location.status_id == 1), db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location')),    
     Field('adjustment_type', 'reference Adjustment_Type', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Adjustment_Type.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')), 
     Field('total_amount','decimal(10,4)', default = 0),    
     Field('srn_status_id','reference Stock_Status', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Stock_Status.id, '%(description)s', zero = 'Choose Status')),   
@@ -2500,7 +2500,7 @@ db.define_table('Version_Control',
 
 db.define_table('Daily_Activity',
     Field('transaction','string',length=50),
-    Field('activities','string'),    
+    Field('activities','string'),       
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),    
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
 #---------------------------------------------------------

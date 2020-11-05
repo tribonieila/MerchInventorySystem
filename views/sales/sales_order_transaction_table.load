@@ -15,7 +15,13 @@
         <td>{{=form.custom.widget.pieces}}</td>
         <td>{{=form.custom.widget.discount_percentage}}</td>
         <td>{{=form.custom.widget.category_id}}</td>
-        <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"></td>
+        <td>
+            {{if record.status_id != 4:}}
+                <input class="btn btn-primary" type="submit" value="add" id="btnadd" disabled>                
+            {{else:}}
+                <input class="btn btn-primary" type="submit" value="add" id="btnadd">
+            {{pass}}
+        </td>
     </tr>
 
 </table>
@@ -28,6 +34,8 @@
 
 <script>
 $(document).ready(function(){
+    
+    
     //$(".pass").attr("disabled","disabled");
     //$("a[type='button']").attr("disabled","disabled");
     //$(".save").removeAttr('href');
@@ -50,7 +58,7 @@ $(document).ready(function(){
             var ppp = parseFloat(pri) / parseInt(uom);
             var npr = parseFloat(pri) * (100 - parseFloat(dis)) / 100
             var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10) 
-            console.log(qty, pcs, pri, dis, net, sub );
+            console.log(qty, pcs, pri, dis, sub );
             var add = $("#added_discount").val();
             if(parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
@@ -62,7 +70,11 @@ $(document).ready(function(){
                 $("#btnUpdate").attr('disabled','disabled');
                 return alert("Please enter positive integer.");
             } else {
-                $("#btnUpdate").removeAttr('disabled');
+                {{if record.status_id != 4:}}
+                    $("#btnUpdate").attr('disabled', 'disabled');
+                {{else:}}
+                    $("#btnUpdate").removeAttr('disabled');
+                {{pass}}
             }                                              
             
             if(!isNaN(sub)){                

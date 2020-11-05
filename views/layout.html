@@ -570,7 +570,7 @@
 			<ul id="main-menu" class="gui-controls">
 				<li class="active"><a><div class="gui-icon"><i class="md fas fa-home"></i></div><span class="title">HOME</span></a></li>
 				<li><a href="{{=URL('inventory','mngr_req_grid')}}"><div class="gui-icon"><i class="md fas fa-user-check"></i></div><span class="title">MY WORKFLOW</span></a></li>	
-				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
+				
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-check"></i></div><span class="title">MY WORKFLOW REPORTS</span></a>
 					<ul>
 						<li><a href="{{=URL('inventory','get_workflow_reports', args = 1)}}" ><span class="title">Stock Request</span></a></li>
@@ -582,6 +582,13 @@
 						<li><a href="{{=URL('inventory','get_workflow_reports', args = 4)}}" ><span class="title">Obsolescence of Stocks</span></a></li>						
 					</ul>
 				</li>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>
+					<ul>									
+						<li><a href="{{=URL('inventory', 'master_item_view')}}" ><span class="title">Master Stock Card View</span></a></li>
+						<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
+					</ul>
+				</li>				
+				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
 			</ul>
 			{{pass}}
 			{{if (auth.user_id != None) &  (auth.has_membership(role = 'INVENTORY STORE KEEPER')):}}
@@ -610,8 +617,8 @@
 						<li><a href="{{=URL('inventory', 'get_transaction_reports', args = 3)}}" ><span class="title">Stock Receipt</span></a></li>						
 						<li><a href="{{=URL('inventory', 'get_stock_corrections_reports')}}" ><span class="title">Stock Corrections</span></a></li>	
 						<li><a href="{{=URL('inventory', 'obsolescence_of_stocks')}}" ><span class="title">Obsolescence Of Stocks</span></a></li>		
-						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 4)}}" ><span class="title">Delivery Note</span></a></li>
-						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 1)}}" ><span class="title">Sales Invoice</span></a></li>
+						<li><a href="{{=URL('sales', 'delivery_note_browse')}}" ><span class="title">Delivery Note</span></a></li>
+						<li><a href="{{=URL('sales', 'sales_invoice_browse')}}" ><span class="title">Sales Invoice</span></a></li>
 						<li><a href="{{=URL('sales', 'get_workflow_reports', args = 2)}}" ><span class="title">Sales Return</span></a></li>
 						
 					</ul>

@@ -6,7 +6,8 @@
 
 <script>
 $(document).ready(function(){
-    $(".price_cost, .net_price, .total_amount, .net_total, .grand_total").prop("readonly", true);
+    
+    $(".price_cost, .net_price, .total_amount").prop("readonly", true);
     var $tblrows = $("#tblSR tbody tr");
     $tblrows.each(function(index){
         var $tblrow = $(this); 

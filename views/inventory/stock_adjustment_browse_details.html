@@ -24,7 +24,7 @@
                                 {{else:}}
                                     <label class="col-sm-4 control-label">Stock Adjustment No</label>
                                     <div class="col-sm-8">      
-                                        <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_no_id.prefix}}{{=_stk_adj.stock_adjustment_no}}"readonly >
+                                        <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_no}}"readonly >
                                         <p class="help-block">autogenerate</p>                            
                                     </div>                           
                                 {{pass}}
@@ -43,27 +43,7 @@
                                 </div>
                             </div>                    
                         </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Transaction No</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_stk_adj.transaction_no}}"readonly >
-                                <p class="help-block">readonly</p>                            
-                            </div>
-                        </div>            
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Transaction Date</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_stk_adj.transaction_date}}"readonly >
-                                <p class="help-block">readonly</p>                                                
-                            </div>
-                        </div>                                           
-                    </div>
-                </div>                
+                </div>             
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -98,7 +78,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Adjustment Code</label>
                             <div class="col-sm-8">{{import locale}}
-                                <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_code_id.account_code}}, {{=_stk_adj.stock_adjustment_code_id.account_name}}"readonly >
+                                <input type="text" class="form-control" value="{{=_stk_adj.stock_adjustment_code}}"readonly >
                                 <p class="help-block">readonly</p>                                                
                             </div>
                         </div>                 

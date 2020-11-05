@@ -2,19 +2,24 @@
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
     <div class="col-md-12">
         <div class="card card-underline">
-            <div class="card-head">
-                
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                {{if auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'MANAGEMENT'):}}
-                {{else:}}
-                    <li class=""><a href="#" onclick=window.location="{{=URL('sales_order_form')}}";>+ ADD NEW</a></li>
-                    <li class="active"><a href="#">BROWSE</a></li>
-                {{pass}}
-                </ul>
-                
-                <span class="card-title">Delivery Note Master Report Grid</span>
+            <div class="card-head">                                
+                <span class="card-title">{{=title}}</span>
             </div>
             <div class="card-body tab-content">            
+                {{=form.custom.begin}}                
+                <div class="row">
+                    <label>Date Range</label>
+                      <div class="col"><input class="form-control" id="no_table_from_date" name="from_date" type="date"></div>
+                      <span>to</span>
+                      <div class="col">
+                        <div class="col"><input class="form-control" id="no_table_from_date" name="to_date" type="date"></div>                        
+                      </div>
+                      <div class="col">
+                        {{=form.custom.submit}}
+                      </div>
+                </div>
+                {{=form.custom.end}}
+                <br>                
                 {{=table}}
           
             </div>

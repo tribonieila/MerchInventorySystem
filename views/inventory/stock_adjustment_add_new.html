@@ -58,7 +58,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Stock Adjustment Code</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.stock_adjustment_code_id}}     
+                                {{=form.custom.widget.stock_adjustment_code}}     
                             </div>
                         </div>                    
                     </div>        
@@ -102,8 +102,8 @@ $(document).ready(function(){
     $('#btnhelp').attr('disabled','disabled');
     $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();   
-    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_location_code_id, #Stock_Adjustment_stock_adjustment_code_id').change(function(){
-        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $('#Stock_Adjustment_location_code_id').val() && $().val("#Stock_Adjustment_stock_adjustment_code_id")) {
+    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_stock_adjustment_code_id').change(function(){
+        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $().val("#Stock_Adjustment_stock_adjustment_code_id")) {
             $('#btnrequest').removeAttr('disabled');
         } else {
             $('#btnrequest').attr('disabled','disabled');
@@ -115,16 +115,17 @@ $(document).ready(function(){
     });
 
     $('#Stock_Adjustment_location_code_id').change(function(){
-        ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
+        ajax('{{=URL('stock_adjustment_code')}}',['location_code_id']);
     });
 
     $('#btnsubmit').click(function(){
         $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
         $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');
-        $('#Stock_Adjustment_stock_adjustment_date').removeAttr('disabled');
+        $('#Stock_Adjustment_stock_adjustment_date').removeAttr('disabled');        
         $('#Stock_Adjustment_location_code_id').removeAttr('disabled');
+        $('#Stock_Adjustment_stock_adjustment_code').removeAttr('disabled');
         $('#Stock_Adjustment_srn_status_id').removeAttr('disabled');
-        ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','stock_adjustment_date','location_code_id', 'srn_status_id']);        
+        ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','location_code_id','stock_adjustment_date', 'stock_adjustment_code','srn_status_id']);        
     });
 
     $('#btnrequest').click(function(){
@@ -134,8 +135,7 @@ $(document).ready(function(){
         ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id','adjustment_type']);
         $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
-        $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
-        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
+        $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');        
         $('#Stock_Adjustment_stock_adjustment_code_id').attr('disabled','disabled');
         $('#btnrequest').attr('disabled','disabled');
         $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');

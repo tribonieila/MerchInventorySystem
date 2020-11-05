@@ -34,6 +34,7 @@ margin: 0 0;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){
+    document.getElementById("no_table_item_code").focus();
     $(".price_cost, .net_price, .total_amount, .discount_per, .quantity, .pieces").prop("readonly", true);
     var $tblrows = $("#tblsot tbody tr");
 

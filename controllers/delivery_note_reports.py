@@ -23,6 +23,7 @@ tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 import locale
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
+dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch, showBoundary=1)
 style = ParagraphStyle(name='Normal',fontName="Arabic", fontSize=25)
 style.alignment=TA_RIGHT
 arabic_text = u'إذا أخذنا بعين'
@@ -176,7 +177,7 @@ def sales_order_store_keeper_header_footer_report(canvas, doc):
     # Release the canvas
     canvas.restoreState()
 
-def delivery_note_footer_report(canvas, doc):
+def delivery_note_footer_report(canvas, dlv_note_frame):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _id = db(db.Delivery_Note.id == request.args(0)).select().first()
@@ -190,13 +191,11 @@ def delivery_note_footer_report(canvas, doc):
             ['Customer Code',':',n.customer_code_id.account_code,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
             ['','','','','Location', ':',n.stock_source_id.location_name],       
-            ['','','','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper())],            
-            ['','','','','','',''],
-            ['','','','','','','']]
+            ['','','','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper())]]
 
     header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,3),(2,-1)),
         ('SPAN',(0,0),(6,0)),
         ('ALIGN',(0,0),(0,0),'CENTER'),        
@@ -210,20 +209,28 @@ def delivery_note_footer_report(canvas, doc):
         ('BOTTOMPADDING',(0,0),(0,0),12),
         ('TOPPADDING',(0,1),(6,-1),0),
         ('BOTTOMPADDING',(0,1),(6,-1),0)]))
-    header.wrapOn(canvas, doc.width, doc.topMargin)
-    header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - .8 * inch)
+    header.wrapOn(canvas, dlv_note_frame.width, dlv_note_frame.topMargin)
+    header.drawOn(canvas, dlv_note_frame.leftMargin, dlv_note_frame.height + dlv_note_frame.topMargin + .2 * inch)
 
 
     # Footer
-    _page = [['']]
-    footer = Table(_page, colWidths='*')
+    _page = [        
+        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],        
+        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',_id.customer_order_reference],
+        ['Customer Acknowledgement: Received the above items in good order and sound condition.']]
+        # ['Customer Acknowledgement: Received the above items in good order and sound condition.']]
+
+    footer = Table(_page, colWidths=['*',25,'*',25,'*',25,'*'])
     footer.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier-Bold'),        
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('SPAN',(0,2),(-1,2)),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
-    footer.wrap(doc.width, doc.bottomMargin)
-    footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)
+        ('TOPPADDING',(0,0),(-1,-1),0),
+        ('BOTTOMPADDING',(0,0),(-1,-1),0),
+        ('VALIGN',(0,0),(-1,-1),'TOP')]))
+    footer.wrap(dlv_note_frame.width, dlv_note_frame.bottomMargin)
+    footer.drawOn(canvas, dlv_note_frame.leftMargin, dlv_note_frame.bottomMargin - 4 * cm)
 
     # Release the canvas
     canvas.restoreState()
@@ -374,18 +381,17 @@ def get_workflow_delivery_reports_id():
         ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
     ]))
-
-    _prt_ctr = db(db.Delivery_Note_Transaction_Report_Counter.delivery_note_transaction_no_id == request.args(0)).select().first()
-    if not _prt_ctr:
-        ctr = 1
-        db.Delivery_Note_Transaction_Report_Counter.insert(delivery_note_transaction_no_id = request.args(0), printer_counter = ctr)
-    else:
-        _prt_ctr.printer_counter += 1
-        ctr = _prt_ctr.printer_counter
-        db.Delivery_Note_Transaction_Report_Counter.update_or_insert(db.Delivery_Note_Transaction_Report_Counter.delivery_note_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
-    _customer = [["","-------------     CUSTOMER'S COPY     -------------","print count: " + str(ctr)]]
-    _accounts = [["","-------------     ACCOUNT'S COPY     -------------","print count: " + str(ctr)]]
-    _pos = [["","-------------     WAREHOUSE'S COPY     -------------","print count: " + str(ctr)]]
+    # _prt_ctr = db(db.Delivery_Note_Transaction_Report_Counter.delivery_note_transaction_no_id == request.args(0)).select().first()
+    # if not _prt_ctr:
+    #     ctr = 1
+    #     db.Delivery_Note_Transaction_Report_Counter.insert(delivery_note_transaction_no_id = request.args(0), printer_counter = ctr)
+    # else:
+    #     _prt_ctr.printer_counter += 1
+    #     ctr = _prt_ctr.printer_counter
+    #     db.Delivery_Note_Transaction_Report_Counter.update_or_insert(db.Delivery_Note_Transaction_Report_Counter.delivery_note_transaction_no_id == request.args(0), printer_counter = ctr, updated_on = request.now,updated_by = auth.user_id)
+    _customer = [["","-------------     CUSTOMER'S COPY     -------------",'']]
+    _accounts = [["","-------------     ACCOUNT'S COPY     -------------",'']]
+    _pos = [["","-------------     WAREHOUSE'S COPY     -------------",'']]
 
     _c_tbl = Table(_customer, colWidths=[100,'*',100])
     _a_tbl = Table(_accounts, colWidths='*')
@@ -427,9 +433,9 @@ def get_workflow_delivery_reports_id():
     
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
-    row.append(_others_table)
+    # row.append(_others_table)
     row.append(Spacer(1,.2*cm))
-    row.append(_acknowledge_table)
+    # row.append(_acknowledge_table)
     row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
     row.append(_c_tbl)
@@ -437,9 +443,9 @@ def get_workflow_delivery_reports_id():
     
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
-    row.append(_others_table)
+    # row.append(_others_table)
     row.append(Spacer(1,.2*cm))
-    row.append(_acknowledge_table)
+    # row.append(_acknowledge_table)
     row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
     row.append(_a_tbl)
@@ -447,15 +453,15 @@ def get_workflow_delivery_reports_id():
 
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))
-    row.append(_others_table)
+    # row.append(_others_table)
     row.append(Spacer(1,.2*cm))
-    row.append(_acknowledge_table)
+    # row.append(_acknowledge_table)
     row.append(Spacer(1,.2*cm))
     row.append(_signatory_table)
     row.append(_p_tbl)
     row.append(PageBreak())
 
-    doc.build(row, onFirstPage=delivery_note_footer_report, onLaterPages = delivery_note_footer_report, canvasmaker=PageNumCanvas)
+    dlv_note_frame.build(row, onFirstPage=delivery_note_footer_report, onLaterPages = delivery_note_footer_report, canvasmaker=PageNumCanvas)
 
     pdf_data = open(tmpfilename,"rb").read()
     os.unlink(tmpfilename)
@@ -1024,7 +1030,7 @@ def delivery_note_transaction_table_reports():
         else:
             _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
             _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
-    _st.append(['','','-------------     NOTHING TO FOLLOWS     -------------','','',''])
+    _st.append(['','','-------------     NOTHING TO FOLLOWS     -------------','','',''])    
     _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,70], repeatRows = 1)
     _st_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),                
@@ -1384,9 +1390,10 @@ class PageNumCanvas(canvas.Canvas):
         # paget.setStyle(TableStyle([('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2))]))
         # row.append(page)
         page = "Page %s of %s" % (_page_number, _page_count)        
-        self.setFont("Courier-Bold", 8)
-        self.drawRightString(148*mm, 45*mm, _location)
-        self.drawRightString(115*mm, 35*mm, page)
+        printed_on = 'Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))
+        self.setFont("Courier", 7)
+        self.drawRightString(200*mm, 15*mm, printed_on)
+        self.drawRightString(115*mm, 15*mm, page)
  
 class PageNumCanvas2(canvas.Canvas):
     """

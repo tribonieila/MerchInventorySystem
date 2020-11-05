@@ -5,7 +5,21 @@
             <div class="card-head">
                 <span class="card-title">{{=title}}</span>
             </div>
-            <div class="card-body tab-content">   
+            <div class="card-body tab-content">
+                {{=form.custom.begin}}                
+                <div class="row">
+                    <label>Date Range</label>
+                      <div class="col"><input class="form-control" id="no_table_from_date" name="from_date" type="date"></div>
+                      <span>to</span>
+                      <div class="col">
+                        <div class="col"><input class="form-control" id="no_table_from_date" name="to_date" type="date"></div>                        
+                      </div>
+                      <div class="col">
+                        {{=form.custom.submit}}
+                      </div>
+                </div>
+                {{=form.custom.end}}
+                <br>                
                 {{=table}}
             </div> 
         </div>

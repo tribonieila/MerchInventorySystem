@@ -2569,7 +2569,7 @@ def locgrp_edit_form():
 def loc_mas():
     ctr = 0
     row = []
-    thead = THEAD(TR(TH('#'),TH('Location Code'),TH('Location Name'),TH('Location Group Name'),TH('Location Sub Group Name'),TH('Status'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Location Code'),TH('Location Name'),TH('Location Group Name'),TH('Location Sub Group Name'),TH('Stock Adjustment Code'),TH('Status'),TH('Action')))
     for n in db(db.Location).select(db.Location.ALL, db.Location_Group.ALL, db.Location_Sub_Group.ALL, orderby = db.Location.location_code, 
     left= [db.Location_Group.on(db.Location_Group.id == db.Location.location_group_code_id),
     db.Location_Sub_Group.on(db.Location_Sub_Group.id == db.Location.location_sub_group_id)]):
@@ -2584,6 +2584,7 @@ def loc_mas():
             TD(n.Location.location_name),
             TD(n.Location_Group.location_group_name),
             TD(n.Location_Sub_Group.location_sub_group_name), 
+            TD(n.Location.stock_adjustment_code),
             TD(n.Location.status_id.status),
             TD(btn_lnk)))
     tbody = TBODY(*row)
@@ -5135,7 +5136,7 @@ def stock_adjustment_add_new():
     ticket_no_id = id_generator()
     db.Stock_Adjustment.srn_status_id.requires = IS_IN_DB(db(db.Stock_Status.id == 4), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')        
     db.Stock_Adjustment.srn_status_id.default = 4  
-    db.Stock_Adjustment.stock_adjustment_code_id.widget = SQLFORM.widgets.autocomplete(request, db.Master_Account.stock_adjustment_account, id_field = db.Master_Account.id, limitby = (0,10), min_length = 2)
+    # db.Stock_Adjustment.stock_adjustment_code_id.widget = SQLFORM.widgets.autocomplete(request, db.Master_Account.stock_adjustment_account, id_field = db.Master_Account.id, limitby = (0,10), min_length = 2)
     # db.Stock_Adjustment.stock_adjustment_code_id.widget = lambda field, value: SQLFORM.widgets.options.widget(field, value, _class='form-control')
     form = SQLFORM(db.Stock_Adjustment)
     if form.process(onvalidation = stock_adjustment_form_validation).accepted:          
@@ -5371,7 +5372,7 @@ def get_stock_adjustment_workflow_grid():
                 reje_lnk = A(I(_class='fas fa-user-times'), _title='Reject Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled', callback = URL('stock_adjustment_manager_details_reject', args = n.id, extension = False))                
                 prin_lnk = A(I(_class='fas fa-print'), _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
                 btn_lnk = DIV(view_lnk, appr_lnk, reje_lnk, prin_lnk)
-        row.append(TR(TD(n.transaction_date),TD(n.transaction_no),TD(n.dept_code_id.dept_code,' - ', n.dept_code_id.dept_name),TD(n.stock_adjustment_code_id.account_code,', ',n.stock_adjustment_code_id.account_name),TD(n.location_code_id.location_code,' - ',n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(btn_lnk)))
+        row.append(TR(TD(n.transaction_date),TD(n.transaction_no),TD(n.dept_code_id.dept_code,' - ', n.dept_code_id.dept_name),TD(n.stock_adjustment_code),TD(n.location_code_id.location_code,' - ',n.location_code_id.location_name),TD(n.adjustment_type.description),TD(locale.format('%.2F',n.total_amount or 0, grouping = True)),TD(n.srn_status_id.description),TD(btn_lnk)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblSAd')
     return dict(table = table)
@@ -5424,12 +5425,11 @@ def get_transaction_no_id():
     return _stk_no
     
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
-def stock_adjustment_code():        
-    _loc_code = db(db.Location.id == request.vars.location_code_id).select().first()
-    if not _loc_code:
-        return XML(INPUT(_class="integer form-control", _name='location_code', _disabled = True))    
-    else:
-        return XML(INPUT(_class="integer form-control", _name='location_code', _value=_loc_code.stock_adjustment_code, _disabled = True))
+def stock_adjustment_code():            
+    _id = db(db.Location.id == int(request.vars.location_code_id)).select().first()    
+    _ma = db(db.Master_Account.account_code == _id.stock_adjustment_code).select().first()
+    response.js = "$('#Stock_Adjustment_stock_adjustment_code').val('%s')" % (_ma.stock_adjustment_account)
+
 
 @auth.requires(lambda: auth.has_membership('ACCOUNTS') | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def stock_adjustment_average_cost():          
@@ -5658,8 +5658,7 @@ def stock_adjustment_browse_details():
     db.Stock_Adjustment.adjustment_type.writable = False
     db.Stock_Adjustment.total_amount.writable = False
     db.Stock_Adjustment.approved_by.writable = False
-    db.Stock_Adjustment.date_approved.writable = False
-    db.Stock_Adjustment.stock_adjustment_code_id.writable = False
+    db.Stock_Adjustment.date_approved.writable = False    
     db.Stock_Adjustment.archive.writable = False
     _stk_adj = db(db.Stock_Adjustment.id == request.args(0)).select().first()     
     if auth.has_membership(role = 'ACCOUNTS'):
@@ -9796,16 +9795,21 @@ def master_item_view():
             _pcs_on_hand = int(_stk_file.closing_stock) - int(_outer_on_hand * _itm_code.uom_value) 
             _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_itm_code.uom_value)        
             
-            i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Size'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price'),TD('Selective Tax Price'),_class='style-accent small-padding'))
+            i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Size'),TD('Currency'),TD('Supplier Price'),TD('Landed Cost'),TD('Average Cost'),TD('Op.Ave.Cost'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price'),TD('Sel. Tax Price'),_class='style-accent small-padding'))
             
             i_row.append(TR(TD(_itm_code.item_code),TD(_itm_code.item_description),TD(_itm_code.group_line_id.group_line_name),
             TD(_itm_code.brand_line_code_id.brand_line_name),
             TD(_itm_code.uom_value),
             TD(_itm_code.uom_id.mnemonic),
-            TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),
-            TD(locale.format('%.2F',_item_price.wholesale_price or 0, grouping = True)),
-            TD(locale.format('%.2F',_item_price.vansale_price or 0, grouping = True)),
-            TD(locale.format('%.2F',_item_price.selective_tax_price or 0, grouping = True))
+            TD(_item_price.currency_id.mnemonic),
+            TD(locale.format('%.3F',_item_price.most_recent_cost or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.most_recent_landed_cost or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.opening_average_cost or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.average_cost or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.retail_price or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.vansale_price or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.selective_tax_price or 0, grouping = True),_align='right')
             
             ))
             i_body = TBODY(*i_row)
@@ -9848,7 +9852,7 @@ def master_item_view():
                 # TD(i.Stock_File.stock_in_transit or 0, grouping = True),
                 # TD(_avl_bal or 0, grouping = True)))         
             body = TBODY(*row)
-            table = TABLE(*[head, body], _class = 'table table-hover')
+            table = TABLE(*[head, body], _class = 'table table-hover',_id='tblStkFle')
             return dict(form = form, i_table = i_table, table = table)
     return dict(form = form, table = '', i_table = '')
 

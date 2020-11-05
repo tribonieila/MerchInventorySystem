@@ -48,7 +48,8 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():
-    
+    for n in db(db.Stock_File.pos_stock == None).select(orderby = db.Stock_File.id):
+        n.update_record(pos_stock = 0)        
     return dict(table = 'table')
 
 def merch():

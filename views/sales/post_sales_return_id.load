@@ -25,7 +25,7 @@
 
 <script>
 $(document).ready(function(){
-
+    document.getElementById("no_table_item_code").focus();
     $("#no_table_quantity, #no_table_pieces").on("keyup", function(event) {
         nospaces(this);
     });
@@ -48,8 +48,6 @@ $(document).ready(function(){
     $('#no_table_item_code').change(function(){
         ajax('{{=URL('sales_return_item_code_description')}}', ['item_code'], '_item_code_description');        
         return false;
-    });
-      
-
+    });      
 });
 </script>

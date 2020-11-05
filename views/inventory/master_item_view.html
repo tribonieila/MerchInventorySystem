@@ -25,7 +25,16 @@
             {{=form.custom.end}} 
             <br>               
             {{=i_table}}
-            {{=table}}
+            <div class="freeze-table">
+                {{=table}}
+            </div>
+            
         </div>
     </div>
 </div>
+<script src="{{=URL('static','dist/js/freeze-table.min.js')}}"></script>
+<script>    
+    $(document).ready(function(){
+        $('.freeze-table').freezeTable({});
+    })
+</script>
