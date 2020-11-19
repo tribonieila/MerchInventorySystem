@@ -554,18 +554,19 @@ def sales_order_form():
         _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
         _section = _usr.section_id
         _sales_m = _usr.id
-        if _usr.van_sales == True: # Van sales => limited customer
+        if _usr.van_sales == True: # Van sales => limited customer and 20 items only
             _query_dept = db.Department.id == 3
             _defa_dept = 3
             _query_cstmr = db.Master_Account.account_code == _usr.mv_code 
             _default = db(db.Master_Account.account_code == _usr.mv_code).select(db.Master_Account.id).first()            
-            
-        else: # Sales Man => Customer, Staff, Accounts Only
+            _heads_up = 'Required max 20 items only.'
+        else: # Sales Man => Customer, Staff, Accounts Only, limited to 10 items only
             # Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
             _query_cstmr = (db.Sales_Man_Customer.sales_man_id == _usr.id) & (db.Sales_Man_Customer.master_account_type_id == db.Master_Account.master_account_type_id)
             _query_dept = db.Department.id == 3
             _defa_dept = 3
-            _default = 0            
+            _default = 0                        
+            _heads_up = 'Required max 10 items only.'
             _widget = SQLFORM.widgets.autocomplete(request, db.Master_Account.stock_adjustment_account, id_field = db.Master_Account.id, limitby = (0,10), min_length = 2)
     elif auth.has_membership('INVENTORY BACK OFFICE'): # for amin, mimi, hernando
         _dept = db(db.Back_Office_User.user_id == auth.user_id).select().first()        
@@ -575,17 +576,17 @@ def sales_order_form():
         _query_cstmr = db.Master_Account            
         _default = 0
         
-        
+        _heads_up = ''
     elif auth.has_membership('ROOT') | auth.has_membership('ACCOUNTS'): # All in Master Accounts                
         _query_dept = db.Department.id > 0
         _query_cstmr = db.Master_Account            
         _defa_dept = 0
         _default = 0
-
+        _heads_up = ''
     ticket_no_id = id_generator()
     session.ticket_no_id = ticket_no_id    
     _grand_total = session.discount = 0
-    _total_selective_tax = _total_selective_tax_foc = 0
+    _total_selective_tax = _total_selective_tax_foc = _selective_tax = _selective_tax_foc = 0
     form = SQLFORM.factory(
         Field('sales_order_date', 'date', default = request.now),
         Field('dept_code_id','reference Department', requires = IS_IN_DB(db(_query_dept), db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department')),
@@ -603,11 +604,12 @@ def sales_order_form():
         
         if int(db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).count()) == 0:
             # print 'empty'
-            print 'submit: ', form.vars.customer_code_id, request.vars.ticket_no_id
+            # print 'submit: ', form.vars.customer_code_id, request.vars.ticket_no_id
             session.flash = 'Transactions empty not allowed.'
             redirect(URL('default','index'))
         else:
             print 'not empty'
+            x = 0
         ctr = db((db.Transaction_Prefix.prefix_key == 'SOR') & (db.Transaction_Prefix.dept_code_id == request.vars.dept_code_id)).select().first()
         _skey = ctr.current_year_serial_key
         _skey += 1
@@ -628,12 +630,20 @@ def sales_order_form():
             sales_man_id = _sales_m,         
             status_id = form.vars.status_id)
         _id = db(db.Sales_Order.sales_order_no == ctr.current_year_serial_key).select().first()        
+
         _tmp = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == request.vars.ticket_no_id).select(orderby = db.Sales_Order_Transaction_Temporary.id)
         for n in _tmp:
             
             _item = db(db.Item_Master.id == n.item_code_id).select().first()
             _pric = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()        
-
+            if n.category_id == 3:
+                _selective_tax_foc = (float(_pric.selective_tax_price or 0) / int(_item.uom_value)) * int(n.total_pieces)            
+            else:
+                _selective_tax_foc = 0
+            if n.category_id == 4:
+                _selective_tax = (float(_pric.selective_tax_price or 0) / int(_item.uom_value)) * int(n.total_pieces)
+            else:
+                _selective_tax = 0
             db.Sales_Order_Transaction.insert(
                 sales_order_no_id = _id.id,
                 item_code_id = n.item_code_id,
@@ -648,16 +658,19 @@ def sales_order_form():
                 retail_price = _pric.retail_price,
                 vansale_price = _pric.vansale_price,
                 discount_percentage = n.discount_percentage,
-                selective_tax = n.selective_tax,
-                selective_tax_foc = n.selective_tax_foc,
+                selective_tax = _selective_tax,
+                selective_tax_foc = _selective_tax_foc,
+                # selective_tax = n.selective_tax,
+                # selective_tax_foc = n.selective_tax_foc,
                 packet_selective_tax = (n.selective_tax / _item.uom_value), # converted to pieces
                 packet_selective_tax_foc = (n.selective_tax_foc / _item.uom_value), # converted to pieces
                 net_price = n.net_price,
                 total_amount = n.total_amount)
             _grand_total += n.total_amount
-            _total_selective_tax += n.selective_tax or 0
-            _total_selective_tax_foc += n.selective_tax_foc 
+            _total_selective_tax += _selective_tax or 0
+            _total_selective_tax_foc += _selective_tax_foc or 0
             # print n.id, _total_selective_tax_foc, n.selective_tax_foc or 0
+        
         _discount = session.discount or 0
         # _discount = float(_grand_total) * float(_discount) / 100
         _after_discount = float(_grand_total) - float(session.discount or 0)
@@ -674,7 +687,7 @@ def sales_order_form():
         print form.errors
         response.flash = 'ENTRY HAS ERROR'
 
-    return dict(form = form, ticket_no_id = ticket_no_id)
+    return dict(form = form, ticket_no_id = ticket_no_id, heads_up = _heads_up)
 
 @auth.requires_login()
 def sales_order_form_abort():
@@ -744,7 +757,7 @@ def item_code_description():
                 TD(_on_hand),
                 TD(_on_transit),
                 TD(_on_balanced))),_class='table table-condensed'))            
-            print _icode.item_code, _icode.item_description.upper(), _icode.group_line_id.group_line_name, _icode.brand_line_code_id.brand_line_name, _icode.uom_value,
+            # print _icode.item_code, _icode.item_description.upper(), _icode.group_line_id.group_line_name, _icode.brand_line_code_id.brand_line_name, _icode.uom_value,
             _iprice.selective_tax_price, _iprice.retail_price, _iprice.wholesale_price, _on_hand, _on_transit, _on_balanced
             response.js = "toastr.options = {'positionClass': 'toast-top-full-width','preventDuplicates': true}; toastr['info']('%s');" % (_table)             
             return _table           
@@ -778,7 +791,9 @@ def validate_sales_order_transaction(form):
         _stk_file = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()
         _price = db(db.Item_Prices.item_code_id == _id.id).select().first()
         _exist = db((db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id) & (db.Sales_Order_Transaction_Temporary.item_code == request.vars.item_code) & (db.Sales_Order_Transaction_Temporary.category_id == request.vars.category_id)).select(db.Sales_Order_Transaction_Temporary.item_code).first()                                   
-
+        # if int(_ctr) == int(session.items):
+        # print 'ctr tops', int(_ctr) #, session.items
+            # form.errors.item_code = "Items exceed max no."
         if _id.uom_value == 1:
             form.vars.pieces = 0
 
@@ -807,7 +822,6 @@ def validate_sales_order_transaction(form):
         # _selective_tax_per_uom = _price.selective_tax_price 
         _selective_tax_per_uom = _price.selective_tax_price / _id.uom_value
 
-
         if _price.selective_tax_price > 0:                        
             _tax_per_uom = _selective_tax_per_uom
         else:
@@ -832,7 +846,7 @@ def validate_sales_order_transaction(form):
                     _selective_tax_foc =  float(_tax_per_uom) * _id.uom_value
 
                 _unit_price = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc
-                _selective_tax_total_foc += float(_tax_per_uom) * _total_pcs
+                _selective_tax_total_foc = float(_tax_per_uom) * _total_pcs
                 
                 # _net_price_at_wholesale = 0.0
                 # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value + _selective_tax_foc   
@@ -874,7 +888,7 @@ def validate_sales_order_transaction(form):
                     # _net_price_at_wholesale = 0.0
                     # _net_price_at_wholesale = float(_wholesale_price_per_uom) * _id.uom_value   
                     
-                    _net_price = (float(_price.wholesale_price) * (100 - _item_discount) / 100) + float(_price.selective_tax_price)
+                    _net_price = (float(_price.wholesale_price or 0) * (100 - _item_discount) / 100) + float(_price.selective_tax_price or 0)
                     # _net_price = _net_price_at_wholesale - ((_net_price_at_wholesale * _item_discount) / 100) + _selective_tax
                     # # print '_net_price_at_wholesale: ', _net_price_at_wholesale, _net_price                 
                     _total_amount = (_net_price / _id.uom_value) * _total_pcs
@@ -921,40 +935,50 @@ def validate_sales_order_transaction(form):
 
 @auth.requires_login()            
 def sales_order_transaction_temporary():       
+    _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
+    if _usr.van_sales == True:
+        _max_items = 20
+    else:
+        _max_items = 10    
     form = SQLFORM.factory(
         Field('item_code', 'string', length = 25),
         Field('quantity','integer', default = 0),
         Field('pieces','integer', default = 0),
         Field('discount_percentage', 'integer', default = 0),
         Field('category_id','reference Transaction_Item_Category', default = 4, ondelete = 'NO ACTION',requires = IS_IN_DB(db((db.Transaction_Item_Category.id == 3) | (db.Transaction_Item_Category.id == 4)), db.Transaction_Item_Category.id, '%(mnemonic)s - %(description)s', zero = 'Choose Type')))
-    if form.process( onvalidation = validate_sales_order_transaction).accepted:        
-        response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'                
+    if form.process( onvalidation = validate_sales_order_transaction).accepted:                        
         _id = db(db.Item_Master.id == form.vars.item_code_id).select().first()
         _stk_src = db((db.Stock_File.item_code_id == _id.id) & (db.Stock_File.location_code_id == session.stock_source_id)).select().first()        
-        db.Sales_Order_Transaction_Temporary.insert(
-            item_code_id = form.vars.item_code_id,
-            item_code = form.vars.item_code,
-            quantity = form.vars.quantity,
-            pieces = form.vars.pieces,
-            total_pieces = form.vars.total_pieces,
-            price_cost = form.vars.price_cost,
-            wholesale_price = form.vars.wholesale_price,
-            total_amount = form.vars.total_amount,
-            discount_percentage = form.vars.discount_percentage,
-            category_id = form.vars.category_id,
-            stock_source_id = session.stock_source_id,
-            selective_tax = form.vars.selective_tax,
-            selective_tax_foc = form.vars.selective_tax_foc,
-            net_price = form.vars.net_price,
-            ticket_no_id = session.ticket_no_id)
-        response.js = "$('#no_table_item_code').select();"
-        if db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() != 0:            
-            response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
+        _ctr = db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count()
+        if _ctr >= _max_items:
+            response.js = "jQuery('#btnadd').attr('disabled','disabled'); onMaxItems()"
         else:            
-            response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
-        _stk_src.stock_in_transit -= int(form.vars.total_pieces)        
-        _stk_src.probational_balance = int(_stk_src.closing_stock) + int(_stk_src.stock_in_transit)        
-        _stk_src.update_record()                          
+            response.flash = 'ITEM CODE ' + str(form.vars.item_code) + ' ADDED'        
+            db.Sales_Order_Transaction_Temporary.insert(
+                item_code_id = form.vars.item_code_id,
+                item_code = form.vars.item_code,
+                quantity = form.vars.quantity,
+                pieces = form.vars.pieces,
+                total_pieces = form.vars.total_pieces,
+                price_cost = form.vars.price_cost,
+                wholesale_price = form.vars.wholesale_price,
+                total_amount = form.vars.total_amount,
+                discount_percentage = form.vars.discount_percentage,
+                category_id = form.vars.category_id,
+                stock_source_id = session.stock_source_id,
+                selective_tax = form.vars.selective_tax,
+                selective_tax_foc = form.vars.selective_tax_foc,
+                net_price = form.vars.net_price,
+                ticket_no_id = session.ticket_no_id)
+            response.js = "$('#no_table_item_code').select();"
+            if db(db.Sales_Order_Transaction_Temporary.ticket_no_id == session.ticket_no_id).count() != 0:            
+                response.js = "jQuery('#btnsubmit').removeAttr('disabled')"
+            else:            
+                response.js = "jQuery('#btnsubmit').attr('disabled','disabled')"
+                
+            _stk_src.stock_in_transit -= int(form.vars.total_pieces)        
+            _stk_src.probational_balance = int(_stk_src.closing_stock) + int(_stk_src.stock_in_transit)        
+            _stk_src.update_record()                          
         
     elif form.errors:
         response.flash = 'FORM HAS ERROR'
@@ -2040,9 +2064,15 @@ def sales_order_transaction_table():
     _div_tax = _div_tax_foc = _discount = DIV('')
     _tax_remarks = ''
     _id = record = db(db.Sales_Order.id == request.args(0)).select().first()
-
+    _usr = db(db.Sales_Man.users_id == auth.user_id).select().first()
+    if not _usr:
+        _max_items = 0
+    else:
+        if _usr.van_sales == True:
+            _max_items = 20
+        else:
+            _max_items = 2
     _query = db((db.Sales_Order_Transaction.sales_order_no_id == request.args(0)) & (db.Sales_Order_Transaction.delete == False)).select(db.Sales_Order_Transaction.ALL, db.Item_Master.ALL,db.Item_Prices.ALL, orderby = db.Sales_Order_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Sales_Order_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Sales_Order_Transaction.item_code_id)])
-    
     _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)
     head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand Line'),TH('Item Description'),TH('Category'),TH('UOM'),TH('Quantity'),TH('Pieces'),TH('Price/Sel.Tax'),TH('Dis.%'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))
     for n in _query:    
@@ -2063,18 +2093,17 @@ def sales_order_transaction_table():
         _tax_remarks = PRE(_div_tax + str('\n') + _div_tax_foc)
         # ownership 
         if auth.user_id != n.Sales_Order_Transaction.created_by:
-            edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle disabled')            
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row',_class='btn btn-icon-toggle disabled')
         else:
-            if _id.status_id == 4:                
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle', _href=URL('sales','sales_order_edit_view', args = n.Sales_Order_Transaction.id, extension = False))
+            if _id.status_id == 4:                                
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-danger btn-icon-toggle delete', callback = URL( args = n.Sales_Order_Transaction.id, extension = False), **{'_data-id':(n.Sales_Order_Transaction.id)})                
-                save_lnk = A(I(_class='fas fa-save'), _type='button', _title='Save Row', name='pass', _class='btn btn-icon-toggle pass', callback = URL( args = n.Sales_Order_Transaction.id, extension = False), **{'_data-id':(n.Sales_Order_Transaction.id)})
+            else:                
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row',_class='btn btn-icon-toggle disabled')                            
+        if auth.has_membership(role = 'INVENTORY STORE KEEPER'):
+            if _id.status_id == 9 and _id.delivery_note_pending == True:
+                dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _class='btn btn-danger btn-icon-toggle delete', callback = URL( args = n.Sales_Order_Transaction.id, extension = False), **{'_data-id':(n.Sales_Order_Transaction.id)})                                
             else:
-                edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _class='btn btn-icon-toggle disabled')            
                 dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row',_class='btn btn-icon-toggle disabled')
-                save_lnk = A(I(_class='fas fa-save'), _title='Save Row', _class='btn btn-icon-toggle disabled')
-
         btn_lnk = DIV( dele_lnk)
         _qty = n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom        
         _pcs = n.Sales_Order_Transaction.quantity - n.Sales_Order_Transaction.quantity / n.Sales_Order_Transaction.uom * n.Sales_Order_Transaction.uom        
@@ -2084,8 +2113,11 @@ def sales_order_transaction_table():
         # if db((db.Sales_Order.id == request.args(0)) & (db.Sales_Order.status_id == 7) | (db.Sales_Order.created_by != auth.user_id)).select().first():
         if int(_id.status_id) == 4 or int(_id.status_id) == 3:
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')
+        elif int(_id.status_id) == 9 and _id.delivery_note_pending == True:
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')            
         else:
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)            
+
         if int(_id.status_id) == 8:
             _discount = INPUT(_class='form-control',_type='number',_style='text-align:right;font-size:14px',_name='added_discount',_id='added_discount',_value =locale.format('%.3F',_id.discount_added or 0, grouping = True),  _disabled = True)
         else:
@@ -2122,13 +2154,13 @@ def sales_order_transaction_table():
                     if int(_id.category_id) == 3: # FOC
                         _tax_foc = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty    
                     else:
-                        _tax = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty                                 
+                        _tax = (float(_ip.selective_tax_price) / int(request.vars.uom[row])) * _qty                                       
                     db(db.Sales_Order_Transaction.id == x).update(
                         quantity = _qty, 
                         discount_percentage=request.vars.discount_percentage[row], 
                         net_price = request.vars.net_price[row],
-                        selective_tax = _tax,
-                        selective_tax_foc = _tax_foc,
+                        selective_tax = _tax or 0,
+                        selective_tax_foc = _tax_foc or 0,
                         total_amount = request.vars.total_amount[row].replace(',',''))
                     row+=1
             else:
@@ -2136,15 +2168,15 @@ def sales_order_transaction_table():
                 _ip = db(db.Item_Prices.item_code_id == _id.item_code_id).select().first()                
                 _qty = (int(request.vars.quantity) * int(request.vars.uom)) + int(request.vars.pieces)
                 if int(_id.category_id) == 3: # FOC
-                    _tax_foc = (float(_ip.selective_tax_price) / int(request.vars.uom)) * _qty    
+                    _tax_foc = (float(_ip.selective_tax_price or 0) / int(request.vars.uom)) * _qty    
                 else:
-                    _tax = (float(_ip.selective_tax_price) / int(request.vars.uom)) * _qty                                        
+                    _tax = (float(_ip.selective_tax_price or 0) / int(request.vars.uom)) * _qty                                        
                 db(db.Sales_Order_Transaction.id == request.vars.ctr).update(
                     quantity = _qty, 
                     discount_percentage=request.vars.discount_percentage, 
                     net_price = request.vars.net_price.replace(',',''), 
-                    selective_tax = _tax,
-                    selective_tax_foc = _tax_foc,
+                    selective_tax = _tax or 0,
+                    selective_tax_foc = _tax_foc or 0,
                     total_amount = request.vars.total_amount.replace(',',''))
             db(db.Sales_Order.id == request.args(0)).update(
                 total_amount = request.vars.grand_total.replace(',',''),
@@ -2161,26 +2193,31 @@ def sales_order_transaction_table():
         _ip = db(db.Item_Prices.item_code_id == form.vars.item_code_id).select().first()
         _im = db(db.Item_Master.item_code == str(form.vars.item_code)).select().first()
         _qty = int(form.vars.quantity) * int(_im.uom_value) + int(form.vars.pieces or 0)
-        db.Sales_Order_Transaction.insert(
-            sales_order_no_id = request.args(0),
-            item_code_id = form.vars.item_code_id,
-            category_id = form.vars.category_id,
-            quantity = _qty,
-            uom = form.vars.uom,
-            price_cost = form.vars.price_cost,
-            total_amount = form.vars.total_amount,
-            net_price = form.vars.net_price,
-            packet_price_cost = form.vars.price_cost / form.vars.uom,            
-            average_cost = _ip.average_cost,
-            sale_cost = form.vars.net_price / form.vars.uom,
-            wholesale_price = _ip.wholesale_price, 
-            retail_price = _ip.retail_price,
-            vansale_price = _ip.vansale_price,
-            discount_percentage = form.vars.discount_percentage,
-            selective_tax = _ip.selective_tax_price,
-            packet_selective_tax = _ip.selective_tax_price / form.vars.uom,                        
-        )
-        response.js = "$('#tbltrnx').get(0).reload()"
+        _ctr = db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).count()
+        if int(_ctr) >= int(_max_items):
+            response.js = "console.log('max')"
+        else:
+            response.js = "console.log('not max')"
+            db.Sales_Order_Transaction.insert(
+                sales_order_no_id = request.args(0),
+                item_code_id = form.vars.item_code_id,
+                category_id = form.vars.category_id,
+                quantity = _qty,
+                uom = form.vars.uom,
+                price_cost = form.vars.price_cost,
+                total_amount = form.vars.total_amount,
+                net_price = form.vars.net_price,
+                packet_price_cost = form.vars.price_cost / form.vars.uom,            
+                average_cost = _ip.average_cost,
+                sale_cost = form.vars.net_price / form.vars.uom,
+                wholesale_price = _ip.wholesale_price, 
+                retail_price = _ip.retail_price,
+                vansale_price = _ip.vansale_price,
+                discount_percentage = form.vars.discount_percentage,
+                selective_tax = _ip.selective_tax_price,
+                packet_selective_tax = _ip.selective_tax_price / form.vars.uom,                        
+            )
+            response.js = "$('#tbltrnx').get(0).reload()"
     elif form.errors:
         print form.errors
         print 'errors'   
@@ -3741,13 +3778,13 @@ def sales_order_manager_grid():
         #     _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 8)) & (db.Sales_Order.dept_code_id != 3)).select(orderby = ~db.Sales_Order.id)
         # else:
         #     print 'in usr'
-        _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.cancelled == False)).select(orderby = db.Sales_Order.delivery_note_no)
+        _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.delivery_note_pending == False)).select(orderby = db.Sales_Order.delivery_note_no)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))        
     elif auth.has_membership(role = 'ACCOUNTS MANAGER'):
         _query = db((db.Sales_Order.status_id == 8)).select(orderby = ~db.Sales_Order.id)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TH('Delivery Note No.'),TH('Sales Invoice No.'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     elif auth.has_membership(role = 'ACCOUNTS') | auth.has_membership(role = 'ACCOUNTS MANAGER') | auth.has_membership(role = 'MANAGEMENT'):
-        _query = db((db.Sales_Order.status_id == 8) & (db.Sales_Order.cancelled == False)).select(orderby = db.Sales_Order.delivery_note_no)
+        _query = db((db.Sales_Order.status_id == 8) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.delivery_note_pending == False)).select(orderby = db.Sales_Order.delivery_note_no)
         head = THEAD(TR(TH('#'),TH('Date'),TH('Delivery Note No.'),TH('Sales Order No.'), TH('Department'),TH('Customer'),TH('Location Source'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))
     else:
         _query = db(db.Sales_Order).select(orderby = ~db.Sales_Order.id)
@@ -3839,6 +3876,45 @@ def sales_order_manager_grid():
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table', _id='tblso')
     return dict(table = table)
+
+auth.requires_login()
+def get_delivery_note_pending_grid():    
+    _query = db(((db.Sales_Order.status_id == 9) | (db.Sales_Order.status_id == 1)) & (db.Sales_Order.dept_code_id == 3) & (db.Sales_Order.cancelled == False) & (db.Sales_Order.delivery_note_pending == True)).select(orderby = db.Sales_Order.delivery_note_no)
+    head = THEAD(TR(TH('#'),TH('Date'),TH('Sales Order No.'),TD('Delivery Note'),TH('Department'),TH('Customer'),TH('Location Source'),TH('Requested By'),TH('Status'),TH('Required Action'),TH('Action'), _class='bg-primary'))        
+    row = []
+    ctr = 0
+    for n in _query:       
+        ctr+=1
+        view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-info btn-icon-toggle', _href=URL('sales','sales_order_store_keeper_view', args = n.id, extension = False))
+        edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
+        btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)
+        if not n.transaction_prefix_id:
+            _sales = 'None'
+        else:
+            _sales = str(n.transaction_prefix_id.prefix) + str(n.sales_order_no)            
+            _sales = A(_sales,_class='text-primary')#, _title='Sales Order', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': sales_info(n.id)})
+        if not n.delivery_note_no_prefix_id:
+            _note = 'None'
+        else:
+            _note = str(n.delivery_note_no_prefix_id.prefix) + str(n.delivery_note_no)
+            _note = A(_note,  _class='text-warning')#, _title='Delivery Note', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': delivery_info(n.id)})
+        row.append(TR(
+            TD(ctr),
+            TD(n.sales_order_date),
+            TD(_sales),
+            TD(_note),            
+            TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),
+            TD(n.customer_code_id.account_code,' - ',n.customer_code_id.account_name),
+            TD(n.stock_source_id.location_name),
+            TD(n.created_by.first_name.upper(), ' ',n.created_by.last_name.upper()),
+            TD(SPAN('PENDING',_class='badge style-warning')),
+            TD(n.status_id.required_action),
+            TD(btn_lnk)))
+    body = TBODY(*row)
+    table = TABLE(*[head, body], _class='table', _id='tblDlvNt')
+    return dict(table = table)
+
 
 def sales_info(e = request.args(0)):
     for n in db(db.Sales_Order.id == e).select():
@@ -4133,12 +4209,34 @@ def sale_order_manager_delivery_note_approved_form():
             get_sales_order_trnx_redo(int(_id.id))                          
             response.js = "jQuery(redirect())"
         else:
-            get_generate_delivery_note_id()            
+            if _id.delivery_note_pending == True:                
+                _id.update_record(status_id = 8, delivery_note_pending = False, remarks = request.vars.remarks, customer_good_receipt_no = request.vars.customer_good_receipt_no)    
+            else:
+                get_generate_delivery_note_id()            
             sync_to_delivery_note_db()            
             session.flash = 'Sales order processed.' 
             response.js = "jQuery(report())"
-        # else:            
-    
+
+def create_delivery_note_and_hold():
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    if _id.status_id == 8:
+        # print '==8', _id.id, _id.status_id
+        session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' already been prepared by ' + str(_id.delivery_note_approved_by.first_name)
+        response.js = "jQuery(window.location.reload())"
+    elif (_id.status_id == 1) and (_id.delivery_note_approved_by != auth.user_id):
+        # print '<8'
+        session.flash = 'Sales Order No. ' + str(_id.sales_order_no) + ' is on hold by ' + str(_id.delivery_note_approved_by.first_name)
+        response.js = "jQuery(redirect())"
+    else:        
+        _val = get_delivery_note_validation(1)
+        if _val != 1:        
+            _id.update_record(status_id = 10, cancelled = True, cancelled_by = auth.user_id, cancelled_on = request.now, remarks = 'Price Discrepancies.')
+            get_sales_order_trnx_redo(int(_id.id))                          
+            response.js = "jQuery(redirect())"
+        else:
+            get_generate_delivery_note_and_hold_id()                           
+            session.flash = 'Delivery Note processed and hold.' 
+            response.js = "jQuery(report())"
 
 def get_sales_order_trnx_redo(x):
     _id = db(db.Sales_Order.id == int(x)).select().first()
@@ -4191,6 +4289,15 @@ def get_generate_delivery_note_id():
     _skey += 1
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
     _id.update_record(status_id = 8, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,)    
+    session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' processed.'
+
+def get_generate_delivery_note_and_hold_id():    
+    _id = db(db.Sales_Order.id == request.args(0)).select().first()
+    _trns_pfx = db((db.Transaction_Prefix.dept_code_id == _id.dept_code_id) & (db.Transaction_Prefix.prefix_key == 'DLV')).select().first()    
+    _skey = _trns_pfx.current_year_serial_key
+    _skey += 1
+    _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)        
+    _id.update_record(delivery_note_pending = True, delivery_note_no_prefix_id = _trns_pfx.id, delivery_note_no = _skey, delivery_note_approved_by = auth.user_id, delivery_note_date_approved = request.now,remarks = request.vars.remarks, customer_good_receipt_no = request.vars.customer_good_receipt_no)    
     session.flash = 'Delivery Note No. ' + str(_id.delivery_note_no) + ' processed.'
 
 def sync_to_delivery_note_db():    
@@ -4290,7 +4397,7 @@ def get_generate_sales_invoice_id():
     _skey = _trns_pfx.current_year_serial_key
     _skey += 1    
     _trns_pfx.update_record(current_year_serial_key = int(_skey), updated_on = request.now, updated_by = auth.user_id)            
-    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)        
+    _id.update_record(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id)        
     db(db.Delivery_Note.sales_order_no == _id.sales_order_no).update(status_id = 7, sales_invoice_no_prefix_id = _trns_pfx.id, sales_invoice_no = _skey, sales_invoice_approved_by = auth.user_id, sales_invoice_date_approved = request.now)    
     for n in db(db.Sales_Order_Transaction.sales_order_no_id == request.args(0)).select():
         _stk_file = db((db.Stock_File.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == _id.stock_source_id)).select().first()
@@ -4382,6 +4489,7 @@ def sale_order_manager_invoice_no_rejected():
     session.flash = 'Delivery Note Rejected'
     response.js = "$('#tblso').get(0).reload()"
 
+
 def sale_order_manager_invoice_no_form_approved(): # from forms approval
     _id = db(db.Sales_Order.id == request.args(0)).select().first()
     if _id.status_id == 7:
@@ -4396,6 +4504,7 @@ def sale_order_manager_invoice_no_form_approved(): # from forms approval
             response.js = 'jQuery(redirect())'
         else:
             # print 'equal'
+            _id.update_record(sales_invoice_date_approved = request.vars.sales_invoice_date_approved, customer_good_receipt_no = request.vars.customer_good_receipt_no, remarks = request.vars.remarks)
             get_generate_sales_invoice_id()
             sync_to_sales_invoice_db()      
             session.flash = 'Sales Invoice No. ' + str(_id.sales_invoice_no) + ' process '      

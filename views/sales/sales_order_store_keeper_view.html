@@ -11,7 +11,37 @@
         </div>
         <div class="card-body tab-content">
                 <div class="form-horizontal">   
-                        {{=form.custom.begin}}	                    
+                        {{=form.custom.begin}}	       
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Delivery Note No</label>
+                                    <div class="col-sm-8">
+                                        {{if not _id.delivery_note_no_prefix_id:}}
+                                            <input type="text" class="form-control" value="None" readonly>
+                                        {{else:}}
+                                            <input type="text" class="form-control" value="{{=_id.delivery_note_no_prefix_id.prefix}}{{=_id.delivery_note_no}}" readonly>
+                                        {{pass}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Delivery Date</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" value="{{=_id.delivery_due_date}}" readonly >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Sales Man</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}} " readonly>
+                                    </div>
+                                </div>                                
+                            </div>
+                        </div>             
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -31,11 +61,11 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Delivery Due Date</label>
+                                    <label class="col-sm-4 control-label">Order Reference</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=_id.delivery_due_date}}" readonly >
+                                        <input type="text" class="form-control" value="{{=_id.customer_order_reference}} " readonly>
                                     </div>
-                                </div>
+                                </div>  
                             </div>
                         </div>
                         <div class="row">
@@ -59,11 +89,9 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Sales Man</label>
-                                    <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}} " readonly>
-                                    </div>
-                                </div>
+                                    <label class="col-sm-4 control-label">Remarks</label>
+                                    <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                                </div>  
                             </div>    
                         </div>                
                         <div class="row">
@@ -71,17 +99,17 @@
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">Customer</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=_id.customer_code_id.account_code}} - {{=_id.customer_code_id.account_name}} " readonly>
+                                        <input type="text" class="form-control" value="{{=_id.customer_code_id.account_name}}, {{=_id.customer_code_id.account_code}}" readonly>
                                     </div>
                                 </div>                    
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Order Reference</label>
+                                    <label class="col-sm-4 control-label">Customer Good Receipt No</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" value="{{=_id.customer_order_reference}} " readonly>
+                                        {{=form.custom.widget.customer_good_receipt_no}}                                        
                                     </div>
-                                </div>                 
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -111,36 +139,31 @@
                                     </div>
                                 </div>                    
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">Remarks</label>
-                                    <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
-                                </div>                                               
+                            <div class="col-md-1"></div>
+                            <div class="col-md-7">
+                                {{ if _id.status_id == 9 or _id.status_id == 1:}}
+                                <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">                                                                
+                                {{if _id.delivery_note_pending == True:}}
+                                    <input class="btn btn-primary" id="btnCreate" type="button" value="submit & print">
+                                    <input class="btn btn-warning" type="button" value="sales order print" disabled>
+                                    <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold" disabled>
+                                {{else:}}
+                                    <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
+                                    <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
+                                    <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold">
+                                {{pass}}
+                                {{ else: }}                                        
+                                    <input class="btn btn-primary" type="submit" value="submit" disabled>
+                                    <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
+                                    <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print" disabled>  
+                                    <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold" disabled>                                                                          
+                                    <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Delivery Note?</label> -->
+                                {{ pass }}
+                            {{=form.custom.end}}                                             
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label"></label>
-                                    <div class="col-sm-8">    
-                                        {{ if _id.status_id == 9 or _id.status_id == 1:}}
-                                            <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">
-                                            <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                            <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
-                                            <!-- <label><input type="checkbox" id="btnCancel"> Cancel Sales Order?</label>                                             -->
-                                            <!-- <a class="btn btn-info" id="btncdn" role="submit">create Sales Order & print</a>                                                                   -->
-                                        {{ else: }}                                        
-                                            <input class="btn btn-primary" type="submit" value="submit" disabled>
-                                            <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                            <input class="btn btn-info" id="btnCreate" type="button" value="create delivery note & print" disabled>                                                                            
-                                            <!-- <label><input type="checkbox" id="btnCancel" disabled> Cancel Delivery Note?</label> -->
-                                        {{ pass }}
-                                        {{=form.custom.end}}
-                                    </div>        
-                                </div>                        
-                            </div>
-                        </div>
-        
+                        </div>        
                     </div>              
-                {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0))}}
+                {{=LOAD('sales','sales_order_transaction_table.load', ajax = True, args = request.args(0), target = 'tbltrnx')}}
         </div>
     </div>                
 </div>
@@ -169,8 +192,12 @@ $(document).ready(function(){
         }        
     });
     $('#btnCreate').click(function(){        
-        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}');        
+        ajax('{{=URL('sales','sale_order_manager_delivery_note_approved_form', args = request.args(0))}}',['remarks','customer_good_receipt_no']);        
     });
+    $('#btnCreateAndOnHold').click(function(){        
+        ajax('{{=URL('sales','create_delivery_note_and_hold', args = request.args(0))}}',['remarks','customer_good_receipt_no']);        
+    });
+    
     $("#btnCancel").change(function(){
         if($("#btnCancel").is(":checked")) {            
             Cancel();

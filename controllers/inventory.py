@@ -1,6 +1,6 @@
-import time
-from datetime import date, datetime
-
+import time, calendar
+import datetime
+import string
 import locale
 locale.setlocale(locale.LC_ALL,'')
 
@@ -5857,7 +5857,7 @@ def card_view(item_code_id, stock):
             _stock = x / u
         _pieces = abs(x) - (abs(_stock) * u)
         # return str(int(_stock)) + ' - ' + str(int(stock) - int(stock) / int(_item.uom_value) * int(_item.uom_value))  + '/' + str(int(_item.uom_value))        
-        return str(int(_stock)) + ' - ' + str(_pieces)  + '/' + str(int(_item.uom_value))        
+        return str('{:,}'.format(int(_stock))) + ' - ' + str(_pieces)  + '/' + str(int(_item.uom_value))        
 
 def inventory_manager():
     return dict()
@@ -9824,19 +9824,21 @@ def master_item_view():
                     _os = i.Stock_File.opening_stock or 0
                     _cl = i.Stock_File.closing_stock or 0
                     _st = i.Stock_File.stock_in_transit or 0
+                    _ot = i.Stock_File.order_in_transit or 0
                     _av = i.Stock_File.probational_balance or 0#int(i.Stock_File.closing_stock or 0) + int(i.Stock_File.stock_in_transit or 0)
                     _fs = i.Stock_File.free_stock_qty or 0
                     _ds = i.Stock_File.damaged_stock_qty or 0
+                    _po = i.Stock_File.pos_stock or 0
                 else:
-                    _os = card_view(i.Stock_File.item_code_id, i.Stock_File.opening_stock)
-                    _cl = card_view(i.Stock_File.item_code_id, i.Stock_File.closing_stock)
-                    _st = card_view(i.Stock_File.item_code_id, i.Stock_File.stock_in_transit)
-                    _ot = card_view(i.Stock_File.item_code_id, i.Stock_File.order_in_transit)
+                    _os = card_view(i.Stock_File.item_code_id, i.Stock_File.opening_stock or 0)
+                    _cl = card_view(i.Stock_File.item_code_id, i.Stock_File.closing_stock or 0)
+                    _st = card_view(i.Stock_File.item_code_id, i.Stock_File.stock_in_transit or 0)
+                    _ot = card_view(i.Stock_File.item_code_id, i.Stock_File.order_in_transit or 0)
                     # _av = card_view(i.Stock_File.item_code_id, _available_balanced)
-                    _av = card_view(i.Stock_File.item_code_id, i.Stock_File.probational_balance)
-                    _fs = card_view(i.Stock_File.item_code_id, i.Stock_File.free_stock_qty)
-                    _ds = card_view(i.Stock_File.item_code_id, i.Stock_File.damaged_stock_qty)
-                    _po = card_view(i.Stock_File.item_code_id, i.Stock_File.pos_stock)
+                    _av = card_view(i.Stock_File.item_code_id, i.Stock_File.probational_balance or 0)
+                    _fs = card_view(i.Stock_File.item_code_id, i.Stock_File.free_stock_qty or 0)
+                    _ds = card_view(i.Stock_File.item_code_id, i.Stock_File.damaged_stock_qty or 0)
+                    _po = card_view(i.Stock_File.item_code_id, i.Stock_File.pos_stock or 0)
 
                 row.append(TR(TD(ctr),TD(i.Location.location_name),
                 TD(_cl),
@@ -9868,19 +9870,21 @@ def stock_card_movement():
         _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()
         _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
         i_row = []
-        i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Opening Stock'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price')),_class='bg-active')
+        i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Opening Stock Qty.'),TD('Dam. Stock Qty.'),TD('Free Stock Qty.'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price')),_class='style-accent small-padding')
+        
         i_row.append(TR(TD(_itm_code.item_code),TD(_itm_code.item_description),
         TD(card_view(_itm_code.id, _stk_file.opening_stock)),
+        TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty)),
+        TD(card_view(_itm_code.id, _stk_file.free_stock_qty)),
         TD(_itm_code.group_line_id.group_line_name),
         TD(_itm_code.brand_line_code_id.brand_line_name),
         TD(_itm_code.uom_value),
-        TD(locale.format('%.2F',_item_price.retail_price or 0, grouping = True)),
-        TD(locale.format('%.2F',_item_price.wholesale_price or 0, grouping = True)),
-        TD(locale.format('%.2F',_item_price.vansale_price or 0, grouping = True))))
+        TD(locale.format('%.3F',_item_price.retail_price or 0, grouping = True),_align='right'),
+        TD(locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),_align='right'),
+        TD(locale.format('%.3F',_item_price.vansale_price or 0, grouping = True),_align='right')))
         i_body = TBODY(*i_row)
         i_table = TABLE(*[i_head, i_body], _class = 'table table-bordered')
-
-        head = THEAD(TR(TH('#'),TH('Type'),TH('Voucher No'),TH('Date'),TH('Category'),TH('Qty In'),TH('Qty Out'),TH('Balance')))
+        
         row = []
         ctr = 0
         
@@ -9895,7 +9899,11 @@ def stock_card_movement():
         # query = db(_pr).select(db.Purchase_Receipt.ALL, db.Purchase_Receipt_Transaction.ALL, db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, 
         # left = [db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id), db.Purchase_Receipt_Transaction.on(db.Purchase_Receipt.id == db.Purchase_Receipt_Transaction.purchase_receipt_no_id)]) 
         _bal = 0
-        _bal = _stk_file.opening_stock
+        _quantity_in = 0 
+        _quantity_out = 0
+        _balanced = 0
+
+        # _bal = _stk_file.opening_stock
         # print 'stv: ', _stv
         
         _total_qty = db.Merch_Stock_Transaction.quantity.sum().coalesce_zero()
@@ -9903,75 +9911,123 @@ def stock_card_movement():
         _query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
         _query &= db.Merch_Stock_Transaction.transaction_date >= request.vars.start_date
         _query &= db.Merch_Stock_Transaction.transaction_date <= request.vars.end_date
-        _qty = db().select(_total_qty).first()[_total_qty]
-        print _itm_code.item_code, request.vars.location_code_id,request.vars.start_date,request.vars.end_date
-        for n in db(_query).select(_total_qty, db.Merch_Stock_Transaction.voucher_no, db.Merch_Stock_Transaction.transaction_type, db.Merch_Stock_Transaction.transaction_date, db.Merch_Stock_Transaction.category_id, groupby = db.Merch_Stock_Transaction.voucher_no | db.Merch_Stock_Transaction.transaction_type | db.Merch_Stock_Transaction.transaction_date | db.Merch_Stock_Transaction.category_id, orderby = db.Merch_Stock_Transaction.voucher_no , left = db.Merch_Stock_Header.on(db.Merch_Stock_Header.id == db.Merch_Stock_Transaction.merch_stock_header_id)):
-            # _qty += n.quantity
-            print 'voucher no:: ', n._extra[_total_qty], _qty, n.Merch_Stock_Transaction.transaction_type
-            # db.Merch_Stock_Transaction.transaction_type, 
-            # db.Merch_Stock_Transaction.voucher_no,
-            # db.Merch_Stock_Transaction.transaction_date,
-            # db.Merch_Stock_Transaction.category_id,
-            # db.Merch_Stock_Transaction.quantity, 
-            # groupby=db.Merch_Stock_Transaction.voucher_no):
-            # groupby=db.Merch_Stock_Transaction.transaction_type|db.Merch_Stock_Transaction.voucher_no|db.Merch_Stock_Transaction.transaction_date|db.Merch_Stock_Transaction.category_id|db.Merch_Stock_Transaction.quantity):
+        
+        _firs_month = date(date.today().year, 1, 1)
+        _prev_day = datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date() 
+        _prev_day = (_prev_day - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+        _qty_query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
+        _qty_query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
+        _qty_query &= db.Merch_Stock_Transaction.transaction_date >= _firs_month
+        _qty_query &= db.Merch_Stock_Transaction.transaction_date <= _prev_day       
+
+        if  _firs_month == datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date():
+            _prev_day = datetime.datetime.strptime(str(request.vars.end_date), '%Y-%m-%d').date()
+            _qty = _bal = _stk_file.opening_stock
+            # print 'true: ',_bal
+        else:                        
+            _qty = _bal = db(_qty_query).select(_total_qty).first()[_total_qty]
+            _qty = _bal = _stk_file.opening_stock - db(_qty_query).select(_total_qty).first()[_total_qty]
+        
+            # print 'false:', _bal, _stk_file.opening_stock, db(_qty_query).select(_total_qty).first()[_total_qty]
+
+        head = THEAD(TR(TD('Closing Stock Balance as of ', _prev_day, ': ', B(card_view(_itm_code.id, _qty)),  _colspan='9'),TD(A(I(_class='fas fa-print'),_class='btn btn-icon-toggle', _target=' blank',_href=URL('inventory_reports','get_stock_card_movement_report', args = [request.vars.item_code_id, request.vars.location_code_id, request.vars.start_date, request.vars.end_date])),_class='text-right')))
+        head += THEAD(TR(TH('#'),TH('Date'),TH('Type'),TH('Voucher No'),TH('Category'),TH('Qty In'),TH('Qty Out'),TH('Balance'),TH('Account Code'),TH('Account Name'),_class='style-accent-dark small-padding'))        
+        for n in db(_query).select(
+            _total_qty, 
+            db.Merch_Stock_Transaction.merch_stock_header_id, 
+            db.Merch_Stock_Transaction.voucher_no, 
+            db.Merch_Stock_Transaction.transaction_type, 
+            db.Merch_Stock_Transaction.transaction_date, 
+            db.Merch_Stock_Transaction.category_id, 
+            groupby = db.Merch_Stock_Transaction.voucher_no | 
+            db.Merch_Stock_Transaction.merch_stock_header_id |
+            db.Merch_Stock_Transaction.transaction_type | 
+            db.Merch_Stock_Transaction.transaction_date | 
+            db.Merch_Stock_Transaction.category_id, 
+            orderby = db.Merch_Stock_Transaction.transaction_date , 
+            left = db.Merch_Stock_Header.on(db.Merch_Stock_Header.id == db.Merch_Stock_Transaction.merch_stock_header_id)):
+
+            # _bal += n._extra[_total_qty]
             
+            _account_code = db(db.Merch_Stock_Header.id == n.Merch_Stock_Transaction.merch_stock_header_id).select().first()
+            _account_name = db(db.Master_Account.account_code == _account_code.account).select().first()
+            if _account_name:
+                _account_name = _account_name.account_name
+            else:
+                _account_name = 'None'
+
             ctr += 1            
 
             _type = n.Merch_Stock_Transaction.transaction_type
             _no = n.Merch_Stock_Transaction.voucher_no
             _date = n.Merch_Stock_Transaction.transaction_date
             _category = n.Merch_Stock_Transaction.category_id
-            _quantity_in = 0 
-            _quantity_out = 0
-            _balanced = 0
 
             if _type == 1:
-                _quantity_in = 1
+                _type = 'GR'
+                _bal += n._extra[_total_qty]
+                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
                 _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
-                _balanced = _quantity_out - _quantity_in
+                _balanced = card_view(_itm_code.id, _bal)
             elif _type == 2:
+                _type = 'SI'
                 _quantity_in = 0
-                _quantity_out = n._extra[_total_qty]
-                _balanced = _quantity_out - _quantity_in
+                # _quantity_out = n._extra[_total_qty]
+                _bal -= n._extra[_total_qty]
+                _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
+                _balanced = card_view(_itm_code.id, _bal)
             elif _type == 3:
+                _type = 'SOR'
                 _quantity_in = 1
                 _quantity_out = 0
                 _balanced = 0
             elif _type == 4:
-                _quantity_in = 1
+                _type = 'SR'
+                _bal += n._extra[_total_qty]
+                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
                 _quantity_out = 0
-                _balanced = 0
+                _balanced = card_view(_itm_code.id, _bal)
             elif _type == 5:
+                _type = 'STV'
                 _quantity_in = 1
                 _quantity_out = 0
                 _balanced = 0
             elif _type == 6:
-                _quantity_in = 1
+                _type = 'ADJ'
+                _bal += n._extra[_total_qty]
+                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
                 _quantity_out = 0
-                _balanced = 0
+                _balanced = card_view(_itm_code.id, _bal)
             elif _type == 7:
+                _type = 'SI'
                 _quantity_in = 1
                 _quantity_out = 0
                 _balanced = 0
             elif _type == 8:
+                _type = 'COR'
                 _quantity_in = 1
                 _quantity_out = 0
                 _balanced = 0
 
 
             row.append(TR(TD(ctr),
+            TD(_date),            
             TD(_type),
-            TD(_no),
-            TD(_date),                                        
+            TD(_no),                                        
             TD(_category),
             TD(_quantity_in), 
             TD(_quantity_out),
-            TD(_balanced)))
+            TD(_balanced),
+            TD(_account_code.account),
+            TD(_account_name),
+            ))
 
-        body = TBODY(*row)
-        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD('CLOSING STOCK AS PER MASTER STOCK',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.closing_stock))))
-        table = TABLE(*[head, body, foot], _class = 'table table-bordered')
+        body = TBODY(*row)        
+        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD('FOC Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.free_stock_qty),TD(),TD())))                
+        foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD('Closing Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.closing_stock),TD(),TD())))
+        foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD('Damaged Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty),TD(),TD())))        
+        table = TABLE(*[head, body, foot], _class = 'table table-hover')
         return dict(form = form, i_table = i_table, table = table)
     else:
         return dict(form = form, table = '', i_table = '')

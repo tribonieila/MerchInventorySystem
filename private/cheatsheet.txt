@@ -1,3 +1,5 @@
+sudo lsof -t -i:9001
+
 $('input[type="number"]').prop('readonly', true);
 $(':text').prop('readonly', true);
 $(':input').attr('readonly','readonly');

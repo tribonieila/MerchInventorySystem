@@ -83,11 +83,19 @@ def get_procurement_grid_table_id(x):
         dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
         btn_lnk = DIV(view_lnk, edit_lnk,dele_lnk, prin_lnk)    
         if int(x) != 4:
+            if n.purchase_receipt_no_prefix_id == None:
+                _purchase_receipt = 'None'
+            else:
+                _purchase_receipt = n.purchase_receipt_no_prefix_id.prefix_key,n.purchase_receipt_no
+            if n.purchase_order_no_prefix_id == None:
+                _purchase_order = 'None'
+            else:
+                _purchase_order = n.purchase_order_no_prefix_id.prefix_key,n.purchase_order_no
             row.append(TR(
                 TD(ctr),
                 TD(n.purchase_receipt_date_approved),
-                TD(n.purchase_receipt_no_prefix_id.prefix_key,n.purchase_receipt_no),
-                TD(n.purchase_order_no_prefix_id.prefix_key,n.purchase_order_no),
+                TD(_purchase_receipt),
+                TD(_purchase_order),
                 TD(n.purchase_request_no_prefix_id.prefix_key,n.purchase_request_no),
                 TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),
                 TD(n.supplier_code_id.supp_code,' - ',n.supplier_code_id.supp_name,', ', SPAN(n.supplier_code_id.supp_sub_code,_class='text-muted')),

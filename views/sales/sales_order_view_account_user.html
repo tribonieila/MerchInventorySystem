@@ -28,13 +28,8 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Sales Invoice Date</label>
-                            <div class="col-sm-8">
-                                {{ if not _id.sales_invoice_no_prefix_id: }}
-                                    <input type="text" class="form-control" value="None" readonly >
-                                {{ else: }}                                    
-                                    <input type="text" class="form-control" value="{{=_id.sales_invoice_date_approved}}" readonly >
-                                {{ pass }}
-                                
+                            <div class="col-sm-8">                                
+                                <input class="form-control date" name="sales_invoice_date_approved" id="sales_invoice_date_approved" value="{{=request.now.date()}}" >
                             </div>
                         </div>                    
                     </div>
@@ -54,12 +49,18 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Delivery Date</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.delivery_note_date_approved}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.delivery_due_date}}" readonly >
                                 <p class="help-block">readonly</p>                            
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Sales Man</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}} " readonly>
+                            </div>
+                        </div>                          
                     </div>
                 </div>
                 <div class="row">
@@ -82,11 +83,12 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Delivery Due Date</label>
+                            <label class="col-sm-4 control-label">Order Reference</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.delivery_due_date}}" readonly >
+                                <input type="text" class="form-control" value="{{=_id.customer_order_reference}}" readonly>
                             </div>
-                        </div>
+                        </div>                 
+
                     </div>
                 </div>
                 <div class="row">
@@ -108,11 +110,9 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Sales Man</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.sales_man_id.employee_id.first_name}} {{=_id.sales_man_id.employee_id.last_name}} " readonly>
-                            </div>
-                        </div>
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+                        </div>         
                     </div>    
                 </div>                 
                 <div class="row">
@@ -120,17 +120,17 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Customer</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.customer_code_id.account_code}} - {{=_id.customer_code_id.account_name}}" readonly>
+                                <input type="text" class="form-control" value="{{=_id.customer_code_id.account_name}}, {{=_id.customer_code_id.account_code}}" readonly>
                             </div>
                         </div>                    
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Order Reference</label>
+                            <label class="col-sm-4 control-label">Customer Good Receipt No</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" value="{{=_id.customer_order_reference}}" readonly>
+                                {{=form.custom.widget.customer_good_receipt_no}}                                        
                             </div>
-                        </div>                 
+                        </div>                        
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
@@ -161,10 +161,7 @@
                         </div>                    
                     </div>
                     <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
-                        </div>                                               
+                                      
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
@@ -193,7 +190,7 @@
     </div>
 </div>
 
-
+<script type="module" src="{{=URL('static','js/account.js')}}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
 $(document).ready(function(){    
@@ -208,7 +205,8 @@ $(document).ready(function(){
     // });
     
     $('#btninvoice').click(function(){
-        ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}')
+        AccountRedirect()
+        // ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}', ['sales_invoice_date_approved','customer_good_receipt_no','remarks'])
         // location.reload();
     });     
     $("#btnCancel").change(function(){
@@ -228,8 +226,11 @@ $(document).ready(function(){
         window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
         
     }
-    function AccountRedirect(){             
-        window.location.assign("{{=URL('inventory','account_grid')}}");                     
+    function AccountRedirect(){  
+        $('.nav-pills a[href="#delivery_note"]').tab('show');
+        window.location.href = "{{=URL('inventory','account_grid')}}" 
+        
+        // window.location.assign("{{=URL('inventory','account_grid')}}");                     
     }
     function Cancel(){
         // console.log("Cancelled transaction...");

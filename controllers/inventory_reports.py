@@ -21,12 +21,13 @@ from reportlab.pdfgen import canvas
 import string
 from num2words import num2words
 
-import time
+import time,calendar
 import datetime
-
+import string
 import locale
+from datetime import date
 locale.setlocale(locale.LC_ALL,'')
-from time import gmtime, strftime
+# from time import gmtime, strftime
 
 
 today = datetime.datetime.now()
@@ -42,6 +43,7 @@ row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20, showBoundary=1)
+docL = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 a3 = SimpleDocTemplate(tmpfilename,pagesize=A3, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 logo_path = request.folder + '/static/images/Merch.jpg'
@@ -276,6 +278,168 @@ def _header_footer(canvas, doc):
 
     # Release the canvas
     canvas.restoreState()
+
+def get_stock_card_movement_report():
+    # print 'get_stock_card_movement', request.args(0), request.args(1),request.args(2), request.args(3)
+    _ctr = 0
+    _bal = 0
+    _quantity_in = 0 
+    _quantity_out = 0    
+    _itm_code = db(db.Item_Master.id == request.args(0)).select().first()
+    _stk_file = db((db.Stock_File.item_code_id == request.args(0)) & (db.Stock_File.location_code_id == request.args(1))).select().first()
+    _item_price = db(db.Item_Prices.item_code_id == request.args(0)).select().first()
+
+    _heading = [['Stock Card Movement Report'],
+    ['Item Code','Description','OS Qty.','DS Qty.','FS Qty.','Group Line','Brand Line','UOM','RP','WSP','VSP'],
+    [_itm_code.item_code,
+    _itm_code.item_description,
+    card_view(_itm_code.id, _stk_file.opening_stock),
+    card_view(_itm_code.id, _stk_file.damaged_stock_qty),
+    card_view(_itm_code.id, _stk_file.free_stock_qty),
+    _itm_code.group_line_id.group_line_name,
+    _itm_code.brand_line_code_id.brand_line_name,
+    _itm_code.uom_value,
+    locale.format('%.3F',_item_price.retail_price or 0, grouping = True),
+    locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),
+    locale.format('%.3F',_item_price.vansale_price or 0, grouping = True)]]
+    _tblH = Table(_heading, colWidths=[70,'*', 60,60,60,70,70,30,60,60,60])
+    _tblH.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('SPAN',(0,0),(-1,0)),
+        ('ALIGN',(0,0),(-1,0),'CENTER'),
+        ('LINEABOVE', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),7),
+    ]))        
+
+    _total_qty = db.Merch_Stock_Transaction.quantity.sum().coalesce_zero()
+    _query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
+    _query &= db.Merch_Stock_Transaction.location == request.args(1)
+    _query &= db.Merch_Stock_Transaction.transaction_date >= request.args(2)
+    _query &= db.Merch_Stock_Transaction.transaction_date <= request.args(3)
+
+    _firs_month = date(date.today().year, 1, 1)
+    _prev_day = datetime.datetime.strptime(str(request.args(2)), '%Y-%m-%d').date() 
+    _prev_day = (_prev_day - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+    _qty_query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
+    _qty_query &= db.Merch_Stock_Transaction.location == request.args(1)
+    _qty_query &= db.Merch_Stock_Transaction.transaction_date >= _firs_month
+    _qty_query &= db.Merch_Stock_Transaction.transaction_date <= _prev_day       
+
+    if  _firs_month == datetime.datetime.strptime(str(request.args(2)), '%Y-%m-%d').date():
+        _prev_day = datetime.datetime.strptime(str(request.args(3)), '%Y-%m-%d').date()
+        _qty = _bal = _stk_file.opening_stock
+        # print 'true: ',_bal
+    else:                        
+        _qty = _bal = db(_qty_query).select(_total_qty).first()[_total_qty]
+        _qty = _bal = _stk_file.opening_stock - db(_qty_query).select(_total_qty).first()[_total_qty]
+    _rowH = [['Closing Stock Balance as of %s : %s' % (_prev_day, card_view(_itm_code.id, _qty)) ]] 
+    _rowH += [['#','Date','Type','Voucher No','Category','Qty.In','Qty.Out','Balance','Account Code','Account Name']]
+    for n in db(_query).select(
+        _total_qty, 
+        db.Merch_Stock_Transaction.merch_stock_header_id, 
+        db.Merch_Stock_Transaction.voucher_no, 
+        db.Merch_Stock_Transaction.transaction_type, 
+        db.Merch_Stock_Transaction.transaction_date, 
+        db.Merch_Stock_Transaction.category_id, 
+        groupby = db.Merch_Stock_Transaction.voucher_no | 
+        db.Merch_Stock_Transaction.merch_stock_header_id |
+        db.Merch_Stock_Transaction.transaction_type | 
+        db.Merch_Stock_Transaction.transaction_date | 
+        db.Merch_Stock_Transaction.category_id, 
+        orderby = db.Merch_Stock_Transaction.transaction_date , 
+        left = db.Merch_Stock_Header.on(db.Merch_Stock_Header.id == db.Merch_Stock_Transaction.merch_stock_header_id)):        
+        _ctr +=1
+        _type = n.Merch_Stock_Transaction.transaction_type
+        _account_code = db(db.Merch_Stock_Header.id == n.Merch_Stock_Transaction.merch_stock_header_id).select().first()
+        _account_name = db(db.Master_Account.account_code == _account_code.account).select().first()        
+        if _account_name:
+            _account_name = _account_name.account_name
+        else:
+            _account_name = 'None'        
+        if _type == 1:
+            _type = 'GR'
+            _bal += n._extra[_total_qty]
+            _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+            _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
+            _balanced = card_view(_itm_code.id, _bal)
+        elif _type == 2:
+            _type = 'SI'
+            _quantity_in = 0
+            # _quantity_out = n._extra[_total_qty]
+            _bal -= n._extra[_total_qty]
+            _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
+            _balanced = card_view(_itm_code.id, _bal)
+        elif _type == 3:
+            _type = 'SOR'
+            _quantity_in = 1
+            _quantity_out = 0
+            _balanced = 0
+        elif _type == 4:
+            _type = 'SR'
+            _bal += n._extra[_total_qty]
+            _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+            _quantity_out = 0
+            _balanced = card_view(_itm_code.id, _bal)
+        elif _type == 5:
+            _type = 'STV'
+            _quantity_in = 1
+            _quantity_out = 0
+            _balanced = 0
+        elif _type == 6:
+            _type = 'ADJ'
+            _bal += n._extra[_total_qty]
+            _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+            _quantity_out = 0
+            _balanced = card_view(_itm_code.id, _bal)
+        elif _type == 7:
+            _type = 'SI'
+            _quantity_in = 1
+            _quantity_out = 0
+            _balanced = 0
+        elif _type == 8:
+            _type = 'COR'
+            _quantity_in = 1
+            _quantity_out = 0
+            _balanced = 0
+        _rowH.append([
+            _ctr,
+            n.Merch_Stock_Transaction.transaction_date,
+            _type,            
+            n.Merch_Stock_Transaction.voucher_no,
+            n.Merch_Stock_Transaction.category_id,
+            _quantity_in,
+            _quantity_out,
+            _balanced,
+            _account_code.account,
+            _account_name])
+        
+    _rowH.append(['','','','','Closing Stock as per Stock File: ', '','',card_view(_itm_code.id, _stk_file.closing_stock)])
+    _rowH.append(['','','','','Damaged Stock as per Stock File: ', '','',card_view(_itm_code.id, _stk_file.damaged_stock_qty)])    
+    _rowH.append(['','','','','FOC Stock as per Stock File: ', '','',card_view(_itm_code.id, _stk_file.free_stock_qty)])
+    _tblB = Table(_rowH, colWidths=[20,70,50,80,50,80,80,80,80,'*'])
+    _tblB.setStyle(TableStyle([
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('LINEABOVE', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),        
+        ('LINEBELOW', (0,1), (-1,1), 0.25, colors.black,None, (2,2)),
+        ('LINEABOVE', (0,-3), (-1,-3), 0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (7,-2), (7,-2), 0.25, colors.black,None, (2,2)),
+        # ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
+        ('FONTSIZE',(0,0),(-1,-1),7),
+    ]))        
+
+    row.append(_tblH)
+    row.append(Spacer(1,.7*cm))
+    row.append(_tblB)
+    docL.pagesize = landscape(A4)
+    docL.build(row)
+    pdf_data = open(tmpfilename,"rb").read()
+    os.unlink(tmpfilename)
+    response.headers['Content-Type']='application/pdf'
+    return pdf_data
 
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ROOT'))
 def str_kpr_rpt():    
@@ -1811,3 +1975,24 @@ def card(item, quantity, uom_value):
     else:
         return str(int(quantity) / int(uom_value)) + ' - ' + str(int(quantity) - int(quantity) / int(uom_value) * int(uom_value))  + '/' + str(int(uom_value))        
 # ---- C A R D Function  -----
+
+# ---- C A R D Function  -----
+
+def card_view(item_code_id, stock):
+    _stock = _pieces = 0
+    _item = db(db.Item_Master.id == item_code_id).select().first()
+    if not stock:
+        stock = 0
+        return stock
+    else:
+        x = int(stock)
+        u = int(_item.uom_value)
+        if int(stock) < 0:            
+            # print 'abs', abs(x) / u
+            _stock = 0 - abs(x) / u
+        else:
+            # print 'no abs', x / u
+            _stock = x / u
+        _pieces = abs(x) - (abs(_stock) * u)
+        # return str(int(_stock)) + ' - ' + str(int(stock) - int(stock) / int(_item.uom_value) * int(_item.uom_value))  + '/' + str(int(_item.uom_value))        
+        return str('{:,}'.format(int(_stock))) + ' - ' + str(_pieces)  + '/' + str(int(_item.uom_value))        

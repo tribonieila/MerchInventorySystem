@@ -1,34 +1,32 @@
 {{extend 'layout.html'}}
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
-    <div class="col-md-12">
-        <div class="card card-underline">
-            <div class="card-head">                
-                <span class="card-title">{{=title}}</span>
-                <div class="tools">
-                    <a class="btn btn-icon-toggle" title="Reload" onclick="onRefresh()"><i class="fa fa-sync-alt"></i></a>
-                </div>
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">                
+            <span class="card-title">{{=title}}</span>
+            <div class="tools">
+                <a class="btn btn-icon-toggle" title="Reload" onclick="onRefresh()"><i class="fa fa-sync-alt"></i></a>
+            </div>        
+        </div>
+        <div class="card-body tab-content">
+            {{=form.custom.begin}}                
+            <div class="row">
+                <label>Date Range</label>
+                    <div class="col"><input class="form-control" id="no_table_from_date" name="from_date" type="date"></div>
+                    <span>to</span>
+                    <div class="col">
+                    <div class="col"><input class="form-control" id="no_table_from_date" name="to_date" type="date"></div>                        
+                    </div>
+                    <div class="col">
+                    {{=form.custom.submit}}
+                    </div>
+            </div>
+            {{=form.custom.end}}
+            <br>
+            {{=table}}
         
-            </div>
-            <div class="card-body tab-content">              
-                {{=form.custom.begin}}                
-                <div class="row">
-                    <label>Date Range</label>
-                      <div class="col"><input class="form-control" id="no_table_from_date" name="from_date" type="date"></div>
-                      <span>to</span>
-                      <div class="col">
-                        <div class="col"><input class="form-control" id="no_table_from_date" name="to_date" type="date"></div>                        
-                      </div>
-                      <div class="col">
-                        {{=form.custom.submit}}
-                      </div>
-                </div>
-                {{=form.custom.end}}
-                <br>
-                {{=table}}
-          
-            </div>
         </div>
     </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>

@@ -1,6 +1,6 @@
 {{=table}}
 {{=form.custom.begin}}
-<table class="table">
+<table class="table" id="frmEntry">
     <tr class="active table-bordered">
         <td>Item Code</td>
         <td>Quantity</td>
@@ -35,7 +35,11 @@
 <script>
 $(document).ready(function(){
     
-    
+    {{if record.status_id != 4:}}
+        $("#frmEntry").hide()
+    {{else:}}
+        $("#frmEntry").show()
+    {{pass}}
     //$(".pass").attr("disabled","disabled");
     //$("a[type='button']").attr("disabled","disabled");
     //$(".save").removeAttr('href');
@@ -50,7 +54,7 @@ $(document).ready(function(){
             var pcs = $tblrow.find("[name=pieces]").val(); 
             var pri = $tblrow.find("[name=price_cost]").val();
             var dis = $tblrow.find("[name=discount_percentage]").val();
-            var pri = $tblrow.find("[name=net_price]").val();
+            // var pri = $tblrow.find("[name=net_price]").val();
             var tax = $tblrow.find("[name=selective_tax]").val();
             var who = $tblrow.find("[name=wholesale_price]").val();
             
@@ -58,7 +62,7 @@ $(document).ready(function(){
             var ppp = parseFloat(pri) / parseInt(uom);
             var npr = parseFloat(pri) * (100 - parseFloat(dis)) / 100
             var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10) 
-            console.log(qty, pcs, pri, dis, sub );
+            console.log(qty, pcs, pri, dis, sub, npr);
             var add = $("#added_discount").val();
             if(parseInt(qty) < parseInt(0)){
                 $("#btnUpdate").attr('disabled','disabled');
@@ -70,10 +74,12 @@ $(document).ready(function(){
                 $("#btnUpdate").attr('disabled','disabled');
                 return alert("Please enter positive integer.");
             } else {
-                {{if record.status_id != 4:}}
-                    $("#btnUpdate").attr('disabled', 'disabled');
-                {{else:}}
+                {{if record.status_id == 4:}}
+                    $("#btnUpdate").removeAttr('disabled');                    
+                {{elif (record.status_id == 9) and (record.delivery_note_pending == True):}}
                     $("#btnUpdate").removeAttr('disabled');
+                {{else:}}
+                    $("#btnUpdate").attr('disabled', 'disabled');    
                 {{pass}}
             }                                              
             

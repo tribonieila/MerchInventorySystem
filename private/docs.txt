@@ -6,6 +6,12 @@ Ver.1.0.1:  Initial Version
 
 'Printed On: '+ str(request.now.strftime('%d/%m/%Y,%H:%M'))
 Inventory:
+- Ver.1.0.5 - 19/11/2020, Utility.
+    Issues:
+    - Added Utility Menu. Resolved.
+    - Sales Invoice consolidation module added.
+    
+
 
 - Ver.1.0.4 - 30/8/2020, Stock Corrections.
     Issues:

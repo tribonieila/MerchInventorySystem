@@ -1,0 +1,31 @@
+{{=table}}
+<button type="button" class="btn btn-primary" onClick="onConsol()">+ Consolidate Sales Invoice</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    function onConsol(){
+        bootbox.confirm({ 
+            size: "small",
+            message: "Are you sure you want to consolidate the record(s)?",
+            buttons: {
+                confirm: {
+                    label: "Yes",
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {                    
+                    ajax("{{=URL('utility','put_sales_invoice_consolidation')}}")                                              
+                } else {                    
+                    toastr['error']('Consolidation Canceled')
+                }
+
+            }
+        })            
+        
+        
+    }
+</script>

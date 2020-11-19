@@ -33,7 +33,7 @@ def api():
     return dict(GET=GET,POST=POST,PUT=PUT,DELETE=DELETE,OPTIONS=OPTIONS)
 
 def get_json():
-    _data = db().select(db.Item_Master.ALL, orderby = db.Item_Master.id)
+    _data = db().select(db.Item_Master.ALL, db.Department.ALL, orderby = db.Item_Master.id, left = db.Department.on(db.Item_Master.dept_code_id == db.Department.id))
     return XML(response.json(_data))
     
 def get_table():
@@ -48,8 +48,12 @@ def get_version_control():
     return dict(grid = grid)
 
 def generate():
-    for n in db(db.Stock_File.pos_stock == None).select(orderby = db.Stock_File.id):
-        n.update_record(pos_stock = 0)        
+    for n in db().select(orderby = db.Merch_Stock_Header.id):
+        _val = db(db.Sales_Invoice.sales_invoice_no == n.voucher_no).select().first()
+        if _val:
+            _val.update_record(processed = True)
+        else:
+            _val.update_record(processed = False)
     return dict(table = 'table')
 
 def merch():
@@ -234,6 +238,9 @@ def put_sales_invoice_consolidation_():
             print 'update here: ', n.sales_invoice_no           
 
 def put_sales_invoice_consolidation():    
+    print 'def put_sales_invoice_consolidation():    '
+    
+def put_sales_invoice_consolidation_():    
     _ctr = db(db.Dbf_Batch_Table).count() + 1
     _batch_gen = str(request.now.year)+str(request.now.month)+str(request.now.day) + str(_ctr)    
     db.Dbf_Batch_Table.insert(batch_code = _batch_gen, status_id = 1)
@@ -242,12 +249,13 @@ def put_sales_invoice_consolidation():
         _chk = db((db.Merch_Stock_Header.voucher_no == int(n.sales_invoice_no)) & (db.Merch_Stock_Header.transaction_type == 2)).select().first()
         if not _chk: # update consolidated records here
             # print 'insert here: ', n.sales_invoice_no
+            n.update_record(processed = True)
             db.Merch_Stock_Header.insert(
                 voucher_no = n.sales_invoice_no,
                 location = n.stock_source_id,
                 transaction_type = 2, # credit
                 transaction_date = n.sales_invoice_date_approved,
-                account = n.customer_code_id.account_code,
+                account = n.customer_code_id.account_code, # with account name from customer master
                 dept_code = n.dept_code_id,
                 total_amount = n.total_amount,           
                 total_amount_after_discount = n.total_amount_after_discount,
@@ -364,13 +372,16 @@ def put_stock_transfer_consolidation():
         _chk = db((db.Merch_Stock_Header.voucher_no == int(n.stock_receipt_no)) & (db.Merch_Stock_Header.transaction_type == 5)).select().first()
         if not _chk: # update consolidated records here
             _acct = db(db.Sales_Man.users_id == n.created_by).select().first()
+            # account field => from master account
+            # location source => from master account
+            # location destination => from master account
             db.Merch_Stock_Header.insert(
                 voucher_no = n.stock_receipt_no,
                 location = n.stock_source_id,
                 stock_destination = n.stock_destination_id,
                 transaction_type = 5, # credit
                 transaction_date = n.stock_receipt_date_approved,
-                account = _acct.employee_id.first_name,
+                account = n.stock_destination_id.location_code, #_acct.employee_id.first_name, # replace to location code with location name column
                 dept_code = n.dept_code_id,
                 total_amount = n.total_amount,           
                 total_amount_after_discount = n.total_amount,
@@ -523,26 +534,24 @@ def put_obsolescence_of_stock_consolidation(): # validated
                 #     y.selective_tax_foc,
                 #     y.vat_percentage
                 # )
-def put_stock_correction_consolidation(): # validated
-    print 'put_stock_correction_consolidation'
-    for n in db(db.Stock_Corrections.status_id == 16).select():
-        print 'insert: ', n.id
+def put_stock_correction_consolidation(): # validated    
+    for n in db(db.Stock_Corrections.status_id == 16).select():        
         db.Merch_Stock_Header.insert(
             voucher_no = n.stock_corrections_no,
             location = n.location_code_id,
-            transaction_type = n,
-        #     transaction_date = n.,
-        #     account = n.,
-        #     dept_code = n.,
-        #     total_amount = n.,
-        #     total_amount_after_discount = n.,
-        #     discount_percentage = n.,
-        #     discount_added = n.,
-        #     total_selective_tax = n.,
-        #     total_selective_tax_foc = n.,
-        #     stock_destination = n.,
-        #     sales_man_code = n.,
-        #     batch_code_id = n.,
+            transaction_type = 8,
+            transaction_date = n.stock_corrections_date,
+            # account = n.,
+            dept_code = n.dept_code_id,
+            total_amount = n.total_amount,
+            total_amount_after_discount = 0,
+            discount_percentage = 0,
+            discount_added = 0,
+            total_selective_tax = 0,
+            # total_selective_tax_foc = 0,
+            # stock_destination = n.,
+            # sales_man_code = n.,
+            # batch_code_id = n.,
         )
         _id = db(db.Merch_Stock_Header.voucher_no == n.stock_corrections_no).select().first()
         for y in db(db.Stock_Corrections_Transaction.stock_corrections_no_id == n.id).select():

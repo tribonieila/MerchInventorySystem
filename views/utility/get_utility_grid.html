@@ -1,0 +1,61 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-underline">
+            <div class="card-head">
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#sales_invoice">Sales Inv.  <span class="badge">{{=db(db.Sales_Invoice.processed == False).count()}} </span></a></li>
+                    <li><a href="#sales_return">Sales Ret. <span class="badge">0</span></a></li>
+                    <li><a href="#stock_transfer">Stock xfer. <span class="badge">0</span></a></li>
+                    <li><a href="#stock_corrections">Stock corr. <span class="badge">0</span></a></li>
+                    <li><a href="#stock_adjustment">Stock adj. <span class="badge">0</span></a></li>
+                    <li><a href="#obsolescense_of_stock">Obsol. of Stock <span class="badge">0</span></a></li>
+                    <li><a href="#purchase_receipt">Purchase Rec. <span class="badge">0</span></a></li>
+                    <li><a href="#direct_purchase">Direct pur. <span class="badge">0</span></a></li>
+                </ul>
+                <span class="card-title">Unconsolidated Transaction</span>
+            </div>
+            <div class="card-body tab-content">
+                <div class="tab-pane active" id="sales_invoice">						                    
+                    {{=LOAD('utility','get_sales_invoice_utility_grid.load', ajax = True, target = 'tblSI')}}             
+                </div>
+                <div class="tab-pane" id="sales_return">						
+                    <div class="alert alert-info" role="alert">
+                        <strong>Sales Return</strong> in progress...
+                    </div>     
+                </div>
+                <div class="tab-pane" id="stock_transfer">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Stock Transfer</strong> in progress...
+                    </div>                      
+                </div>
+                <div class="tab-pane" id="stock_corrections">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Stock Corrections</strong> in progress...
+                    </div>                      
+                </div>                
+                <div class="tab-pane" id="stock_adjustment">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Stock Adjustment</strong> in progress...
+                    </div>                      
+                </div>                
+                <div class="tab-pane" id="obsolescense_of_stock">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Obsolescense of Stock</strong> in progress...
+                    </div>                      
+                </div>                
+                <div class="tab-pane" id="purchase_receipt">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Purchase Receipt</strong> in progress...
+                    </div>                      
+                </div>                
+                <div class="tab-pane" id="direct_purchase">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Direct Purchase</strong> in progress...
+                    </div>                      
+                </div>                
+
+            </div>
+        </div>        
+    </div>
+</div>

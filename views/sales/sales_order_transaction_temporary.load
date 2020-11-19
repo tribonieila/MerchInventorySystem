@@ -160,6 +160,10 @@ $(document).ready(function(){
     });        
 
 });
+    function onMaxItems(){
+        toastr["error"]("Exceeded max items entry.")
+        toastr.options = {'positionClass': 'toast-top-full-width','preventDuplicates': true}
+    }
 </script>
 
 
