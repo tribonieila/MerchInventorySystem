@@ -142,16 +142,16 @@
                             <div class="col-md-1"></div>
                             <div class="col-md-7">
                                 {{ if _id.status_id == 9 or _id.status_id == 1:}}
-                                <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">                                                                
-                                {{if _id.delivery_note_pending == True:}}
-                                    <input class="btn btn-primary" id="btnCreate" type="button" value="submit & print">
-                                    <input class="btn btn-warning" type="button" value="sales order print" disabled>
-                                    <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold" disabled>
-                                {{else:}}
-                                    <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
-                                    <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
-                                    <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold">
-                                {{pass}}
+                                    <input class="btn btn-primary" id="btnSubmit" type="submit" value="submit">                                                                
+                                    {{if _id.delivery_note_pending == True:}}
+                                        <input class="btn btn-primary" id="btnCreate" type="button" value="submit & print">
+                                        <input class="btn btn-warning" type="button" value="sales order print" disabled>
+                                        <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold" disabled>
+                                    {{else:}}
+                                        <input class="btn btn-primary" id="btnCreate" type="button" value="create delivery note & print">
+                                        <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">
+                                        <input class="btn btn-info" id="btnCreateAndOnHold" type="button" value="create delivery note & hold">
+                                    {{pass}}
                                 {{ else: }}                                        
                                     <input class="btn btn-primary" type="submit" value="submit" disabled>
                                     <input class="btn btn-warning" type="button" value="sales order print" onclick="window.open('{{=URL('sales','sales_order_report_store_keeper', args = request.args(0))}}')">

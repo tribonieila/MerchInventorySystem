@@ -23,7 +23,7 @@ tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 import locale
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
-dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch, showBoundary=1)
+dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch)#, showBoundary=1)
 style = ParagraphStyle(name='Normal',fontName="Arabic", fontSize=25)
 style.alignment=TA_RIGHT
 arabic_text = u'إذا أخذنا بعين'
@@ -187,7 +187,7 @@ def delivery_note_footer_report(canvas, dlv_note_frame):
         _customer = n.customer_code_id.account_name # + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
         _so = [
             ['DELIVERY NOTE'],
-            ['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')],
+            ['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%b-%Y')],
             ['Customer Code',':',n.customer_code_id.account_code,'','Transaction Type',':','Credit'],             
             [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
             ['','','','','Location', ':',n.stock_source_id.location_name],       
@@ -195,13 +195,13 @@ def delivery_note_footer_report(canvas, dlv_note_frame):
 
     header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,3),(2,-1)),
         ('SPAN',(0,0),(6,0)),
         ('ALIGN',(0,0),(0,0),'CENTER'),        
         ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
-        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
-        ('FONTSIZE',(0,0),(0,0),15),
+        # ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12),
+        # ('FONTSIZE',(0,0),(0,0),15),
         ('FONTSIZE',(0,1),(6,1),8),                
         ('FONTSIZE',(0,2),(6,-1),8),                
         ('VALIGN',(0,0),(-1,-1),'TOP'),
@@ -212,18 +212,16 @@ def delivery_note_footer_report(canvas, dlv_note_frame):
     header.wrapOn(canvas, dlv_note_frame.width, dlv_note_frame.topMargin)
     header.drawOn(canvas, dlv_note_frame.leftMargin, dlv_note_frame.height + dlv_note_frame.topMargin + .2 * inch)
 
-
     # Footer
     _page = [        
-        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],        
-        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',_id.customer_order_reference],
-        ['Customer Acknowledgement: Received the above items in good order and sound condition.']]
-        # ['Customer Acknowledgement: Received the above items in good order and sound condition.']]
+        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%b-%Y')],        
+        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',_id.customer_order_reference],        
+        [Paragraph('Customer Acknowledgement: Received the above items in good order and sound condition.',style=_style)]]        
 
     footer = Table(_page, colWidths=['*',25,'*',25,'*',25,'*'])
     footer.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('SPAN',(0,2),(-1,2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
+        ('SPAN',(0,2),(-1,2)),        
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('TOPPADDING',(0,0),(-1,-1),0),
@@ -338,16 +336,14 @@ def sales_order_report_store_keeper():
     response.headers['Content-Type']='application/pdf'
     return pdf_data
 
-
-
 @auth.requires(lambda: auth.has_membership('INVENTORY STORE KEEPER') | auth.has_membership('ACCOUNTS')  | auth.has_membership('MANAGEMENT') | auth.has_membership('ROOT'))
 def get_workflow_delivery_reports_id():
     _id = db(db.Delivery_Note.id == request.args(0)).select().first()
     for n in db(db.Delivery_Note.id == request.args(0)).select():
-        _so = [['DELIVERY NOTE'],['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%m-%Y')]]
+        _so = [['DELIVERY NOTE'],['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%b-%Y')]]
 
     _others = [        
-        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],        
+        ['Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no),'','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%b-%Y')],        
         ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
     _others_table = Table(_others, colWidths=['*',25,'*',25,'*',25,'*'])
     _others_table.setStyle(TableStyle([
@@ -377,9 +373,10 @@ def get_workflow_delivery_reports_id():
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),        
         ('FONTSIZE',(0,0),(-1,-1),8),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('TOPPADDING',(0,1),(1,1),30),
-        ('LINEBELOW', (1,1), (1,1),0.5, colors.Color(0, 0, 0, 0.2)),
-        ('LINEBELOW', (3,1), (3,1),0.5, colors.Color(0, 0, 0, 0.2))        
+        ('TOPPADDING',(0,1),(1,1),15),
+        # ('LINEABOVE', (0,0), (-1,0),  0.25, colors.black,None, (2,2)),           
+        ('LINEBELOW', (1,1), (1,1),0.25, colors.black,None, (2,2)),
+        ('LINEBELOW', (3,1), (3,1),0.25, colors.black,None, (2,2))        
     ]))
     # _prt_ctr = db(db.Delivery_Note_Transaction_Report_Counter.delivery_note_transaction_no_id == request.args(0)).select().first()
     # if not _prt_ctr:
@@ -432,7 +429,7 @@ def get_workflow_delivery_reports_id():
         ]))
     
     delivery_note_transaction_table_reports()        
-    row.append(Spacer(1,.5*cm))
+    row.append(Spacer(1,.2*cm))
     # row.append(_others_table)
     row.append(Spacer(1,.2*cm))
     # row.append(_acknowledge_table)
@@ -1030,13 +1027,15 @@ def delivery_note_transaction_table_reports():
         else:
             _selective_tax = 'Total Selective Tax: '+ str(locale.format('%.2F',_id.total_selective_tax or 0, grouping = True))
             _selective_tax_foc = 'Total Selective Tax FOC: '+ str(locale.format('%.2F',_id.total_selective_tax_foc or 0, grouping = True))
-    _st.append(['','','-------------     NOTHING TO FOLLOWS     -------------','','',''])    
-    _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,70], repeatRows = 1)
+    _st.append(['-------------     NOTHING TO FOLLOWS     -------------'])    
+    _st_tbl = Table(_st, colWidths=[20,70,'*',30,30,120], repeatRows = 1)
     _st_tbl.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),                
-        ('LINEABOVE', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)),        
-        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.Color(0, 0, 0, 1)), 
-        ('LINEBELOW', (0,1), (-1,-2), 0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),    
+        ('SPAN',(0,-1),(-1,-1)),                     
+        ('LINEABOVE', (0,0), (-1,0),  0.25, colors.black,None, (2,2)),        
+        ('LINEABOVE', (0,-1), (-1,-1),  0.25, colors.black,None, (2,2)),        
+        ('LINEBELOW', (0,0), (-1,0), 0.25, colors.black,None, (2,2)), 
+        # ('LINEBELOW', (0,1), (-1,-2), 0.5, colors.Color(0, 0, 0, 0.2)),
         ('TOPPADDING',(0,-1),(-1,-1),5),
         ('BOTTOMPADDING',(0,-1),(-1,-1),5),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),                
@@ -1044,6 +1043,7 @@ def delivery_note_transaction_table_reports():
         ('VALIGN',(0,0),(5,-1),'TOP'),        
         ('ALIGN',(5,1),(5,-1),'RIGHT'),
         ('ALIGN',(5,0),(5,0),'CENTER'),
+        ('ALIGN',(0,-1),(-1,-1),'CENTER'),
         ('ALIGN',(2,-1),(2,-1),'RIGHT'),
     ]))
     return row.append(_st_tbl)

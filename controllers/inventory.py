@@ -4049,10 +4049,10 @@ def get_stock_request_module_grid():
 def get_stock_transfer_workflow_grid():
     row = []    
     _usr = db(db.User_Location.user_id == auth.user_id).select().first()
-    _dep = db(db.User_Department.user_id == auth.user_id).select().first()    
+    _dep = db(db.Warehouse_Manager_User.user_id == auth.user_id).select().first()    
 
     _query = (db.Stock_Request.created_by == auth.user_id) & (db.Stock_Request.srn_status_id == 26) & (db.Stock_Request.stock_source_id == 1)
-    _query |= (db.Stock_Request.srn_status_id == 26) & (db.Stock_Request.stock_source_id == 1)
+    _query |= (db.Stock_Request.srn_status_id == 26) & (db.Stock_Request.stock_source_id == 1) & (db.Stock_Request.dept_code_id == _dep.department_id)
     # _query |= (db.Stock_Request.srn_status_id == 2) & ((db.Stock_Request.stock_source_id == 1) | (db.Stock_Request.stock_destination_id == 1))
         # (db.Stock_Request.srn_status_id == 2)|(db.Stock_Request.srn_status_id == 26)| (db.Stock_Request.stock_source_id == 1))
         # if _dep.section_id == 'N':
@@ -4500,7 +4500,7 @@ def str_kpr_grid():
 def get_warehouse_stock_receipt_grid():    
     row = []
     ctr = 0
-    _usr = db(db.User_Department.user_id == auth.user_id).select().first()
+    _usr = db(db.Warehouse_Manager_User.user_id == auth.user_id).select().first()
 
     # if not _usr:
     #     _query = (db.Stock_Request.srn_status_id == 26) & ((db.Stock_Request.stock_destination_id == 1) | (db.Stock_Request.created_by == auth.user_id))
@@ -4508,7 +4508,7 @@ def get_warehouse_stock_receipt_grid():
     # else:
     #     print 'no not'
     # _query = (db.Stock_Request.created_by == auth.user_id) #& (db.Stock_Request.srn_status_id != 6)
-    _query = (db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.stock_destination_id == 1)
+    _query = (db.Stock_Request.srn_status_id == 5) & (db.Stock_Request.stock_destination_id == 1) & (db.Stock_Request.dept_code_id == _usr.department_id)
     
     head = THEAD(TR(TH('#'),TH('Date'),TH('Stock Request No.'),TH('Stock Transfer No.'),TH('Stock Source'),TH('Stock Destination'),TH('Requested By'),TH('Amount'),TH('Status'),TH('Required Action'),TH('Actions'),_class='bg-primary'))    
     for n in db(_query).select(orderby = db.Stock_Request.id):        
@@ -5816,7 +5816,8 @@ def stock_adjustment_manager_grid():
             TD(i.stock_adjustment_date),
             TD(i.stock_adjustment_no_id.prefix,i.stock_adjustment_no),
             TD(i.transaction_no),
-            TD(i.stock_adjustment_code_id.account_code,', ',i.stock_adjustment_code_id.account_name),
+            TD(i.stock_adjustment_code),
+            # TD(i.stock_adjustment_code_id.account_code,', ',i.stock_adjustment_code_id.account_name),
             TD(i.dept_code_id.dept_name),
             TD(i.location_code_id.location_name),
             TD(locale.format('%.2F', i.total_amount or 0, grouping = True), _align = 'right'),
@@ -9539,8 +9540,12 @@ def stock_receipt_report():
         _i = db(db.Item_Master.id == n.item_code_id).select().first()
         # _price_cost = n.quantity * n.price_cost
         _grand_total +=n.total_amount
+        if _i.uom_id == None:
+            _uom = 'PCS'
+        else:
+            _uom = _i.uom_id.mnemonic
         stk_trn.append([ctr,Paragraph(n.item_code_id.item_code, style=_style),str(_i.brand_line_code_id.brand_line_name) + str('\n') + str(_i.item_description),
-        _i.uom_id.mnemonic,n.category_id.mnemonic,n.uom,card(_i.id,n.quantity,n.uom),locale.format('%.2F',n.unit_price or 0, grouping = True),locale.format('%.2F',n.total_amount or 0, grouping = True)])
+        _uom,n.category_id.mnemonic,n.uom,card(_i.id,n.quantity,n.uom),locale.format('%.2F',n.unit_price or 0, grouping = True),locale.format('%.2F',n.total_amount or 0, grouping = True)])
     # for i in db((db.Stock_Request_Transaction.stock_request_id == request.args(0)) & (db.Stock_Request_Transaction.delete == False)).select(db.Stock_Request_Transaction.ALL, db.Item_Master.ALL, db.Stock_Request.ALL,
     # left = [
     #     db.Item_Master.on(db.Item_Master.id == db.Stock_Request_Transaction.item_code_id),         

@@ -40,7 +40,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
 	
 <!-- //cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css -->
-	<link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/materialadmin.css?1422823243" />
+	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/materialadmin.css?1422823243" /> -->
 	
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/font-awesome.min.css?1422823239" /> -->
 	<!-- <link type="text/css" rel="stylesheet" href="http://www.codecovers.eu/assets/css/modules/materialadmin/css/theme-default/material-design-iconic-font.min.css?1422823240" /> -->
@@ -60,7 +60,7 @@
 	<link rel="stylesheet" href="{{=URL('static','css/styles.css')}}"/>	
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
     <script src="{{=URL('static','dist/pace-1.0.2/pace.min.js')}}"></script>
-    <link rel="stylesheet" href="{{=URL('static','dist/pace-1.0.2/themes/blue/pace-theme-flash.css')}}"/>	
+    <link rel="stylesheet" href="{{=URL('static','dist/pace-1.0.2/themes/white/pace-theme-flash.css')}}"/>	
 
 	
     <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
@@ -79,7 +79,8 @@
 	 
 	 <!-- BEGIN HEADER-->
 	 {{if (auth.user_id):}}
-	<header id="header" >
+	<header id="header" style="background: #dd4b39; color: #f2f3f3;" >
+	<!-- <header id="header" > -->
 		<div class="headerbar">
 			<!-- Brand and toggle get grouped for better mobile display -->
 			<div class="headerbar-left">
@@ -87,7 +88,7 @@
 					<li class="header-nav-brand" >
 						<div class="brand-holder">						
 							<!-- <a href="http://localhost:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a> -->
-							<a href="http://128.1.2.13:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a>
+							<a href="http://128.1.2.13:3020/Merch_ERP"><img src="{{=URL('static','images/Merch.jpg')}}" width="200" height="50"></a>
 						</div>
 					</li>
 					<li>
@@ -282,6 +283,7 @@
 								<li><a href="{{=URL('sales', 'get_back_office_users_grid')}}" ><span class="title">Back Office User's</span></a></li>
 								<li><a href="{{=URL('inventory', 'get_user_location_grid')}}" ><span class="title">POS Location</span></a></li>
 								<li><a href="{{=URL('sales', 'get_sales_manager_grid')}}" ><span class="title">Sales Manager</span></a></li>
+								<li><a href="{{=URL('sales', 'get_warehouse_manager_grid')}}" ><span class="title">Warehouse Manager</span></a></li>
 							</ul>
 						</li>
 						<li class="gui-folder expanded">
@@ -304,7 +306,7 @@
 					</ul>
 				</li>
 				
-				<li><a href="#"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">ERP Utility</span></a>
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">ERP Utilities</span></a>
 					<ul>
 						<li><a href="{{=URL('utility','get_utility_grid')}}" ><span class="title">Inventory Utility</span></a></li>
 						<li><a href="#" ><span class="title">Account Utility</span></a></li>
@@ -393,7 +395,13 @@
 					</ul>
 				</li>							
 				
-		
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">ERP Utilities</span></a>
+					<ul>
+						<li><a href="{{=URL('utility','get_utility_grid')}}" ><span class="title">Inventory Utility</span></a></li>
+						<li><a href="#" ><span class="title">Account Utility</span></a></li>
+						<li><a href="#" ><span class="title">Reports</span></a></li>
+					</ul>
+				</li>		
 			</ul>
 			{{pass}}
 
@@ -413,7 +421,7 @@
 						<li><a href="{{=URL('inventory','get_workflow_reports',args=4)}}" ><span class="title">Obsolescence of stocks</span></a></li>					
 					</ul>
 				</li>		
-				
+				Sales_Manager_User
 				<li><a href="#"><div class="gui-icon"><i class="md fas fa-boxes"></i></div><span class="title">INVENTORY<span class="badge style-accent">{{=_inv.version_no}}</span></span></a>
 				
 					<ul>
@@ -478,6 +486,13 @@
 						<li><a href="{{=URL('sales', 'sales_return_browse')}}" ><span class="title">Sales Return</span></a></li>
 					</ul>
 				</li>		
+				<li><a href="#"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">ERP Utilities</span></a>
+					<ul>
+						<li><a href="{{=URL('utility','get_utility_grid')}}" ><span class="title">Inventory Utility</span></a></li>
+						<li><a href="#" ><span class="title">Account Utility</span></a></li>
+						<li><a href="#" ><span class="title">Reports</span></a></li>
+					</ul>
+				</li>				
 				
 			</ul>
 			{{pass}}			

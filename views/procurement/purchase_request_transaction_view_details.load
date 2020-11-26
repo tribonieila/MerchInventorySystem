@@ -82,7 +82,6 @@ $(document).ready(function(){
             }                        
         });
     });
-
     
     $("#added_discount_amount").change(function(){        
         var _exchange_rate = $("#no_table_exchange_rate").val();

@@ -47,13 +47,14 @@ def get_version_control():
     # print db(db.Version_Control.id == 1).select(db.Version_Control.version_no)
     return dict(grid = grid)
 
+def get_python_script():
+    import os
+    fp = os.path.join(request.folder, 'static', 'external/testing.py')
+    os.system('python ' + fp)
+
 def generate():
-    for n in db().select(orderby = db.Merch_Stock_Header.id):
-        _val = db(db.Sales_Invoice.sales_invoice_no == n.voucher_no).select().first()
-        if _val:
-            _val.update_record(processed = True)
-        else:
-            _val.update_record(processed = False)
+    for n in db(db.Item_Master.uom_id == None).select(orderby = db.Item_Master.id):
+        n.update_record(uom_id = 5)
     return dict(table = 'table')
 
 def merch():

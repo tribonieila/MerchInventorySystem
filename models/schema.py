@@ -415,6 +415,14 @@ db.define_table('Sales_Manager_User',
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
 
+db.define_table('Warehouse_Manager_User',
+    Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
+    Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),            
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
 db.define_table('User_Department',
     Field('user_id', db.auth_user, ondelete = 'NO ACTION'),
     Field('department_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),    
@@ -424,6 +432,7 @@ db.define_table('User_Department',
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
     Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user,ondelete = 'NO ACTION', update=auth.user_id, writable = False, readable = False),format='%(location_code)s')
+
 
 db.define_table('Gender',
     Field('mnemonic', 'string', length = 10, requires = [IS_LENGTH(10), IS_UPPER()]),
@@ -2504,6 +2513,21 @@ db.define_table('User_Log',
     Field('activities','string'),       
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),    
     Field('created_by', db.auth_user, ondelete = 'NO ACTION', default=auth.user_id, writable = False, readable = False))
+
+db.define_table('Year_End_Report',
+    Field('location_code_id', 'integer'),
+    Field('location_name', 'string', length = 50),
+    Field('department_name', 'string', length = 50),
+    Field('year_end','string',length=4),
+    Field('month_end','string',length=25),
+    Field('supplier_code','string', length=50),
+    Field('supplier_name','string', length=50),
+    Field('wholesale_price','decimal(20,4)', default = 0),
+    Field('net_sale','decimal(20,4)', default = 0),
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
 
 #---------------------------------------------------------
 # db.define_table('General_Ledger',

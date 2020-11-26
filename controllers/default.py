@@ -216,12 +216,12 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-# logo_path = request.folder + 'static/images/Merch.jpg'
+logo_path = request.folder + 'static/images/Merch.jpg'
 # text_path = request.folder + 'static/fonts/reports'
-# img = Image(logo_path)
-# img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
-# img.drawWidth = 3.25 * inch
-# img.hAlign = 'CENTER'
+img = Image(logo_path)
+img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
+img.drawWidth = 3.25 * inch
+img.hAlign = 'CENTER'
 
 # _limage = Image(logo_path)
 # _limage.drawHeight = 2.55*inch * _limage.drawHeight / _limage.drawWidth
@@ -278,22 +278,24 @@ def sales_invoice_canvas(canvas, doc_invoice):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _id = db(db.Sales_Invoice.id == request.args(0)).select().first()    
-        
+    _logo = [[img]]
+
     # Header 'Stock Request Report'
     for n in db(db.Sales_Invoice.id == request.args(0)).select():
         _customer = n.customer_code_id.account_name#.upper() + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
-        _so = [
-            ['SALES INVOICE'],            
+        _so = [            
+            ['SALES INVOICE'],
+            # [img],#            sales_invoice            
             [_ar_sales_invoice],#            sales_invoice            
             ['Invoice No. ', ':',str(n.sales_invoice_no_prefix_id.prefix)+str(n.sales_invoice_no),':',_ar_invoice_no,'','Invoice Date ',':',n.sales_invoice_date_approved.strftime('%d-%m-%Y'),':',_ar_invoice_date],
             ['Customer Code',':',n.customer_code_id.account_code,':',_ar_customer_code,'','Transaction Type',':','Credit',':',_ar_transaction_type],             
             [_customer,'', '','','','','Department',':',n.dept_code_id.dept_name,':',_ar_department],
             ['','','','', '','','Location', ':',n.stock_source_id.location_name,':',_ar_location],       
             ['','','','', '','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper()),':',_ar_sales_man],
-            ['','','','','','','']]
+            ['','','','','','','']]    
     header = Table(_so, colWidths=[100,10,'*',10,'*',20,'*',10,'*',10,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,0),(-1,0)),
         ('SPAN',(0,1),(-1,1)),
         ('SPAN',(0,4),(4,-1)),        

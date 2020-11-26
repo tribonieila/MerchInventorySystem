@@ -4312,6 +4312,10 @@ def validate_date_range(form):
     # _eta = request.vars.estimated_time_of_arrival
     # print 'today: ', _today, 'eta:', _eta.date(), 'request: ', request.now.date()
     # date_list = [datetime.strptime(x, "%Y-%m-%d") for x in date_list]
+    if request.vars.dept_code_id == 3:
+        _status_id = 19
+    else:
+        _status_id = 20
     if request.now.date() > _eta.date(): #form.vars.estimated_time_of_arrival:
         form.errors.estimated_time_of_arrival = 'ETA should not less than the purchase order date'
     form.vars.discount_percentage = session.discount or 0
@@ -4320,6 +4324,8 @@ def validate_date_range(form):
     else:
         form.vars.status_id = 19
     form.vars.added_discount_amount = session.added_discount_amount
+    form.vars.status_id = _status_id
+    
     # print 'validate: ', session.added_discount_amount
 
 # @auth.requires_membership('ROOT')
@@ -4913,9 +4919,9 @@ def purchase_req():
 def validateproforma(form):
     if (form.vars.supplier_reference_order == '') and (form.vars.proforma_file == ''):
         form.errors.supplier_reference_order = 'Proforma Invoice required.'
-        form.vars.status_id = 1
+        # form.vars.status_id = 1
     else:
-        form.vars.status_id = 19
+        # form.vars.status_id = 19
         form.vars.proforma_file = request.vars.proforma_file
         form.vars.supplier_reference_order = request.vars.supplier_reference_order
 
@@ -4955,6 +4961,9 @@ def purchase_request_transaction_view():
 
     if _id.status_id == 3 and _id.created_by == auth.user_id:
         db.Purchase_Request.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 10) | (db.Stock_Status.id == 3) | (db.Stock_Status.id == 19)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')            
+    elif _id.status_id == 20 and _id.dept_code_id != 3:
+        # db.Purchase_Request.section_id.writable = False    
+        db.Purchase_Request.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 10) | (db.Stock_Status.id == 20)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')            
     else:
         db.Purchase_Request.status_id.requires = IS_IN_DB(db((db.Stock_Status.id == 10) |(db.Stock_Status.id == 19)), db.Stock_Status.id, '%(description)s', zero = 'Choose Status')
     
@@ -4970,7 +4979,7 @@ def purchase_request_transaction_view():
         redirect(URL('inventory','get_back_off_workflow_grid'))
     elif form.errors:
         response.flash = 'FORM HAS ERRORS'        
-        # print form.errors
+        # print form.errors    
     return dict(form = form, _id = _id, _ex = _ex, row = _id, section_id = _section_id, title=_title)
 
 @auth.requires_login()
@@ -4983,10 +4992,12 @@ def purchase_request_transaction_view_details():
     if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'): 
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Ordered Qty.'),TH('Closing Stock'),TH('Order In Transit'),TH('Suppl.Pr.(FC)'),TH('Total Amount'),TH('Remarks'),TH('Action'),_class='bg-primary'))    
         _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete == False)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
+    
     else:
         head = THEAD(TR(TH('#'),TH('Item Code'),TH('Brand'),TH('Item Description'),TH('UOM'),TH('Category'),TH('Quantity'),TH('Pieces'),TH('Suppl.Pr.(FC)'),TH('Discount'),TH('Net Price'),TH('Total Amount'),TH('Action'),_class='bg-primary'))    
-        _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.created_by == auth.user_id) & (db.Purchase_Request_Transaction.delete == False) & (db.Purchase_Request_Transaction.delete_receipt == False) & (db.Purchase_Request_Transaction.delete_invoiced == False)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
+        _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete == False) & (db.Purchase_Request_Transaction.delete_receipt == False) & (db.Purchase_Request_Transaction.delete_invoiced == False)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
         # _query = db((db.Purchase_Request_Transaction.purchase_request_no_id == request.args(0)) & (db.Purchase_Request_Transaction.delete == False) & (db.Purchase_Request_Transaction.created_by == auth.user_id)).select(db.Item_Master.ALL, db.Purchase_Request_Transaction.ALL, db.Item_Prices.ALL, orderby = db.Purchase_Request_Transaction.id, left = [db.Item_Master.on(db.Item_Master.id == db.Purchase_Request_Transaction.item_code_id), db.Item_Prices.on(db.Item_Prices.item_code_id == db.Purchase_Request_Transaction.item_code_id)])
+        
     for n in _query:
         ctr += 1
         _total_amount += n.Purchase_Request_Transaction.total_amount or 0
@@ -4997,17 +5008,24 @@ def purchase_request_transaction_view_details():
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')            
         else:                
             _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success', _disabled = True)
-        if auth.user_id != n.Purchase_Request_Transaction.created_by or _id.status_id != 19:
+        if (_id.status_id == 20) and (_id.dept_code_id != 3) and (auth.user_id == n.Purchase_Request_Transaction.created_by):
+            response.js = "$('#btnadd').removeAttr('disabled'), $('#form_entry').show(), $('.quantity, .pieces, .price_cost, .discount_percentage, .added_discount_amount').prop('readonly', false)"
+            dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Purchase_Request_Transaction.id, extension = False), **{'_data-id':(n.Purchase_Request_Transaction.id)})
+            _btnUpdate = INPUT(_id='btnUpdate', _name='btnUpdate', _type= 'submit', _value='update', _class='btn btn-success')            
+            btn_lnk = DIV(dele_lnk)          
+
+        elif auth.user_id != n.Purchase_Request_Transaction.created_by or _id.status_id != 19:
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled')
-            response.js = "$('#btnadd').attr('disabled','disabled'), $('#form_entry').hide(), $('.quantity, .pieces, .price_cost, .discount_percentage, .added_discount_amount').prop('readonly', true)"
+            response.js = "$('#btnadd').attr('disabled','disabled'), $('#form_entry').hide(), $('.quantity, .pieces, .price_cost, .discount_percentage, .added_discount_amount').prop('readonly', true)"            
             # response.js = "$('#btnadd').attr('disabled','disabled'), $('#form_entry').hide(), $(':input').prop('readonly', true)"
-            btn_lnk = DIV(dele_lnk)
+            btn_lnk = DIV(dele_lnk)                        
         else:
             edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href = URL('procurement','puchase_request_transaction_view_edit',args = n.Purchase_Request_Transaction.id, extension = False))
             dele_lnk = A(I(_class='fas fa-trash-alt'), _title='Delete Row', _type='button  ', _role='button', _class='btn btn-icon-toggle delete', callback=URL(args = n.Purchase_Request_Transaction.id, extension = False), **{'_data-id':(n.Purchase_Request_Transaction.id)})
             btn_lnk = DIV( dele_lnk)
         if auth.has_membership(role = 'INVENTORY SALES MANAGER') | auth.has_membership(role = 'INVENTORY'):
+            
             row.append(TR(
                 TD(ctr,INPUT(_name='ctr',_type='number',_hidden='true',_value=n.Purchase_Request_Transaction.id)),
                 TD(n.Purchase_Request_Transaction.item_code_id.item_code),
@@ -5027,7 +5045,7 @@ def purchase_request_transaction_view_details():
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount ', _align = 'right', _colspan='2'), TD(_id.currency_id.mnemonic, ' ' ,locale.format('%.3F',_total_amount or 0, grouping = True), _align = 'right'),TD(INPUT(_class='btn btn-primary',_type='submit',_id='btnRemarks',_name='btnRemarks',_value='save remarks')),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount Amount ', _align = 'right', _colspan='2'),TD(locale.format('%.3F',_id.added_discount_amount or 0, grouping = True), _align = 'right'),TD(),TD()))
             foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount', _align = 'right', _colspan='2'),TD(_id.currency_id.mnemonic, ' ' ,locale.format('%.3F', _net_price or 0, grouping = True), _align = 'right'),TD(),TD()))            
-        else:
+        else:            
             _qty = n.Purchase_Request_Transaction.quantity / n.Purchase_Request_Transaction.uom
             _pcs = n.Purchase_Request_Transaction.quantity - n.Purchase_Request_Transaction.quantity / n.Purchase_Request_Transaction.uom * n.Purchase_Request_Transaction.uom
             _quantity = INPUT(_class='form-control quantity',_type='number',_name='quantity',_value=_qty)
@@ -5320,7 +5338,11 @@ def purchase_request_grid():
         else:
             _px = str(n.purchase_receipt_no_prefix_id.prefix) + str(n.purchase_receipt_no)
         
-        if auth.has_membership(role = 'MANAGEMENT'): # john approva
+        if auth.has_membership(role = 'MANAGEMENT'): # john approval
+            if n.purchase_request_approved_by == None:
+                _approved_by = 'None'
+            else:
+                _approved_by = n.purchase_request_approved_by.first_name.upper(),' ',n.purchase_request_approved_by.last_name.upper()
             row.append(TR(
                 TD(n.purchase_request_date),
                 TD(_pr),
@@ -5330,7 +5352,7 @@ def purchase_request_grid():
                 TD(n.location_code_id.location_code,' - ',n.location_code_id.location_name),
                 TD(n.currency_id.mnemonic, ' ',locale.format('%.2F',n.total_amount_after_discount or 0, grouping = True)),
                 TD(n.created_by.first_name.upper(), ' ', n.created_by.last_name.upper()),
-                TD(n.purchase_request_approved_by.first_name.upper(),' ',n.purchase_request_approved_by.last_name.upper()),
+                TD(_approved_by),
                 TD(n.status_id.description),
                 TD(n.status_id.required_action),
                 TD(btn_lnk)))
@@ -6373,7 +6395,7 @@ def post_document_register_id():
         invoice_amount= request.vars.invoice_amount,            
         forwarder_supplier_id = request.vars.forwarder_supplier_id,
         currency_id = _pr.currency_id,        
-        due_date= request.vars.due_date,            
+        due_date= request.vars.due_date   
     )
     _id = db(db.Document_Register.document_register_no == str(request.vars.doc_reg_no)).select().first()
     _po = db(db.Purchase_Order.purchase_order_no == _pr.purchase_order_no).select().first()
@@ -6381,7 +6403,7 @@ def post_document_register_id():
         document_register_no_id = _id.id, 
         purchase_order_no_id = _po.id,
         purchase_order_no = _pr.purchase_order_no)
-    _pr.update_record(status_id = 28)
+    _pr.update_record(status_id = 28, draft = True)
     _po.update_record(status_id = 28)
     response.js = "PrintDoc(%s)" % (_id.id)
     # design for consolidation
@@ -7954,11 +7976,11 @@ def purchase_order_reports():
 
     _header = [
         ['PURCHASE ORDER'],
-        ['Purchase Order No',':',str(_id.purchase_order_no_prefix_id.prefix) + str(_id.purchase_order_no),'','Purchase Order Date',':',_id.purchase_order_date_approved.strftime('%d-%m-%Y')],
+        ['Purchase Order No',':',str(_id.purchase_order_no_prefix_id.prefix) + str(_id.purchase_order_no),'','Purchase Order Date',':',_id.purchase_order_date_approved.strftime('%d-%b-%Y')],
         ['Deparment',':',_id.dept_code_id.dept_name,'','Location',':',_id.location_code_id.location_name],
         ['Supplier Code',':',Paragraph(_id.supplier_code_id.supp_name, style=_stylePR),'','Proforma Invoice',':',_id.supplier_reference_order],
         ['Mode of Shipment',':',_id.mode_of_shipment,'','Trade Terms',':',_id.trade_terms_id.trade_terms],
-        ['ETA',':',_id.estimated_time_of_arrival.strftime('%d-%m-%Y'),'','','',]
+        ['ETA',':',_id.estimated_time_of_arrival.strftime('%d-%b-%Y'),'','','',]
     ]
     _header_table = Table(_header, colWidths=['*',20,'*',20,'*',20,'*'])
     _header_table.setStyle(TableStyle([
@@ -8018,7 +8040,7 @@ def purchase_order_reports():
     ]))    
     if int(_id.trade_terms_id) == 2:
         _footer = [
-            ['Purchase Request No',':',str(_id.purchase_request_no_id.purchase_request_no_prefix_id.prefix) + str(_id.purchase_request_no_id.purchase_request_no),'','Purchase Request Date',':',_id.purchase_request_no_id.purchase_request_date.strftime('%d-%m-%Y')],        
+            ['Purchase Request No',':',str(_id.purchase_request_no_id.purchase_request_no_prefix_id.prefix) + str(_id.purchase_request_no_id.purchase_request_no),'','Purchase Request Date',':',_id.purchase_request_no_id.purchase_request_date.strftime('%d-%b-%Y')],        
             ['Remarks',':',_id.remarks,'','','',''],
             ['Other Conditions:'],        
             [Paragraph('1. This Certificate of Origin and Original invoices (a copy or duplicate copy is not acceptable) should be legalized by the Qatar Embassy in the country of origin. In the absence of Qatar Consulate, the full set of original documents including a Certificate of Origin stamped and issued by the Chamber of Commerce in the country of origin should be sent to us for legalization by the Ministry of Foreign Affairs in Doha.', style=_stylePR)],
@@ -8029,7 +8051,7 @@ def purchase_order_reports():
             ['MERCH TRADING CO. W.L.L.']]
     else:
         _footer = [
-            ['Purchase Request No',':',str(_id.purchase_request_no_prefix_id.prefix) + str(_id.purchase_request_no),'','Purchase Request Date',':',_id.purchase_request_date.strftime('%d-%m-%Y')],        
+            ['Purchase Request No',':',str(_id.purchase_request_no_prefix_id.prefix) + str(_id.purchase_request_no),'','Purchase Request Date',':',_id.purchase_request_date.strftime('%d-%b-%Y')],        
             ['Remarks',':',_id.remarks,'','','',''],
             ['Other Conditions:'],        
             [Paragraph('1. This Certificate of Origin and Original invoices (a copy or duplicate copy is not acceptable) should be legalized by the Qatar Embassy in the country of origin. In the absence of Qatar Consulate, the full set of original documents including a Certificate of Origin stamped and issued by the Chamber of Commerce in the country of origin should be sent to us for legalization by the Ministry of Foreign Affairs in Doha.', style=_stylePR)],
@@ -9509,22 +9531,22 @@ def document_register_report():
     _list = '/'.join([str(i.purchase_order_no) for i in _po])
     _header = [
         ['D1 REGISTER'],
-        ['Reference No.',':', _id.document_register_no,'' ,'Date',':',_id.document_register_date],
+        ['Reference No.',':', _id.document_register_no,'' ,'Date',':',_id.document_register_date.strftime('%d-%b-%Y')],
         # ['Location',':',_id.location_code_id.location_name],
         ['FINANCE MANAGER'],
         ['Merch & Partners W.L.L.,'],
         ['Doha-Qatar'],
         ['Order No. ' + str(_list)],
         ['Enclosed please find the following documents:-'],
-        ['Suppliers Invoice No.: ' + str(_id.invoice_no) + ' dated ' + str(_id.invoice_date)],
+        ['Suppliers Invoice No.: ' + str(_id.invoice_no) + ' dated ' + str(_id.invoice_date.strftime('%d-%b-%Y'))],
         ['Value: ' +str(_id.currency_id.mnemonic) +' ' + str(locale.format('%.3F',_id.invoice_amount or 0, grouping = True))],
         ['Packing List'],
         ['Dispatch Note'],
-        [Paragraph('Covering a consignment of ' + str(_id.supplier_code_id.supp_name) + ' shipped to us by ' + str(_id.courier) + ' on board ' + str(_id.mode_of_shipment) + str(', ETA ') + str(_id.estimated_time_of_arrival),style = _styleD1)],
+        [Paragraph('Covering a consignment of ' + str(_id.supplier_code_id.supp_name) + ' shipped to us by ' + str(_id.courier) + ' on board ' + str(_id.mode_of_shipment) + str(', ETA ') + str(_id.estimated_time_of_arrival.strftime('%d-%b-%Y')),style = _styleD1)],
         ['A) Accounting Action: For necessary action'],
         ['B) This consignment is for Stock and will be received by the Store Keeper'],
         ['Terms of Payment: 60 days from the invoice date'],
-        ['Due on: ' + str(_id.invoice_date)],
+        ['Due on: ' + str(_id.invoice_date.strftime('%d-%b-%Y'))],
         ['','','','','GENERAL MANAGER'],        
         ['C.C. Clearing Section: Original Invocie, Packing List, Depatch Note and Certificate of Origin'],
         ['C.C. Stores: Copies of Invoice, Packing List and Despatch Note'],

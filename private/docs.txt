@@ -11,8 +11,6 @@ Inventory:
     - Added Utility Menu. Resolved.
     - Sales Invoice consolidation module added.
     
-
-
 - Ver.1.0.4 - 30/8/2020, Stock Corrections.
     Issues:
     - Manoj:

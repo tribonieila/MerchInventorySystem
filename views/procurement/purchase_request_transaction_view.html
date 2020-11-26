@@ -112,6 +112,8 @@
                             <div class="col-sm-8">
                                 {{if (_id.status_id == 3) or (_id.status_id == 10) or (_id.status_id == 19):}}
                                     {{=form.custom.widget.status_id}}           
+                                {{elif (_id.status_id == 20) & (_id.dept_code_id != 3):}}
+                                    {{=form.custom.widget.status_id}}           
                                 {{else:}}
                                     <input type="text" class="form-control" value="{{=_id.status_id.description}}" readonly>                                    
                                 {{pass}}
@@ -148,6 +150,8 @@
                             <div class="col-sm-8">    
                                 {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}                                    
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
+                                {{elif (_id.status_id == 20) & (_id.dept_code_id != 3):}}
+                                    <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 {{ else: }}
                                     <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit" disabled>
                                 {{ pass }}
@@ -171,6 +175,8 @@
 <script>
 $(document).ready(function(){
     {{ if (_id.status_id == 1) or (_id.status_id == 3) or (_id.status_id == 19) :}}
+        $('#Purchase_Request_section_id').attr("disabled", false); 
+    {{elif (_id.status_id == 20) and (_id.dept_code_id != 3):}}
         $('#Purchase_Request_section_id').attr("disabled", false); 
     {{else:}}
         $('#Purchase_Request_section_id').attr("disabled", true); 

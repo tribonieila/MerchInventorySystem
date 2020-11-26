@@ -134,7 +134,7 @@
                     <div class="alert alert-info" role="alert">
                         <strong>Heads up!</strong> {{=heads_up}}
                     </div>
-                    {{=LOAD('sales','sales_order_transaction_temporary.load', ajax = True, target = 'tblsot')}}
+                    {{=LOAD('sales','sales_order_transaction_temporary.load', ajax = True, target = 'tblsot', vars = dict(request.vars.customer_code_id = request.vars.customer_code_id))}}
                 </div>
             </div>          
         </div>

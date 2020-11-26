@@ -27,7 +27,7 @@ import string
 import locale
 from datetime import date
 locale.setlocale(locale.LC_ALL,'')
-# from time import gmtime, strftime
+from time import gmtime, strftime
 
 
 today = datetime.datetime.now()
@@ -38,13 +38,13 @@ styleN = styles["BodyText"]
 # styleN = styles['Normal']
 styleH = styles['Heading1']
 _style = ParagraphStyle(name='BodyText', fontSize=7)
-_courier = ParagraphStyle('Courier',fontName="Courier", fontSize=7, leading = 10)
+_courier = ParagraphStyle('Courier',fontName="Courier", fontSize=8, leading = 10)
 row = []
 ctr = 0
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=1.2*inch, leftMargin=20, rightMargin=20, showBoundary=1)
 docL = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
-doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
+doc = SimpleDocTemplate(tmpfilename,pagesize=A4, topMargin=30, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 a3 = SimpleDocTemplate(tmpfilename,pagesize=A3, topMargin=80, leftMargin=20, rightMargin=20, bottomMargin=80)#,showBoundary=1)
 logo_path = request.folder + '/static/images/Merch.jpg'
 img = Image(logo_path)
@@ -810,8 +810,9 @@ def get_stock_transfer_report_id():    # final report
     _trn = db(db.Stock_Request.id == request.args(0)).select().first()
     signatory = [
         [str(_trn.stock_transfer_approved_by.first_name.upper() + ' ' + _trn.stock_transfer_approved_by.last_name.upper()),'',''],
-        ['Issued by','Receive by', 'Delivered by'],
-        ['','','Printed by: ' + str(auth.user.first_name.upper()) + ' ' + str(auth.user.last_name.upper()) + ' ' + str(strftime("%X"))]]
+        ['Issued by','Receive by', 'Delivered by']]
+        # ['','','Printed by: ' + str(auth.user_id) + ' ' + str(auth.user_id) + ' ' + str(strftime("%X"))]]
+        # ['','','Printed by: ' + str(auth.user_id.first_name.upper()) + ' ' + str(auth.user_id.last_name.upper()) + ' ' + str(strftime("%X"))]]
 
     signatory_table = Table(signatory, colWidths='*')
     signatory_table.setStyle(TableStyle([
@@ -979,6 +980,7 @@ def get_stock_receipt_report_id():    # final report
     _id = db(db.Stock_Receipt.id == request.args(0)).select().first()
     for s in db(db.Stock_Receipt.id == request.args(0)).select():        
         stk_req_no = [
+            [img],
             ['STOCK RECEIPT'],               
             ['Stock Receipt No',':',str(s.stock_receipt_no_id.prefix)+str(s.stock_receipt_no), '','Stock Receipt Date:',':',s.stock_receipt_date_approved],# .strftime('%d-%m-%Y, %-I:%M %p') [today.strftime("Printed on %A %d. %B %Y, %I:%M%p "),'','','','']], colWidths=[50,'*',50,'*',50])
             ['Stock Transfer No',':',str(s.stock_transfer_no_id.prefix)+str(s.stock_transfer_no), '','Stock Transfer Date:',':',s.stock_transfer_date_approved], #.strftime('%d-%m-%Y, %-I:%M %p')
@@ -990,16 +992,17 @@ def get_stock_receipt_report_id():    # final report
     stk_tbl = Table(stk_req_no, colWidths=['*',20,'*',10,'*',20,'*'])
     stk_tbl.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
-        ('SPAN',(0,0),(6,0)),
-        ('ALIGN', (0,0), (0,0), 'CENTER'),
+        ('SPAN',(0,0),(-1,0)),
+        ('SPAN',(0,1),(-1,1)),
+        ('ALIGN', (0,0), (-1,1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, -1), 'Courier'),    
-        ('FONTNAME', (0, 0), (0, 0), 'Courier-Bold', 12), 
-        ('FONTSIZE',(0,0),(0,0),15),
+        ('FONTNAME', (0,1),(-1,1), 'Courier-Bold', 12), 
+        ('FONTSIZE',(0,1),(-1,2),15),
         ('TOPPADDING',(0,1),(-1,-1),0),
         ('BOTTOMPADDING',(0,1),(-1,-1),0),    
-        ('TOPPADDING',(0,0),(0,0),5),
-        ('BOTTOMPADDING',(0,0),(0,0),12),                             
-        ('FONTSIZE',(0,1),(-1,-1),8)]))
+        ('TOPPADDING',(0,1),(-1,1),10),
+        ('BOTTOMPADDING',(0,1),(-1,1),15),                             
+        ('FONTSIZE',(0,2),(-1,-1),8)]))
         
     stk_trn = [['#', 'Item Code', 'Item Description','Unit','Cat.', 'UOM','Qty.','Price','Total']]
     for n in db((db.Stock_Receipt_Transaction.stock_receipt_no_id == request.args(0)) & (db.Stock_Receipt_Transaction.delete == False)).select():
@@ -1007,7 +1010,7 @@ def get_stock_receipt_report_id():    # final report
         _i = db(db.Item_Master.id == n.item_code_id).select().first()
         # _price_cost = n.quantity * n.price_cost
         _grand_total +=n.total_amount
-        stk_trn.append([ctr,Paragraph(n.item_code_id.item_code, style=_style),str(_i.brand_line_code_id.brand_line_name) + str('\n') + str(_i.item_description),
+        stk_trn.append([ctr,Paragraph(n.item_code_id.item_code, style=_courier),str(_i.brand_line_code_id.brand_line_name) + str('\n') + str(_i.item_description),
         _i.uom_id.mnemonic,n.category_id.mnemonic,n.uom,card(_i.id,n.quantity,n.uom),locale.format('%.2F',n.unit_price or 0, grouping = True),locale.format('%.2F',n.total_amount or 0, grouping = True)])
     (_whole, _frac) = (int(_grand_total), locale.format('%.2f',_grand_total or 0, grouping = True))
     stk_trn.append(['QR ' + string.upper(w.number_to_words(_whole, andword='')) + ' AND ' + str(str(_frac)[-2:]) + '/100 DIRHAMS','', '','', '','','Total Amount',':',locale.format('%.2F',_grand_total or 0, grouping = True)])    

@@ -17,7 +17,7 @@
                       <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment <span class="badge">{{=db(db.Stock_Adjustment.srn_status_id==4).count()}}</span></a></li>
                       <li role="presentation"><a href="#stock_request" aria-controls="stock_request" role="tab" data-toggle="tab">Stock Request <span class="badge">{{=db(db.Stock_Request.srn_status_id==4).count()}}</span></a></li>
                       <li role="presentation"><a href="#sales_order" aria-controls="sales_order" role="tab" data-toggle="tab">Sales Order <span class="badge">{{=db(db.Sales_Order.status_id==4).count()}}</span></a></li>
-                      <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return</a></li>
+                      <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return <span class="badge">{{=db((db.Sales_Return.status_id!=10) | (db.Sales_Return.status_id!=13) ).count()}}</span></a></li>
                     </ul>                  
                     <!-- Tab panes -->
                     <div class="tab-content">
