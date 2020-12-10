@@ -8,7 +8,7 @@ from gluon.contrib.appconfig import AppConfig
 from gluon.tools import Auth, Crud
 # import psycopg2 
 # -------------------------------------------------------------------------
-# This scaffolding model makes your app work on Google App Engine too
+# This scaffolding model makes your app work on Google App Engine too 
 # File is released under public domain and you can use without limitations
 # -------------------------------------------------------------------------
 

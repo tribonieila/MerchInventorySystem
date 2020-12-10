@@ -3,7 +3,7 @@
 
 <script> 
 $(document).ready(function(){
-    $('.table').DataTable();
+
 
     $('.btnInvoice').click(function(){
         var _id = $(this).attr('data-id');

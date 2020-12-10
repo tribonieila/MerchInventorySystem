@@ -541,7 +541,6 @@ def suplr_addr_form():
             country_id = form.vars.country_id,email_address = form.vars.email_address, status_id = form.vars.status_id)
     elif form.errors:
         response.flash = 'ENTRY HAS ERRORS'
-
     row = []
     thead = THEAD(TR(TH('#'),TH('Other Supplier Name'),TH('Contact Person'),TH('Contact No.'),TH('Fax No.'),TH('Address'),TH('Country'),TH('Status'),TH('Action')))
     for n in db(db.Supplier_Contact_Person.supplier_id == request.args(0)).select():
@@ -877,7 +876,7 @@ def groupline_add_form():
         ctr_val = pre.prefix + _ckey
         form = SQLFORM.factory(        
             Field('group_line_name', 'string', length=50, requires=[IS_UPPER(), IS_NOT_IN_DB(db, 'GroupLine.group_line_name')]),
-            Field('supplier_id', 'reference Supplier_Master', requires = IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s, %(supp_sub_code)s', zero =  'Choose Supplier')),
+            Field('supplier_id', 'reference Supplier_Master', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Supplier_Master.id, '%(supp_code)s - %(supp_name)s, %(supp_sub_code)s', zero =  'Choose Supplier'))),
             Field('status_id', 'reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
             response.flash = 'RECORD SAVE'
@@ -9806,7 +9805,7 @@ def master_item_view():
             TD(_itm_code.brand_line_code_id.brand_line_name),
             TD(_itm_code.uom_value),
             TD(_itm_code.uom_id.mnemonic),
-            TD(_item_price.currency_id.mnemonic),
+            TD(_item_price.currency_id),
             TD(locale.format('%.3F',_item_price.most_recent_cost or 0, grouping = True),_align='right'),
             TD(locale.format('%.3F',_item_price.most_recent_landed_cost or 0, grouping = True),_align='right'),
             TD(locale.format('%.3F',_item_price.opening_average_cost or 0, grouping = True),_align='right'),
@@ -9936,7 +9935,7 @@ def stock_card_movement():
         
             # print 'false:', _bal, _stk_file.opening_stock, db(_qty_query).select(_total_qty).first()[_total_qty]
 
-        head = THEAD(TR(TD('Closing Stock Balance as of ', _prev_day, ': ', B(card_view(_itm_code.id, _qty)),  _colspan='9'),TD(A(I(_class='fas fa-print'),_class='btn btn-icon-toggle', _target=' blank',_href=URL('inventory_reports','get_stock_card_movement_report', args = [request.vars.item_code_id, request.vars.location_code_id, request.vars.start_date, request.vars.end_date])),_class='text-right')))
+        head = THEAD(TR(TD('Opening Stock Balance as of ', request.vars.start_date, ': ', B(card_view(_itm_code.id, _qty)),  _colspan='9'),TD(A(I(_class='fas fa-print'),_class='btn btn-icon-toggle', _target=' blank',_href=URL('inventory_reports','get_stock_card_movement_report', args = [request.vars.item_code_id, request.vars.location_code_id, request.vars.start_date, request.vars.end_date])),_class='text-right')))
         head += THEAD(TR(TH('#'),TH('Date'),TH('Type'),TH('Voucher No'),TH('Category'),TH('Qty In'),TH('Qty Out'),TH('Balance'),TH('Account Code'),TH('Account Name'),_class='style-accent-dark small-padding'))        
         for n in db(_query).select(
             _total_qty, 
@@ -10229,6 +10228,109 @@ def stock_value_report():
         print form.errors
     return dict(form = form)
 
+def get_stock_value_utility(): 
+    form = SQLFORM.factory(
+        Field('item_code_id', widget = SQLFORM.widgets.autocomplete(request, db.Item_Master.item_code, id_field = db.Item_Master.id, limitby = (0,10), min_length = 2)),
+        Field('location_code_id', 'reference Location', ondelete = 'NO ACTION',requires = IS_IN_DB(db, db.Location.id, '%(location_code)s - %(location_name)s', zero = 'Choose Location Code')))
+    if form.accepts(request): 
+        if not request.vars.item_code_id:
+            response.flash = 'Item code not found or empty.'
+        else:            
+            _table_trx = _table_des_trx = _table =  _table_r =  ''
+            row = []
+            ctr = 0
+            _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
+            _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()
+            _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()            
+            if not _stk_file:
+                response.flash = "Emptry stocks on selected location."                
+            else:
+                head = THEAD(TR(TD('Item Code'),TD('Location'),TD('Description'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Size'),TD('Retail Price'),TD('Whole Sale Price'),TD('Opening Stock'),TD('Closing Stock'),TD('Probational Balance'),TD('Stock on Transit'),_class='style-accent small-padding'))
+                row.append(TR(TD(_itm_code.item_code),
+                TD(_stk_file.location_code_id.location_name),
+                TD(_itm_code.item_description),TD(_itm_code.group_line_id.group_line_name),            
+                TD(_itm_code.brand_line_code_id.brand_line_name),
+                TD(_itm_code.uom_value),
+                TD(_itm_code.uom_id.mnemonic),                
+                TD(locale.format('%.3F',_item_price.retail_price or 0, grouping = True),_align='right'),
+                TD(locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),_align='right'),
+                TD(card_view(request.vars.item_code_id,_stk_file.opening_stock),_align='right'),
+                TD(card_view(request.vars.item_code_id,_stk_file.closing_stock),_align='right'),
+                TD(card_view(request.vars.item_code_id,_stk_file.probational_balance),_align='right'),
+                TD(card_view(request.vars.item_code_id,_stk_file.stock_in_transit),_align='right')))
+                body = TBODY(*row)
+                table = TABLE(*[head, body], _class = 'table table-bordered')      
+                row = []
+                _qty = 0
+                _head = THEAD(TR(TD('Sales Order Request')))
+                _head += THEAD(TR(TD('Date'),TD('Sales Order No'),TD('Category'),TD('Quantity'),TD('Requested by'),_class='style-warning small-padding'))       
+                for so in db((db.Sales_Order.status_id != 7) & (db.Sales_Order.stock_source_id == request.vars.location_code_id) & (db.Sales_Order.cancelled == False) ).select(orderby = db.Sales_Order.id):
+                    for sot in db((db.Sales_Order_Transaction.sales_order_no_id == so.id) & (db.Sales_Order_Transaction.item_code_id == request.vars.item_code_id) & (db.Sales_Order_Transaction.delete == False)).select(orderby = db.Sales_Order_Transaction.id):
+                        _qty += sot.quantity or 0
+                        row.append(TR(
+                            TD(sot.created_on.date()),     
+                            TD(so.transaction_prefix_id.prefix,so.sales_order_no),               
+                            TD(sot.category_id.mnemonic),
+                            TD(card_view(request.vars.item_code_id, sot.quantity)),
+                            TD(sot.created_by.first_name,' ', sot.created_by.last_name)))
+                    _foot = TFOOT(TR(TD(),TD(),TD('Total Quantity: '),TD(card_view(request.vars.item_code_id, _qty),TD())))
+                    _body = TBODY(*row)
+                    _table = TABLE(*[_head, _body, _foot], _class='table table-hover table-condensed')
+                row = []
+                _qty = 0
+                _head = THEAD(TR(TD('Sales Return Request')))
+                _head += THEAD(TR(TD('Date'),TD('Sales Return No.'),TD('Category'),TD('Quantity'),TD('Requested by'),_class='style-warning small-padding'))
+                for sr in db((db.Sales_Return.status_id != 13) & (db.Sales_Return.location_code_id == request.vars.location_code_id)).select(orderby = db.Sales_Return.id):
+                    for srt in db((db.Sales_Return_Transaction.sales_return_no_id == sr.id) & (db.Sales_Return_Transaction.item_code_id == request.vars.item_code_id)).select(orderby = db.Sales_Return_Transaction.id):
+                        _qty += srt.quantity or 0
+                        row.append(TR(
+                            TD(srt.created_on.date()),        
+                            TD(sr.transaction_prefix_id.prefix,sr.sales_return_no),            
+                            TD(srt.category_id.mnemonic),
+                            TD(card_view(request.vars.item_code_id, srt.quantity)),
+                            TD(srt.created_by.first_name,' ', srt.created_by.last_name)))
+                    _foot = TFOOT(TR(TD(),TD(),TD('Total Quantity: '),TD(card_view(request.vars.item_code_id, _qty),TD())))
+                    _body = TBODY(*row)
+                    _table_r = TABLE(*[_head, _body, _foot], _class='table table-hover table-condensed')
+                row = []
+                _qty = 0
+                _head = THEAD(TR(TD('Stock Transfer Request (Source)'))) #style-accent small-padding
+                _head += THEAD(TR(TD('Date'),TD('Stock Request No'),TD('Category'),TD('Quantity'),TD('Requested by'),_class='style-danger small-padding'))
+                for st in db((db.Stock_Request.srn_status_id != 6) & (db.Stock_Request.stock_source_id == request.vars.location_code_id) & (db.Stock_Request.cancelled == False)).select(orderby = db.Stock_Request.id):
+                    for stx in db((db.Stock_Request_Transaction.stock_request_id == st.id) & (db.Stock_Request_Transaction.delete == False)).select(orderby = db.Stock_Request_Transaction.id):
+                        _qty += stx.quantity or 0
+                        row.append(TR(
+                            TD(stx.created_on.date()),           
+                            TD(st.stock_request_no_id.prefix,st.stock_request_no),         
+                            TD(stx.category_id.mnemonic),
+                            TD(card_view(request.vars.item_code_id, stx.quantity)),
+                            TD(stx.created_by.first_name,' ', stx.created_by.last_name)))
+                    _foot = TFOOT(TR(TD(),TD(),TD('Total Quantity: '),TD(card_view(request.vars.item_code_id, _qty),TD())))
+                    _body = TBODY(*row)
+                    _table_trx = TABLE(*[_head, _body, _foot], _class='table table-hover table-condensed')
+                row = []
+                _qty = 0
+                _head = THEAD(TR(TD('Stock Transfer Request (Destination)'))) #style-accent small-padding
+                _head += THEAD(TR(TD('Date'),TD('Stock Request No'),TD('Category'),TD('Quantity'),TD('Requested by'),_class='style-danger small-padding'))
+                for st in db((db.Stock_Request.srn_status_id != 6) & (db.Stock_Request.stock_destination_id == request.vars.location_code_id) & (db.Stock_Request.cancelled == False)).select(orderby = db.Stock_Request.id):
+                    for stxd in db((db.Stock_Request_Transaction.stock_request_id == st.id) & (db.Stock_Request_Transaction.delete == False)).select(orderby = db.Stock_Request_Transaction.id):
+                        _qty += stxd.quantity or 0
+                        row.append(TR(
+                            TD(stxd.created_on.date()),          
+                            TD(st.stock_request_no_id.prefix,st.stock_request_no),          
+                            TD(stxd.category_id.mnemonic),
+                            TD(card_view(request.vars.item_code_id, stxd.quantity)),
+                            TD(stxd.created_by.first_name,' ', stxd.created_by.last_name)))
+                    _foot = TFOOT(TR(TD(),TD('Total Quantity: '),TD(card_view(request.vars.item_code_id, _qty),TD())))
+                    _body = TBODY(*row)
+                    _table_des_trx = TABLE(*[_head, _body, _foot], _class='table table-hover table-condensed')
+                
+                return dict(form = form, table = table,  
+                _table_des_trx = DIV(DIV(DIV(_table_des_trx,_class='alert alert-callout style-accent no-margin'),_class='card-body no-padding'),_class='card'),
+                _table_trx = DIV(DIV(DIV(_table_trx,_class='alert alert-callout style-accent no-margin'),_class='card-body no-padding'),_class='card'), 
+                _table = DIV(DIV(DIV(_table,_class='alert alert-callout alert-warning no-margin'),_class='card-body no-padding'),_class='card'), 
+                _table_r = DIV(DIV(DIV(_table_r,_class='alert alert-callout alert-warning no-margin'),_class='card-body no-padding'),_class='card'))
+    return dict(form = form, table = '', _table = '', _table_r = '', _table_trx = '', _table_des_trx = '')
 def get_stock_value_view_():
     print 'get_stock_value_view', request.vars.dept_code_id, request.vars.supplier_code_id, request.vars.location_code_id
     if request.vars.supplier_code_id == "" and request.vars.location_code_id == "":

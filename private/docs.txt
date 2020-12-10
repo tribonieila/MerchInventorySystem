@@ -58,6 +58,10 @@ Sales:
 
 Procurement: - Ver.1.0.1 - 25/8/2020, Initial version control
 
+- Ver.1.0.16 - 10/12/2020, Purchase Request
+    Issues: Amin/Hernando
+    - Addeded contact person based on supplier.
+
 - Ver.1.0.15 - 25/10/2020, Purchase Request
     Issues: Amin
     - Under Purchase Order tab, when you click “View Row” on the Action Button, the following Screen is displayed. Resolved

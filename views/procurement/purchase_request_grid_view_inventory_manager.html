@@ -131,8 +131,7 @@
                                 {{if _id.proforma_file == "":}}
                                     {{=form.custom.widget.proforma_file}}                                    
                                 {{else:}}
-                                    <a class="btn btn-info btn-flat" onclick='window.open("{{=URL("default", "download", args=_id.proforma_file)}}", ""); return false;' href="javascript:void(0);"><i class="fa fa-paperclip"></i> View File</a>
-                                    
+                                    <a class="btn btn-info btn-flat" onclick='window.open("{{=URL("default", "download", args=_id.proforma_file)}}", ""); return false;' href="javascript:void(0);"><i class="fa fa-paperclip"></i> View File</a>                                   
                                 {{pass}}
                             </div>           
                         </div>
@@ -142,7 +141,8 @@
                         {{ if _id.status_id == 20: }}       
                             <input class="btn btn-success" type="button" value="approved" onclick=onApproved()>
                             <input class="btn btn-warning" type="button" value="reject" onclick=onReject()>                                    
-                            <button class="btn btn-info" type="button" onclick="window.open('{{=URL('procurement','purchase_history', args = request.args(0))}}')"> Purchase History</button>                            
+                            <button class="btn btn-info" type="button" onclick=onPurchaseHistory()> Purchase History</button>
+                            <!-- <button class="btn btn-info" type="button" onclick="window.open('{{=URL('procurement','purchase_history', args = request.args(0))}}')"> Purchase History</button> -->
                         {{ else: }}
                             <input class="btn btn-success" type="button" value="approved" disabled>
                             <input class="btn btn-warning" type="button" value="reject" disabled>                            
@@ -164,6 +164,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
+    function onPurchaseHistory(){
+        ajax("{{=URL('procurement','purchase_history', args = request.args(0))}}")
+    }
+
     function onApproved(){
         ajax('{{=URL('procurement','purchase_request_approved', args = request.args(0))}}', ['remarks'])
         window.location.replace("{{=URL('inventory','inventory_manager')}}")
@@ -193,4 +197,5 @@
     function onAbort(){
         window.location.replace("{{=URL('inventory','inventory_manager')}}")
     }
+
 </script>

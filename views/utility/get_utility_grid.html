@@ -4,20 +4,20 @@
         <div class="card card-underline">
             <div class="card-head">
                 <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class="active"><a href="#sales_invoice">Sales Inv.  <span class="badge">{{=db(db.Sales_Invoice.processed == False).count()}} </span></a></li>
+                    <li class="active"><a href="#sales_invoice">Sales Inv.  <span class="badge style-warning">{{=db(db.Sales_Invoice.processed == False).count()}} </span></a></li>
                     <li><a href="#sales_return">Sales Ret. <span class="badge">0</span></a></li>
                     <li><a href="#stock_transfer">Stock xfer. <span class="badge">0</span></a></li>
                     <li><a href="#stock_corrections">Stock corr. <span class="badge">0</span></a></li>
                     <li><a href="#stock_adjustment">Stock adj. <span class="badge">0</span></a></li>
                     <li><a href="#obsolescense_of_stock">Obsol. of Stock <span class="badge">0</span></a></li>
                     <li><a href="#purchase_receipt">Purchase Rec. <span class="badge">0</span></a></li>
-                    <li><a href="#direct_purchase">Direct pur. <span class="badge">0</span></a></li>
+                    <li><a href="#direct_purchase">Direct pur. <span class="badge style-primary">{{=db(db.Direct_Purchase_Receipt.processed == False).count()}}</span></a></li>
                 </ul>
                 <span class="card-title">Unconsolidated Transaction</span>
             </div>
             <div class="card-body tab-content">
                 <div class="tab-pane active" id="sales_invoice">						                    
-                    {{=LOAD('utility','get_sales_invoice_utility_grid.load', ajax = True, target = 'tblSI')}}             
+                    {{=LOAD('utility','get_sales_invoice_utility_grid.load', ajax = True, target = 'tblSI')}}
                 </div>
                 <div class="tab-pane" id="sales_return">						
                     <div class="alert alert-info" role="alert">
@@ -50,11 +50,8 @@
                     </div>                      
                 </div>                
                 <div class="tab-pane" id="direct_purchase">
-                    <div class="alert alert-info" role="alert">
-                        <strong>Direct Purchase</strong> in progress...
-                    </div>                      
+                    {{=LOAD('utility','get_direct_purchase_utility_grid.load', ajax = True, target = 'tblDPr')}}
                 </div>                
-
             </div>
         </div>        
     </div>

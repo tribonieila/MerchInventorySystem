@@ -204,9 +204,8 @@ $(document).ready(function(){
     //     }
     // });
     
-    $('#btninvoice').click(function(){
-        AccountRedirect()
-        // ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}', ['sales_invoice_date_approved','customer_good_receipt_no','remarks'])
+    $('#btninvoice').click(function(){        
+        ajax('{{=URL('sales','sale_order_manager_invoice_no_form_approved', args = request.args(0))}}', ['sales_invoice_date_approved','customer_good_receipt_no','remarks'])
         // location.reload();
     });     
     $("#btnCancel").change(function(){
@@ -226,8 +225,7 @@ $(document).ready(function(){
         window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
         
     }
-    function AccountRedirect(){  
-        $('.nav-pills a[href="#delivery_note"]').tab('show');
+    function AccountRedirect(){          
         window.location.href = "{{=URL('inventory','account_grid')}}" 
         
         // window.location.assign("{{=URL('inventory','account_grid')}}");                     

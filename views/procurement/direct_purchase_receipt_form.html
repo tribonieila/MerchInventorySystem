@@ -26,7 +26,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Transaction Date</label>
                                 <div class="col-sm-8"> {{import datetime}}
-                                    <input type="text" class="form-control" value="{{=datetime.date.today()}}" readonly >                                                      
+                                    <input type="text" class="form-control" value="{{=datetime.date.today().strftime('%d-%b-%Y')}}" readonly >                                                      
                                 </div>
                             </div>                    
                         </div>
@@ -198,7 +198,7 @@
         </div> 
     </div>
 </div>
-
+ 
 
          
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
@@ -242,7 +242,7 @@ jQuery(document).ready(function($){
         // { text: 'Choose Department', value = 0 },
         { text: '{{=d.dept_code}} - {{=d.dept_name}}', value:'{{=d.id}}',
             children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(db.Supplier_Master.ALL, orderby = db.Supplier_Master.id):}}
-                { text: '{{=p.supp_sub_code}} - {{=p.supp_name}}', value: '{{=p.id}}'}, {{pass}}
+                { text: '{{=p.supp_code}} - {{=p.supp_name}}, {{=p.supp_sub_code}}', value: '{{=p.id}}'}, {{pass}}
             ],
         }, {{pass}}
     ];
@@ -283,12 +283,14 @@ $(document).ready(function(){
     }); 
 
     $('#Direct_Purchase_Receipt_supplier_code_id').change(function(){       
-        ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
+        // ajax('{{=URL('generate_supplier_code_currency')}}', ['supplier_code_id'], '_supplier_code_currency'); 
         ajax('{{=URL('generate_supplier_trade_terms')}}', ['supplier_code_id'], '_supplier_trade_terms');        
     });
 
-    $('#Direct_Purchase_Receipt_supplier_account_code').change(function(){
-        ajax('{{=URL('generate_direct_supplier_code_id', args = request.args(0))}}', ['supplier_account_code','supplier_code_id'], '_account_name');             
+    $('#Direct_Purchase_Receipt_supplier_account_code, #Direct_Purchase_Receipt_supplier_code_id').change(function(){
+        if (($("#Direct_Purchase_Receipt_supplier_account_code").val() != "") && ($("#Direct_Purchase_Receipt_supplier_code_id").val() != "")) {
+            ajax('{{=URL('procurement','generate_direct_supplier_code_id', args = request.args(0))}}', ['supplier_account_code','supplier_code_id'], '_account_name');
+        }         
     })
 
     $('#btnproceed').click(function(){

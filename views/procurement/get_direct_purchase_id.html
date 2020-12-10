@@ -30,7 +30,7 @@
                             {{if row.status_id != 21:}}
                                 <label class="col-sm-4 control-label">Transaction Date</label>
                                 <div class="col-sm-8"> {{import datetime}}
-                                    <input type="text" class="form-control" value="{{=row.transaction_date}}" readonly >                                                      
+                                    <input type="text" class="form-control" value="{{=row.transaction_date.strftime('%d-%b-%Y')}}" readonly >                                                      
                                 </div>
                             {{else:}}                            
                                 <label class="col-sm-4 control-label">Purchase Receipt Date</label>

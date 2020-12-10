@@ -1,0 +1,159 @@
+{{=table}}
+<div id="form_entry">
+{{=form.custom.begin}}
+<div class="row">    
+    <table class="table">
+        <tr><td>Item Code</td><td>Retail Price</td><td>Discount %</td><td>Wholesale Price</td><td></td></tr>
+        <tr>
+            <td>{{=form.custom.widget.item_code}}</td>
+            <td>{{=form.custom.widget.retail_price}}</td>
+            <td>{{=form.custom.widget.discount_percentage}}</td>
+            <td>{{=form.custom.widget.wholesale_price}}</td>            
+            <td><input class="btn btn-primary" type="submit" value="add" id="btnadd"></td>
+        </tr>
+
+    </table>
+                                         
+</div>
+{{=form.custom.end}}
+<div id = "_item_code_description"></div>   
+</div>
+<script>
+$(document).ready(function(){
+    {{if (int(_id.status_id) == 3) and (_id.created_by != auth.user_id): }}
+        $("#btnRemarks").attr("disabled", "disabled");                        
+    {{pass}}        
+    $(".total_amount, .net_price, .net_amount_local, .net_amount_foreign, .grand_total").prop("readonly", true);
+    $(".item_remarks").prop("readonly", false);
+    var $tblrows = $("#tblPRT tbody tr");
+    var _exchange_rate = $("#no_table_exchange_rate").val()
+    $tblrows.each(function(index){
+        var $tblrow = $(this);
+        $tblrow.find(".quantity,.pieces,.price_cost,.discount_percentage").on("change", function(){
+            var ctr = $tblrow.find("[name=ctr]").val();
+            var uom = $tblrow.find("[name=uom]").val();
+            var qty = $tblrow.find("[name=quantity]").val();
+            var pcs = $tblrow.find("[name=pieces]").val();
+            var pri = $tblrow.find("[name=price_cost]").val();
+            var itd = $tblrow.find("[name=discount_percentage]").val();
+            var net = $tblrow.find("[name=net_price]").val();            
+            var itm = parseInt(qty) * parseInt(uom) + parseInt(pcs);
+            var ppp = parseFloat(pri) / parseInt(uom);
+            var npr = parseFloat(pri) * (100 - parseFloat(itd)) / 100
+            var sub = parseFloat(npr) / parseInt(uom) * parseInt(itm, 10)
+            var ada = $("#added_discount_amount").val();            
+            var foc = $("#net_amount_foreign").val();
+            var loc = $("#net_amount_local").val();            
+            
+            if(parseInt(qty) < parseInt(0)){
+                $("#btnUpdate").attr('disabled','disabled');
+                onNegativeVal()
+            } else if (parseInt(pcs) < parseInt(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                onNegativeVal()
+            } else if (parseFloat(itd) < parseFloat(0)) {
+                $("#btnUpdate").attr('disabled','disabled');
+                onNegativeVal()
+            } else {
+                $("#btnUpdate").removeAttr('disabled');
+            }            
+            
+            if (!isNaN(sub)){            
+                var grandTotal = 0;
+                var discount = 0;
+                var local = 0;
+                var foa = 0;
+                var netAmount = 0;
+                $tblrow.find(".net_price").val(npr.toLocaleString());
+                $tblrow.find(".total_amount").val(sub.toFixed(3));
+                
+                $(".total_amount").each(function(){
+                    var stval = parseFloat($(this).val());
+                    grandTotal += isNaN(stval) ? 0 : stval;
+                });
+                netAmount = parseFloat(grandTotal) - parseFloat(ada)
+                local = parseFloat(_exchange_rate) * parseFloat(netAmount);
+                
+                $(".grand_total").val(grandTotal.toFixed(3));
+                $(".net_amount_foreign").val(netAmount.toLocaleString());
+                $(".net_amount_local").val(local.toLocaleString());
+            }                        
+        });
+    });
+    
+    $("#added_discount_amount").change(function(){        
+        var _exchange_rate = $("#no_table_exchange_rate").val();
+        var var_discount = $("#added_discount_amount").val();
+        var GrandTotal = $(".grand_total").val();
+        var foreign = parseFloat(GrandTotal) - parseFloat(var_discount);
+        if(parseFloat(var_discount) < parseFloat(0)){
+            onNegativeVal()
+            $("#btnUpdate").attr('disabled','disabled');
+        } else {
+            $("#btnUpdate").removeAttr('disabled');
+            $("#net_amount_foreign").val(foreign.toLocaleString());
+            var_local = parseFloat(foreign) * parseFloat(_exchange_rate);
+            $("#net_amount_local").val(var_local.toLocaleString());
+
+        }
+        
+    });
+
+    $(document).on('paste', '#no_table_item_code', function(e) {
+        window.setTimeout(function() {
+        var withoutSpaces = $("#no_table_item_code").val();
+        withoutSpaces = withoutSpaces.replace(/\s+/g, '');
+        $("#no_table_item_code").val(withoutSpaces);
+            }, 1);
+    });
+
+    $("#no_table_quantity, #no_table_pieces, #most_recent_cost").on("keyup", function(event) {
+        nospaces(this);
+    });
+
+    function nospaces(t){
+        if(t.value.match(/\s/g)){
+        alert('Sorry, you are not allowed to enter any spaces');
+        t.value=t.value.replace(/\s/g,'0');
+        }
+    }    
+    function onNegativeVal(x){        
+        toastr["error"]("Negative value not allowed!")
+    }
+    $('#no_table_item_code, #no_table_quantity, #no_table_pieces').change(function(){
+        ajax('{{=URL('purchase_request_item_code_description', args = request.args(0))}}', ['item_code'], '_item_code_description');     
+        ajax('{{=URL('generate_item_code_recent_cost')}}', ['item_code'], '_most_recent_cost');    
+        ajax('{{=URL('generate_category_id')}}',['item_code'], '_category_id'); 
+        return false;
+    });    
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script>
+    $('.delete').click(function(){
+        var _id = $(this).attr('data-id');
+        var parent = $(this).parent("div").parent("td").parent("tr");
+        bootbox.confirm({
+            size: "small",
+            message: "Would you like to delete this record?",
+            buttons: {
+                confirm: {
+                    label: "Yes", 
+                    className: "btn-success"
+                },
+                cancel: {
+                    label: "No",
+                    className: "btn-danger"
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    ajax("{{=URL('procurement','puchase_request_transaction_browse_view_delete')}}" + '/'+ _id);
+                    parent.fadeOut('slow'); 
+                           
+                }
+    
+            }
+        })
+    });    
+</script>

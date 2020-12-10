@@ -1,4 +1,5 @@
 sudo lsof -t -i:9001
+{{=datetime.date.today().strftime('%d-%b-%Y')}}
 
 $('input[type="number"]').prop('readonly', true);
 $(':text').prop('readonly', true);

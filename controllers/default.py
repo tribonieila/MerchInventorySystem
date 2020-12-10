@@ -216,7 +216,7 @@ ctr = 0
 
 # doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=200,bottomMargin=200, showBoundary=1)
 
-logo_path = request.folder + 'static/images/Merch.jpg'
+logo_path = request.folder + '/static/images/Merch.jpg'
 # text_path = request.folder + 'static/fonts/reports'
 img = Image(logo_path)
 img.drawHeight = 2.55*inch * img.drawHeight / img.drawWidth
@@ -295,7 +295,7 @@ def sales_invoice_canvas(canvas, doc_invoice):
             ['','','','','','','']]    
     header = Table(_so, colWidths=[100,10,'*',10,'*',20,'*',10,'*',10,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
+        # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,0),(-1,0)),
         ('SPAN',(0,1),(-1,1)),
         ('SPAN',(0,4),(4,-1)),        
@@ -1255,7 +1255,7 @@ def sales_order_report_account_user(): # print direct to printer
     _others = [        
         ['Delivery Note No.',':',str(_id.delivery_note_no_prefix_id.prefix)+str(_id.delivery_note_no), '','Sales Order No.',':',str(_id.transaction_prefix_id.prefix)+str(_id.sales_order_no)],
         ['Delivery Note Date.',':',_id.delivery_note_date_approved.strftime('%d-%m-%Y, %H:%M %p'), '','Sales Order Date.',':',_id.sales_order_date.strftime('%d-%m-%Y')],
-        ['Remarks',':',Paragraph(_id.remarks, style = _style), '','Customer Sales Order Ref.',':',n.customer_order_reference]]
+        ['Remarks',':',_id.remarks, '','Customer Sales Order Ref.',':',n.customer_order_reference]]
     _others_table = Table(_others, colWidths=['*',25,'*',25,'*',25,'*'])
     _others_table.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),        
@@ -1941,8 +1941,12 @@ def wiki():
     return auth.wiki() 
 
 # ---- Action for login/register/etc (required for auth) -----
+def get_system_maintenance():
+    return dict()
+
 def user():
-   
+    
+    # redirect(URL('default','get_system_maintenance'))
     # auth.login(next=redirect('http://10.128.4.21:3010/Merch_HR/'))
     
     

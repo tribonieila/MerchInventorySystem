@@ -108,16 +108,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-8">                   
-                                <!-- <div class="btn-group" data-toggle="buttons">
-                                    <label class="btn ink-reaction btn-primary">
-                                        <input type="radio" name="options" id="option1">Submit
-                                    </label>
-                                    <label class="btn ink-reaction btn-success">
-                                        <input type="radio" name="options" id="option3">Proceed
-                                    </label>
-                                </div>                         -->
-            
+                            <div class="col-sm-8">                               
                                 <input class="btn btn-primary" type="submit" value="submit" id="btnsubmit">
                                 <input class="btn btn-success" type="button" value="proceed" id="btnproceed">                                
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('inventory','get_fmcg_workflow_grid')}}">abort</a>
@@ -131,10 +122,7 @@
                     </div>
                 </div> 
                 <div id = "order_panel">
-                    <div class="alert alert-info" role="alert">
-                        <strong>Heads up!</strong> {{=heads_up}}
-                    </div>
-                    {{=LOAD('sales','sales_order_transaction_temporary.load', ajax = True, target = 'tblsot', vars = dict(request.vars.customer_code_id = request.vars.customer_code_id))}}
+                    {{=LOAD('sales','sales_order_transaction_temporary.load', ajax = True, target = 'tblsot')}}
                 </div>
             </div>          
         </div>
@@ -143,7 +131,6 @@
 
 <script>
 $(document).ready(function(){    
-    
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnproceed').attr('disabled','disabled');

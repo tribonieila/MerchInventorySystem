@@ -39,6 +39,31 @@ def get_json():
 def get_table():
     table = TABLE()
     return dict()
+
+def get_user_sync():
+    print("set user's group --- ")
+    for n in db().select(orderby = db.auth_group.id):
+        _chk = d2(d2.auth_group.id == n.id).select().first()
+        if _chk:
+            print('update: '), n.id
+        else:
+            print('insert: '), n.id
+    print("set user's authentication --- ")
+    for y in db().select(orderby = db.auth_user.id):
+        _chk = d2(d2.auth_user.id == y.id).select().first()
+        if _chk:
+            print('usr up: '), y.id
+        else:
+            print('usr in: '), y.id
+    print("set user's member --- ")
+    for z in db().select(orderby = db.auth_membership.id):
+        _chk = d2(d2.auth_membership.id == z.id).select().first()
+        if _chk:
+            print('usr up: '), z.id
+        else:
+            print('usr in: '), z.id
+    
+
 def get_schedule():
     genSched.queue_task('get_consolidation', prevent_drift = True, repeats = 0, period = 120)
 
@@ -48,14 +73,41 @@ def get_version_control():
     return dict(grid = grid)
 
 def get_python_script():
+    # import dbf 
+    # table = dbf.Table('temptable.dbf', 'name C(30); age N(3,0); birth D')
     import os
-    fp = os.path.join(request.folder, 'static', 'external/testing.py')
+    fp = os.path.join(request.folder, 'static', 'external/ExportUtil.py')
     os.system('python ' + fp)
 
 def generate():
-    for n in db(db.Item_Master.uom_id == None).select(orderby = db.Item_Master.id):
-        n.update_record(uom_id = 5)
+    
+    print '----- '
+    # _so = db(db.Sales_Order.status_id == 4).count()
+    # for n in db(db.Sales_Order.status_id == 4).select(db.Sales_Order.sales_order_date, orderby = db.Sales_Order.sales_order_date, groupby = db.Sales_Order.sales_order_date):
+    #     print ': ', n.sales_order_date, _so
+    # from temp
+    for n in db().select(orderby = db.Direct_Purchase_Receipt.id):
+        n.update_record(processed = False)
+    # master stock file
+    # for n in db().select(orderby = db.Stock_File.id):
+    #     _id = db((db.Stock_File_Temp.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == 1)).select().first()
+    #     # n.update_record(closing_stock _id.closing_stock, opening_stock = _id.opening_stock)
+    #     if _id:
+    #         print _id.closing_stock, n.closing_stock
+    # for n in db().select(orderby = db.Merch_Stock_Header.id):
+    #     _id = db(db.Sales_Invoice.sales_invoice_no == n.voucher_no).select().first()
+    #     _sm = db(db.Sales_Man.id == _id.sales_man_id).select().first()
+    #     n.update_record(sales_man_code = _sm.mv_code)
     return dict(table = 'table')
+
+def ResetOrderTransaction():
+    for n in db(db.Sales_Order.cancelled_by == 9).select(orderby = db.Sales_Order.id):
+        n.update_record(cancelled = False, status_id = 9)
+        print 'id: ', n.id
+        # _id = db(db.Item_Prices.item_code_id == n.item_code_id).select().first()
+        # if float(_id.retail_price or 0) != float(n.retail_price or 0):
+        #     print ': ', n.id, n.item_code_id.item_code, n.retail_price , '- ', _id.retail_price
+            # n.update_record(average_cost = float(_id.average_cost or 0))
 
 def merch():
     form = SQLFORM.smartgrid(db.Merch_Stock_Header)

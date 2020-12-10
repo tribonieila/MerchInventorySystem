@@ -1,5 +1,10 @@
 {{=table}}
-<button type="button" class="btn btn-primary" onClick="onConsol()">+ Consolidate Sales Invoice</button>
+{{if db(db.Sales_Invoice.processed == False).select().first():}}
+    <button type="button" class="btn btn-primary" onClick="onConsol()" id="btnSI">+ Consolidate Sales Invoice</button>
+{{else:}}
+    <button type="button" class="btn btn-primary disabled" onClick="onConsol()" id="btnSI">+ Consolidate Sales Invoice</button>
+{{pass}}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 <script>
     function onConsol(){

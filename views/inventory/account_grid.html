@@ -16,10 +16,11 @@
                     <li role="presentation"><a href="#sales_return" aria-controls="sales_return" role="tab" data-toggle="tab">Sales Return Request <span class="badge">{{=db(db.Sales_Return.status_id == 12).count()}}</span></a></li>                        
                     <li role="presentation"><a href="#purchase_receipt" aria-controls="purchase_receipt" role="tab" data-toggle="tab">Purchase Receipt <span class="badge">{{=db((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 25) & (db.Purchase_Receipt.status_id == 18)).count()}}</span></a></li>
                     <li role="presentation"><a href="#purchase_return" aria-controls="purchase_return" role="tab" data-toggle="tab">Purchase Return <span class="badge">{{=db((db.Purchase_Receipt_Warehouse_Consolidated.status_id == 25) & (db.Purchase_Receipt.status_id == 18)).count()}}</span></a></li>
-                    <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt </a></li>
+                    <li role="presentation"><a href="#direct_purchase_receipt" aria-controls="direct_purchase_receipt" role="tab" data-toggle="tab">Direct Purchase Receipt <span class="badge">{{=db(db.Direct_Purchase_Receipt.status_id != 21).count()}}</span></a></li>
                     <li role="presentation"><a href="#stock_adjustment" aria-controls="stock_adjustment" role="tab" data-toggle="tab">Stock Adjustment (+/-)<span class="badge">{{=db(db.Stock_Adjustment.srn_status_id == 4).count()}}</span></a></li>
                     <li role="presentation"><a href="#corrections" aria-controls="corrections" role="tab" data-toggle="tab">Stock Corrections <span class="badge">{{=db((db.Stock_Corrections.status_id == 4) | (db.Stock_Corrections.status_id == 1)).count()}}</span></a></li>
-                    <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence of Stocks<span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.created_by == auth.user_id)).count()}}</span></a></li>                   
+                    <li role="presentation"><a href="#obsolescene" aria-controls="obsolescene" role="tab" data-toggle="tab">Obsolescence of Stocks<span class="badge">{{=db((db.Obsolescence_Stocks.status_id == 4) & (db.Obsolescence_Stocks.created_by == auth.user_id)).count()}}</span></a></li>
+                    <li role="presentation"><a href="#circular" aria-controls="circular" role="tab" data-toggle="tab">Price Circular<span class="badge">{{=db((db.Price_Circular.status_id == 4) & (db.Price_Circular.created_by == auth.user_id)).count()}}</span></a></li>
                 </ul>
                 <div
                  class="tab-content">
@@ -28,7 +29,6 @@
                     <div role="tabpanel" class="tab-pane active" id="stock_transfer"> 
                         {{=LOAD('inventory','get_stock_transfer_vouchers_accounts_grid.load',ajax = True, target = 'tblSTV')}}
                     </div>
-
                     <div role="tabpanel" class="tab-pane" id="delivery_note"> 
                         {{=LOAD('sales','sales_order_manager_grid.load', ajax = True, target = 'tblso')}}
                     </div>
@@ -51,12 +51,16 @@
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','push_purchase_return')}}">+ create purchase return</a>
                     </div>                     
                     <div role="tabpanel" class="tab-pane" id="direct_purchase_receipt">                        
-                    {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True,target='DPtbl')}}                            
+                        {{=LOAD('procurement','direct_purchase_receipt_account_grid.load', ajax = True,target='DPtbl')}}                            
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('procurement','direct_purchase_receipt_form')}}">+ create new direct purchase</a>                    
                     </div>
                     <div role="tabpanel" class="tab-pane" id="stock_adjustment">
                         {{=LOAD('inventory','get_stock_adjustment_workflow_grid.load', ajax = True,target='tblSAd')}}
                         <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('inventory','stock_adjustment_add_new')}}">+ create stock adjustment</a>                    
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="circular">
+                        {{=LOAD('sales','get_price_circular_grid.load', ajax = True,target='PCRtbl')}}
+                        <a class="btn btn-success" id="btnAdd" role="button" href="{{=URL('sales','post_price_circular')}}">+ create price circular</a>                    
                     </div>
 
                 </div>
@@ -65,7 +69,7 @@
     </div>                
 </div>
  
-<a class="btn btn-success" id="btnTab" role="button" >+ move to tab</a>                    
+             
 <script type="module" src="{{=URL('static','js/account.js')}}"></script>
 <script>
 

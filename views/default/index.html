@@ -18,9 +18,146 @@
         vertical-align: middle;
     }
 </style>
-<div class="verticalhorizontal">
-    <img src="{{=URL('static','images/merch_logo.png')}}" alt="merch" class="center">
+<div class="row">
+
+    <!-- BEGIN ALERT - BOUNCE RATES -->
+    <div class="col-md-4 col-sm-6">
+        <div class="card">
+            <div class="card-body no-padding">
+                <div class="alert alert-callout alert-danger no-margin">
+                    <h1 class="pull-right text-danger"> <i class="fas fa-boxes"></i></h1>
+                    <strong class="text-xl">{{=db(db.Item_Master.id).count()}}</strong><br>
+                    <span class="opacity-50">Master Item Reference</span>
+                    <div class="stick-bottom-left-right">
+                        <div class="progress progress-hairline no-margin">
+                            <div class="progress-bar progress-bar-danger" style="width:43%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+    </div><!--end .col -->
+    <!-- END ALERT - BOUNCE RATES -->
+    <!-- BEGIN ALERT - VISITS -->
+    <div class="col-md-4 col-sm-6">
+        <div class="card">
+            <div class="card-body no-padding">
+                <div class="alert alert-callout alert-warning no-margin">
+                    <h1 class="pull-right text-warning"><i class="fas fa-chart-line"></i></h1>
+                    <strong class="text-xl">{{=db(db.Merch_Stock_Header.id).count()}}</strong><br>
+                    <span class="opacity-50">Consolidated Transaction Summary</span>
+                    <div class="stick-bottom-right">
+                        <div class="height-1 sparkline-visits" data-bar-color="#e5e6e6"><canvas width="339" height="40" style="display: inline-block; width: 339px; height: 40px; vertical-align: top;"></canvas></div>
+                    </div>
+                </div>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+    </div><!--end .col -->
+    <!-- END ALERT - VISITS -->
+    <!-- BEGIN ALERT - TIME ON SITE -->
+    <div class="col-md-4 col-sm-6">
+        <div class="card">
+            <div class="card-body no-padding">
+                <div class="alert alert-callout alert-success no-margin">
+                    <h1 class="pull-right text-success"><i class="fas fa-chart-line"></i></h1>
+                    <strong class="text-xl">{{=db(db.Merch_Stock_Transaction.id).count()}}</strong><br>
+                    <span class="opacity-50">Consolidated Transaction Detailed</span>
+                </div>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+    </div><!--end .col -->
+    <!-- END ALERT - TIME ON SITE -->
+
 </div>
+<div class="row">
+    <div class="col-md-12">
+        <figure class="highcharts-figure">
+            <div id="container"></div>
+            <p class="highcharts-description">
+                <!-- Basic line chart showing trends in a dataset. This chart includes the
+                <code>series-label</code> module, which adds a label to each line for
+                enhanced readability. -->
+            </p>
+        </figure>
+    </div>
+</div>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<!-- <script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script> -->
+
+<script type="text/javascript">
+    Highcharts.chart('container', {
+
+    title: {
+        text: 'Sales Order, Delivery Note and Sales Invoice Statistic, {{=request.now.year}}'
+    },
+
+    yAxis: {
+        title: {
+            text: 'Daily Transactions'
+        }
+    },
+
+    // xAxis: {
+    //     accessibility: {
+    //         rangeDescription: 'Range: 2010 to 2017'
+    //     }
+    // },
+
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 2010
+        }
+    },
+
+    series: [{
+        name: 'Sales Order',
+        data:             
+            [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+    }, {
+        name: 'Delivery Note',
+        data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
+    }, {
+        name: 'Sales Invoice',
+        data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
+    }],
+
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+
+    });
+</script>
+
+<!-- <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+<script type="text/javascript" src="https://code.highcharts.com/modules/series-label.js"></script> -->
+
+
+<!-- <div class="verticalhorizontal">
+    <img src="{{=URL('static','images/merch_logo.png')}}" alt="merch" class="center">
+</div> -->
 
 
 

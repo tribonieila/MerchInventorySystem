@@ -1,0 +1,60 @@
+{{extend 'layout.html'}} 
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Stock On Transit Report</span>
+        </div>
+        <div class="card-body tab-content">            
+            <div class="form-horizontal">
+                    {{=form.custom.begin}}
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Item Code</label>
+                        <div class="col-sm-8">
+                            {{=form.custom.widget.item_code_id}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Location</label>
+                        <div class="col-sm-8">
+                            {{=form.custom.widget.location_code_id}}
+                        </div>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-8">
+                            {{=form.custom.submit}}
+                        </div>
+                    </div>
+                    {{=form.custom.end}} 
+            </div>              
+            
+            <br>               
+            
+            <div class="freeze-table">
+                {{=table}}
+                <div class="row">
+                    <div class="col-md-6 col-sm-3">
+                        {{=_table}}                        
+                    </div>
+                    <div class="col-md-6 col-sm-3">
+                        {{=_table_trx}}                                    
+                    </div>
+                    <div class="col-md-6 col-sm-3">
+                        {{=_table_r}}            
+                    </div>
+                    <div class="col-md-6 col-sm-3">
+                        {{=_table_des_trx}}            
+                    </div>                    
+                </div>                
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>    
+    $(document).ready(function(){
+        
+    })
+</script>

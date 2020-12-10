@@ -64,9 +64,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Supplier Code</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.supplier_code_id}}
-                            </div>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_code_id}}</div>
                         </div>      
                     </div>
                     <div class="col-md-4">
@@ -81,52 +79,52 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Trade Terms</label>
                             <div class="col-sm-8">{{=form.custom.widget.trade_terms_id}}</div>
-
                         </div>                   
                     </div>    
                 </div>         
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Mode of Shipment</label>
-                            <div class="col-sm-8">{{=form.custom.widget.mode_of_shipment}}</div>
+                            <label class="col-sm-4 control-label">Contact Person</label>
+                            <div class="col-sm-8">{{=form.custom.widget.supplier_code_address}}</div>
                         </div>             
-
                     </div> 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Remarks</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.remarks}}                                
-                            </div>
-                        </div>             
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Status</label>
-                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>
-
-                        </div>             
-                    </div>                    
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Proforma Upload (.pdf)</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.proforma_file}}                                
-                            </div>
+                            <label class="col-sm-4 control-label">Mode of Shipment</label>
+                            <div class="col-sm-8">{{=form.custom.widget.mode_of_shipment}}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Section</label>
-                            <div class="col-sm-8">
-                                {{=form.custom.widget.section_id}}                                
-                            </div>
-                        </div>
+                            <div class="col-sm-8">{{=form.custom.widget.section_id}}</div>
+                        </div>             
                     </div>                    
+                </div>                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Proforma Upload (.pdf)</label>
+                            <div class="col-sm-8">{{=form.custom.widget.proforma_file}}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Remarks</label>
+                            <div class="col-sm-8">{{=form.custom.widget.remarks}}</div>
+
+                        </div>
+                    </div>       
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Status</label>
+                            <div class="col-sm-8">{{=form.custom.widget.status_id}}</div>                            
+                        </div>    
+                    </div>             
+                </div>
+                <div class="row">
+                    <div class="col-md-8"></div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <div class="col-sm-2"></div>
@@ -139,6 +137,7 @@
                             </div>        
                         </div>  
                     </div>
+
                 </div>
                 <div id = "order_panel">
                     {{=LOAD('procurement','purchase_request_transaction_temporary.load', ajax = True, target = 'tblPRT')}}
@@ -198,12 +197,17 @@ jQuery(document).ready(function($){
         // { text: 'Choose Department', value = 0 },
         { text: '{{=d.dept_code}} - {{=d.dept_name}}', value:'{{=d.id}}',
             children: [ {{for p in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(orderby = db.Supplier_Master.id):}}
-                { text: '{{=p.supp_code}} - {{=p.supp_name}}, {{=p.supp_sub_code}}', value: '{{=p.id}}'}, {{pass}}
+                { text: '{{=p.supp_code}} - {{=p.supp_name}}, {{=p.supp_sub_code}}', value: '{{=p.id}}', 
+                    children: [ { text: 'Choose Address', value: null}, {{for x in db(db.Supplier_Contact_Person.supplier_id == p.id).select(db.Supplier_Contact_Person.ALL):}}
+                        { text: '{{=x.other_supplier_name}} - {{=x.contact_person}}', value: '{{=x.id}}' },
+                        {{pass}} 
+                    ], },
+                {{pass}}
             ],
         }, {{pass}}
     ];
     $('#Purchase_Request_dept_code_id').cascadingSelect({
-        subSelects: ['#Purchase_Request_supplier_code_id'],
+        subSelects: ['#Purchase_Request_supplier_code_id','#Purchase_Request_supplier_code_address'],
         data: data 
     });
 });
@@ -216,8 +220,8 @@ $(document).ready(function(){
     $('#selective_tax').hide();
     $('#order_panel').hide();
 
-    $('#Purchase_Request_section_id, #Purchase_Request_dept_code_id, #Purchase_Request_location_code_id, #Purchase_Request_supplier_code_id, #Purchase_Request_trade_terms_id, #Purchase_Request_status_id, #Purchase_Request_mode_of_shipment, #Purchase_Request_currency_id').change(function(){
-        if ( $('#Purchase_Request_section_id').val() && $('#Purchase_Request_currency_id').val() && $('#Purchase_Request_dept_code_id').val() && $('#Purchase_Request_location_code_id').val() && $('#Purchase_Request_supplier_code_id').val() && $('#Purchase_Request_trade_terms_id').val() && $('#Purchase_Request_status_id').val() && $('#Purchase_Request_mode_of_shipment').val()) {
+    $('#Purchase_Request_supplier_code_address, #Purchase_Request_section_id, #Purchase_Request_dept_code_id, #Purchase_Request_location_code_id, #Purchase_Request_supplier_code_id, #Purchase_Request_trade_terms_id, #Purchase_Request_status_id, #Purchase_Request_mode_of_shipment, #Purchase_Request_currency_id').change(function(){
+        if ( $('#Purchase_Request_supplier_code_address').val() && $('#Purchase_Request_section_id').val() && $('#Purchase_Request_currency_id').val() && $('#Purchase_Request_dept_code_id').val() && $('#Purchase_Request_location_code_id').val() && $('#Purchase_Request_supplier_code_id').val() && $('#Purchase_Request_trade_terms_id').val() && $('#Purchase_Request_status_id').val() && $('#Purchase_Request_mode_of_shipment').val()) {            
             $('#btnproceed').removeAttr('disabled');
         } else {
             $('#btnproceed').attr('disabled','disabled');

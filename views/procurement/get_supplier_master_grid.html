@@ -1,0 +1,19 @@
+{{extend 'layout.html'}}
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">SUPPLIER MASTER</span>                                                  
+        </div>
+        <div class="card-body tab-content">			
+            {{=table}}
+        </div>        
+    </div>
+</div>
+
+<script>
+    $(document).ready( function () {
+        $('table').DataTable();
+    } );
+</script>
+
+
