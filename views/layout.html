@@ -37,6 +37,8 @@
 	
 	<link rel="stylesheet" href="{{=URL('static','css/bootstrap-admin.css')}}"/>
 	<link rel="stylesheet" href="{{=URL('static','css/material-admin.css')}}"/>
+    <link rel="stylesheet" href="{{=URL('static','dist/alertify/css/alertify.min.css')}}"/>
+    <link rel="stylesheet" href="{{=URL('static','dist/alertify/css/themes/semantic.css')}}"/>      	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
 	
 <!-- //cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css -->
@@ -91,7 +93,7 @@
 					<li class="header-nav-brand" >
 						<div class="brand-holder">						
 							<!-- <a href="http://localhost:3000/Merch_ERP"><img src="{{=URL('static','images/merch_logo.png')}}"><span class="text-lg text-bold text-primary">MERCH ERP</span></a> -->
-							<a href="http://128.1.2.13:3020/Merch_ERP"><img src="{{=URL('static','images/Merch.jpg')}}" width="200" height="50"></a>
+							<a href="http://10.128.4.21:3020/Merch_ERP"><img src="{{=URL('static','images/Merch.jpg')}}" width="200" height="50"></a>
 						</div>
 					</li>
 					<li>
@@ -326,6 +328,7 @@
 						<li><a href="#" ><span class="title">Reports</span></a></li>
 					</ul>
 				</li>
+				<li><a href="{{=URL('eis','post_eis_form')}}"><div class="gui-icon"><i class="md fas fa-chart-pie"></i></div><span class="title">EIS REPORT</span></a></li>				
 				<li><a href="{{=URL('sili','labuyo')}}"><div class="gui-icon"><i class="md fas fa-user-shield"></i></div><span class="title">ADMINISTRATOR</span></a></li>
 
 			</ul>
@@ -359,7 +362,7 @@
 							<ul>
 								<li><a href="{{=URL('inventory','itm_mas')}}"><span class="title">Item Master</span></a></li>
 								<li><a href="{{=URL('inventory','item_prices_grid')}}" ><span class="title">Item Prices</span></a></li>
-								<li><a href="{{=URL('inventory','master_account')}}"><span class="title">Master Account</span></a></li>								
+								<li><a href="{{=URL('sales','customer_grid')}}"><span class="title">Customer Master</span></a></li>								
 							</ul>
 						</li>						
 						<li class="gui-folder expanded">
@@ -622,6 +625,7 @@
 						<li><a href="{{=URL('inventory', 'stock_card_movement')}}" ><span class="title">Stock Card Movement</span></a></li>
 					</ul>
 				</li>				
+				<li><a href="{{=URL('eis','post_eis_form')}}"><div class="gui-icon"><i class="md fas fa-chart-pie"></i></div><span class="title">EIS REPORT</span></a></li>				
 				<li><a href="{{=URL('inventory', 'stock_utility_tool')}}"><div class="gui-icon"><i class="md fas fa-wrench"></i></div><span class="title">UTILITY</span></a>					
 			</ul>
 			{{pass}}
@@ -718,6 +722,7 @@
 	<script src="{{=URL('static','js/admin.js')}}"></script>	
 	<script src="{{=URL('static','dist/datatables/js/jquery.dataTables.min.js')}}"></script>	
 	<script src="{{=URL('static','dist/datatables/js/dataTables.bootstrap4.min.js')}}"></script>	
+	<script src="{{=URL('static','dist/alertify/alertify.min.js')}}"></script>    
 	<!-- <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script> -->
 
 	<!-- Latest compiled and minified JavaScript for bootbox.min.js-->

@@ -2,7 +2,7 @@
 <div class="col-md-12">
     <div class="card card-underline">
         <div class="card-head">
-            <span class="card-title">STOCK VALUE REPORT</span>
+            <span class="card-title">EIS REPORT</span>
         </div>
         <div class="card-body tab-content">		
             <div class="form-horizontal">
@@ -20,16 +20,28 @@
                     <div class="col-sm-8">{{=form.custom.widget.location_code_id}}</div>
                 </div>               
                 <div class="form-group">
+                    <label class="col-sm-2 control-label">Start Date</label>
+                    <div class="col-sm-8">{{=form.custom.widget.start_date}}</div>
+                </div>               
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">End Date</label>
+                    <div class="col-sm-8">{{=form.custom.widget.end_date}}</div>
+                </div>               
+
+
+                <div class="form-group">
                     <label class="col-sm-2 control-label"></label>
                     <div class="col-sm-8">
-                        <input class="btn btn-primary" type="button" id="btnSubmit" onclick="ClickSubmit()"value="View">
-                        <input class="btn btn-info" type="button" id="btnPrint" onclick="ClickPrint()" value="Print">
+                        <input class="btn btn-primary" type="submit" id="btnSubmit" value="submit">
+                        <!-- <input class="btn btn-primary" type="button" id="btnSubmit" onclick="ClickSubmit()"value="View"> -->
+                        <!-- <input class="btn btn-info" type="button" id="btnPrint" onclick="ClickPrint()" value="Print"> -->
                     </div>
                 </div>               
 
                 {{=form.custom.end}}
                 
             </div>
+            {{=table}}
             <div id="idSVR"></div>
         </div>
     </div>
@@ -50,7 +62,7 @@ $(document).ready(function(){
     ];
 
     $("#no_table_dept_code_id").cascadingSelect({
-        subSelects: ['#no_table_supplier_code_id'], 
+        subSelects: ['#no_table_supplier_code_id'],
         data: data
     });
 
@@ -58,7 +70,7 @@ $(document).ready(function(){
 
 
     function ClickSubmit(){    
-        ajax("{{=URL('inventory','get_stock_value_view')}}",['dept_code_id','supplier_code_id','location_code_id'],'idSVR')
+        ajax("{{=URL('eis','get_eis_form')}}",['dept_code_id','supplier_code_id','location_code_id','start_date','end_date'],'idSVR')
     }
     function ClickPrint(){        
         window.open("{{=URL('inventory','get_stock_value_print')}}")              

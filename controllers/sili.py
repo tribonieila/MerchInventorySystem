@@ -37,8 +37,17 @@ def get_json():
     return XML(response.json(_data))
     
 def get_table():
-    table = TABLE()
-    return dict()
+    table = TABLE(
+        TR(TH('Month'),TH('Savings'),TH('Savings for holiday!')),
+        TR(TD('50',_rowspan=2),TD('january'),TD('100')),
+        TR(TD('February'),TD('80')),
+        TFOOT(
+            TR(TD('ROW SPAN',_rowspan=2),TD('OK'),TD('223')),
+            TR(TD('OK'),TD('sdf'))),
+        
+        
+        _class='table table-bordered')
+    return dict(table = table)
 
 def get_user_sync():
     print("set user's group --- ")
@@ -78,6 +87,16 @@ def get_python_script():
     import os
     fp = os.path.join(request.folder, 'static', 'external/ExportUtil.py')
     os.system('python ' + fp)
+
+def get_read_csv_file():
+    import pandas
+    df = pandas.read_csv('/home/larry/Workspace/web2py/applications/mtc_inv/private/Customer.csv', index_col='customer_account_no')
+    print(df)
+    # import csv
+    # with open('/home/larry/Workspace/web2py/applications/mtc_inv/private/Customer.csv','rt')as f:
+    #     data = csv.reader(f)
+    #     for row in data:
+    #         print(row[0],row[1])
 
 def generate():
     

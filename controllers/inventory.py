@@ -1101,7 +1101,7 @@ def validate_brand_line_department(form):
 def brndclss_mas():
     row = []
     ctr = 0
-    thead = THEAD(TR(TH('#'),TH('Brand Classficaion Code'),TH('Brand Classification Name'),TH('Group Line Name'),TH('Department'),TH('Brand Line Name'),TH('Status'),TH('Action')))
+    thead = THEAD(TR(TH('#'),TH('Brand Classficaion Code'),TH('Brand Classification Name'),TH('Group Line Name'),TH('Department'),TH('Brand Line Name'),TH('Old Brand Code'),TH('Status'),TH('Action')))
     for n in db(db.Brand_Classification).select(db.Brand_Classification.ALL, db.Brand_Line.ALL, db.GroupLine.ALL, orderby = db.Brand_Classification.brand_cls_code, left = [db.Brand_Line.on(db.Brand_Line.id == db.Brand_Classification.brand_line_code_id), db.GroupLine.on(db.Brand_Line.group_line_id == db.GroupLine.id)]):
         view_lnk = A(I(_class='fas fa-search'), _title='View Row', _type='button  ', _role='button', _class='btn btn-icon-toggle disabled', _href=URL('#', args = n.Brand_Classification.id))
         edit_lnk = A(I(_class='fas fa-pencil-alt'), _title='Edit Row', _type='button  ', _role='button', _class='btn btn-icon-toggle', _href=URL('brndclss_edit_form', args = n.Brand_Classification.id))
@@ -1113,6 +1113,7 @@ def brndclss_mas():
         TD(n.GroupLine.group_line_name),
         TD(n.Brand_Classification.dept_code_id.dept_name),
         TD(n.Brand_Line.brand_line_name),
+        TD(n.Brand_Classification.old_brand_code),
         TD(n.Brand_Classification.status_id.status),
         TD(btn_lnk)))
     tbody = TBODY(*row)
@@ -1145,6 +1146,7 @@ def brndclss_add_form():
             Field('dept_code_id','reference Department', ondelete = 'NO ACTION', label = 'Dept Code',requires = IS_IN_DB(db, db.Department.id,'%(dept_code)s - %(dept_name)s', zero = 'Choose Department', error_message='Field should not be empty')),
             Field('brand_line_code_id','reference Brand_Line', label = 'Brand Line Code',requires = IS_IN_DB(db, db.Brand_Line.id, ' %(brand_line_name)s - %(brand_line_code)s', orderby = db.Brand_Line.brand_line_name,  zero= 'Choose Brand Line')),
             Field('brand_cls_name','string',length=50, requires = [IS_UPPER(), IS_NOT_IN_DB(db, 'Brand_Classification.brand_cls_name')]),
+            Field('old_brand_code','integer',length=10),
             Field('status_id','reference Record_Status', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')))
         if form.process().accepted:
             response.flash = 'RECORD SAVE'
@@ -1154,6 +1156,7 @@ def brndclss_add_form():
             	brand_line_code_id = form.vars.brand_line_code_id,
             	brand_cls_code = _ckey,
             	brand_cls_name = form.vars.brand_cls_name,
+                old_brand_code = form.vars.old_brand_code,
             	status_id = form.vars.status_id)
             pre.update_record(serial_key = _skey)
         elif form.errors:

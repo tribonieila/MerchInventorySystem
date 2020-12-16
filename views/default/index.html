@@ -100,11 +100,9 @@
         }
     },
 
-    // xAxis: {
-    //     accessibility: {
-    //         rangeDescription: 'Range: 2010 to 2017'
-    //     }
-    // },
+    xAxis: {
+        categories: [{{for n in db(db.Sales_Order.status_id == 7).select(db.Sales_Order.sales_order_date_approved, db.Sales_Order.delivery_note_date_approved, db.Sales_Order.sales_invoice_date_approved, orderby = db.Sales_Order.sales_order_date_approved, groupby = db.Sales_Order.sales_order_date_approved |db.Sales_Order.delivery_note_date_approved | db.Sales_Order.sales_invoice_date_approved):}}"{{=n.sales_invoice_date_approved}}",{{pass}}]
+    },
 
     legend: {
         layout: 'vertical',
@@ -112,25 +110,18 @@
         verticalAlign: 'middle'
     },
 
-    plotOptions: {
-        series: {
-            label: {
-                connectorAllowed: false
-            },
-            pointStart: 2010
-        }
-    },
-
     series: [{
         name: 'Sales Order',
-        data:             
-            [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+        data:  
+            [{{ctr = db.Sales_Order.id.count()}}{{for n in db(db.Sales_Order.status_id == 7).select(db.Sales_Order.sales_order_date, ctr, orderby = db.Sales_Order.sales_order_date, groupby = db.Sales_Order.sales_order_date):}}{{=n[ctr]}}, {{pass}}]
     }, {
         name: 'Delivery Note',
-        data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
+        data: 
+            [{{dlvr = db.Delivery_Note.id.count()}}{{for n in db(db.Delivery_Note.status_id == 7).select(db.Delivery_Note.delivery_note_date_approved, dlvr, orderby = db.Delivery_Note.delivery_note_date_approved, groupby = db.Delivery_Note.delivery_note_date_approved):}}{{=n[dlvr]}}, {{pass}}]            
     }, {
         name: 'Sales Invoice',
-        data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
+        data: 
+            [{{ctr = db.Sales_Invoice.id.count()}}{{for n in db(db.Sales_Invoice.status_id == 7).select(db.Sales_Invoice.sales_invoice_date_approved, ctr, orderby = db.Sales_Invoice.sales_invoice_date_approved, groupby = db.Sales_Invoice.sales_invoice_date_approved):}}{{=n[ctr]}}, {{pass}}]        
     }],
 
     responsive: {
@@ -151,13 +142,7 @@
     });
 </script>
 
-<!-- <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
-<script type="text/javascript" src="https://code.highcharts.com/modules/series-label.js"></script> -->
 
-
-<!-- <div class="verticalhorizontal">
-    <img src="{{=URL('static','images/merch_logo.png')}}" alt="merch" class="center">
-</div> -->
 
 
 

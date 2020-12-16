@@ -1,6 +1,10 @@
 sudo lsof -t -i:9001
 {{=datetime.date.today().strftime('%d-%b-%Y')}}
 
+UPDATE table_name
+SET column1 = value1, column2 = value2, ...
+WHERE condition;
+
 $('input[type="number"]').prop('readonly', true);
 $(':text').prop('readonly', true);
 $(':input').attr('readonly','readonly');

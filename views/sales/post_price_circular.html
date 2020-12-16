@@ -13,13 +13,14 @@
                             <label class="col-sm-4 control-label">Transaction No</label>
                             <div class="col-sm-8">      
                                 <input type="text" class="form-control" id="ticket_no_id" name = "ticket_no_id" value="{{=ticket_no_id}}" hidden>
+                                <input type="text" class="form-control" id="transaction_no" name = "transaction_no" value="" readonly>
                                 <div id="_stk_adj_no"></div>
                             </div>                           
                         </div>                        
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Date</label>
+                            <label class="col-sm-4 control-label">Transaction Date</label>
                             <div class="col-sm-8"> {{import datetime}}
                                 {{=form.custom.widget.transaction_date}}
                             </div>
@@ -37,7 +38,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">supplier_code_id</label>
+                            <label class="col-sm-4 control-label">Supplier Name</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.supplier_code_id}}
                             </div>
@@ -47,7 +48,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">circulary_type Type</label>
+                            <label class="col-sm-4 control-label">Circular Type</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.circulary_type}}                                         
                             </div>
@@ -55,7 +56,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Stock remarks Code</label>
+                            <label class="col-sm-4 control-label">Remarks</label>
                             <div class="col-sm-8">
                                 {{=form.custom.widget.remarks}}
                             </div>
@@ -67,7 +68,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label">Status</label>
                             <div class="col-sm-8">
-                                {{=form.custom.widget.srn_status_id}}
+                                {{=form.custom.widget.status_id}}
                             </div>
                         </div>                    
                     </div>
@@ -78,8 +79,6 @@
                                 <input class="btn btn-primary"  type="submit" value="submit"  id="btnsubmit">                                    
                                 <input class="btn btn-success"  type="button" value="proceed" id="btnrequest">
                                 <a class="btn btn-danger" id="btnAbort" role="button" href="{{=URL('stock_adjustment_browse')}}">abort</a>
-                                <a class="btn btn-info" id="btnhelp" role="button" target="_blank" href="{{=URL('item_help')}}">help?</a>
-                                
                             </div>                            
                         </div>                    
                     </div>
@@ -93,36 +92,50 @@
         </div>
     </div>
 </div>
-
+<script src="{{=URL('static','js/cascade.js')}}"></script>
 <script>
-$(document).ready(function(){
-    var str_ctr = 0
+    var data = [
+    {{for d in db(db.Department.status_id == 1).select(db.Department.ALL, orderby = db.Department.id):}}
+    { text: "{{=d.dept_code}} - {{=d.dept_name}}", value:"{{=d.id}}",
+        children: [ {text: 'All Supplier', value: null}, {{for s in db((db.Supplier_Master.status_id == 1) & (db.Supplier_Master.dept_code_id == d.id)).select(orderby = db.Supplier_Master.id):}}
+            {text: "{{=s.supp_code}} - {{=s.supp_name}}", value:"{{=s.id}}"}, {{pass}}
+        ],
+    }, {{pass}}
+    ];
+
+    $("#Price_Circular_dept_code_id").cascadingSelect({
+        subSelects: ['#Price_Circular_supplier_code_id'], 
+        data: data
+    });
+
+
+</script>
+<script type="text/javascript">
+$(document).ready(function(){    
     $('#btnsubmit').attr('disabled','disabled');
     $('#btnhelp').attr('disabled','disabled');
     $('#btnrequest').attr('disabled','disabled');
     $('#request_panel').hide();   
-    $('#Stock_Adjustment_dept_code_id, #Stock_Adjustment_adjustment_type, #Stock_Adjustment_srn_status_id, #Stock_Adjustment_location_code_id').change(function(){
-        if ($('#Stock_Adjustment_dept_code_id').val() && $('#Stock_Adjustment_adjustment_type').val() && $('#Stock_Adjustment_srn_status_id').val() && $('#Stock_Adjustment_location_code_id').val()) {
+
+
+    $('#Price_Circular_dept_code_id, #Price_Circular_supplier_code_id, #Price_Circular_circulary_type, #Price_Circular_status_id').change(function(){
+        if ($('#Price_Circular_dept_code_id').val() && $('#Price_Circular_supplier_code_id').val() && $('#Price_Circular_circulary_type').val() && $('#Price_Circular_status_id').val()) {
             $('#btnrequest').removeAttr('disabled');
         } else {
             $('#btnrequest').attr('disabled','disabled');
         }
     });
 
-    $('#Stock_Adjustment_dept_code_id').change(function(){
-        ajax('{{=URL('put_transaction_no')}}',['dept_code_id'], '_stk_adj_no');        
-    });
-
-    $('#Stock_Adjustment_location_code_id').change(function(){
-        ajax('{{=URL('stock_adjustment_code')}}',['location_code_id'], 'adjustment_code');
+    $('#Price_Circular_dept_code_id').change(function(){
+        ajax('{{=URL('sales','put_transaction_no')}}',['dept_code_id']);        
     });
 
     $('#btnsubmit').click(function(){
         $('#Stock_Adjustment_dept_code_id').removeAttr('disabled');
-        $('#Stock_Adjustment_adjustment_type').removeAttr('disabled');
+        $('#Price_Circular_supplier_code_id').removeAttr('disabled');
         $('#Stock_Adjustment_stock_adjustment_date').removeAttr('disabled');
-        $('#Stock_Adjustment_location_code_id').removeAttr('disabled');
-        $('#Stock_Adjustment_srn_status_id').removeAttr('disabled');
+        $('#Price_Circular_status_id').removeAttr('disabled');
+        $('#Price_Circular_circulary_type').removeAttr('disabled');
         ajax('{{=URL('stock_adjustment_add_new')}}', ['dept_code_id','adjustment_type','stock_adjustment_date','location_code_id', 'srn_status_id']);        
     });
 
@@ -132,13 +145,12 @@ $(document).ready(function(){
         $('#btnhelp').removeAttr('disabled');        
         ajax('{{=URL('stock_adjustment_session')}}',['dept_code_id','location_code_id','adjustment_type']);
         $('#Stock_Adjustment_dept_code_id').attr('disabled','disabled');
-        $('#Stock_Adjustment_adjustment_type').attr('disabled','disabled');
+        $('#Price_Circular_supplier_code_id').attr('disabled','disabled');
         $('#Stock_Adjustment_stock_adjustment_date').attr('disabled','disabled');
-        $('#Stock_Adjustment_location_code_id').attr('disabled','disabled');
+        $('#Price_Circular_status_id').attr('disabled','disabled');
         $('#btnrequest').attr('disabled','disabled');
-        $('#Stock_Adjustment_srn_status_id').attr('disabled','disabled');
+        $('#Price_Circular_circulary_type').attr('disabled','disabled');
         return false;
-    }); 
-    
+    });     
 });
 </script>

@@ -16,7 +16,7 @@ def get_sales_invoice_utility_grid():
 
         _inv = str(n.sales_invoice_no_prefix_id.prefix) + str(n.sales_invoice_no) 
         _inv = A(_inv, _class='text-danger')#, _title='Sales Invoice', _type='button  ', _role='button', **{'_data-toggle':'popover','_data-placement':'right','_data-html':'true','_data-content': invoice_info(n.id)})
-        row.append(TR(TD(n.sales_invoice_date_approved.date()),TD(_inv),TD(_note),TD(_sales),TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),TD(n.customer_code_id.account_name,', ', SPAN(n.customer_code_id.account_code,_class='text-muted')),TD(n.stock_source_id.location_name),TD(n.status_id.description)))
+        row.append(TR(TD(n.sales_invoice_date_approved),TD(_inv),TD(_note),TD(_sales),TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),TD(n.customer_code_id.account_name,', ', SPAN(n.customer_code_id.account_code,_class='text-muted')),TD(n.stock_source_id.location_name),TD(n.status_id.description)))
     body = TBODY(*row)
     table = TABLE(*[head, body], _class='table table-hover table-condensed',_id='tblSI')
     return dict(table = table)    

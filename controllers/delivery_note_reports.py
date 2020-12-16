@@ -23,7 +23,7 @@ tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 import locale
 # pdfmetrics.registerFont(TTFont('Arabic', '/usr/share/fonts/truetype/fonts-arabeyes/ae_Arab.ttf'))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
-dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch)#, showBoundary=1)
+dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=3 * inch,bottomMargin=2.5 * inch)#, showBoundary=1)
 style = ParagraphStyle(name='Normal',fontName="Arabic", fontSize=25)
 style.alignment=TA_RIGHT
 arabic_text = u'إذا أخذنا بعين'
@@ -181,12 +181,24 @@ def delivery_note_footer_report(canvas, dlv_note_frame):
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _id = db(db.Delivery_Note.id == request.args(0)).select().first()
-
+    _ma = db(db.Master_Account.id == _id.customer_code_id).select().first()
+    _cu = db(db.Customer.customer_account_no == str(_ma.account_code)).select().first()
+    if _cu:        
+        # print '::', _ma.account_code, _cu.customer_account_no
+        if _cu.area_name_id:
+            _area_name = _cu.area_name_id.area_name
+        else:
+            _area_name = ''
+        _pobox = 'P.O. Box ' + str(_cu.po_box_no)
+        _area = str(_cu.area_name) + ', ' +str(_area_name)+ '\n' + str(_cu.country.upper())
+    else:
+        _pobox = _area = ''
+    # print ':', _ma.account_code, _cu.customer_account_no
     # Header 'Stock Request Report'
     
 
     for n in db(db.Delivery_Note.id == request.args(0)).select():
-        _customer = n.customer_code_id.account_name # + str('\n') + str(n.customer_code_id.area_name.upper()) + str('\n') + 'Unit No.: ' + str(n.customer_code_id.unit_no) + str('\n') + 'P.O. Box ' + str(n.customer_code_id.po_box_no) + '  Tel.No. ' + str(n.customer_code_id.telephone_no) + str('\n')+ str(n.customer_code_id.state.upper()) + ', ' + str(n.customer_code_id.country.upper())
+        # _customer = n.customer_code_id.account_name  + str('\n') + 'P.O. Box ' + str(_cu.po_box_no) + '\n' + str(_cu.area_name) + ', ' +str(_cu.area_name_id.area_name) + '\n' + str(_cu.country.upper())
         if n.sales_invoice_no_prefix_id == None:
             _sales_invoice = 'None'
             _invoie_date = 'None'
@@ -195,37 +207,38 @@ def delivery_note_footer_report(canvas, dlv_note_frame):
             _invoie_date = n.sales_invoice_date_approved.strftime('%d-%b-%Y')
         
         _so = [
-            [img],
+            # [img],
             ['DELIVERY NOTE'],
+            [str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no)],
             ['Sales Invoice No. ', ':',_sales_invoice,'','Sales Invoice Date ',':',_invoie_date],
             ['Delivery Note No. ', ':',str(n.delivery_note_no_prefix_id.prefix)+str(n.delivery_note_no),'','Delivery Note Date ',':',n.delivery_note_date_approved.strftime('%d-%b-%Y')],
             ['Customer Code',':',n.customer_code_id.account_code,'','Transaction Type',':','Credit'],             
-            [_customer,'', '','','Department',':',n.dept_code_id.dept_name],
-            ['','','','','Location', ':',n.stock_source_id.location_name],       
-            ['','','','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper())]]
+            [n.customer_code_id.account_name,'', '','','Department',':',n.dept_code_id.dept_name],
+            [ _pobox,'','','','Location', ':',n.stock_source_id.location_name],       
+            [_area,'','','','Sales Man',':',str(n.sales_man_id.employee_id.first_name.upper()) + ' ' + str(n.sales_man_id.employee_id.last_name.upper())]]
 
     header = Table(_so, colWidths=['*',20,'*',10,'*',20,'*'])#,rowHeights=(12))
     header.setStyle(TableStyle([
         # ('GRID',(0,0),(-1,-1),0.5, colors.Color(0, 0, 0, 0.2)),
         ('SPAN',(0,0),(-1,0)),
         ('SPAN',(0,1),(-1,1)),
-        ('SPAN',(0,-3),(2,-1)),
         ('ALIGN',(0,0),(-1,1),'CENTER'),        
-        ('FONTNAME', (0, 0), (6, -1), 'Courier'),   
+        ('FONTNAME', (0, 0), (-1, 0), 'Courier'),   
+        ('FONTSIZE',(0, 0), (-1, 0),9),                
         ('FONTNAME', (0, 1), (-1, 1), 'Courier', 12),
-        # ('FONTNAME', (0, 1), (-1, 1), 'Courier-Bold', 12),
-        ('FONTSIZE',(0,1),(-1,1),10),        
-        ('FONTSIZE',(0,2),(6,-1),8),                
+        ('FONTNAME', (0, 2), (-1, -1), 'Courier'),   
+        ('FONTSIZE',(0,2),(-1,-1),8),                
         ('VALIGN',(0,0),(-1,-1),'TOP'),
-        ('TOPPADDING',(0,0),(0,0),5),
-        ('BOTTOMPADDING',(0,0),(0,0),12),
-        ('TOPPADDING',(0,1),(6,-1),0),
-        ('BOTTOMPADDING',(0,1),(6,-1),0),
-        ('TOPPADDING',(0,1),(-1,1),5),
-        ('BOTTOMPADDING',(0,1),(-1,1),5),
-        ]))
+        ('TOPPADDING',(0,0),(-1,0),5),
+        ('BOTTOMPADDING',(0,0),(-1,0),5),
+
+        ('TOPPADDING',(0,1),(-1,1),0), 
+        ('BOTTOMPADDING',(0,1),(-1,1),25),
+
+        ('TOPPADDING',(0,2),(-1,-1),0),
+        ('BOTTOMPADDING',(0,2),(-1,-1),0)]))
     header.wrapOn(canvas, dlv_note_frame.width, dlv_note_frame.topMargin)
-    header.drawOn(canvas, dlv_note_frame.leftMargin, dlv_note_frame.height + dlv_note_frame.topMargin + .2 * inch)
+    header.drawOn(canvas, dlv_note_frame.leftMargin, dlv_note_frame.height + dlv_note_frame.topMargin - .4 * inch)
 
     # Footer
     _page = [        
@@ -456,15 +469,15 @@ def get_workflow_delivery_reports_id():
     row.append(_c_tbl)
     row.append(PageBreak())
     
-    delivery_note_transaction_table_reports()        
-    row.append(Spacer(1,.5*cm))
-    # row.append(_others_table)
-    row.append(Spacer(1,.2*cm))
-    # row.append(_acknowledge_table)
-    row.append(Spacer(1,.2*cm))
-    row.append(_signatory_table)
-    row.append(_a_tbl)
-    row.append(PageBreak())
+    # delivery_note_transaction_table_reports()        
+    # row.append(Spacer(1,.5*cm))
+    # # row.append(_others_table)
+    # row.append(Spacer(1,.2*cm))
+    # # row.append(_acknowledge_table)
+    # row.append(Spacer(1,.2*cm))
+    # row.append(_signatory_table)
+    # row.append(_a_tbl)
+    # row.append(PageBreak())
 
     delivery_note_transaction_table_reports()        
     row.append(Spacer(1,.5*cm))

@@ -2,9 +2,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <script> 
-$(document).ready(function(){
-
-
+$(document).ready(function(){    
     $('.btnInvoice').click(function(){
         var _id = $(this).attr('data-id');
         bootbox.confirm({ 
@@ -66,4 +64,17 @@ function PrintInvoice(x){
 function PrintDeliveryNote(x) {    
     window.open('{{=URL('default','sales_order_delivery_note_report_store_keeper', extension=False)}}' + '/' + x);
 }
+
+// $(".view").click(function(){
+//     var _id = $(this).attr("data-id");
+    // console.log("View", _id);
+    
+    // alertify.alert().set({'startMaximized':true, 'title':'Sales Invoice','message':'{{=LOAD('sales','get_id.load')}}'}).show();             
+
+
+// })
 </script>
+
+<div id = "div">
+    <table></table>
+</div>
