@@ -108,7 +108,7 @@ pdfmetrics.registerFont(TTFont('Arabic', '/home/larry/Workspace/web2py/applicati
 tmpfilename=os.path.join(request.folder,'private',str(uuid4()))
 doc = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch)#, showBoundary=1)
 dlv_note_frame = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch)#, showBoundary=1)
-doc_invoice = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=2.5 * inch, showBoundary=1)
+doc_invoice = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=2.3 * inch,bottomMargin=1.5 * inch, showBoundary=1)
 # doc_invoice = SimpleDocTemplate(tmpfilename,pagesize=A4, rightMargin=20,leftMargin=20, topMargin=3 * inch,bottomMargin=2 * inch, showBoundary=1)
 
 style=ParagraphStyle(name='Normal',fontName='Arabic',fontSize=15)
@@ -311,7 +311,7 @@ def sales_invoice_footer_(canvas, doc):
     footer.drawOn(canvas, doc.leftMargin, doc.bottomMargin + .1 * cm)    
     canvas.restoreState()
 
-def sales_invoice_canvas(canvas, doc_invoice):     
+def sales_invoice_canvas(canvas, doc_invoice):      # audited
     # Save the state of our canvas so we can draw on it
     canvas.saveState()
     _logo = [[img]]
@@ -350,16 +350,16 @@ def sales_invoice_canvas(canvas, doc_invoice):
         ('ALIGN',(6,0),(-1,0),'LEFT'),
         ('ALIGN',(0,1),(-1,1),'CENTER'),
         ('VALIGN',(6,0),(-1,0),'TOP'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Courier',12),   
-        ('FONTNAME', (0, 0), (0, 0), 'Courier'),
-        ('FONTSIZE',(0,1),(-1,1),8),                
+        ('FONTNAME', (0, 0), (-1, 1), 'Courier',12),           
+        # ('FONTNAME', (0, 0), (0, 0), 'Courier'),
+        # ('FONTSIZE',(0,1),(-1,1),8),                
         ('FONTSIZE',(0,2),(-1,-1),8),                
         ('VALIGN',(0,4),(4,-1),'TOP'),
-        # ('TOPPADDING',(0,0),(-1,0),20),        
-        ('BOTTOMPADDING',(0,0),(-1,0),0),
+        ('TOPPADDING',(0,1),(-1,1),10),
+        ('BOTTOMPADDING',(0,1),(-1,1),25),
+        ('TOPPADDING',(0,2),(-1,-1),0),
         ('BOTTOMPADDING',(0,2),(-1,-1),0),
-        ('BOTTOMPADDING',(0,1),(-1,1),10),
-        ('TOPPADDING',(0,1),(-1,1),0),
+        
         # ('TOPPADDING',(0,1),(6,-1),0),
         # ('BOTTOMPADDING',(0,0),(0,0),12),
         
@@ -382,7 +382,7 @@ def sales_invoice_canvas(canvas, doc_invoice):
         ('TOPPADDING',(0,0),(-1,-1),0),
         ('ALIGN', (0,0), (-1,-1), 'LEFT')]))
     footer.wrap(doc_invoice.width, doc_invoice.bottomMargin)
-    footer.drawOn(canvas, doc_invoice.leftMargin, doc_invoice.bottomMargin - 4 * cm)
+    footer.drawOn(canvas, doc_invoice.leftMargin, doc_invoice.bottomMargin - 1.5 * cm)
 
     # Release the canvas
     canvas.restoreState()
