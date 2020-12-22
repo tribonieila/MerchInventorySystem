@@ -360,11 +360,19 @@ def get_stock_card_movement_report():
         else:
             _account_name = 'None'        
         if _type == 1:
-            _type = 'GR'
-            _bal += n._extra[_total_qty]
-            _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
-            _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
-            _balanced = card_view(_itm_code.id, _bal)
+            if str(n.Merch_Stock_Transaction.category_id) == 'S':
+                _type = 'GR'
+                _bal -= n._extra[_total_qty]
+                _quantity_in = 0
+                _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
+                _balanced = card_view(_itm_code.id, _bal)
+            else:
+                _type = 'GR'
+                _bal += n._extra[_total_qty]
+                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+                _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
+                _balanced = card_view(_itm_code.id, _bal)
+                
         elif _type == 2:
             _type = 'SI'
             _quantity_in = 0

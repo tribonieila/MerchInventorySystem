@@ -1,0 +1,39 @@
+{{extend 'layout.html'}} 
+
+<div class="col-md-12">
+    <div class="card card-underline">
+        <div class="card-head">
+            <span class="card-title">Sales Invoice Softcopy</span>
+        </div>
+        <div class="card-body tab-content">
+            {{=form.custom.begin}}
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="col-sm-4 control-label">Sales Invoice No.</label>
+                        <div class="col-sm-8">
+                            {{=form.custom.widget.sales_invoice_no}}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="col-sm-8">
+                            {{=form.custom.submit}}
+                        </div>
+                    </div>
+                </div>
+            </div>              
+            {{=form.custom.end}}       
+            <hr>
+
+
+            {{=table}}            
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $("#btnSubmit").click(function(){
+            console.log("click")
+        });
+    });
+</script>

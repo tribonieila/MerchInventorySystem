@@ -222,7 +222,7 @@ $(document).ready(function(){
     }
     function report(){        
         // location.reload();       
-        window.open('{{=URL('default','sales_order_report_account_user', args = request.args(0))}}');
+        window.open('{{=URL('default','get_sales_order_id', args = request.args(0))}}');
         
     }
     function AccountRedirect(){          

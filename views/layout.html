@@ -279,6 +279,8 @@
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 1)}}" ><span class="title">Purchase Request</span></a></li>
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 2)}}" ><span class="title">Purchase Order</span></a></li>
 						<li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 3)}}" ><span class="title">Purchase Receipt</span></a></li>	
+						<li><a href="{{=URL('procurement', 'get_workflow_reports/4', args = 4)}}" ><span class="title">Direct Purchase Receipt</span></a></li>	
+						<!-- <li><a href="{{=URL('procurement', 'get_procurement_grid_id', args = 4)}}" ><span class="title">Direct Purchase Receipt</span></a></li>	 -->
 						<li><a href="{{=URL('procurement', 'get_transaction_reports_grid',args = 1)}}" ><span class="title">Purchase Return</span></a></li>
 						<li><a href="#" ><span class="title">Reports</span></a></li>										
 						<li><a href="{{=URL('procurement', 'get_document_register_grid')}}" ><span class="title">D/1 Register</span></a></li>
@@ -326,6 +328,7 @@
 						<li><a href="{{=URL('utility','get_utility_grid')}}" ><span class="title">Inventory Utility</span></a></li>
 						<li><a href="#" ><span class="title">Account Utility</span></a></li>
 						<li><a href="#" ><span class="title">Reports</span></a></li>
+						<li><a href="{{=URL('utility','get_sales_invoice_id')}}" ><span class="title">Sales Invoice Softcopy</span></a></li>
 					</ul>
 				</li>
 				<li><a href="{{=URL('eis','post_eis_form')}}"><div class="gui-icon"><i class="md fas fa-chart-pie"></i></div><span class="title">EIS REPORT</span></a></li>				
@@ -416,6 +419,7 @@
 						<li><a href="{{=URL('utility','get_utility_grid')}}" ><span class="title">Inventory Utility</span></a></li>
 						<li><a href="#" ><span class="title">Account Utility</span></a></li>
 						<li><a href="#" ><span class="title">Reports</span></a></li>
+						
 					</ul>
 				</li>		
 			</ul>

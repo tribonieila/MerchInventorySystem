@@ -941,6 +941,7 @@ db.define_table('Customer',
     Field('street_no', 'integer'),
     Field('zone', 'integer'),
     Field('area_name_id','reference Area_Name', ondelete = 'NO ACTION', requires = IS_EMPTY_OR(IS_IN_DB(db, db.Area_Name.id,'%(area_name)s', zero = 'Choose Area Name'))), 
+    Field('area_name','string',legnth=50),
     Field('municipality','string',legnth=50),
     Field('state','string', length = 50),
     Field('country','string', length = 50),
@@ -964,7 +965,7 @@ db.define_table('Customer',
     Field('guarantee','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),    
     Field('customer_form','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),    
     Field('sponsor_id','upload',requires=IS_EMPTY_OR(IS_UPLOAD_FILENAME(extension='pdf'))),
-    
+    Field('transfer_switch','boolean', default = False),
     Field('status_id','reference Record_Status',ondelete = 'NO ACTION', label = 'Status', default = 1, requires = IS_IN_DB(db, db.Record_Status.id,'%(status)s', zero = 'Choose status')),
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', db.auth_user, ondelete = 'NO ACTION',default=auth.user_id, writable = False, readable = False),
@@ -1350,6 +1351,7 @@ db.define_table('Delivery_Note',
     Field('delivery_note_no', 'integer', writable = False),
     Field('delivery_note_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('delivery_note_date_approved','date', writable = False),
+    Field('customer_good_receipt_no','string',length=50),
     Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_invoice_no', 'integer', writable = False),    
     Field('sales_invoice_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
@@ -1424,6 +1426,7 @@ db.define_table('Sales_Invoice',
     Field('delivery_note_no', 'integer', writable = False),
     Field('delivery_note_approved_by','reference auth_user', ondelete = 'NO ACTION',writable = False),
     Field('delivery_note_date_approved','date', writable = False),
+    Field('customer_good_receipt_no','string',length=50),
 
     Field('sales_invoice_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('sales_invoice_no', 'integer', writable = False),    
@@ -1475,8 +1478,116 @@ db.define_table('Sales_Invoice_Transaction',
     Field('delete', 'boolean', default = False),    
     Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
     Field('created_by', 'reference auth_user', ondelete = 'NO ACTION',default = auth.user_id, writable = False, readable = False, represent = lambda row: row.first_name.upper() + ' ' + row.last_name.upper()),
-    Field('upddocument_register_grid_processated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
     Field('updated_by', db.auth_user, ondelete = 'NO ACTION',update=auth.user_id, writable = False, readable = False))
+
+dc.define_table('Almeera_Sales_Invoice',       
+    Field('transaction_prefix_id', 'integer'),   
+    Field('sales_order_no', 'integer', default = 0, writable = False),
+    Field('sales_order_date', 'date', default = request.now),
+    Field('dept_code_id','integer'),
+    Field('stock_source_id','integer'),
+    Field('customer_code_id','integer'),    
+    Field('customer_order_reference','string', length = 25),
+    Field('delivery_due_date', 'date', default = request.now),
+    Field('total_amount','decimal(20,2)', default = 0),    
+    Field('total_amount_after_discount','decimal(20,2)', default = 0),    
+    Field('total_selective_tax', 'decimal(20,2)', default = 0),
+    Field('total_selective_tax_foc', 'decimal(20,2)', default = 0),    
+    Field('discount_added','decimal(10,2)', default = 0),
+    Field('total_vat_amount', 'decimal(20,2)', default = 0),
+    Field('sales_order_date_approved','date', writable = False),
+    Field('sales_order_approved_by','integer'),
+    Field('remarks', 'string'),
+    Field('delivery_note_no_prefix_id', 'integer'),   
+    Field('delivery_note_no', 'integer'),
+    Field('delivery_note_approved_by','integer'),
+    Field('delivery_note_date_approved','date', writable = False),
+    Field('customer_good_receipt_no','string',length=50),
+    Field('sales_invoice_no_prefix_id', 'integer'),   
+    Field('sales_invoice_no', 'integer'),    
+    Field('sales_invoice_approved_by','integer'),
+    Field('sales_invoice_date_approved','date', writable = False),
+    Field('cancelled','boolean',default = False),
+    Field('cancelled_by','integer'),
+    Field('cancelled_on', 'datetime', default=request.now, writable = False, readable = False),    
+    Field('section_id','string',length=25,requires = IS_IN_SET([('F','Food Section'),('N','Non-Food Section')],zero ='Choose Section')),
+    Field('sales_man_id', 'integer'),   
+    Field('status_id','integer'),   
+    Field('archives', 'boolean', default = False),    
+    Field('processed','boolean',default=False), # consolidated T/F
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'integer'),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', 'integer', writable = False, readable = False))
+ 
+dc.define_table('Almeera_Sales_Invoice_Transaction',
+    Field('sales_invoice_no_id','integer',ondelete = 'NO ACTION',writable = False),
+    Field('item_code_id', 'integer'),        
+    Field('category_id','integer'), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+    Field('price_cost_after_discount','decimal(20,2)'), 
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'integer'),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', 'integer', writable = False, readable = False))
+
+dc.define_table('Almeera_Sales_Invoice_Temporary_Transaction',
+    Field('sales_invoice_no_id','integer',ondelete = 'NO ACTION',writable = False),
+    Field('item_code_id', 'integer'),        
+    Field('category_id','integer'), 
+    Field('quantity','integer', default = 0),
+    Field('uom','integer', default = 0),    
+    Field('price_cost', 'decimal(20,6)', default = 0), # per outer with tax
+    Field('packet_price_cost', 'decimal(20,6)', default = 0), # per packet with tax
+    Field('total_amount','decimal(20,2)', default = 0),
+    Field('average_cost','decimal(20,4)', default = 0),
+    Field('sale_cost', 'decimal(20,6)', default = 0), # packet
+    Field('sale_cost_notax_pcs', 'decimal(20,6)', default = 0), # sales cost without tax
+    Field('wholesale_price', 'decimal(20,2)', default = 0),
+    Field('retail_price', 'decimal(20,2)',default = 0),
+    Field('vansale_price', 'decimal(20,2)',default =0),
+    Field('discount_percentage', 'decimal(20,2)',default =0),
+    Field('net_price', 'decimal(20,2)',default =0),
+    Field('price_cost_pcs', 'decimal(20,6)', default = 0), # per pcs. without tax
+    Field('average_cost_pcs','decimal(20,6)', default = 0), # per pcs.without tax   
+    Field('wholesale_price_pcs', 'decimal(20,6)', default = 0), # per pcs.without tax
+    Field('retail_price_pcs', 'decimal(20,6)',default = 0), # per pcs.without tax
+    Field('price_cost_after_discount','decimal(20,2)'), 
+    Field('selective_tax','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer    
+    Field('selective_tax_foc','decimal(20,2)', default = 0, label = 'Selective Tax'), # outer
+    Field('selective_tax_price','decimal(20,2)', default = 0, label = 'Selective Tax'), # from item_prices
+    Field('packet_selective_tax','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('packet_selective_tax_foc','decimal(20,6)', default = 0, label = 'Selective Tax'), # packet
+    Field('vat_percentage','decimal(20,2)', default = 0, label = 'Vat Percentage'),            
+    Field('delete', 'boolean', default = False),    
+    Field('created_on', 'datetime', default=request.now, writable = False, readable = False),
+    Field('created_by', 'integer'),
+    Field('updated_on', 'datetime', update=request.now, writable = False, readable = False),
+    Field('updated_by', 'integer', writable = False, readable = False))
 
 db.define_table('Stock_Request',       
     Field('stock_request_no_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
@@ -2143,7 +2254,7 @@ db.define_table('Purchase_Batch_Cost', # Except short and excess
 
 db.define_table('Direct_Purchase_Receipt',  
     Field('transaction_no', 'integer', default = 0, writable = False),
-    Field('transaction_date', 'datetime', default=request.now, writable = False),
+    Field('transaction_date', 'date', default=request.now, writable = False),
     Field('purchase_receipt_no_prefix_id', 'reference Transaction_Prefix', ondelete = 'NO ACTION',writable = False),   
     Field('purchase_receipt_no', 'integer', writable = False),    
     Field('purchase_receipt_date', 'date', writable = False),    

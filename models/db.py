@@ -159,6 +159,7 @@ if configuration.get('scheduler.enabled'):
 
 # db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv') #,fake_migrate=True,migrate=False,fake_migrate_all=True,do_connect=True)
 db = DAL('postgres://postgres:admin@localhost:5432/mpc_inv')#, driver_args={'sslmode': 'require', 'sslrootcert': 'root.crt','sslcert': 'mysitename.crt', 'sslkey': 'mysitename.key'})
+dc = DAL('postgres://postgres:admin@localhost:5432/m3rch_almeera_db')
 d2 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB',migrate=False,fake_migrate_all=True,do_connect=True)
 # db1 = DAL('postgres://postgres:admin@localhost:5432/Merch_HRM_DB', pool_size=0, migrate = False)
 

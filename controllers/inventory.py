@@ -9788,18 +9788,24 @@ def master_item_view():
             ctr = 0
             _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
             _stk_file = db(db.Stock_File.item_code_id == request.vars.item_code_id).select().first()
+            if not _stk_file:
+                response.flash = 'Empty on stock file.'
+                return dict(form = form, i_table = '', table = '')                
             _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
+            if not _item_price:
+                response.flash = 'Empty item price.'
+                return dict(form = form, i_table = '', table = '')                
 
-            _outer = int(int(_stk_file.probational_balance) / int(_itm_code.uom_value))
-            _pcs = int(_stk_file.probational_balance) - int(_outer * _itm_code.uom_value)    
+            _outer = int(_stk_file.probational_balance or 0) / int(_itm_code.uom_value)
+            _pcs = int(_stk_file.probational_balance or 0) - int(_outer * _itm_code.uom_value)    
             _on_hand = str(_outer) + ' ' + str(_pcs) + '/' +str(_itm_code.uom_value)
 
-            _outer_transit = int(_stk_file.stock_in_transit) / int(_itm_code.uom_value)   
-            _pcs_transit = int(_stk_file.stock_in_transit) - int(_outer * _itm_code.uom_value)
+            _outer_transit = int(_stk_file.stock_in_transit or 0) / int(_itm_code.uom_value)   
+            _pcs_transit = int(_stk_file.stock_in_transit or 0) - int(_outer * _itm_code.uom_value)
             _on_transit = str(_outer_transit) + ' ' + str(_pcs_transit) + '/' + str(_itm_code.uom_value)
 
-            _outer_on_hand = int(_stk_file.closing_stock) / int(_itm_code.uom_value)
-            _pcs_on_hand = int(_stk_file.closing_stock) - int(_outer_on_hand * _itm_code.uom_value) 
+            _outer_on_hand = int(_stk_file.closing_stock or 0) / int(_itm_code.uom_value)
+            _pcs_on_hand = int(_stk_file.closing_stock or 0) - int(_outer_on_hand * _itm_code.uom_value) 
             _on_hand = str(_outer_on_hand) + ' ' + str(_pcs_on_hand) + '/' + str(_itm_code.uom_value)        
             
             i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Size'),TD('Currency'),TD('Supplier Price'),TD('Landed Cost'),TD('Average Cost'),TD('Op.Ave.Cost'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price'),TD('Sel. Tax Price'),_class='style-accent small-padding'))
@@ -9874,168 +9880,189 @@ def stock_card_movement():
     if form.accepts(request):
         # response.flash = 'ok'
         _itm_code = db(db.Item_Master.id == request.vars.item_code_id).select().first()
-        _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()
+        _stk_file = db((db.Stock_File.item_code_id == request.vars.item_code_id) & (db.Stock_File.location_code_id == request.vars.location_code_id)).select().first()        
         _item_price = db(db.Item_Prices.item_code_id == request.vars.item_code_id).select().first()
-        i_row = []
-        i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Opening Stock Qty.'),TD('Dam. Stock Qty.'),TD('Free Stock Qty.'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price')),_class='style-accent small-padding')
-        
-        i_row.append(TR(TD(_itm_code.item_code),TD(_itm_code.item_description),
-        TD(card_view(_itm_code.id, _stk_file.opening_stock)),
-        TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty)),
-        TD(card_view(_itm_code.id, _stk_file.free_stock_qty)),
-        TD(_itm_code.group_line_id.group_line_name),
-        TD(_itm_code.brand_line_code_id.brand_line_name),
-        TD(_itm_code.uom_value),
-        TD(locale.format('%.3F',_item_price.retail_price or 0, grouping = True),_align='right'),
-        TD(locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),_align='right'),
-        TD(locale.format('%.3F',_item_price.vansale_price or 0, grouping = True),_align='right')))
-        i_body = TBODY(*i_row)
-        i_table = TABLE(*[i_head, i_body], _class = 'table table-bordered')
-        
-        row = []
-        ctr = 0
-        
-        _stv = db.Stock_Request_Transaction.item_code_id == request.vars.item_code_id     
-        _stv &= db.Stock_Request.stock_source_id == request.vars.location_code_id
-        _stv &= db.Stock_Request.srn_status_id == 6
-        _stv &= db.Stock_Request.stock_transfer_date_approved >= request.vars.start_date
-        _stv &= db.Stock_Request.stock_transfer_date_approved <= request.vars.end_date
 
-
-
-        # query = db(_pr).select(db.Purchase_Receipt.ALL, db.Purchase_Receipt_Transaction.ALL, db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, 
-        # left = [db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id), db.Purchase_Receipt_Transaction.on(db.Purchase_Receipt.id == db.Purchase_Receipt_Transaction.purchase_receipt_no_id)]) 
-        _bal = 0
-        _quantity_in = 0 
-        _quantity_out = 0
-        _balanced = 0
-
-        # _bal = _stk_file.opening_stock
-        # print 'stv: ', _stv
-        
-        _total_qty = db.Merch_Stock_Transaction.quantity.sum().coalesce_zero()
-        _query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
-        _query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
-        _query &= db.Merch_Stock_Transaction.transaction_date >= request.vars.start_date
-        _query &= db.Merch_Stock_Transaction.transaction_date <= request.vars.end_date
-        
-        _firs_month = date(date.today().year, 1, 1)
-        _prev_day = datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date() 
-        _prev_day = (_prev_day - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-
-        _qty_query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
-        _qty_query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
-        _qty_query &= db.Merch_Stock_Transaction.transaction_date >= _firs_month
-        _qty_query &= db.Merch_Stock_Transaction.transaction_date <= _prev_day       
-
-        if  _firs_month == datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date():
-            _prev_day = datetime.datetime.strptime(str(request.vars.end_date), '%Y-%m-%d').date()
-            _qty = _bal = _stk_file.opening_stock
-            # print 'true: ',_bal
-        else:                        
-            _qty = _bal = db(_qty_query).select(_total_qty).first()[_total_qty]
-            _qty = _bal = _stk_file.opening_stock - db(_qty_query).select(_total_qty).first()[_total_qty]
-        
-            # print 'false:', _bal, _stk_file.opening_stock, db(_qty_query).select(_total_qty).first()[_total_qty]
-
-        head = THEAD(TR(TD('Opening Stock Balance as of ', request.vars.start_date, ': ', B(card_view(_itm_code.id, _qty)),  _colspan='9'),TD(A(I(_class='fas fa-print'),_class='btn btn-icon-toggle', _target=' blank',_href=URL('inventory_reports','get_stock_card_movement_report', args = [request.vars.item_code_id, request.vars.location_code_id, request.vars.start_date, request.vars.end_date])),_class='text-right')))
-        head += THEAD(TR(TH('#'),TH('Date'),TH('Type'),TH('Voucher No'),TH('Category'),TH('Qty In'),TH('Qty Out'),TH('Balance'),TH('Account Code'),TH('Account Name'),_class='style-accent-dark small-padding'))        
-        for n in db(_query).select(
-            _total_qty, 
-            db.Merch_Stock_Transaction.merch_stock_header_id, 
-            db.Merch_Stock_Transaction.voucher_no, 
-            db.Merch_Stock_Transaction.transaction_type, 
-            db.Merch_Stock_Transaction.transaction_date, 
-            db.Merch_Stock_Transaction.category_id, 
-            groupby = db.Merch_Stock_Transaction.voucher_no | 
-            db.Merch_Stock_Transaction.merch_stock_header_id |
-            db.Merch_Stock_Transaction.transaction_type | 
-            db.Merch_Stock_Transaction.transaction_date | 
-            db.Merch_Stock_Transaction.category_id, 
-            orderby = db.Merch_Stock_Transaction.transaction_date , 
-            left = db.Merch_Stock_Header.on(db.Merch_Stock_Header.id == db.Merch_Stock_Transaction.merch_stock_header_id)):
-
-            # _bal += n._extra[_total_qty]
+        if not _itm_code:
+            response.flash = 'Item code not found or empty.'
+            return dict(form = form, i_table = '', table = '')
+        elif not _stk_file:
+            response.flash = 'Item code not found or empty on stock file.'
+            return dict(form = form, i_table = '', table = '')
+        elif not _item_price:
+            response.flash = 'Item code not found or empty on item price.'
+            return dict(form = form, i_table = '', table = '')
+        else:
+            i_row = []
+            i_head = THEAD(TR(TD('Item Code'),TD('Description'),TD('Opening Stock Qty.'),TD('Dam. Stock Qty.'),TD('Free Stock Qty.'),TD('Group Line'),TD('Brand Line'),TD('UOM'),TD('Retail Price'),TD('Whole Sale Price'),TD('Van Sale Price')),_class='style-accent small-padding')
             
-            _account_code = db(db.Merch_Stock_Header.id == n.Merch_Stock_Transaction.merch_stock_header_id).select().first()
-            _account_name = db(db.Master_Account.account_code == _account_code.account).select().first()
-            if _account_name:
-                _account_name = _account_name.account_name
-            else:
-                _account_name = 'None'
-
-            ctr += 1            
-
-            _type = n.Merch_Stock_Transaction.transaction_type
-            _no = n.Merch_Stock_Transaction.voucher_no
-            _date = n.Merch_Stock_Transaction.transaction_date
-            _category = n.Merch_Stock_Transaction.category_id
-
-            if _type == 1:
-                _type = 'GR'
-                _bal += n._extra[_total_qty]
-                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
-                _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
-                _balanced = card_view(_itm_code.id, _bal)
-            elif _type == 2:
-                _type = 'SI'
-                _quantity_in = 0
-                # _quantity_out = n._extra[_total_qty]
-                _bal -= n._extra[_total_qty]
-                _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
-                _balanced = card_view(_itm_code.id, _bal)
-            elif _type == 3:
-                _type = 'SOR'
-                _quantity_in = 1
-                _quantity_out = 0
-                _balanced = 0
-            elif _type == 4:
-                _type = 'SR'
-                _bal += n._extra[_total_qty]
-                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
-                _quantity_out = 0
-                _balanced = card_view(_itm_code.id, _bal)
-            elif _type == 5:
-                _type = 'STV'
-                _quantity_in = 1
-                _quantity_out = 0
-                _balanced = 0
-            elif _type == 6:
-                _type = 'ADJ'
-                _bal += n._extra[_total_qty]
-                _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
-                _quantity_out = 0
-                _balanced = card_view(_itm_code.id, _bal)
-            elif _type == 7:
-                _type = 'SI'
-                _quantity_in = 1
-                _quantity_out = 0
-                _balanced = 0
-            elif _type == 8:
-                _type = 'COR'
-                _quantity_in = 1
-                _quantity_out = 0
-                _balanced = 0
+            i_row.append(TR(TD(_itm_code.item_code),TD(_itm_code.item_description),
+            TD(card_view(_itm_code.id, _stk_file.opening_stock or 0)),
+            TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty or 0)),
+            TD(card_view(_itm_code.id, _stk_file.free_stock_qty or 0)),
+            TD(_itm_code.group_line_id.group_line_name),
+            TD(_itm_code.brand_line_code_id.brand_line_name),
+            TD(_itm_code.uom_value),
+            TD(locale.format('%.3F',_item_price.retail_price or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.wholesale_price or 0, grouping = True),_align='right'),
+            TD(locale.format('%.3F',_item_price.vansale_price or 0, grouping = True),_align='right')))
+            i_body = TBODY(*i_row)
+            i_table = TABLE(*[i_head, i_body], _class = 'table table-bordered')
+            
+            row = []
+            ctr = 0
+            
+            _stv = db.Stock_Request_Transaction.item_code_id == request.vars.item_code_id     
+            _stv &= db.Stock_Request.stock_source_id == request.vars.location_code_id
+            _stv &= db.Stock_Request.srn_status_id == 6
+            _stv &= db.Stock_Request.stock_transfer_date_approved >= request.vars.start_date
+            _stv &= db.Stock_Request.stock_transfer_date_approved <= request.vars.end_date
 
 
-            row.append(TR(TD(ctr),
-            TD(_date),            
-            TD(_type),
-            TD(_no),                                        
-            TD(_category),
-            TD(_quantity_in), 
-            TD(_quantity_out),
-            TD(_balanced),
-            TD(_account_code.account),
-            TD(_account_name),
-            ))
 
-        body = TBODY(*row)        
-        foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD('FOC Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.free_stock_qty),TD(),TD())))                
-        foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD('Closing Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.closing_stock),TD(),TD())))
-        foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD('Damaged Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty),TD(),TD())))        
-        table = TABLE(*[head, body, foot], _class = 'table table-hover')
-        return dict(form = form, i_table = i_table, table = table)
+            # query = db(_pr).select(db.Purchase_Receipt.ALL, db.Purchase_Receipt_Transaction.ALL, db.Stock_Request_Transaction.ALL, db.Stock_Request.ALL, 
+            # left = [db.Stock_Request_Transaction.on(db.Stock_Request.id == db.Stock_Request_Transaction.stock_request_id), db.Purchase_Receipt_Transaction.on(db.Purchase_Receipt.id == db.Purchase_Receipt_Transaction.purchase_receipt_no_id)]) 
+            _bal = 0
+            _quantity_in = 0 
+            _quantity_out = 0
+            _balanced = 0
+
+            # _bal = _stk_file.opening_stock
+            # print 'stv: ', _stv
+            
+            _total_qty = db.Merch_Stock_Transaction.quantity.sum().coalesce_zero()
+            _query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
+            _query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
+            _query &= db.Merch_Stock_Transaction.transaction_date >= request.vars.start_date
+            _query &= db.Merch_Stock_Transaction.transaction_date <= request.vars.end_date
+            
+            _firs_month = date(date.today().year, 1, 1)
+            _prev_day = datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date() 
+            _prev_day = (_prev_day - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+            _qty_query = db.Merch_Stock_Transaction.item_code == _itm_code.item_code
+            _qty_query &= db.Merch_Stock_Transaction.location == request.vars.location_code_id
+            _qty_query &= db.Merch_Stock_Transaction.transaction_date >= _firs_month
+            _qty_query &= db.Merch_Stock_Transaction.transaction_date <= _prev_day       
+
+            if  _firs_month == datetime.datetime.strptime(str(request.vars.start_date), '%Y-%m-%d').date():
+                _prev_day = datetime.datetime.strptime(str(request.vars.end_date), '%Y-%m-%d').date()
+                _qty = _bal = _stk_file.opening_stock
+                # print 'true: ',_bal
+            else:                        
+                _qty = _bal = db(_qty_query).select(_total_qty).first()[_total_qty]
+                _qty = _bal = _stk_file.opening_stock - db(_qty_query).select(_total_qty).first()[_total_qty]
+            
+                # print 'false:', _bal, _stk_file.opening_stock, db(_qty_query).select(_total_qty).first()[_total_qty]
+
+            head = THEAD(
+                TR(TD('Opening Stock Balance as of ', request.vars.start_date, ': ', B(card_view(_itm_code.id, _qty)),  _colspan='9'),TD(A(I(_class='fas fa-print'),_class='btn btn-icon-toggle', _target=' blank',_href=URL('inventory_reports','get_stock_card_movement_report', args = [request.vars.item_code_id, request.vars.location_code_id, request.vars.start_date, request.vars.end_date])),_class='text-right')),
+                TR(TH('#'),TH('Date'),TH('Type'),TH('Voucher No'),TH('Category'),TH('Qty In'),TH('Qty Out'),TH('Balance'),TH('Account Code'),TH('Account Name'),_class='style-accent-dark small-padding'))        
+            for n in db(_query).select(
+                _total_qty, 
+                db.Merch_Stock_Transaction.merch_stock_header_id, 
+                db.Merch_Stock_Transaction.voucher_no, 
+                db.Merch_Stock_Transaction.transaction_type, 
+                db.Merch_Stock_Transaction.transaction_date, 
+                db.Merch_Stock_Transaction.category_id, 
+                groupby = db.Merch_Stock_Transaction.voucher_no | 
+                db.Merch_Stock_Transaction.merch_stock_header_id |
+                db.Merch_Stock_Transaction.transaction_type | 
+                db.Merch_Stock_Transaction.transaction_date | 
+                db.Merch_Stock_Transaction.category_id, 
+                orderby = db.Merch_Stock_Transaction.transaction_date , 
+                left = db.Merch_Stock_Header.on(db.Merch_Stock_Header.id == db.Merch_Stock_Transaction.merch_stock_header_id)):
+
+                # _bal += n._extra[_total_qty]
+                
+                _account_code = db(db.Merch_Stock_Header.id == n.Merch_Stock_Transaction.merch_stock_header_id).select().first()
+                _account_name = db(db.Master_Account.account_code == _account_code.account).select().first()
+                if _account_name:
+                    _account_name = _account_name.account_name
+                else:
+                    _account_name = 'None'
+
+                ctr += 1            
+
+                _type = n.Merch_Stock_Transaction.transaction_type
+                _no = n.Merch_Stock_Transaction.voucher_no
+                _date = n.Merch_Stock_Transaction.transaction_date
+                _category = n.Merch_Stock_Transaction.category_id
+
+                if _type == 1:                    
+                    
+                    if str(n.Merch_Stock_Transaction.category_id) == 'S':
+                        _type = 'GR'
+                        _bal -= n._extra[_total_qty]
+                        _quantity_in = 0
+                        _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
+                        _balanced = card_view(_itm_code.id, _bal)
+                    else:
+                        _type = 'GR'
+                        _bal += n._extra[_total_qty]
+                        _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+                        _quantity_out = 0 #card_view(_itm_code.id, n.quantity)
+                        _balanced = card_view(_itm_code.id, _bal)
+                elif _type == 2:
+                    _type = 'SI'
+                    _quantity_in = 0
+                    # _quantity_out = n._extra[_total_qty]
+                    _bal -= n._extra[_total_qty]
+                    _quantity_out = card_view(_itm_code.id, n._extra[_total_qty])
+                    _balanced = card_view(_itm_code.id, _bal)
+                elif _type == 3:
+                    _type = 'SOR'
+                    _quantity_in = 1
+                    _quantity_out = 0
+                    _balanced = 0
+                elif _type == 4:
+                    _type = 'SR'
+                    _bal += n._extra[_total_qty]
+                    _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+                    _quantity_out = 0
+                    _balanced = card_view(_itm_code.id, _bal)
+                elif _type == 5:
+                    _type = 'STV'
+                    _quantity_in = 1
+                    _quantity_out = 0
+                    _balanced = 0
+                elif _type == 6:
+                    _type = 'ADJ'
+                    _bal += n._extra[_total_qty]
+                    _quantity_in = card_view(_itm_code.id, n._extra[_total_qty])
+                    _quantity_out = 0
+                    _balanced = card_view(_itm_code.id, _bal)
+                elif _type == 7:
+                    _type = 'SI'
+                    _quantity_in = 1
+                    _quantity_out = 0
+                    _balanced = 0
+                elif _type == 8:
+                    _type = 'COR'
+                    _quantity_in = 1
+                    _quantity_out = 0
+                    _balanced = 0
+
+
+                row.append(TR(TD(ctr),
+                TD(_date),            
+                TD(_type),
+                TD(_no),                                        
+                TD(_category),
+                TD(_quantity_in), 
+                TD(_quantity_out),
+                TD(_balanced),
+                TD(_account_code.account),
+                TD(_account_name),
+                ))
+
+            body = TBODY(*row)        
+            foot = TFOOT(
+                TR(TD(),TD(),TD(),TD(),TD('Closing Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.closing_stock),TD(),TD())),
+                TR(TD(),TD(),TD(),TD(),TD('Damaged Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.damaged_stock_qty),TD(),TD())),
+                TR(TD(),TD(),TD(),TD(),TD('FOC Stock as per Stock File',_colspan = '3'),TD(card_view(_itm_code.id, _stk_file.free_stock_qty),TD(),TD())))        
+            table = TABLE(*[head, body, foot], _class = 'table table-hover',_id='tblSCM')
+            return dict(form = form, i_table = i_table, table = table)
     else:
         return dict(form = form, table = '', i_table = '')
 

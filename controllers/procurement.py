@@ -324,8 +324,12 @@ def purchase_receipt_approved():
         if int(n.category_id) == 1: # for damaged items
             _dmg_stk = db((db.Stock_File.item_code_id == int(n.item_code_id)) & (db.Stock_File.location_code_id == int(_id.location_code_id))).select().first()
             _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(n.quantity_invoiced)
-            _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)      
-        elif int(n.category_id) == 4:    # normal items
+            _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)   
+        elif int(n.category_id) == 3: 
+            # validation
+            # if non saleable add to closing stock
+            # else add in pre stock
+        elif int(n.category_id) == 4 or int(n.category_id) == 2:    # normal items excess
             # _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _id.purchase_receipt_no_id_consolidated).select().first()        
             # _price_cost = n.price_cost * _id.landed_cost
 
@@ -466,6 +470,7 @@ def sync_purchase_receipt():
             expiration_date = n.expiration_date,
             new_item = n.new_item
         )
+
 def purchase_receipt_grid_view():
     _row = []
     _ctr = 0
@@ -576,7 +581,7 @@ def direct_purchase_receipt_account_grid():
         prin_lnk = A(I(_class='fas fa-print'), _title='Print Row', _type='button ', _role='button', _class='btn btn-icon-toggle disabled')
         btn_lnk = DIV(view_lnk, edit_lnk, dele_lnk)           
         row.append(TR(
-            TD(n.transaction_date.date()),
+            TD(n.transaction_date),
             TD(n.transaction_no),
             # TD(n.purchase_receipt_no_prefix_id.prefix,n.purchase_receipt_no),
             TD(n.dept_code_id.dept_code,' - ',n.dept_code_id.dept_name),
@@ -786,7 +791,8 @@ def put_direct_purchase_receipt_approved_id():
             _dmg_stk = db((db.Stock_File.item_code_id == int(n.item_code_id)) & (db.Stock_File.location_code_id == int(_id.location_code_id))).select().first()
             _tot_dmg = int(_dmg_stk.damaged_stock_qty) + int(n.quantity)
             _dmg_stk.update_record(damaged_stock_qty = _tot_dmg)
-        elif int(n.category_id) == 4:    # normal items
+        # elif int(n.category_id) == # pre stock
+        elif int(n.category_id) == 4:    # normal items or excess 
             # _prtc = db(db.Purchase_Receipt_Transaction_Consolidated.purchase_receipt_no_id == _id.purchase_receipt_no_id_consolidated).select().first()        
             # _price_cost = n.price_cost * _id.landed_cost
 
@@ -830,7 +836,7 @@ def put_direct_purchase_receipt_approved_id():
     _skey += 1
     
     ctr.update_record(current_year_serial_key = _skey, updated_on = request.now, updated_by = auth.user_id)    
-    _id.update_record(purchase_receipt_no_prefix_id = ctr.id, purchase_receipt_no = _skey, purchase_receipt_date = request.now, status_id = 21, posted = True, posted_by = auth.user_id,date_posted=request.now)    
+    _id.update_record(purchase_receipt_no_prefix_id = ctr.id, purchase_receipt_no = _skey, purchase_receipt_date = request.now, status_id = 21, posted = True)    
     # db(db.Direct_Purchase_Receipt.id == request.args(0)).update(status_id = 21)
     session.flash = 'Purchase Receipt No. ' + str(_id.purchase_receipt_no) + ' created and posted.'
 
@@ -3588,6 +3594,8 @@ def validate_direct_purchase(form):
     form.vars.transaction_no = str(x.strftime('%m%d%y%H%M'))
     form.vars.added_discount_amount = request.vars._added_discount_amount or 0
     form.vars.supplier_account_code_description = session.supplier_account_code_description
+    form.vars.posted_by = auth.user_id
+    form.vars.date_posted = request.now
       
 def discount_session():
     session.discount = request.var.discount
@@ -3766,7 +3774,7 @@ def direct_purchase_receipt_transaction_form():
             TD(INPUT(_class='form-control total_amount',_type='text',_name='total_amount',_value=locale.format('%.3F',n.Direct_Purchase_Receipt_Transaction_Temporary.total_amount or 0, grouping = True),_readonly='True'), _align = 'right', _style="width:120px;"),  
             TD(btn_lnk)))
     body = TBODY(*row)        
-    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Purchase Value (QR):', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control local_net_amount',_type='text', _name = 'local_net_amount', _id='local_net_amount', _disabled = True, _value = locale.format('%.3F',local_net_amount or 0, grouping = True))),TD(_btnUpdate, _style="width:100px;")))    
+    foot = TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Purchase Value (QR):', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control purchase_value',_type='text', _name = 'purchase_value', _id='purchase_value', _disabled = True)),TD(_btnUpdate, _style="width:100px;")))    
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Total Amount:', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control grand_total',_type='text', _name = 'grand_total', _id='grand_total', _disabled = True , _value = locale.format('%.3F',grand_total or 0, grouping = True))),TD()))
     foot += TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Added Discount Amount: ', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control added_discount_amount',_type='number', _name = 'added_discount_amount', _id='added_discount_amount', _value = session.added_discount_amount or 0), _align = 'right'),TD(P(_id='error'))))
     foot +=  TFOOT(TR(TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD(),TD('Net Amount:', _align = 'right', _colspan='2'),TD(INPUT(_class='form-control net_amount', _type='text', _name = 'net_amount', _id='net_amount', _disabled = True,  _value = locale.format('%.3F',net_amount or 0, grouping = True))),TD()))
@@ -5342,7 +5350,7 @@ def purchase_request_grid():
             _px = str(n.purchase_receipt_no_prefix_id.prefix) + str(n.purchase_receipt_no)
         
         if auth.has_membership(role = 'MANAGEMENT') | auth.has_membership(role='ROOT'): # john approval
-            print 'root: ', n.id
+            # print 'root: ', n.id
             if n.purchase_request_approved_by == None:
                 _approved_by = 'None'
             else:
@@ -9373,7 +9381,7 @@ def direct_purchase_receipt_reports():
     ]))    
     _addl = [['Remarks : ' + str(_dpr.remarks)],
     ['','',''],
-    [str(_dpr.posted_by.first_name.upper()) + ' ' + str(_dpr.posted_by.last_name.upper()),'',''],    
+    [str(_dpr.created_by.first_name.upper()) + ' ' + str(_dpr.created_by.last_name.upper()),'',''],    
     ['Posted By','','']]
     _addl_table = Table(_addl, colWidths=['*',100,'*'])
     _addl_table.setStyle(TableStyle([

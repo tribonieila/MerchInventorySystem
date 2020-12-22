@@ -3,31 +3,28 @@
     <div class="col-md-12">
         <div class="card card-underline">
             <div class="card-head">
-                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
-                    <li class="active"><a href="#sales_invoice">Sales Inv.  <span class="badge style-warning">{{=db(db.Sales_Invoice.processed == False).count()}} </span></a></li>
-                    <li><a href="#sales_return">Sales Ret. <span class="badge">0</span></a></li>
-                    <li><a href="#stock_transfer">Stock xfer. <span class="badge">0</span></a></li>
-                    <li><a href="#stock_corrections">Stock corr. <span class="badge">0</span></a></li>
-                    <li><a href="#stock_adjustment">Stock adj. <span class="badge">0</span></a></li>
-                    <li><a href="#obsolescense_of_stock">Obsol. of Stock <span class="badge">0</span></a></li>
-                    <li><a href="#purchase_receipt">Purchase Rec. <span class="badge">0</span></a></li>
-                    <li><a href="#direct_purchase">Direct pur. <span class="badge style-primary">{{=db(db.Direct_Purchase_Receipt.processed == False).count()}}</span></a></li>
-                </ul>
                 <span class="card-title">Unconsolidated Transaction</span>
+                <ul class="nav nav-tabs pull-right" data-toggle="tabs">
+                    <li class="active"><a href="#sales_invoice">Sales Invoice <span class="badge style-warning">{{=db(db.Sales_Invoice.processed == False).count()}} </span></a></li>
+                    <li><a href="#sales_return">Sales Return <span class="badge style-warning">{{=db((db.Sales_Return.status_id == 13) & (db.Sales_Return.processed == False)).count()}}</span></a></li>
+                    <li><a href="#stock_transfer">Stock Transfer <span class="badge style-accent">{{=db(db.Stock_Receipt.processed == False).count()}}</span></a></li>
+                    <li><a href="#stock_corrections">Stock Corrections <span class="badge">0</span></a></li>
+                    <li><a href="#stock_adjustment">Stock Adjustment <span class="badge">0</span></a></li>
+                    <li><a href="#obsolescense_of_stock">Obsolescence <span class="badge">0</span></a></li>
+                    <li><a href="#purchase_receipt">Purchase Request <span class="badge">0</span></a></li>
+                    <li><a href="#direct_purchase">Direct Purchase <span class="badge style-primary">{{=db(db.Direct_Purchase_Receipt.processed == False).count()}}</span></a></li>
+                </ul>
+                
             </div>
             <div class="card-body tab-content">
                 <div class="tab-pane active" id="sales_invoice">						                    
                     {{=LOAD('utility','get_sales_invoice_utility_grid.load', ajax = True, target = 'tblSI')}}
                 </div>
-                <div class="tab-pane" id="sales_return">						
-                    <div class="alert alert-info" role="alert">
-                        <strong>Sales Return</strong> in progress...
-                    </div>     
+                <div class="tab-pane" id="sales_return">		
+                    {{=LOAD('utility','get_sales_return_utility_grid.load', ajax = True, target = 'tblSR')}}
                 </div>
                 <div class="tab-pane" id="stock_transfer">
-                    <div class="alert alert-info" role="alert">
-                        <strong>Stock Transfer</strong> in progress...
-                    </div>                      
+                    {{=LOAD('utility','get_stock_transfer_utility_grid.load', ajax = True, target = 'tblST')}}
                 </div>
                 <div class="tab-pane" id="stock_corrections">
                     <div class="alert alert-info" role="alert">

@@ -99,14 +99,20 @@ def get_read_csv_file():
     #         print(row[0],row[1])
 
 def generate():
-    
+        
     print '----- '
+    for n in db().select(orderby = db.Customer.customer_account_no):
+        _id = db(db.Customer.customer_account_no == n.customer_account_no).select().first()
+        if not _id:
+            print 'not duplicates: ', n.customer_account_no
+        else:
+            print 'duplicates: ', n.customer_account_no
     # _so = db(db.Sales_Order.status_id == 4).count()
     # for n in db(db.Sales_Order.status_id == 4).select(db.Sales_Order.sales_order_date, orderby = db.Sales_Order.sales_order_date, groupby = db.Sales_Order.sales_order_date):
     #     print ': ', n.sales_order_date, _so
     # from temp
-    for n in db().select(orderby = db.Direct_Purchase_Receipt.id):
-        n.update_record(processed = False)
+    # for n in db(db.Direct_Purchase_Receipt_Transaction.id <= 12).select(orderby = db.Direct_Purchase_Receipt.id):
+    #     n.update_record(processed = False)
     # master stock file
     # for n in db().select(orderby = db.Stock_File.id):
     #     _id = db((db.Stock_File_Temp.item_code_id == n.item_code_id) & (db.Stock_File.location_code_id == 1)).select().first()
